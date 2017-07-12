@@ -37,7 +37,10 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Locale;
 
+import javax.servlet.http.HttpServletRequest;
+
 import org.junit.Test;
+import org.springframework.mock.web.MockHttpServletRequest;
 
 import vtk.repository.Path;
 import vtk.repository.store.PrincipalMetadataImpl;
@@ -70,6 +73,10 @@ public class PrincipalAutoCompleteControllerTest {
         @Override
         public String getToken() {
             return null;
+        }
+        @Override
+        public HttpServletRequest request() {
+            return new MockHttpServletRequest();
         }
     };
 
@@ -110,10 +117,10 @@ public class PrincipalAutoCompleteControllerTest {
         testPm.addAttributeValue(PrincipalMetadataImpl.DESCRIPTION_ATTRIBUTE, desc);
         testPm.addAttributeValue(PrincipalMetadataImpl.UID_ATTRIBUTE, uid);
         String url = isDoc ? "http://www.uio.no/person/".concat(uid) : "http://www.uio.no?vrtx=person-view&uid="
-                .concat(uid);
+            .concat(uid);
         testPm.addAttributeValue(PrincipalMetadataImpl.URL_ATTRIBUTE, url);
         if (affiliations != null) {
-            List<Object> affs = new ArrayList<Object>();
+            List<Object> affs = new ArrayList<>();
             affs.addAll(affiliations);
             testPm.setAttributeValues(PrincipalAutoCompleteController.USER_SCOPED_AFFILIATION_ATTRIBUTE, affs);
         }

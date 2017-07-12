@@ -5,6 +5,7 @@ import java.util.Map;
 import java.util.Set;
 
 import org.apache.commons.lang.StringUtils;
+
 import vtk.repository.Path;
 import vtk.repository.Repository;
 import vtk.repository.search.ResultSet;
@@ -27,7 +28,7 @@ public class NumberOfResourcesComponent extends ViewRenderingDecoratorComponent 
     protected void processModel(Map<String, Object> model, DecoratorRequest request, DecoratorResponse response)
             throws Exception {
 
-        RequestContext requestContext = RequestContext.getRequestContext();
+        RequestContext requestContext = RequestContext.getRequestContext(request.getServletRequest());
         String token = requestContext.getSecurityToken();
 
         String resourceType = DEFAULT_RESOURCE_TYPE;
@@ -56,7 +57,7 @@ public class NumberOfResourcesComponent extends ViewRenderingDecoratorComponent 
 
         // No sorting required, we just want count
         Search search = new Search();
-        if (RequestContext.getRequestContext().isPreviewUnpublished()) {
+        if (RequestContext.getRequestContext(request.getServletRequest()).isPreviewUnpublished()) {
             search.removeFilterFlag(Search.FilterFlag.UNPUBLISHED_COLLECTIONS);
         }
         search.setLimit(1);
@@ -69,7 +70,7 @@ public class NumberOfResourcesComponent extends ViewRenderingDecoratorComponent 
     }
 
     private Set<Path> getValidPaths(String folderPathsStrings) {
-        Set<Path> paths = new HashSet<Path>();
+        Set<Path> paths = new HashSet<>();
         if (StringUtils.isNotBlank(folderPathsStrings)) {
             String[] folders = folderPathsStrings.split(",");
             for (String folder : folders) {

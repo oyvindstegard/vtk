@@ -39,8 +39,6 @@
         <#local emails = vrtx.propValue(person, 'email')!  />
         <#local tags = vrtx.propValue(person, 'tags')! />
       
-        <#local src = vrtx.propValue(person, 'picture', 'thumbnail')! />
-      
         <#local introImgURI = vrtx.propValue(person, 'picture')! />
         <#if introImgURI?has_content>
     	  <#local thumbnail =  vrtx.relativeLinkConstructor(introImgURI, 'displayThumbnailService') />

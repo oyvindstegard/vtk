@@ -151,15 +151,16 @@ implements ReferenceDataProvider {
                 break;
             }
         }
-        return buildPropertyEditCommand(definition);
+        return buildPropertyEditCommand(request, definition);
     }
 
-    private PropertyEditCommand buildPropertyEditCommand(PropertyTypeDefinition definition) throws Exception {
+    private PropertyEditCommand buildPropertyEditCommand(HttpServletRequest request, 
+            PropertyTypeDefinition definition) throws Exception {
         if (definition == null) {
             return new PropertyEditCommand(null, null, null, null, null);
         }
 
-        RequestContext requestContext = RequestContext.getRequestContext();
+        RequestContext requestContext = RequestContext.getRequestContext(request);
         Repository repository = requestContext.getRepository();
         Resource resource = repository.retrieve(requestContext.getSecurityToken(), requestContext.getResourceURI(),
                 false);
@@ -198,7 +199,7 @@ implements ReferenceDataProvider {
         }
 
         Service service = requestContext.getService();
-        URL editURL = service.urlConstructor(URL.create(requestContext.getServletRequest()))
+        URL editURL = service.urlConstructor(requestContext.getRequestURL())
             .withResource(resource)
             .withPrincipal(requestContext.getPrincipal())
             .withParameters(urlParameters)
@@ -297,7 +298,7 @@ implements ReferenceDataProvider {
     @Override
     protected ModelAndView onSubmit(HttpServletRequest request, HttpServletResponse response, 
             PropertyEditCommand command, BindException errors) throws Exception {
-        RequestContext requestContext = RequestContext.getRequestContext();
+        RequestContext requestContext = RequestContext.getRequestContext(request);
         Repository repository = requestContext.getRepository();
 
         String token = requestContext.getSecurityToken();
@@ -409,7 +410,7 @@ implements ReferenceDataProvider {
     @Override
     public void referenceData(Map<String, Object> model, HttpServletRequest request) {
 
-        RequestContext requestContext = RequestContext.getRequestContext();
+        RequestContext requestContext = RequestContext.getRequestContext(request);
         Repository repository = requestContext.getRepository();
         Service service = requestContext.getService();
         String token = requestContext.getSecurityToken();

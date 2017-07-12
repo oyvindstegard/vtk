@@ -30,26 +30,47 @@
  */
 package vtk.web.service;
 
+import java.util.Optional;
 import java.util.Set;
+
+import javax.servlet.http.HttpServletRequest;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
 import vtk.repository.Privilege;
 import vtk.repository.Resource;
 import vtk.security.Principal;
 
-public class ResourceHasWriteUnpublishedPermissionPrincipalsAssertion extends AbstractRepositoryAssertion {
-
+public class ResourceHasWriteUnpublishedPermissionPrincipalsAssertion extends AbstractAssertion {
     private static Logger logger = LoggerFactory.getLogger(
             ResourceHasWriteUnpublishedPermissionPrincipalsAssertion.class);
 
     @Override
-    public boolean conflicts(Assertion assertion) {
+    public boolean conflicts(WebAssertion assertion) {
         return false;
     }
 
     @Override
-    public boolean matches(Resource resource, Principal principal) {
+    public boolean matches(HttpServletRequest request, Resource resource, Principal principal) {
+        return matches(resource);
+    }
+
+    @Override
+    public Optional<URL> processURL(URL url, Resource resource,
+            Principal principal) {
+        if (!matches(resource)) {
+            return Optional.empty();
+        }
+        return Optional.of(url);
+    }
+
+    @Override
+    public URL processURL(URL url) {
+        return url;
+    }
+    
+    private boolean matches(Resource resource) {
         if (resource == null) {
             if (logger.isDebugEnabled()) {
                 logger.debug("Resource is null [match = false]");
@@ -57,10 +78,12 @@ public class ResourceHasWriteUnpublishedPermissionPrincipalsAssertion extends Ab
             return false;
         }
         
-        Set<Principal> readWriteUnpublishedPrincipals = resource.getAcl().getPrincipalSet(Privilege.READ_WRITE_UNPUBLISHED);
-        if(readWriteUnpublishedPrincipals.isEmpty()) {
+        Set<Principal> readWriteUnpublishedPrincipals = resource.getAcl()
+                .getPrincipalSet(Privilege.READ_WRITE_UNPUBLISHED);
+        if (readWriteUnpublishedPrincipals.isEmpty()) {
           return false;   
         }
         return true;
     }
+    
 }

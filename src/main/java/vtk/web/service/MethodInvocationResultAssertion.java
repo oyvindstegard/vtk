@@ -31,16 +31,18 @@
 package vtk.web.service;
 
 import java.lang.reflect.Method;
+import java.util.Optional;
 
 import javax.servlet.http.HttpServletRequest;
 
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.BeanInitializationException;
 import org.springframework.beans.factory.InitializingBean;
+
 import vtk.repository.Resource;
 import vtk.security.Principal;
 
-public class MethodInvocationResultAssertion implements Assertion, InitializingBean {
+public class MethodInvocationResultAssertion implements WebAssertion, InitializingBean {
 
     public static enum Operator {
         EQ, NEQ;
@@ -55,7 +57,7 @@ public class MethodInvocationResultAssertion implements Assertion, InitializingB
     
     
     @Override
-    public boolean conflicts(Assertion assertion) {
+    public boolean conflicts(WebAssertion assertion) {
         return false;
     }
 
@@ -66,12 +68,9 @@ public class MethodInvocationResultAssertion implements Assertion, InitializingB
     }
 
     @Override
-    public boolean processURL(URL url, Resource resource, Principal principal,
-            boolean match) {
-        if (match) {
-            return invoke();
-        }
-        return true;
+    public Optional<URL> processURL(URL url, Resource resource, Principal principal) {
+        if (invoke()) return Optional.of(url);
+        return Optional.empty();
     }
     
     private boolean invoke() {
@@ -92,7 +91,8 @@ public class MethodInvocationResultAssertion implements Assertion, InitializingB
     }
 
     @Override
-    public void processURL(URL url) {
+    public URL processURL(URL url) {
+        return url;
     }
 
     @Override

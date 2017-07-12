@@ -90,11 +90,6 @@ public class StructuredResourceEditor extends SimpleFormController<FormSubmitCom
     private static Logger logger = LoggerFactory.getLogger(StructuredResourceEditor.class);
 
     
-    @Override
-    protected FormSubmitCommand formBackingObject(HttpServletRequest request)
-            throws Exception {
-        return formBackingObject();
-    }
     
     @Override
     protected ModelAndView onSubmit(HttpServletRequest request,
@@ -118,20 +113,20 @@ public class StructuredResourceEditor extends SimpleFormController<FormSubmitCom
     private ModelAndView onSubmitInternal(HttpServletRequest request,
             HttpServletResponse response, FormSubmitCommand command,
             BindException errors) throws Exception {
-        FormSubmitCommand form = formBackingObject();
+        FormSubmitCommand form = formBackingObject(request);
         FormDataBinder binder = new FormDataBinder(form, "form", form.getResource().getType());
         binder.bind(request);
         
         if (form.getCancelAction() != null) {
-            unlock();
+            unlock(request);
             return new ModelAndView(getSuccessView());
         }
         Map<String, Object> model = new HashMap<>();
         model.put("form", form);
         form.sync();
-        RequestContext requestContext = RequestContext.getRequestContext();
+        RequestContext requestContext = RequestContext.getRequestContext(request);
         Repository repository = requestContext.getRepository();
-        Path uri = RequestContext.getRequestContext().getResourceURI();
+        Path uri = RequestContext.getRequestContext(request).getResourceURI();
         String token = requestContext.getSecurityToken();
 
         boolean saveWorkingCopy = form.getSaveWorkingCopyAction() != null
@@ -152,7 +147,7 @@ public class StructuredResourceEditor extends SimpleFormController<FormSubmitCom
 
         if (deleteWorkingCopy && workingCopy != null) {
             repository.deleteRevision(token, uri, workingCopy);
-            model.put("form", formBackingObject());
+            model.put("form", formBackingObject(request));
             return new ModelAndView(getFormView(), model);
         }
 
@@ -190,16 +185,18 @@ public class StructuredResourceEditor extends SimpleFormController<FormSubmitCom
         }
 
         if (form.getUpdateViewAction() != null) {
-            unlock();
+            unlock(request);
             return new ModelAndView(getSuccessView());
         }
         return new ModelAndView(getFormView(), model);
     }
 
 
-    private FormSubmitCommand formBackingObject() throws Exception {
-        lock();
-        RequestContext requestContext = RequestContext.getRequestContext();
+    @Override
+    protected FormSubmitCommand formBackingObject(HttpServletRequest request)
+            throws Exception {
+        lock(request);
+        RequestContext requestContext = RequestContext.getRequestContext(request);
         Path uri = requestContext.getResourceURI();
         String token = requestContext.getSecurityToken();
         Repository repository = requestContext.getRepository();
@@ -394,7 +391,7 @@ public class StructuredResourceEditor extends SimpleFormController<FormSubmitCom
     }
     
     private void debugPostRequest(RequestWrapper request) {
-        Path uri = RequestContext.getRequestContext().getResourceURI();
+        Path uri = RequestContext.getRequestContext(request).getResourceURI();
         StringBuilder message = new StringBuilder("POST: " + uri + ": " 
                 + request.getContentLength() + " bytes");
         Enumeration<String> inputs = request.getParameterNames();
@@ -412,15 +409,15 @@ public class StructuredResourceEditor extends SimpleFormController<FormSubmitCom
         logger.debug(message.toString());
     }
 
-    public void unlock() throws Exception {
-        RequestContext requestContext = RequestContext.getRequestContext();
+    public void unlock(HttpServletRequest request) throws Exception {
+        RequestContext requestContext = RequestContext.getRequestContext(request);
         String token = requestContext.getSecurityToken();
         Path uri = requestContext.getResourceURI();
         requestContext.getRepository().unlock(token, uri, null);
     }
 
-    public void lock() throws Exception {
-        RequestContext requestContext = RequestContext.getRequestContext();
+    public void lock(HttpServletRequest request) throws Exception {
+        RequestContext requestContext = RequestContext.getRequestContext(request);
         String token = requestContext.getSecurityToken();
         Path uri = requestContext.getResourceURI();
         Principal principal = requestContext.getPrincipal();

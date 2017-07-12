@@ -11,15 +11,15 @@
           <property name="parameterName" value="vrtx" />
           <property name="parameterValue" value="view-as-webpage" />
         </bean>
-        <bean class="vtk.web.service.OrAssertion">
-          <property name="assertions">
+        <bean class="vtk.repository.resourcetype.RepositoryOrAssertion">
+          <constructor-arg name="assertions">
             <list>
               <ref bean="contentTypeMatchesImage" />
               <ref bean="contentTypeMatchesMedia" />
               <ref bean="contentTypeMatchesVideo" />
               <ref bean="contentTypeMatchesAudio" />
             </list>
-          </property>
+          </constructor-arg>
         </bean>
       </list>
     </property>

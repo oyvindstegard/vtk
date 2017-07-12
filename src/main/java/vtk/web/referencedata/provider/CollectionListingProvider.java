@@ -168,7 +168,7 @@ public class CollectionListingProvider implements ReferenceDataProvider {
     public void referenceData(Map<String, Object> model, HttpServletRequest request) {
 
         Map<String, Object> collectionListingModel = new HashMap<>();
-        RequestContext requestContext = RequestContext.getRequestContext();
+        RequestContext requestContext = RequestContext.getRequestContext(request);
         Path uri = requestContext.getResourceURI();
         String token = requestContext.getSecurityToken();
         Principal principal = requestContext.getPrincipal();
@@ -237,7 +237,7 @@ public class CollectionListingProvider implements ReferenceDataProvider {
                             .withResource(child)
                             .withPrincipal(principal)
                             .constructURL();
-                    // XXX: until we straighten out the manage service assertion configuration:
+                                       // XXX: until we straighten out the manage service assertion configuration:
                     if (repository.authorize(principal, child.getAcl(), Privilege.READ)) {
                         browsingLinks[i] = url.toString();
                     }

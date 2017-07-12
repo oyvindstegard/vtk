@@ -155,6 +155,7 @@
     </property>
   </bean>
 
+
   <bean parent="manage.resourceMenuLeftBuilder">
     <property name="arguments" ref="copyResourceService" />
   </bean>

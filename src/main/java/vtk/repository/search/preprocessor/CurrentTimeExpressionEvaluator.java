@@ -35,7 +35,9 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.apache.commons.lang.time.FastDateFormat;
+
 import vtk.repository.search.QueryException;
+import vtk.repository.search.preprocessor.QueryStringPreProcessor.ProcessorContext;
 
 public class CurrentTimeExpressionEvaluator implements ExpressionEvaluator {
 
@@ -60,7 +62,9 @@ public class CurrentTimeExpressionEvaluator implements ExpressionEvaluator {
         return Calendar.getInstance();
     }
 
-    public String evaluate(String token) throws QueryException {
+    @Override
+    public String evaluate(String token, ProcessorContext ctx)
+            throws QueryException {
         Matcher m = this.pattern.matcher(token);
         if (!m.matches()) {
             throw new QueryException("Query token: '" + token + "' does not match pattern");

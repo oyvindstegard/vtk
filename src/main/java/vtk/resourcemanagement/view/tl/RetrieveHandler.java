@@ -56,12 +56,16 @@ public class RetrieveHandler extends Function {
         Object arg = args[0];
         Resource resource;
         String ref = arg.toString();
-        RequestContext requestContext = RequestContext.getRequestContext();
+        HttpServletRequest request = (HttpServletRequest) 
+                ctx.getAttribute(DynamicDecoratorTemplate.SERVLET_REQUEST_CONTEXT_ATTR);
+        if (request == null) {
+            throw new RuntimeException("Servlet request not found in context by attribute: "
+                    + DynamicDecoratorTemplate.SERVLET_REQUEST_CONTEXT_ATTR);
+        }
+        RequestContext requestContext = RequestContext.getRequestContext(request);
         Repository repository = requestContext.getRepository();
 
         if (ref.equals(".")) {
-//            HttpServletRequest request = requestContext.getServletRequest();
-            HttpServletRequest request = (HttpServletRequest) ctx.getAttribute(DynamicDecoratorTemplate.SERVLET_REQUEST_CONTEXT_ATTR);
 
             Object o = request.getAttribute(StructuredResourceDisplayController.MVC_MODEL_REQ_ATTR);
             if (o == null) {
@@ -70,17 +74,20 @@ public class RetrieveHandler extends Function {
             @SuppressWarnings("unchecked")
             Map<String, Object> model = (Map<String, Object>) o;
             resource = (Resource) model.get("resource");
-        } else {
+        }
+        else {
             try {
                 Path uri;
                 if (!ref.startsWith("/")) {
                     uri = requestContext.getResourceURI().getParent().expand(ref);
-                } else {
+                }
+                else {
                     uri = Path.fromString(ref);
                 }
                 String token = requestContext.getSecurityToken();
                 resource = repository.retrieve(token, uri, true);
-            } catch (Throwable t) {
+            }
+            catch (Throwable t) {
                 return null;
             }
         }

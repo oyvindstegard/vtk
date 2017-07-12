@@ -28,15 +28,15 @@
  * NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package vtk.web.service;
+package vtk.repository.resourcetype;
+
+import java.util.Optional;
 
 import vtk.repository.Resource;
 import vtk.security.Principal;
 
-
-
 public interface RepositoryAssertion {
 
-    public boolean matches(Resource resource, Principal principal);
+    public boolean matches(Optional<Resource> resource, Optional<Principal> principal);
 
 }

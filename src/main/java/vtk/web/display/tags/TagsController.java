@@ -77,7 +77,7 @@ public class TagsController implements Controller {
 
         Map<String, Object> model = new HashMap<>();
 
-        RequestContext requestContext = RequestContext.getRequestContext();
+        RequestContext requestContext = RequestContext.getRequestContext(request);
         String token = requestContext.getSecurityToken();
 
         Resource resource = tagsHelper.getScopedResource(token, request);
@@ -89,9 +89,11 @@ public class TagsController implements Controller {
         /* List all known tags for the current collection */
         if (!StringUtils.isBlank(tag)) {
             model.put(TagsHelper.TAG_PARAMETER, tag);
-            handleSingleTag(request, tag, resource, model, resourceTypes, displayScope, overrideResourceTypeTitle);
+            handleSingleTag(request, tag, resource, model, resourceTypes, 
+                    displayScope, overrideResourceTypeTitle);
         } else {
-            handleAllTags(token, resource, model, resourceTypes, overrideResourceTypeTitle, displayScope);
+            handleAllTags(request, token, resource, model, resourceTypes, 
+                    overrideResourceTypeTitle, displayScope);
         }
 
         // Resolve Title
@@ -99,7 +101,8 @@ public class TagsController implements Controller {
         model.put("title", title);
 
         // Add scope up url
-        Link scopeUpLink = tagsHelper.getScopeUpUrl(request, resource, model, tag, resourceTypes, displayScope, true);
+        Link scopeUpLink = tagsHelper.getScopeUpUrl(request, resource, model, tag, 
+                resourceTypes, displayScope, true);
         model.put(TagsHelper.SCOPE_UP_MODEL_KEY, scopeUpLink);
         model.put("requestURL", requestContext.getRequestURL());
 
@@ -133,7 +136,7 @@ public class TagsController implements Controller {
             model.put(TagsHelper.RESOURCE_TYPE_MODEL_KEY, resourceTypes.get(0).getName());
         }
 
-        RequestContext requestContext = RequestContext.getRequestContext();
+        RequestContext requestContext = RequestContext.getRequestContext(request);
         Service service = requestContext.getService();
         URL baseURL = service.urlConstructor(requestContext.getRequestURL())
                 .withURI(resource.getURI())
@@ -182,14 +185,17 @@ public class TagsController implements Controller {
 
     }
 
-    private void handleAllTags(String token, Resource resource, Map<String, Object> model,
-            List<ResourceTypeDefinition> resourceTypes, String overrideResourceTypeTitle, boolean displayScope)
+    private void handleAllTags(HttpServletRequest request, String token, 
+            Resource resource, Map<String, Object> model,
+            List<ResourceTypeDefinition> resourceTypes, 
+            String overrideResourceTypeTitle, boolean displayScope)
             throws Exception {
 
         Path scopeUri = resource.getURI();
 
-        List<TagElement> tagElements = tagElementsProvider.getTagElements(scopeUri, token, 1, 1, Integer.MAX_VALUE, 1,
-                resourceTypes, null, overrideResourceTypeTitle, displayScope);
+        List<TagElement> tagElements = tagElementsProvider
+                .getTagElements(request, scopeUri, token, 1, 1, Integer.MAX_VALUE, 1,
+                        resourceTypes, null, overrideResourceTypeTitle, displayScope);
 
         model.put("tagElements", tagElements);
     }

@@ -87,7 +87,7 @@ public class ReportHandler implements Controller {
     @Override
     public ModelAndView handleRequest(HttpServletRequest request, HttpServletResponse response) throws Exception {
 
-        RequestContext requestContext = RequestContext.getRequestContext();
+        RequestContext requestContext = RequestContext.getRequestContext(request);
         SecurityContext securityContext = SecurityContext.getSecurityContext();
 
         Path uri = requestContext.getResourceURI();
@@ -107,7 +107,7 @@ public class ReportHandler implements Controller {
         if (reportType != null && !"".equals(reportType.trim())) {
             Reporter reporter = getReporter(reportType, resource.getResourceType());
             if (reporter != null) {
-                Map<String, Object> report = reporter.getReportContent(token, resource, request);
+                Map<String, Object> report = reporter.getReportContent(request, token, resource);
 
                 if (reporter.isResolvePrincipalLink()) {
                     Locale locale = localeResolver.resolveLocale(request);

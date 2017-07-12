@@ -90,7 +90,7 @@ public class BaseCollectionListingController implements ListingController {
 
     @Override
     public ModelAndView handleRequest(HttpServletRequest request, HttpServletResponse response) throws Exception {
-        RequestContext requestContext = RequestContext.getRequestContext();
+        RequestContext requestContext = RequestContext.getRequestContext(request);
         Path uri = requestContext.getResourceURI();
         String token = requestContext.getSecurityToken();
         Principal principal = requestContext.getPrincipal();
@@ -107,7 +107,7 @@ public class BaseCollectionListingController implements ListingController {
                 model.put("subFolderMenu", subfolders);
             }
         }
-        model.put("collection", resourceManager.createResourceWrapper(collection));
+        model.put("collection", resourceManager.createResourceWrapper(request, collection));
 
         int pageLimit = getPageLimit(collection);
         if (request.getParameter("page-size") != null) {

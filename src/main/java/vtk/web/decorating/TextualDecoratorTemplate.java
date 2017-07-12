@@ -114,7 +114,7 @@ public class TextualDecoratorTemplate implements Template {
                         writer.write(f.buffer.toString());
                         continue;
                     }
-                    Locale locale = RequestContext.getRequestContext().getLocale();
+                    Locale locale = RequestContext.getRequestContext(request).getLocale();
                     DecoratorRequest decoratorRequest = new DecoratorRequestImpl(
                             page, request, model, fragment.getParameters(), doctype, locale);
 

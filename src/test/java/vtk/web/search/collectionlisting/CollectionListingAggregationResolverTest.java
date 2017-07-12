@@ -37,6 +37,7 @@ import org.jmock.Mockery;
 import org.jmock.integration.junit4.JUnit4Mockery;
 import org.junit.Before;
 import org.junit.Test;
+import org.springframework.mock.web.MockHttpServletRequest;
 
 import vtk.repository.MultiHostSearcher;
 import vtk.repository.Namespace;
@@ -50,6 +51,8 @@ import vtk.repository.resourcetype.PropertyTypeDefinition;
 import vtk.repository.resourcetype.PropertyTypeDefinitionImpl;
 import vtk.repository.resourcetype.Value;
 import vtk.repository.resourcetype.ValueFormatter;
+import vtk.repository.store.DefaultPrincipalMetadataDAO;
+import vtk.web.RequestContext;
 import vtk.web.display.collection.aggregation.CollectionListingAggregatedResources;
 import vtk.web.service.Service;
 
@@ -92,12 +95,18 @@ public class CollectionListingAggregationResolverTest {
 
     @Test
     public void testGetAggregatedResourcesNone() {
-
+        MockHttpServletRequest request = new MockHttpServletRequest("GET", "/foo");
+        RequestContext requestContext = new RequestContext(request, null,
+                null, null, null, Path.ROOT, null, false,
+                false, true, null, new DefaultPrincipalMetadataDAO());
+        RequestContext.setRequestContext(requestContext, request);
+        
         PropertySetImpl propSet = new PropertySetImpl();
         propSet.setUri(Path.ROOT);
         propSet.addProperty(createProperty(displayAggregationPropDef, false));
         propSet.addProperty(createProperty(displayManuallyApprovedPropDef, false));
-        CollectionListingAggregatedResources result = aggregationResolver.getAggregatedResources(propSet);
+        CollectionListingAggregatedResources result = aggregationResolver
+                .getAggregatedResources(request, propSet);
 
         assertNotNull(result);
         assertNull(result.getAggregationSet());

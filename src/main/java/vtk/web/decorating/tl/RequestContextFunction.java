@@ -30,10 +30,12 @@
  */
 package vtk.web.decorating.tl;
 
+import javax.servlet.http.HttpServletRequest;
+
 import vtk.text.tl.Context;
 import vtk.text.tl.Symbol;
 import vtk.text.tl.expr.Function;
-import vtk.web.RequestContext;
+import vtk.web.decorating.DynamicDecoratorTemplate;
 import vtk.web.decorating.tl.DomainTypes.RequestContextType;
 
 public class RequestContextFunction extends Function {
@@ -44,8 +46,12 @@ public class RequestContextFunction extends Function {
 
     @Override
     public Object eval(Context ctx, Object... args) {
-        RequestContext requestContext = RequestContext.getRequestContext();
-        return new RequestContextType(requestContext);
+        HttpServletRequest request = (HttpServletRequest) 
+                ctx.getAttribute(DynamicDecoratorTemplate.SERVLET_REQUEST_CONTEXT_ATTR);
+        if (request != null) {
+            return new RequestContextType(request);
+        }
+        return null;
     }
 
 }

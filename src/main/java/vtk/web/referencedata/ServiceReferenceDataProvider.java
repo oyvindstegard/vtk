@@ -50,7 +50,7 @@ public class ServiceReferenceDataProvider implements ReferenceDataProvider {
     @Override
     public void referenceData(Map<String, Object> model,
             HttpServletRequest request) {
-        Service currentService = RequestContext.getRequestContext().getService();
+        Service currentService = RequestContext.getRequestContext(request).getService();
         if (currentService.equals(service) || currentService.isDescendantOf(service)) {
             provider.referenceData(model, request);
         }

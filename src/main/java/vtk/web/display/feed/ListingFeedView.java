@@ -36,7 +36,6 @@ import java.io.UnsupportedEncodingException;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Locale;
 import java.util.Map;
 
 import javax.servlet.http.HttpServletRequest;
@@ -94,10 +93,10 @@ public class ListingFeedView implements View {
     private static final Logger logger = LoggerFactory.getLogger(ListingFeedView.class);
 
     public static final String TAG_PREFIX = "tag:";
-    private static final String THUMBNAIL = "thumbnail";
 
     private Map<String,String> feedMetadata = null;
     protected Service viewService;
+    protected Service imageThumbnailService;
     protected Abdera abdera;
     protected ResourceTypeTree resourceTypeTree;
     protected PropertyTypeDefinition publishDatePropDef;
@@ -171,7 +170,7 @@ public class ListingFeedView implements View {
     protected Feed createFeed(HttpServletRequest request, Resource feedScope,
             Map<String, ?> model) throws Exception {
 
-        RequestContext requestContext = RequestContext.getRequestContext();
+        RequestContext requestContext = RequestContext.getRequestContext(request);
 
         Feed feed = abdera.newFeed();
 
@@ -187,7 +186,7 @@ public class ListingFeedView implements View {
         Property publishedDateProp = getPublishDate(feedScope);
         publishedDateProp = publishedDateProp == null
                 ? feedScope.getProperty(creationTimePropDef) : publishedDateProp;
-        feed.setId(getId(feedScope.getURI(), publishedDateProp, getFeedPrefix()));
+        feed.setId(getId(request, feedScope.getURI(), publishedDateProp, getFeedPrefix()));
 
         feed.addAuthor(requestContext.getRepository().getId());
         feed.setUpdated(getLastModified(feedScope));
@@ -208,18 +207,22 @@ public class ListingFeedView implements View {
 
             Property picture = getProperty(feedScope, picturePropDefPointer);
             if (picture != null) {
-                String val = picture.getFormattedValue(THUMBNAIL, Locale.getDefault());
-                feed.setLogo(val);
+                String val = picture.getStringValue();
+                Path pictureURI = requestContext.getRequestURL().relativeURL(val).getPath();
+                URL thumbnailURL = imageThumbnailService.urlConstructor(requestContext.getRequestURL())
+                        .withURI(pictureURI)
+                        .constructURL();
+                feed.setLogo(thumbnailURL.toString());
             }
         }
         return feed;
     }
 
     protected void addFeedLinks(HttpServletRequest request, Resource feedScope, Feed feed) {
-        RequestContext requestContext = RequestContext.getRequestContext();
+
+        RequestContext requestContext = RequestContext.getRequestContext(request);
         URL feedAlternateURL = viewService.urlConstructor(requestContext.getRequestURL())
-                .withResource(feedScope)
-                .matchAssertions(false)
+                .withURI(feedScope.getURI())
                 .constructURL();
 
         feed.addLink(feedAlternateURL.toString(), "alternate");
@@ -243,7 +246,7 @@ public class ListingFeedView implements View {
             Property publishedDateProp = getPublishDate(resource);
             publishedDateProp = publishedDateProp == null
                     ? resource.getProperty(creationTimePropDef) : publishedDateProp;
-            String id = getId(resource.getURI(), publishedDateProp, null);
+            String id = getId(request, resource.getURI(), publishedDateProp, null);
             entry.setId(id);
             entry.addCategory(resource.getResourceType());
 
@@ -306,7 +309,7 @@ public class ListingFeedView implements View {
                     Link mediaLink = abdera.getFactory().newLink();
                     Path propRef = getPropRef(resource, mediaRef.getStringValue());
                     if (propRef != null) {
-                        RequestContext requestContext = RequestContext.getRequestContext();
+                        RequestContext requestContext = RequestContext.getRequestContext(request);
                         URL href = viewService.urlConstructor(requestContext.getRequestURL())
                                 .withURI(propRef)
                                 .constructURL();
@@ -346,12 +349,12 @@ public class ListingFeedView implements View {
             entry.addSimpleExtension("vrtx", "numberofcomments", "v", numberOfComments.getFormattedValue());
         }
 
-        String imageRef = imageRef(resource);
+        String imageRef = imageRef(request, resource);
         if (imageRef != null) {
             entry.addSimpleExtension("vrtx", "image", "v", imageRef);
         }
 
-        String imageThumbnailRef = imageThumbnailRef(resource);
+        String imageThumbnailRef = imageThumbnailRef(request, resource);
         if (imageThumbnailRef != null) {
             entry.addSimpleExtension("vrtx", "image-thumbnail", "v", imageThumbnailRef);
         }
@@ -377,8 +380,9 @@ public class ListingFeedView implements View {
 
     private HtmlFragment prepareSummary(HttpServletRequest request, PropertySet propSet) {
         StringBuilder sb = new StringBuilder();
+        RequestContext requestContext = RequestContext.getRequestContext(request);
 
-        URL baseURL = viewService.urlConstructor(URL.create(request))
+        URL baseURL = viewService.urlConstructor(requestContext.getRequestURL())
                 .withURI(propSet.getURI())
                 .constructURL();
 
@@ -391,20 +395,22 @@ public class ListingFeedView implements View {
             // Include picture in summary only if "regular" format:
             Property picture = getProperty(propSet, picturePropDefPointer);
             if (picture != null) {
-                String imageRef = picture.getStringValue();
-                if (!imageRef.startsWith("/") && !imageRef.startsWith("http://")
-                        && !imageRef.startsWith("https://")) {
-                    try {
-                        imageRef = propSet.getURI().getParent().expand(imageRef).toString();
-                        picture.setValue(new Value(imageRef, PropertyType.Type.STRING));
-                    }
-                    catch (Throwable t) { }
+                URL pictureURL = baseURL.relativeURL(picture.getStringValue());
+                if (pictureURL.getHost().equals(baseURL.getHost())) {
+                    pictureURL = imageThumbnailService.urlConstructor(baseURL)
+                            .withURI(pictureURL.getPath())
+                            .constructURL();
                 }
-
-                String imgPath = picture.getFormattedValue(THUMBNAIL, Locale.getDefault());
-                String imgAlt = getImageAlt(imgPath);
-                sb.append("<img src=\"").append(HtmlUtil.encodeBasicEntities(imgPath)).append("\" alt=\"");
-                sb.append(HtmlUtil.encodeBasicEntities(imgAlt)).append("\"/>");
+                
+                String imgAlt = getImageAlt(pictureURL);
+                
+                String ref = pictureURL.getHost().equals(baseURL.getHost()) ?
+                        pictureURL.getPathRepresentation() : pictureURL.toString();
+                
+                sb.append("<img src=\"")
+                    .append(HtmlUtil.encodeBasicEntities(ref))
+                    .append("\" alt=\"")
+                    .append(HtmlUtil.encodeBasicEntities(imgAlt)).append("\"/>");
             }
         }
 
@@ -414,16 +420,16 @@ public class ListingFeedView implements View {
         }
 
         if (sb.length() > 0) {
-            HtmlFragment summary = HtmlUtil.linkResolveFilter(sb.toString(), baseURL, RequestContext
-                    .getRequestContext().getRequestURL(), useProtocolRelativeImages);
+            HtmlFragment summary = HtmlUtil.linkResolveFilter(sb.toString(), baseURL, 
+                    requestContext.getRequestURL(), useProtocolRelativeImages);
             return summary;
         }
         return null;
     }
 
-    private String imageRef(PropertySet propSet) {
+    private String imageRef(HttpServletRequest request, PropertySet propSet) {
         String ret = null;
-        URL requestURL = RequestContext.getRequestContext().getRequestURL();
+        URL requestURL = RequestContext.getRequestContext(request).getRequestURL();
 
         URL baseURL = viewService.urlConstructor(requestURL)
                 .withURI(propSet.getURI())
@@ -457,10 +463,10 @@ public class ListingFeedView implements View {
         return ret;
     }
 
-    private String imageThumbnailRef(PropertySet propSet) {
+    private String imageThumbnailRef(HttpServletRequest request, PropertySet propSet) {
         String ret = null;
-
-        URL requestURL = RequestContext.getRequestContext().getRequestURL();
+        RequestContext requestContext = RequestContext.getRequestContext(request);
+        URL requestURL = requestContext.getRequestURL();
 
         URL baseURL = viewService.urlConstructor(requestURL)
                 .withURI(propSet.getURI())
@@ -470,11 +476,18 @@ public class ListingFeedView implements View {
         if (picture != null) {
             String imageRef;
             if (!MultiHostUtil.isMultiHostPropertySet(propSet)) {
-                imageRef = picture.getFormattedValue(THUMBNAIL, Locale.getDefault());
+                URL pictureURL = baseURL.relativeURL(picture.getStringValue());
+                if (pictureURL.getHost().equals(baseURL.getHost())) {
+                    pictureURL = imageThumbnailService.urlConstructor(baseURL)
+                            .withURI(pictureURL.getPath())
+                            .constructURL();
+                }
+                imageRef = pictureURL.getHost().equals(baseURL.getHost()) ?
+                            pictureURL.getPathRepresentation() : pictureURL.toString();
             }
             else {
                 imageRef = MultiHostUtil.resolveImageRefStringValue(picture,
-                        MultiHostUtil.getMultiHostUrlProp(propSet), true); // true = add thumbnail if possible
+                        MultiHostUtil.getMultiHostUrlProp(propSet), true);
             }
 
             if (imageRef.contains("vrtx=thumbnail")) {
@@ -483,8 +496,8 @@ public class ListingFeedView implements View {
                  * protocol-relative URLs, should have been a utility function operating directly on the values.
                  */
                 String imgHtml = "<img src=\"" + HtmlUtil.encodeBasicEntities(imageRef) + "\" />";
-                HtmlFragment imgElem = HtmlUtil.linkResolveFilter(imgHtml, baseURL, RequestContext
-                        .getRequestContext().getRequestURL(), useProtocolRelativeImages);
+                HtmlFragment imgElem = HtmlUtil.linkResolveFilter(imgHtml, baseURL, 
+                        requestURL, useProtocolRelativeImages);
                 try {
                     ret = ((HtmlElement) imgElem.getContent().get(0)).getAttribute("src").getValue();
                 }
@@ -525,10 +538,10 @@ public class ListingFeedView implements View {
         return resource.getURI().getParent().extend(val);
     }
 
-    protected String getId(Path resourceUri, Property publishedDateProp, String prefix)
+    protected String getId(HttpServletRequest request, Path resourceUri, Property publishedDateProp, String prefix)
             throws URIException, UnsupportedEncodingException {
         
-        URL requestURL = RequestContext.getRequestContext().getRequestURL();
+        URL requestURL = RequestContext.getRequestContext(request).getRequestURL();
         
         String host = viewService.urlConstructor(requestURL)
                 .withURI(resourceUri)
@@ -581,12 +594,15 @@ public class ListingFeedView implements View {
         return s.replaceAll("[#%?\\[\\] ]", "");
     }
 
-    private String getImageAlt(String imgPath) {
+    private String getImageAlt(URL imgURL) {
         try {
-            return imgPath.substring(imgPath.lastIndexOf("/") + 1, imgPath.lastIndexOf("."));
+            String name = imgURL.getPath().getName();
+            if (name.indexOf(".") > 0) {
+                name = name.substring(0, name.lastIndexOf("."));
+            }
+            return name;
         }
         catch (Throwable t) {
-            // Don't do anything special, imgAlt isn't all that important
             return "feed_image";
         }
     }
@@ -628,7 +644,7 @@ public class ListingFeedView implements View {
      * @return
      */
     protected Resource getFeedScope(HttpServletRequest request) throws Exception {
-        RequestContext requestContext = RequestContext.getRequestContext();
+        RequestContext requestContext = RequestContext.getRequestContext(request);
         Path uri = requestContext.getResourceURI();
         String token = requestContext.getSecurityToken();
         return requestContext.getRepository().retrieve(token, uri, true);
@@ -676,6 +692,11 @@ public class ListingFeedView implements View {
     @Required
     public void setViewService(Service viewService) {
         this.viewService = viewService;
+    }
+
+    @Required
+    public void setImageThumbnailService(Service imageThumbnailService) {
+        this.imageThumbnailService = imageThumbnailService;
     }
 
     @Required

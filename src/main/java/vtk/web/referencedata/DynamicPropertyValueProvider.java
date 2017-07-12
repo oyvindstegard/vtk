@@ -51,16 +51,18 @@ public abstract class DynamicPropertyValueProvider implements ReferenceDataProvi
 
         if (model.containsKey(DYNAMIC_VALUES)) {
             allDynamicValues = (Map<String, Map<String, Object>>) model.get(DYNAMIC_VALUES);
-        } else {
+        }
+        else {
             allDynamicValues = new HashMap<>();
         }
 
-        allDynamicValues.put(propDef.getName(), addDynamicValuesForProperty());
+        allDynamicValues.put(propDef.getName(), addDynamicValuesForProperty(propDef, request));
 
         model.put(DYNAMIC_VALUES, allDynamicValues);
     }
 
-    public abstract Map<String, Object> addDynamicValuesForProperty();
+    public abstract Map<String, Object> addDynamicValuesForProperty(
+            PropertyTypeDefinition propDef, HttpServletRequest request);
 
     @Required
     public void setPropDef(PropertyTypeDefinition propDef) {

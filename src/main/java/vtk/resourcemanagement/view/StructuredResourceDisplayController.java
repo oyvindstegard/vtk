@@ -60,26 +60,21 @@ import vtk.resourcemanagement.ComponentDefinition;
 import vtk.resourcemanagement.StructuredResource;
 import vtk.resourcemanagement.StructuredResourceDescription;
 import vtk.resourcemanagement.StructuredResourceManager;
-import vtk.resourcemanagement.view.tl.ComponentInvokerNodeFactory;
 import vtk.text.html.HtmlPage;
-import vtk.text.html.HtmlPageFilter;
 import vtk.text.html.HtmlPageParser;
-import vtk.text.tl.Context;
 import vtk.text.tl.DirectiveHandler;
 import vtk.web.RequestContext;
 import vtk.web.decorating.ComponentResolver;
+import vtk.web.decorating.DynamicDecoratorTemplate;
+import vtk.web.decorating.HtmlPageFilterFactory;
 import vtk.web.decorating.Template;
 import vtk.web.decorating.TemplateManager;
 import vtk.web.referencedata.ReferenceDataProvider;
 
 public class StructuredResourceDisplayController implements Controller, InitializingBean {
-
     public static final String MVC_MODEL_REQ_ATTR = "__mvc_model__";
-    public static final String COMPONENT_RESOLVER = "__component_resolver__";
-
     private static final String COMPONENT_NS = "comp";
 
-    private String viewName;
     private StructuredResourceManager resourceManager;
     private TemplateManager templateManager;
     private ComponentResolver componentResolver;
@@ -89,7 +84,7 @@ public class StructuredResourceDisplayController implements Controller, Initiali
 
     private List<DirectiveHandler> directiveHandlers;
 
-    private List<HtmlPageFilter> postFilters;
+    private List<HtmlPageFilterFactory> postFilters;
 
     // XXX: clean up this mess:
     private Map<StructuredResourceDescription,
@@ -97,7 +92,7 @@ public class StructuredResourceDisplayController implements Controller, Initiali
             new ConcurrentHashMap<>();
 
     public ModelAndView handleRequest(HttpServletRequest request, HttpServletResponse response) throws Exception {
-        RequestContext requestContext = RequestContext.getRequestContext();
+        RequestContext requestContext = RequestContext.getRequestContext(request);
         Path uri = requestContext.getResourceURI();
         String token = requestContext.getSecurityToken();
         Repository repository = requestContext.getRepository();
@@ -114,14 +109,16 @@ public class StructuredResourceDisplayController implements Controller, Initiali
         Resource r;
         if (revision != null) {
             r = repository.retrieve(token, uri, true, revision);
-        } else {
+        }
+        else {
             r = repository.retrieve(token, uri, true);
         }
 
         InputStream stream;
         if (revision != null) {
             stream = repository.getInputStream(token, uri, true, revision);
-        } else {
+        }
+        else {
             stream = repository.getInputStream(token, uri, true);
         }
 
@@ -157,8 +154,8 @@ public class StructuredResourceDisplayController implements Controller, Initiali
                 .parse(new ByteArrayInputStream(htmlBytes), StandardCharsets.UTF_8.name());
         
         if (postFilters != null) {
-            for (HtmlPageFilter filter: postFilters) {
-                page.filter(filter);
+            for (HtmlPageFilterFactory factory: postFilters) {
+                page.filter(factory.pageFilter(request));
             }
         }
         response.setContentType("text/html");
@@ -183,9 +180,8 @@ public class StructuredResourceDisplayController implements Controller, Initiali
         Template template = t.get();
         Map<String, TemplateLanguageDecoratorComponent> components = this.components.get(res.getType());
         ComponentResolver resolver = new DynamicComponentResolver(COMPONENT_NS, componentResolver, components);
-        request.setAttribute(COMPONENT_RESOLVER, resolver);
+        request.setAttribute(DynamicDecoratorTemplate.CR_REQ_ATTR, resolver);
         HtmlPage page = htmlParser.createEmptyPage("initial-page");
-        //response.setContentType("text/html;charset=utf-8");
 
         template.render(page, out, StandardCharsets.UTF_8, request, model, new HashMap<>());
     }
@@ -212,33 +208,14 @@ public class StructuredResourceDisplayController implements Controller, Initiali
         for (StructuredResourceDescription desc : allDescriptions) {
             try {
                 initComponentDefs(desc);
-            } catch (Exception e) {
+            }
+            catch (Exception e) {
                 throw new BeanInitializationException("Unable to initialize component definitions "
                         + "for resource type " + desc, e);
             }
         }
     }
     
-    public static class ComponentSupport implements ComponentInvokerNodeFactory.ComponentSupport {
-        
-        @Override
-        public ComponentResolver getComponentResolver(Context context) {
-            RequestContext requestContext = RequestContext.getRequestContext();
-            HttpServletRequest request = requestContext.getServletRequest();
-            return (ComponentResolver) request.getAttribute(COMPONENT_RESOLVER);
-        }
-
-        @Override
-        public HtmlPage getHtmlPage(Context context) {
-            // Don't allow access to HTML page in 'call-component' component..
-            return null;
-        }
-    }
-
-    public void setViewName(String viewName) {
-        this.viewName = viewName;
-    }
-
     public void setResourceManager(StructuredResourceManager resourceManager) {
         this.resourceManager = resourceManager;
     }
@@ -267,7 +244,7 @@ public class StructuredResourceDisplayController implements Controller, Initiali
         this.configProviders = configProviders;
     }
 
-    public void setPostFilters(List<HtmlPageFilter> postFilters) {
+    public void setPostFilters(List<HtmlPageFilterFactory> postFilters) {
         this.postFilters = new ArrayList<>(postFilters);
     }
     

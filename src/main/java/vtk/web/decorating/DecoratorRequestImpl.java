@@ -116,7 +116,7 @@ public class DecoratorRequestImpl implements DecoratorRequest {
     
     @Override
     public Iterator<String> getRequestParameterNames() {
-        Set<String> s = new HashSet<String>();
+        Set<String> s = new HashSet<>();
         s.addAll(this.decoratorParameters.keySet());
         return s.iterator();
     }
@@ -124,7 +124,7 @@ public class DecoratorRequestImpl implements DecoratorRequest {
     private String expandParameter(String param) {
         // Support for expanding '$path(level)':
         Matcher m = PATH_LEVEL_PATTERN.matcher(param);
-        Path currentURI = RequestContext.getRequestContext().getResourceURI();
+        Path currentURI = RequestContext.getRequestContext(servletRequest).getResourceURI();
         StringBuffer sb = new StringBuffer();
         if (m.find()) {
             do {

@@ -55,7 +55,7 @@ public class RenameController extends SimpleFormController<RenameCommand> {
 
     @Override
     protected RenameCommand formBackingObject(HttpServletRequest request) throws Exception {
-        RequestContext requestContext = RequestContext.getRequestContext();
+        RequestContext requestContext = RequestContext.getRequestContext(request);
         Service service = requestContext.getService();
         Repository repository = requestContext.getRepository();
         
@@ -73,7 +73,7 @@ public class RenameController extends SimpleFormController<RenameCommand> {
     @Override
     public ModelAndView onSubmit(HttpServletRequest request, HttpServletResponse response,
             RenameCommand command, BindException errors) throws Exception {
-        RequestContext requestContext = RequestContext.getRequestContext();
+        RequestContext requestContext = RequestContext.getRequestContext(request);
         
         Path uri = requestContext.getResourceURI();
         String token = requestContext.getSecurityToken();

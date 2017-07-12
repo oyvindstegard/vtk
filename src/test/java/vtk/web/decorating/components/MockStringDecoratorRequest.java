@@ -45,16 +45,19 @@ import vtk.web.decorating.DecoratorRequest;
 
 
 public class MockStringDecoratorRequest implements DecoratorRequest {
-
+    private HttpServletRequest servletRequest;
     private HtmlPage page;
-    private Map<String, Object> parameters = new HashMap<String, Object>();
+    private Map<String, Object> parameters = new HashMap<>();
 
-    public MockStringDecoratorRequest(String content) throws Exception {
-        this(content, null);
+    public MockStringDecoratorRequest(HttpServletRequest servletRequest, 
+            String content) throws Exception {
+        this(servletRequest, content, null);
     }
     
 
-    public MockStringDecoratorRequest(String content, Map<String, Object> parameters) throws Exception {
+    public MockStringDecoratorRequest(HttpServletRequest servletRequest,
+            String content, Map<String, Object> parameters) throws Exception {
+        this.servletRequest = servletRequest;
         if (parameters != null) {
             this.parameters = parameters;
         }
@@ -71,38 +74,38 @@ public class MockStringDecoratorRequest implements DecoratorRequest {
         
     @Override
     public HtmlPage getHtmlPage() {
-        return this.page;
+        return page;
     }
         
     @Override
     public String getDoctype() {
-        return this.page.getDoctype();
+        return page.getDoctype();
     }
 
     @Override
     public HttpServletRequest getServletRequest() {
-        throw new IllegalStateException("Not implemented");
+        return servletRequest;
     }
     
     @Override
     public Map<String, Object> getMvcModel() {
-        return new HashMap<String, Object>();
+        return new HashMap<>();
     }
         
     @Override
     public Object getRawParameter(String name) {
-        return this.parameters.get(name);
+        return parameters.get(name);
     }
 
     @Override
     public String getStringParameter(String name) {
-        return (String) this.parameters.get(name);
+        return (String) parameters.get(name);
     }
         
     @Override
     public Iterator<String> getRequestParameterNames() {
-        List<String> l = new ArrayList<String>();
-        for (Object o: this.parameters.keySet()) {
+        List<String> l = new ArrayList<>();
+        for (Object o: parameters.keySet()) {
             l.add((String) o);
         }
         return l.iterator();

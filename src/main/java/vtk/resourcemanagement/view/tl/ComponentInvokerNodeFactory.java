@@ -35,6 +35,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Stack;
 
 import javax.servlet.http.HttpServletRequest;
@@ -57,42 +58,23 @@ import vtk.web.decorating.DecoratorResponseImpl;
 import vtk.web.decorating.DynamicDecoratorTemplate;
 
 public class ComponentInvokerNodeFactory implements DirectiveHandler {
-
     private static final String COMPONENT_STACK_REQ_ATTR =
         ComponentInvokerNodeFactory.class.getName() + ".ComponentStack";
-
-    private ComponentSupport componentSupport;
+    
     private FunctionResolver functionResolver;
+    private ComponentResolver componentResolver;
     private String name;
 
-    public ComponentInvokerNodeFactory(String name, ComponentSupport componentSupport, FunctionResolver functionResolver) {
-        if (componentSupport == null) {
-            throw new IllegalArgumentException("Constructor argument is NULL");
-        }
-        this.componentSupport = componentSupport;
-        this.functionResolver = functionResolver;
-        this.name = name;
+    public ComponentInvokerNodeFactory(String name, ComponentResolver componentResolver, 
+            FunctionResolver functionResolver) {
+        this.name = Objects.requireNonNull(name);
+        this.componentResolver = Objects.requireNonNull(componentResolver);
+        this.functionResolver = Objects.requireNonNull(functionResolver);
     }
-
+    
     @Override
     public String[] tokens() {
         return new String[] { this.name };
-    }
-
-    public interface ComponentSupport {
-        public ComponentResolver getComponentResolver(Context context);
-        public HtmlPage getHtmlPage(Context context);
-    }
-
-    protected DecoratorComponent resolveComponent(Context context, String namespace, String name) {
-        ComponentResolver componentResolver = this.componentSupport.getComponentResolver(context);
-        if (componentResolver == null) return null;
-        DecoratorComponent component = componentResolver.resolveComponent(namespace, name);
-        return component;
-    }
-
-    protected HtmlPage getHtmlPage(Context context) {
-        return this.componentSupport.getHtmlPage(context);
     }
 
     @Override
@@ -125,7 +107,8 @@ public class ComponentInvokerNodeFactory implements DirectiveHandler {
                 if (expression != null) {
                     try {
                         parameterMap = expression.evaluate(ctx);
-                    } catch (Throwable t) {
+                    }
+                    catch (Throwable t) {
                         out.write(componentRef + ":" + t.getMessage());
                         return true;
                     }
@@ -146,20 +129,22 @@ public class ComponentInvokerNodeFactory implements DirectiveHandler {
                     namespace = name.substring(0, name.indexOf(":"));
                     name = name.substring(namespace.length() + 1);
                 }
-                DecoratorComponent component = resolveComponent(ctx, namespace, name);
+
+                HttpServletRequest servletRequest = (HttpServletRequest) 
+                        ctx.getAttribute(DynamicDecoratorTemplate.SERVLET_REQUEST_CONTEXT_ATTR);
+
+                ComponentResolver componentResolver = getComponentResolver(ctx, servletRequest);
+                
+                DecoratorComponent component = componentResolver.resolveComponent(namespace, name);
                 if (component == null) {
                     out.write("Unable to resolve component '" + namespace + ":" + name + "'");
                     return true;
                 }
-                //RequestContext requestContext = RequestContext.getRequestContext();
-                //HttpServletRequest servletRequest = requestContext.getServletRequest();
-
-                HttpServletRequest servletRequest = (HttpServletRequest) ctx.getAttribute(DynamicDecoratorTemplate.SERVLET_REQUEST_CONTEXT_ATTR);
 
                 Stack<DecoratorComponent> componentStack =
                     (Stack<DecoratorComponent>) servletRequest.getAttribute(COMPONENT_STACK_REQ_ATTR);
                 if (componentStack == null) {
-                    componentStack = new Stack<DecoratorComponent>();
+                    componentStack = new Stack<>();
                     servletRequest.setAttribute(COMPONENT_STACK_REQ_ATTR, componentStack);
                 }
 
@@ -175,22 +160,59 @@ public class ComponentInvokerNodeFactory implements DirectiveHandler {
                     final String doctype = "";
 
                     Map<String, Object> mvcModel = (Map<String, Object>) servletRequest.getAttribute(StructuredResourceDisplayController.MVC_MODEL_REQ_ATTR);
+                    HtmlPage page = (HtmlPage) ctx.getAttribute(DynamicDecoratorTemplate.HTML_REQ_ATTR);
                     DecoratorRequest decoratorRequest = new DecoratorRequestImpl(
-                            getHtmlPage(ctx), servletRequest, mvcModel,
+                            page, servletRequest, mvcModel,
                             (Map<String, Object>) parameterMap, doctype, locale);
                     DecoratorResponseImpl decoratorResponse = new DecoratorResponseImpl(
                             doctype, locale, "utf-8");
                     component.render(decoratorRequest, decoratorResponse);
                     out.write(decoratorResponse.getContentAsString());
-                } catch (Throwable t) {
+                }
+                catch (Throwable t) {
                     out.write(component.getNamespace() + ":" + component.getName()+ ": " + t.getMessage());
 
-                } finally {
+                }
+                finally {
                     componentStack.pop();
                 }
                 return true;
             }
         });
+    }
+    
+    private ComponentResolver getComponentResolver(Context ctx, HttpServletRequest request) {
+        ComponentResolver dynamicResolver = 
+                (ComponentResolver) request.getAttribute(DynamicDecoratorTemplate.CR_REQ_ATTR);
+        if (dynamicResolver == null) {
+            return componentResolver;
+        } 
+        return dynamicResolver;
+    }
+
+    private static class AggregatedComponentResolver implements ComponentResolver {
+        private ComponentResolver resolver1;
+        private ComponentResolver resolver2;
+        
+        public AggregatedComponentResolver(ComponentResolver resolver1, ComponentResolver resolver2) {
+            this.resolver1 = resolver1;
+            this.resolver2 = resolver2;
+        }
+        
+        @Override
+        public DecoratorComponent resolveComponent(String namespace,
+                String name) {
+            DecoratorComponent component = resolver1.resolveComponent(namespace, name);
+            if (component == null) {
+                component = resolver2.resolveComponent(namespace, name);
+            }
+            return component;
+        }
+        
+        @Override
+        public List<DecoratorComponent> listComponents() {
+            throw new UnsupportedOperationException();
+        }
     }
 
 }

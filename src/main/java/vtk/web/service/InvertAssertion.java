@@ -31,6 +31,8 @@
 
 package vtk.web.service;
 
+import java.util.Optional;
+
 import javax.servlet.http.HttpServletRequest;
 
 import org.springframework.beans.factory.annotation.Required;
@@ -40,7 +42,7 @@ import vtk.security.Principal;
 
 public class InvertAssertion extends AbstractAssertion {
     
-    private Assertion assertion;
+    private WebAssertion assertion;
     private boolean matchOnProcessURL = false;
   
     @Override
@@ -49,26 +51,32 @@ public class InvertAssertion extends AbstractAssertion {
     }
     
     @Override
-    public boolean conflicts(Assertion assertion) {
+    public boolean conflicts(WebAssertion assertion) {
         if (assertion instanceof InvertAssertion)
             return true;
         return false;
     }
         
     @Override
-    public void processURL(URL url) {
+    public Optional<URL> processURL(URL url, Resource resource, Principal principal) {
+        if (!matchOnProcessURL) {
+            return Optional.of(url);
+        }
+        Optional<URL> opt = assertion.processURL(url, resource, principal);
+        if (opt.isPresent()) {
+            return Optional.empty();
+        }
+        return opt;
+    }
+    
+    @Override
+    public URL processURL(URL url) {
+        return url;
     }
 
-    @Override
-    public boolean processURL(URL url, Resource resource, Principal principal, boolean match) {
-        if (!matchOnProcessURL) {
-            return true;
-        }
-        return !assertion.processURL(url, resource, principal, match);
-    }
 
     @Required
-    public void setAssertion(Assertion assertion) {
+    public void setAssertion(WebAssertion assertion) {
         this.assertion = assertion;
     }
     

@@ -69,7 +69,7 @@ public class PropertyLinkedValueDecoratorComponent extends ViewRenderingDecorato
     protected void processModel(Map<String, Object> model, DecoratorRequest request, DecoratorResponse response)
             throws Exception {
 
-        RequestContext requestContext = RequestContext.getRequestContext();
+        RequestContext requestContext = RequestContext.getRequestContext(request.getServletRequest());
         String token = requestContext.getSecurityToken();
         Repository repository = requestContext.getRepository();
         Path uri = requestContext.getResourceURI();
@@ -88,8 +88,8 @@ public class PropertyLinkedValueDecoratorComponent extends ViewRenderingDecorato
 
         String serviceURL = request.getStringParameter(PARAMETER_SERVICEURL);
 
-        List<String> valueList = new ArrayList<String>();
-        List<String> urlList = new ArrayList<String>();
+        List<String> valueList = new ArrayList<>();
+        List<String> urlList = new ArrayList<>();
 
         model.put("urls", urlList);
         model.put("values", valueList);
@@ -131,7 +131,7 @@ public class PropertyLinkedValueDecoratorComponent extends ViewRenderingDecorato
 
     @Override
     protected Map<String, String> getParameterDescriptionsInternal() {
-        Map<String, String> map = new HashMap<String, String>();
+        Map<String, String> map = new HashMap<>();
         map.put(PARAMETER_TITLE, PARAMETER_TITLE_DESC);
         map.put(PARAMETER_SERVICEURL, "Optional reference to service (default is '" + defaultURLpattern + "')");
         return map;

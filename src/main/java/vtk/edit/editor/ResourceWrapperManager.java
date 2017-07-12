@@ -30,16 +30,17 @@
  */
 package vtk.edit.editor;
 
-import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
-import org.springframework.beans.factory.annotation.Required;
-import vtk.repository.ContentInputSources;
+import javax.servlet.http.HttpServletRequest;
 
+import org.springframework.beans.factory.annotation.Required;
+
+import vtk.repository.ContentInputSources;
 import vtk.repository.InheritablePropertiesStoreContext;
 import vtk.repository.Path;
 import vtk.repository.Repository;
@@ -72,42 +73,44 @@ public class ResourceWrapperManager {
         return htmlPropsFilter;
     }
 
-    public ResourceWrapper createResourceWrapper(Resource resource) throws Exception {
+    public ResourceWrapper createResourceWrapper(HttpServletRequest request, Resource resource) throws Exception {
         ResourceWrapper wrapper = new ResourceWrapper(this);
-        populateWrapper(wrapper, resource, true);
+        populateWrapper(request, wrapper, resource, true);
         return wrapper;
     }
 
-    public ResourceWrapper createResourceWrapper(Path uri) throws Exception {
+    public ResourceWrapper createResourceWrapper(HttpServletRequest request, Path uri) throws Exception {
         ResourceWrapper wrapper = new ResourceWrapper(this);
-        populateWrapper(wrapper, uri, true);
+        populateWrapper(request, wrapper, uri, true);
         return wrapper;
     }
 
-    public ResourceWrapper createResourceWrapper() throws Exception {
-        Path uri = RequestContext.getRequestContext().getResourceURI();
-        return createResourceWrapper(uri);
+    public ResourceWrapper createResourceWrapper(HttpServletRequest request) throws Exception {
+        Path uri = RequestContext.getRequestContext(request).getResourceURI();
+        return createResourceWrapper(request, uri);
     }
 
-    public ResourceEditWrapper createResourceEditWrapper() throws Exception {
+    public ResourceEditWrapper createResourceEditWrapper(HttpServletRequest request) throws Exception {
         ResourceEditWrapper wrapper = new ResourceEditWrapper(this);
-        Path uri = RequestContext.getRequestContext().getResourceURI();
-        populateWrapper(wrapper, uri, false);
+        Path uri = RequestContext.getRequestContext(request).getResourceURI();
+        populateWrapper(request, wrapper, uri, false);
         return wrapper;
     }
     
-    protected void populateWrapper(ResourceWrapper wrapper, Path uri, boolean forProcessing) throws Exception {
-        RequestContext requestContext = RequestContext.getRequestContext();
+    protected void populateWrapper(HttpServletRequest request, 
+            ResourceWrapper wrapper, Path uri, boolean forProcessing) throws Exception {
+        RequestContext requestContext = RequestContext.getRequestContext(request);
         String token = requestContext.getSecurityToken();
         Resource resource = requestContext.getRepository().retrieve(token, uri, forProcessing);
-        populateWrapper(wrapper, resource, forProcessing);
+        populateWrapper(request, wrapper, resource, forProcessing);
     }
 
-    protected void populateWrapper(ResourceWrapper wrapper, Resource resource, boolean forProcessing) throws Exception {
+    protected void populateWrapper(HttpServletRequest request, 
+            ResourceWrapper wrapper, Resource resource, boolean forProcessing) throws Exception {
         if (resource == null) {
             throw new IllegalArgumentException("Resource cannot be NULL");
         }
-        RequestContext requestContext = RequestContext.getRequestContext();
+        RequestContext requestContext = RequestContext.getRequestContext(request);
         String token = requestContext.getSecurityToken();
         wrapper.setResource(resource);
 
@@ -138,8 +141,8 @@ public class ResourceWrapperManager {
         }
     }
 
-    public void store(ResourceEditWrapper wrapper) throws Exception {
-        RequestContext requestContext = RequestContext.getRequestContext();
+    public void store(HttpServletRequest request, ResourceEditWrapper wrapper) throws Exception {
+        RequestContext requestContext = RequestContext.getRequestContext(request);
         String token = requestContext.getSecurityToken();
         Path uri = requestContext.getResourceURI();
         Resource resource = wrapper.getResource();
@@ -212,15 +215,15 @@ public class ResourceWrapperManager {
         this.htmlPropsFilter = htmlPropsFilter;
     }
 
-    public void unlock() throws Exception {
-        RequestContext requestContext = RequestContext.getRequestContext();
+    public void unlock(HttpServletRequest request) throws Exception {
+        RequestContext requestContext = RequestContext.getRequestContext(request);
         String token = requestContext.getSecurityToken();
-        Path uri = RequestContext.getRequestContext().getResourceURI();
+        Path uri = RequestContext.getRequestContext(request).getResourceURI();
         requestContext.getRepository().unlock(token, uri, null);
     }
 
-    public void lock() throws Exception {
-        RequestContext requestContext = RequestContext.getRequestContext();
+    public void lock(HttpServletRequest request) throws Exception {
+        RequestContext requestContext = RequestContext.getRequestContext(request);
         String token = requestContext.getSecurityToken();
         Path uri = requestContext.getResourceURI();
         Principal principal = requestContext.getPrincipal();

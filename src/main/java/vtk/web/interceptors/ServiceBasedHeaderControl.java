@@ -49,7 +49,7 @@ public class ServiceBasedHeaderControl implements HandlerInterceptor {
     @Override
     public boolean preHandle(HttpServletRequest request,
             HttpServletResponse response, Object handler) throws Exception {
-        RequestContext rc = RequestContext.getRequestContext();
+        RequestContext rc = RequestContext.getRequestContext(request);
 
         Service service = rc.getService();
         if (!shouldApplyHeaders(service)) {

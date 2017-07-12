@@ -46,7 +46,7 @@ public class DeleteApiHandler implements HttpRequestHandler {
     public void handleRequest(
             HttpServletRequest request, HttpServletResponse response
     ) throws ServletException, IOException {
-        RequestContext requestContext = RequestContext.getRequestContext();
+        RequestContext requestContext = RequestContext.getRequestContext(request);
         Result<DeleteRequest> deleteRequest = deleteRequest(requestContext);
         Result<ApiResponseBuilder> builder = deleteRequest.flatMap(req -> {
             return delete(req, requestContext);

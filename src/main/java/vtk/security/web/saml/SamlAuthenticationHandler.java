@@ -61,7 +61,7 @@ import vtk.security.web.AuthenticationChallenge;
 import vtk.security.web.AuthenticationHandler;
 import vtk.security.web.InvalidAuthenticationRequestException;
 import vtk.web.InvalidRequestException;
-import vtk.web.service.Assertion;
+import vtk.web.service.WebAssertion;
 import vtk.web.service.Service;
 import vtk.web.service.URL;
 
@@ -108,7 +108,7 @@ public class SamlAuthenticationHandler implements AuthenticationChallenge, Authe
 
     private String ieCookieSetterURI;
 
-    private Assertion manageAssertion;
+    private WebAssertion manageAssertion;
 
     private String backstepParameter = "backsteps";
 
@@ -486,7 +486,7 @@ public class SamlAuthenticationHandler implements AuthenticationChallenge, Authe
         this.ieCookieSetterURI = ieCookieSetterURI;
     }
 
-    public void setManageAssertion(Assertion manageAssertion) {
+    public void setManageAssertion(WebAssertion manageAssertion) {
         this.manageAssertion = manageAssertion;
     }
 

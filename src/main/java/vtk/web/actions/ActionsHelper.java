@@ -36,6 +36,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
+import javax.servlet.http.HttpServletRequest;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -154,17 +156,18 @@ public class ActionsHelper {
         String key = msgKey.concat(failureType);
         List<Path> failedPaths = failures.get(key);
         if (failedPaths == null) {
-            failedPaths = new ArrayList<Path>();
+            failedPaths = new ArrayList<>();
             failures.put(key, failedPaths);
         }
         failedPaths.add(fileUri);
     }
 
-    public static void addFailureMessages(Map<String, List<Path>> failures, RequestContext requestContext) {
+    public static void addFailureMessages(Map<String, List<Path>> failures, HttpServletRequest request) {
+        RequestContext requestContext = RequestContext.getRequestContext(request);
         for (Entry<String, List<Path>> entry : failures.entrySet()) {
             String key = entry.getKey();
             List<Path> failedResources = entry.getValue();
-            Message msg = new Message(key);
+            Message msg = new Message(request, key);
             for (Path p : failedResources) {
                 msg.addMessage(p.getName());
             }

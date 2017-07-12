@@ -36,6 +36,8 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
+import javax.servlet.http.HttpServletRequest;
+
 import vtk.repository.AuthorizationException;
 import vtk.repository.Path;
 import vtk.repository.Privilege;
@@ -75,15 +77,15 @@ public class BreadcrumbMenuComponent extends ListMenuComponent {
         int maxSiblings = getIntegerGreaterThanZero(PARAMETER_MAX_NUMBER_OF_SIBLINGS, request,
                 DEFAULT_NUMBER_OF_SIBLINGS);
 
-		boolean ascendingSort = true;
+        boolean ascendingSort = true;
 
-        RequestContext requestContext = RequestContext.getRequestContext();
+        RequestContext requestContext = RequestContext.getRequestContext(request.getServletRequest());
         String token = requestContext.getSecurityToken();
         Repository repository = requestContext.getRepository();
         Path uri = requestContext.getResourceURI();
         Principal principal = requestContext.getPrincipal();
 
-        List<BreadcrumbElement> breadCrumbElements = getBreadcrumbElements(requestContext);
+        List<BreadcrumbElement> breadCrumbElements = getBreadcrumbElements(request.getServletRequest());
         Resource currentResource = null;
 
         currentResource = repository.retrieve(token, uri, true);
@@ -109,10 +111,12 @@ public class BreadcrumbMenuComponent extends ListMenuComponent {
         if (!currentResource.isCollection()) {
             try {
                 currentResource = repository.retrieve(token, uri.getParent(), true);
-            } catch (AuthorizationException e) {
+            }
+            catch (AuthorizationException e) {
                 model.put("breadcrumb", breadCrumbElements);
                 return;
-            } catch (AuthenticationException e) {
+            }
+            catch (AuthenticationException e) {
                 model.put("breadcrumb", breadCrumbElements);
                 return;
             }
@@ -121,11 +125,9 @@ public class BreadcrumbMenuComponent extends ListMenuComponent {
             }
         }
         URL markedUrl = menuGenerator.getViewService().urlConstructor(requestContext.getRequestURL())
-                .withResource(currentResource)
-                .withPrincipal(principal)
-                .matchAssertions(false)
+                .withURI(currentResource.getURI())
                 .constructURL();
-        
+
         breadCrumbElements.add(new BreadcrumbElement(markedUrl, getMenuTitle(currentResource)));
 
         // XXX: for this case currentResource will never be equal any of the
@@ -134,8 +136,9 @@ public class BreadcrumbMenuComponent extends ListMenuComponent {
         // ones. However, it will need to
         // do that for the sibling case in the next call below.
 
-        List<MenuItem<PropertySet>> menuItemList = generateMenuItemList(requestContext,
-                repository.listChildren(token, currentResource.getURI(), true), currentResource, principal, repository);
+        List<MenuItem<PropertySet>> menuItemList = generateMenuItemList(request,
+                repository.listChildren(token, currentResource.getURI(), true), 
+                currentResource, principal, repository);
         // If menu is empty, i.e. current resource has no children or
         // all children were hidden, then generate menu based on siblings.
         if (menuItemList.isEmpty()) {
@@ -147,31 +150,31 @@ public class BreadcrumbMenuComponent extends ListMenuComponent {
             }
 
             if (currentResourceParent != null) {
-                menuItemList = generateMenuItemList(requestContext,
+                menuItemList = generateMenuItemList(request,
                         repository.listChildren(token, currentResourceParent.getURI(), true), currentResource,
                         principal, repository);
                 breadCrumbElements.remove(breadCrumbElements.size() - 1);
                 if (menuItemList.size() > maxSiblings) {
                     menuItemList = new ArrayList<>();
-                    menuItemList.add(buildItem(currentResource));
+                    menuItemList.add(buildItem(request, currentResource));
                 }
             }
         }
 
-		if (currentResource.getProperty(menuGenerator.getSortDescendingPropDef()) != null) {
-			if (currentResource.getProperty(menuGenerator.getSortDescendingPropDef()).getBooleanValue()) {
-				ascendingSort = false;
-			}
-		}
+        if (currentResource.getProperty(menuGenerator.getSortDescendingPropDef()) != null) {
+            if (currentResource.getProperty(menuGenerator.getSortDescendingPropDef()).getBooleanValue()) {
+                ascendingSort = false;
+            }
+        }
 
-		menuItemList = sortByOrder(menuItemList, request.getLocale(), ascendingSort);
+        menuItemList = sortByOrder(menuItemList, request.getLocale(), ascendingSort);
         model.put("breadcrumb", breadCrumbElements);
         model.put("children", menuItemList);
         model.put("markedurl", markedUrl);
     }
 
-    private List<BreadcrumbElement> getBreadcrumbElements(RequestContext requestContext) throws Exception {
-
+    private List<BreadcrumbElement> getBreadcrumbElements(HttpServletRequest request) throws Exception {
+        RequestContext requestContext = RequestContext.getRequestContext(request);
         // XXX NO! Reconsider this. Refactor BreadCrumbProvider and create
         // separate generic class for bread crumb creation. Use this separate
         // implementation in provider and here.
@@ -190,7 +193,7 @@ public class BreadcrumbMenuComponent extends ListMenuComponent {
         breadCrumbProvider.setTitleOverrideProperties(titleProp);
         breadCrumbProvider.afterPropertiesSet();
         Map<String, Object> map = new HashMap<>();
-        breadCrumbProvider.referenceData(map, RequestContext.getRequestContext().getServletRequest());
+        breadCrumbProvider.referenceData(map, request);
         Object o = map.get(breadcrumbName);
 
         if (!(o instanceof BreadcrumbElement[])) {
@@ -206,10 +209,10 @@ public class BreadcrumbMenuComponent extends ListMenuComponent {
         return result;
     }
 
-    private List<MenuItem<PropertySet>> generateMenuItemList(RequestContext requestContext, Resource[] resources,
+    private List<MenuItem<PropertySet>> generateMenuItemList(DecoratorRequest request, Resource[] resources,
             Resource currentResource, Principal principal, Repository repository)
-            throws Exception {
-
+                    throws Exception {
+        RequestContext requestContext = RequestContext.getRequestContext(request.getServletRequest());
         List<MenuItem<PropertySet>> menuItems = new ArrayList<>();
         if (!requestContext.isPreviewUnpublished()) {
             if (currentResource.getProperty(menuGenerator.getUnpublishedCollectionPropDef()) != null) {
@@ -245,7 +248,7 @@ public class BreadcrumbMenuComponent extends ListMenuComponent {
             }
 
             // Passed filtering, build menu item:
-            menuItems.add(buildItem(r));
+            menuItems.add(buildItem(request, r));
         }
 
         return menuItems;

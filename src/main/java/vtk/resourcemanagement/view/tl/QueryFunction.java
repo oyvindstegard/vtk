@@ -39,6 +39,8 @@ import java.util.Optional;
 import java.util.function.BiFunction;
 import java.util.stream.Collectors;
 
+import javax.servlet.http.HttpServletRequest;
+
 import vtk.repository.Namespace;
 import vtk.repository.Property;
 import vtk.repository.PropertySet;
@@ -52,6 +54,7 @@ import vtk.text.tl.expr.Function;
 import vtk.util.text.Json;
 import vtk.util.text.Json.MapContainer;
 import vtk.web.RequestContext;
+import vtk.web.decorating.DynamicDecoratorTemplate;
 import vtk.web.search.SimpleSearcher;
 import vtk.web.search.SimpleSearcher.Query;
 import vtk.web.search.SimpleSearcher.QueryBuilder;
@@ -92,14 +95,18 @@ public class QueryFunction extends Function {
                 .map(Boolean::valueOf)
                 .orElse(false);
         
-        RequestContext requestContext = RequestContext.getRequestContext();
-        String token = requestContext.getSecurityToken();
-        requestContext.getLocale();
+        String token = null;
+        HttpServletRequest request = (HttpServletRequest) 
+                ctx.getAttribute(DynamicDecoratorTemplate.SERVLET_REQUEST_CONTEXT_ATTR);
+        if (request != null) {
+            RequestContext requestContext = RequestContext.getRequestContext(request);
+            token = requestContext.getSecurityToken();
+        }
 
         MapContainer result = searcher.search(token, query, rs -> {
             Json.MapContainer resultMap = new Json.MapContainer();
             List<Json.MapContainer> list = rs.getAllResults()
-                    .stream().map(mapper(flattenNamespaces, requestContext.getLocale()))
+                    .stream().map(mapper(flattenNamespaces, ctx.getLocale()))
                     .collect(Collectors.toList());
             resultMap.put("size", rs.getSize());
             resultMap.put("offset", query.offset);

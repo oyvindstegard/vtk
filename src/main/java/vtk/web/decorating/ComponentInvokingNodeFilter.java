@@ -35,6 +35,7 @@ import java.util.HashSet;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
+import java.util.function.Function;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -53,10 +54,9 @@ import vtk.text.html.HtmlNodeFilter;
 import vtk.text.html.HtmlPage;
 import vtk.text.html.HtmlPageFilter;
 import vtk.text.html.HtmlText;
-import vtk.web.RequestContext;
 
 
-public class ComponentInvokingNodeFilter implements HtmlNodeFilter, HtmlPageFilter, 
+public class ComponentInvokingNodeFilter implements 
     HtmlNodeFilterFactory, HtmlPageFilterFactory, InitializingBean {
 
     private static final Pattern SSI_DIRECTIVE_REGEXP = Pattern.compile(
@@ -108,35 +108,77 @@ public class ComponentInvokingNodeFilter implements HtmlNodeFilter, HtmlPageFilt
 
     @Override
     public HtmlPageFilter pageFilter(HttpServletRequest request) {
-        return this;
+        return new Filter(request, componentResolver, 
+                ssiDirectiveComponentMap, availableComponentNamespaces, 
+                contentComponentParser, parseAttributes);
     }
 
     @Override
     public HtmlNodeFilter nodeFilter(HttpServletRequest request) {
-        return this;
+        return new Filter(request, componentResolver, 
+                ssiDirectiveComponentMap, availableComponentNamespaces, 
+                contentComponentParser, parseAttributes);
     }
 
-    @Override
-    public boolean match(HtmlPage page) {
-        return true;
-    }
+    private static class Filter implements HtmlPageFilter, HtmlNodeFilter {
+        private HttpServletRequest request;
+        
+        private ComponentResolver componentResolver;
+        private Map<String, DecoratorComponent> ssiDirectiveComponentMap;
+        private Set<String> availableComponentNamespaces = new HashSet<>();
+        private TextualComponentParser contentComponentParser;
+        private boolean parseAttributes = false;
+        
+        Function<ComponentInvocation, DecoratorRequest> requestFactory = inv -> {
+            
+            org.springframework.web.servlet.support.RequestContext ctx =
+                    new org.springframework.web.servlet.support.RequestContext(
+                            request, request.getServletContext());
+            Locale locale = ctx.getLocale();
+            Map<String, Object> parameters = inv.getParameters();
+            DecoratorRequest decoratorRequest = new DecoratorRequestImpl(
+                    null, request, new HashMap<String, Object>(), 
+                    parameters, "", locale);
+            return decoratorRequest;
+            
+        };
 
-    // HtmlPageFilter.filter() (invoked after parsing)
-    public NodeResult filter(HtmlContent node) {
-        if (node instanceof HtmlElement) {
-            HtmlElement element = (HtmlElement) node;
-            HtmlContent[] childNodes = element.getChildNodes();
-            for (int i = 0; i < childNodes.length; i++) {
-                childNodes[i] = filterNode(childNodes[i]);
-            }
-            element.setChildNodes(childNodes);
+        
+        public Filter(HttpServletRequest request, ComponentResolver componentResolver, 
+                Map<String, DecoratorComponent> ssiDirectiveComponentMap, 
+                Set<String> availableComponentNamespaces, 
+                TextualComponentParser contentComponentParser, boolean parseAttributes) {
+            this.request = request;
+            this.componentResolver = componentResolver;
+            this.ssiDirectiveComponentMap = ssiDirectiveComponentMap;
+            this.availableComponentNamespaces = availableComponentNamespaces;
+            this.contentComponentParser = contentComponentParser;
+            this.parseAttributes = parseAttributes;
         }
-        return NodeResult.keep;
-    }
-
+        
+        // HtmlPageFilter.filter() (invoked after parsing)
+        @Override
+        public NodeResult filter(HtmlContent node) {
+            if (node instanceof HtmlElement) {
+                HtmlElement element = (HtmlElement) node;
+                HtmlContent[] childNodes = element.getChildNodes();
+                for (int i = 0; i < childNodes.length; i++) {
+                    childNodes[i] = filterNode(childNodes[i]);
+                }
+                element.setChildNodes(childNodes);
+            }
+            return NodeResult.keep;
+        }
+    
+        @Override
+        public boolean match(HtmlPage page) {
+            return true;
+        }
 
     // HtmlNodeFilter.filter() (invoked during parsing)
-    public HtmlContent filterNode(HtmlContent node) {
+        @Override
+        public HtmlContent filterNode(HtmlContent node) {
+
         if (node instanceof HtmlComment) {
             ComponentInvocation ssiInvocation = buildSsiComponentInvocation(node);
             if (ssiInvocation == null) {
@@ -155,8 +197,8 @@ public class ComponentInvokingNodeFilter implements HtmlNodeFilter, HtmlPageFilt
                     if (attribute.hasValue()) {
                         try {
                             ComponentInvocation[] parsedValue =
-                                this.contentComponentParser.parse(
-                                        new java.io.StringReader(value));
+                                    this.contentComponentParser.parse(
+                                            new java.io.StringReader(value));
                             value = invokeComponentsAsString(parsedValue);
                         }
                         catch (Exception e) {
@@ -174,13 +216,13 @@ public class ComponentInvokingNodeFilter implements HtmlNodeFilter, HtmlPageFilt
         }
         else if (node instanceof HtmlText) {
 
-            if (this.contentComponentParser == null) {
+            if (contentComponentParser == null) {
                 return node;
             }
             String content = ((HtmlText) node).getContent();
             try {
                 ComponentInvocation[] parsedContent =
-                    this.contentComponentParser.parse(new java.io.StringReader(content));
+                        this.contentComponentParser.parse(new java.io.StringReader(content));
                 HtmlContent filteredNode = invokeComponentsAsContent(parsedContent);
                 return filteredNode;
             }
@@ -189,131 +231,121 @@ public class ComponentInvokingNodeFilter implements HtmlNodeFilter, HtmlPageFilt
             }
         }
         return node;
-    }
+        }
+        
+        private ComponentInvocation buildSsiComponentInvocation(HtmlContent node) {
+            String content = node.getContent();
+            if (content == null || "".equals(content.trim())) {
+                return null;
+            }
 
+            String directive = null;
+            Matcher directiveMatcher = SSI_DIRECTIVE_REGEXP.matcher(content);
+            if (!directiveMatcher.find()) {
+                return null;
+            }
+            directive = directiveMatcher.group(1);
 
-    private ComponentInvocation buildSsiComponentInvocation(HtmlContent node) {
-        String content = node.getContent();
-        if (content == null || "".equals(content.trim())) {
-            return null;
+            Matcher paramMatcher = SSI_PARAMETERS_REGEXP.matcher(
+                    content.substring(directiveMatcher.end()));
+
+            Map<String, Object> parameters = new HashMap<>();
+
+            while (paramMatcher.find()) {
+                String name = paramMatcher.group(1);
+                String value = paramMatcher.group(2);
+                if (name != null && value != null) {
+                    parameters.put(name, value);
+                }
+            }
+
+            final DecoratorComponent component = 
+                this.ssiDirectiveComponentMap.get(directive);
+            if (component == null) {
+                return null;
+            }
+            final Map<String, Object> invocationParams = parameters;
+            return new ComponentInvocation() {
+                public Map<String, Object> getParameters() {
+                    return invocationParams;
+                }
+                public String getNamespace() {
+                    return component.getNamespace();
+                }
+                public String getName() {
+                    return component.getName();
+                }
+                @Override
+                public String toString() {
+                    StringBuilder sb = new StringBuilder(this.getClass().getName());
+                    sb.append("; component=").append(component);
+                    sb.append("; params=").append(invocationParams);
+                    return sb.toString();
+                }
+            };
         }
 
-        String directive = null;
-        Matcher directiveMatcher = SSI_DIRECTIVE_REGEXP.matcher(content);
-        if (!directiveMatcher.find()) {
-            return null;
-        }
-        directive = directiveMatcher.group(1);
 
-        Matcher paramMatcher = SSI_PARAMETERS_REGEXP.matcher(
-                content.substring(directiveMatcher.end()));
-
-        Map<String, Object> parameters = new HashMap<>();
-
-        while (paramMatcher.find()) {
-            String name = paramMatcher.group(1);
-            String value = paramMatcher.group(2);
-            if (name != null && value != null) {
-                parameters.put(name, value);
-            }
+        private HtmlContent invokeComponentsAsContent(ComponentInvocation[] components) {
+            final String text = invokeComponentsAsString(components);
+            return new HtmlText() {
+                public String getContent() {
+                    return text;
+                }
+            };
         }
 
-        final DecoratorComponent component = 
-            this.ssiDirectiveComponentMap.get(directive);
-        if (component == null) {
-            return null;
-        }
-        final Map<String, Object> invocationParams = parameters;
-        return new ComponentInvocation() {
-            public Map<String, Object> getParameters() {
-                return invocationParams;
-            }
-            public String getNamespace() {
-                return component.getNamespace();
-            }
-            public String getName() {
-                return component.getName();
-            }
-            @Override
-            public String toString() {
-                StringBuilder sb = new StringBuilder(this.getClass().getName());
-                sb.append("; component=").append(component);
-                sb.append("; params=").append(invocationParams);
-                return sb.toString();
-            }
-        };
-    }
 
+        private String invokeComponentsAsString(ComponentInvocation[] componentInvocations) {
+            final String doctype = "";
 
-    private HtmlContent invokeComponentsAsContent(ComponentInvocation[] components) {
-        final String text = invokeComponentsAsString(components);
-        return new HtmlText() {
-            public String getContent() {
-                return text;
-            }
-        };
-    }
+            StringBuilder sb = new StringBuilder();
 
-
-    private String invokeComponentsAsString(ComponentInvocation[] componentInvocations) {
-        HttpServletRequest servletRequest = 
-                RequestContext.getRequestContext().getServletRequest();
-
-        org.springframework.web.servlet.support.RequestContext ctx =
-            new org.springframework.web.servlet.support.RequestContext(
-                    servletRequest, servletRequest.getServletContext());
-        Locale locale = ctx.getLocale();
-
-        final String doctype = "";
-
-        StringBuilder sb = new StringBuilder();
-
-        for (ComponentInvocation invocation: componentInvocations) {
-            if (invocation instanceof StaticTextFragment) {
-                sb.append(((StaticTextFragment) invocation).buffer);
-                continue;
-            }
-            Map<String, Object> parameters = invocation.getParameters();
-            DecoratorRequest decoratorRequest = new DecoratorRequestImpl(
-                    null, servletRequest, new HashMap<String, Object>(), 
-                    parameters, doctype, locale);
-            DecoratorResponseImpl response = new DecoratorResponseImpl(
-                    doctype, locale, "utf-8");
-            String result = null;
-            try {
-                DecoratorComponent component = this.componentResolver.resolveComponent(
-                        invocation.getNamespace(), invocation.getName());
-                if (component == null && invocation.optional()) {
+            for (ComponentInvocation invocation: componentInvocations) {
+                if (invocation instanceof StaticTextFragment) {
+                    sb.append(((StaticTextFragment) invocation).buffer);
                     continue;
                 }
-                else if (component == null) {
-                    sb.append("Invalid component reference: " + invocation.getNamespace()
-                            + ":" + invocation.getName());
-                    continue;
-                }
-                component.render(decoratorRequest, response);
-                result = response.getContentAsString();
+                DecoratorRequest decoratorRequest = requestFactory.apply(invocation);
+                DecoratorResponseImpl response = new DecoratorResponseImpl(
+                        doctype, decoratorRequest.getLocale(), "utf-8");
+                String result = null;
+                try {
+                    DecoratorComponent component = this.componentResolver.resolveComponent(
+                            invocation.getNamespace(), invocation.getName());
+                    if (component == null && invocation.optional()) {
+                        continue;
+                    }
+                    else if (component == null) {
+                        sb.append("Invalid component reference: " + invocation.getNamespace()
+                                + ":" + invocation.getName());
+                        continue;
+                    }
+                    component.render(decoratorRequest, response);
+                    result = response.getContentAsString();
 
+                }
+                catch (Throwable t) {
+                    String msg = t.getMessage();
+                    if (msg == null) {
+                        msg = t.getClass().getName();
+                    }
+                    if (logger.isDebugEnabled()) {
+                        logger.debug("Error invoking component on page " + 
+                                decoratorRequest.getServletRequest().getRequestURI() + ": " + invocation, t);
+                    }
+                    else if (logger.isInfoEnabled()) {
+                        logger.info("Error invoking component on page " + 
+                                decoratorRequest.getServletRequest().getRequestURI() + ": " + invocation + ": "
+                                + msg);
+                    }
+                    result = "Error: " + msg;
+                }
+                sb.append(result);
             }
-            catch (Throwable t) {
-                String msg = t.getMessage();
-                if (msg == null) {
-                    msg = t.getClass().getName();
-                }
-                if (logger.isDebugEnabled()) {
-                    logger.debug("Error invoking component on page " + 
-                            servletRequest.getRequestURI() + ": " + invocation, t);
-                }
-                else if (logger.isInfoEnabled()) {
-                    logger.info("Error invoking component on page " + 
-                            servletRequest.getRequestURI() + ": " + invocation + ": "
-                            + msg);
-                }
-                result = "Error: " + msg;
-            }
-            sb.append(result);
+            return sb.toString();
         }
-        return sb.toString();
+
     }
 
 }

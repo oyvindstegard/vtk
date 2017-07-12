@@ -24,11 +24,15 @@
   </bean>
 
   <bean id="calendarEventListing.displayTypeIsCalendar"
-        class="vtk.web.service.ResourcePropertyAssertion">
-    <property name="namespace" ref="EVENT_LISTING_NAMESPACE" />
-    <property name="name" value="display-type" />
-    <property name="value" value="calendar" />
-    <property name="checkExistenceOnly" value="false" />
+        class="vtk.web.service.RepositoryAssertionWrapper">
+    <constructor-arg name="assertion">
+      <bean class="vtk.repository.resourcetype.ResourcePropertyAssertion">
+        <property name="namespace" ref="EVENT_LISTING_NAMESPACE" />
+        <property name="name" value="display-type" />
+        <property name="value" value="calendar" />
+        <property name="checkExistenceOnly" value="false" />
+      </bean>
+    </constructor-arg>
   </bean>
 
   <bean id="eventListing.calendarHandler" class="vtk.web.display.collection.event.calendar.EventCalendarListingController"

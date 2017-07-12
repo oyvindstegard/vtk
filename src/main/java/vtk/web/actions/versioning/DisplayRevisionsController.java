@@ -69,7 +69,7 @@ public class DisplayRevisionsController implements Controller {
             HttpServletResponse response) throws Exception {
         Map<String, Object> model = new HashMap<>();
         
-        RequestContext requestContext = RequestContext.getRequestContext();
+        RequestContext requestContext = RequestContext.getRequestContext(request);
         Repository repository = requestContext.getRepository();
         String token = requestContext.getSecurityToken();
         Principal principal = requestContext.getPrincipal();
@@ -181,9 +181,7 @@ public class DisplayRevisionsController implements Controller {
                         principal, true)) {
                     try {
                         URL u = deleteService.urlConstructor(requestContext.getRequestURL())
-                                .withResource(resource)
-                                .withPrincipal(principal)
-                                .matchAssertions(false)
+                                .withURI(resource.getURI())
                                 .constructURL();
                         rev.put("deleteURL", new URL(u)
                         .setParameter("revision", revision.getName()));

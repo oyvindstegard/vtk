@@ -47,7 +47,7 @@ import vtk.security.Principal;
 import vtk.security.PrincipalFactory;
 import vtk.util.cache.SimpleCache;
 import vtk.util.codec.MD5;
-import vtk.web.service.Assertion;
+import vtk.web.service.WebAssertion;
 
 /**
  * <p>Configurable JavaBean properties:
@@ -78,7 +78,7 @@ public abstract class AbstractAuthenticationHandler implements
     /* Simple cache to allow for clients that don't send cookies */
     private SimpleCache<String, AuthResult> cache;
 
-    private List<Assertion> requestAssertions; 
+    private List<WebAssertion> requestAssertions; 
     
     private Set<String> recognizedDomains = null;
 
@@ -110,7 +110,7 @@ public abstract class AbstractAuthenticationHandler implements
         }
 
         if (this.requestAssertions != null) {
-            for (Assertion assertion : this.requestAssertions) {
+            for (WebAssertion assertion : this.requestAssertions) {
                 if (!assertion.matches(req, null, principal)) {
                     return false;
                 }
@@ -172,7 +172,7 @@ public abstract class AbstractAuthenticationHandler implements
 
     protected abstract String getPassword(HttpServletRequest request);
 
-    public void setRequestAssertions(List<Assertion> requestAssertions) {
+    public void setRequestAssertions(List<WebAssertion> requestAssertions) {
         this.requestAssertions = requestAssertions;
     }
 

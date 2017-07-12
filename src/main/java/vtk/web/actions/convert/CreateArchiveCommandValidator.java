@@ -30,13 +30,16 @@
  */
 package vtk.web.actions.convert;
 
+import javax.servlet.http.HttpServletRequest;
+
 import org.springframework.validation.Errors;
+
 import vtk.repository.Path;
 
-public class CreateArchiveCommandValidator extends ArchiveCommandValidator {
+public class CreateArchiveCommandValidator extends CopyResourceCommandValidator {
 
     @Override
-    protected Path getCopyToURI(String name) {
+    protected Path getCopyToURI(HttpServletRequest request, String name) {
         if (name.startsWith("/")) {
             return Path.fromString(name);
         }
@@ -44,7 +47,7 @@ public class CreateArchiveCommandValidator extends ArchiveCommandValidator {
     }
 
     @Override
-    protected boolean validateName(String name, Errors errors) {
+    protected boolean validateName(HttpServletRequest request, String name, Errors errors) {
         // Name may contain slash ("/") here, as it may be path to where archive
         // is to be created
         return true;

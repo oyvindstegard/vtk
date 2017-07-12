@@ -33,12 +33,16 @@ package vtk.web.display.autocomplete;
 
 import java.util.Locale;
 
+import javax.servlet.http.HttpServletRequest;
+
 import vtk.repository.Path;
 
 /**
  *
  */
 public interface CompletionContext {
+    
+    public HttpServletRequest request();
 
     public Path getContextUri();
 

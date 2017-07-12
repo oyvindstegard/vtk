@@ -31,12 +31,18 @@
 package vtk.web.service;
 
 
+import java.io.IOException;
+import java.io.UncheckedIOException;
+import java.util.Optional;
 import java.util.Set;
+
+import javax.servlet.http.HttpServletRequest;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.BeanInitializationException;
 import org.springframework.beans.factory.InitializingBean;
+
 import vtk.repository.Path;
 import vtk.repository.Privilege;
 import vtk.repository.Repository;
@@ -87,8 +93,8 @@ import vtk.security.roles.RoleManager;
  *   for resource retrieval from the repository
  * </ul>
  */
-public class ResourcePrincipalPermissionAssertion
-  extends AbstractRepositoryAssertion implements InitializingBean {
+public class ResourcePrincipalPermissionAssertion extends AbstractAssertion 
+    implements InitializingBean {
 
     private static Logger logger = LoggerFactory.getLogger(
             ResourcePrincipalPermissionAssertion.class);
@@ -193,17 +199,40 @@ public class ResourcePrincipalPermissionAssertion
 
 
     @Override
-    public boolean conflicts(Assertion assertion) {
+    public boolean conflicts(WebAssertion assertion) {
         return false;
     }
 
 
     @Override
-    public boolean matches(Resource resource, Principal principal) {
+    public String toString() {
+        StringBuilder sb = new StringBuilder(
+                "principal.permissionsOn(currentResource).includes(" + this.permission + ")");
+        return sb.toString();
+    }
+
+    @Override
+    public Optional<URL> processURL(URL url, Resource resource,
+            Principal principal) {
+        if (!matches(resource, principal)) {
+            return Optional.empty();
+        }
+        return Optional.of(url);
+    }
+
+    @Override
+    public URL processURL(URL url) {
+        return url;
+    }
+
+    @Override
+    public boolean matches(HttpServletRequest request, Resource resource,
+            Principal principal) {
+        return matches(resource, principal);
+    }
+
+    private boolean matches(Resource resource, Principal principal) {
         if (resource == null) {
-            if (logger.isDebugEnabled()) {
-                logger.debug("Resource is null [match = false]");
-            }
             return false;
         }
 
@@ -220,7 +249,7 @@ public class ResourcePrincipalPermissionAssertion
         }
         
         try {
-            if(this.parent) {
+            if (this.parent) {
                 Path parent = resource.getURI().getParent();
                 Resource resourceParent = this.repository.retrieve(this.trustedToken, parent, false);
                 if (resourceParent == null) {
@@ -233,29 +262,18 @@ public class ResourcePrincipalPermissionAssertion
                     return this.repository.isAuthorized(resourceParent, action, null, this.considerLocks);
                 }
                 return this.repository.isAuthorized(resourceParent, action, principal, this.considerLocks);
-            } else {
+            }
+            else {
                 if (this.anonymous) {
                     return this.repository.isAuthorized(resource, action, null, this.considerLocks);
                 }
                 return this.repository.isAuthorized(resource, action, principal, this.considerLocks);
             }
-
-        } catch (RuntimeException e) {
-            // XXX Hmm. Don't wrap runtime-exceptions, because we then hide
-            //     the real exception type information, which is needed
-            //     in higher level error handling.
-            //     For instance, handling of AuthenticationException in VTKServlet.
-            throw e;
-        } catch (Exception e) {
-            throw new RuntimeException(e);
+        }
+        catch (IOException e) {
+            throw new UncheckedIOException(e);
         }
     }
     
     
-    @Override
-    public String toString() {
-        StringBuilder sb = new StringBuilder("principal.permissionsOn(currentResource).includes(" + this.permission + ")");
-        return sb.toString();
-    }
-
 }

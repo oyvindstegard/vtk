@@ -43,6 +43,7 @@ import vtk.text.tl.Parser.Directive;
 import vtk.web.decorating.DecoratorComponent;
 import vtk.web.decorating.DecoratorRequest;
 import vtk.web.decorating.DecoratorResponse;
+import vtk.web.decorating.DynamicDecoratorTemplate;
 
 public class DynamicDecoratorComponent implements DecoratorComponent {
 
@@ -96,11 +97,14 @@ public class DynamicDecoratorComponent implements DecoratorComponent {
             throws Exception {
         Context ctx = new Context(request.getLocale());
         
-        Map<String, Object> req = new HashMap<String, Object>();
+        DynamicDecoratorTemplate.addGlobalContextAttributes(ctx, 
+                request.getServletRequest(), request.getHtmlPage());
+        
+        Map<String, Object> req = new HashMap<>();
         req.put("lang", request.getLocale().getLanguage());
         req.put("messages", messages);
 
-        Map<String, Object> params = new HashMap<String, Object>();
+        Map<String, Object> params = new HashMap<>();
         for (String param: parameters.keySet()) {
             params.put(param, request.getRawParameter(param));
         }
@@ -123,7 +127,7 @@ public class DynamicDecoratorComponent implements DecoratorComponent {
         private String description = null;
         private Directive context = null;
         private NodeList body = null;
-        private Map<String, String> parameters = new LinkedHashMap<String, String>();
+        private Map<String, String> parameters = new LinkedHashMap<>();
         private Map<String, Object> messages = null;
         private Builder() {}
         public Builder name(String name) 
@@ -145,8 +149,8 @@ public class DynamicDecoratorComponent implements DecoratorComponent {
             if (namespace == null) throw new IllegalArgumentException("Missing component namespace");
             if (description == null) throw new IllegalArgumentException("Missing component description");
             if (body == null) throw new IllegalArgumentException("Missing component body");
-            if (parameters == null) parameters = new LinkedHashMap<String, String>();
-            if (messages == null) messages = new LinkedHashMap<String, Object>();
+            if (parameters == null) parameters = new LinkedHashMap<>();
+            if (messages == null) messages = new LinkedHashMap<>();
             return new DynamicDecoratorComponent(
                     namespace, name, description, parameters, messages, body);
         }

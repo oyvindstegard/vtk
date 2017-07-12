@@ -65,7 +65,7 @@ public class CommentsFeedController implements Controller {
     }
 
     public ModelAndView handleRequest(HttpServletRequest request, HttpServletResponse response) throws Exception {
-        RequestContext requestContext = RequestContext.getRequestContext();
+        RequestContext requestContext = RequestContext.getRequestContext(request);
         Repository repository = requestContext.getRepository();
         Principal principal = requestContext.getPrincipal();
         String token = requestContext.getSecurityToken();

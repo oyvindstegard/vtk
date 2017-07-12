@@ -47,7 +47,6 @@ import vtk.web.decorating.DecoratorResponse;
 import vtk.web.servlet.BufferedResponse;
 
 public class ViewRenderingDecoratorComponent extends AbstractDecoratorComponent {
-
     private View view;
     private Set<String> exposedParameters = new HashSet<>();
     private boolean exposeMvcModel = false;
@@ -106,8 +105,8 @@ public class ViewRenderingDecoratorComponent extends AbstractDecoratorComponent 
         }
     }
 
-    @SuppressWarnings("rawtypes")
-    private void renderView(Map model, DecoratorRequest request, DecoratorResponse response) throws Exception {
+    private void renderView(Map<String, Object> model, 
+            DecoratorRequest request, DecoratorResponse response) throws Exception {
         HttpServletRequest servletRequest = request.getServletRequest();
         BufferedResponse bufferedResponse = new BufferedResponse();
         this.view.render(model, servletRequest, bufferedResponse);

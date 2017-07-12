@@ -51,7 +51,9 @@
     <property name="order" value="-1" />
     <property name="assertions">
       <list>
-        <ref bean="contentTypeMatchesImage" />
+        <bean class="vtk.web.service.RepositoryAssertionWrapper">
+          <constructor-arg name="assertion" ref="contentTypeMatchesImage" />
+        </bean>
       </list>
     </property>
     <property name="handler" ref="imageWithInfoHandler" />
@@ -64,8 +66,12 @@
     <property name="resourceAssertion">
       <bean class="vtk.web.service.InvertAssertion">
         <property name="assertion">
-          <bean class="vtk.web.service.ResourceContentTypeRegexpAssertion">
-            <property name="pattern" value="image/x-photoshop" />
+          <bean class="vtk.web.service.RepositoryAssertionWrapper">
+            <constructor-arg name="assertion">
+              <bean class="vtk.repository.resourcetype.ResourceContentTypeRegexpAssertion">
+                <constructor-arg name="pattern" value="image/x-photoshop" />
+              </bean>
+            </constructor-arg>
           </bean>
         </property>
       </bean>
@@ -95,8 +101,13 @@
     </property>
   </bean>
 
-  <bean id="resourceTypeIsImage" class="vtk.web.service.ResourceTypeAssertion" parent="repositoryAware">
-    <property name="resourceTypeDefinition" ref="imageResourceTypeDefinition" />
+  <bean id="resourceTypeIsImage" class="vtk.web.service.RepositoryAssertionWrapper">
+    <constructor-arg name="assertion">
+      <bean class="vtk.repository.resourcetype.ResourceTypeAssertion" 
+            parent="repositoryAware">
+        <property name="resourceTypeDefinition" ref="imageResourceTypeDefinition" />
+      </bean>
+    </constructor-arg>
   </bean>
 
 </beans>

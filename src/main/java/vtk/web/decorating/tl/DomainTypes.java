@@ -115,31 +115,32 @@ final class DomainTypes {
     }
 
     public static final class RequestContextType extends DomainMap {
-        private RequestContext requestContext;
+        private HttpServletRequest request;
         
-        private static Map<String, Object> principalMetadata(RequestContext requestContext) {
-            Locale locale = RequestContextUtils.getLocale(requestContext.getServletRequest());
+        private static Map<String, Object> principalMetadata(HttpServletRequest request) {
+            Locale locale = RequestContextUtils.getLocale(request);
+            RequestContext requestContext = RequestContext.getRequestContext(request);
             PrincipalMetadata metadata = requestContext.principalMetadata(locale);
             if (metadata == null) return null;
             return metadata.toMap();
         }
 
-        public RequestContextType(RequestContext requestContext) {
+        public RequestContextType(HttpServletRequest request) {
             super(
-               "current-collection",   requestContext.getCurrentCollection(),
-               "index-file",           requestContext.isIndexFile(),
-               "resource-uri",         requestContext.getResourceURI(),
-               "resource-acl",         aclToMap(requestContext.getResourceAcl()),
-               "read-restricted",      isReadRestricted(requestContext.getResourceAcl()),
-               "collection",           requestContext.getCurrentCollection().equals(
-                                           requestContext.getResourceURI()),
-               "request-url",          new URLType(URL.create(requestContext.getServletRequest())),
-               "headers",              headersToMap(requestContext.getServletRequest()),
-               "principal",            requestContext.getPrincipal(),
-               "view-unauthenticated", requestContext.isViewUnauthenticated(),
-               "principal-metadata",   principalMetadata(requestContext)
+               "current-collection",   RequestContext.getRequestContext(request).getCurrentCollection(),
+               "index-file",           RequestContext.getRequestContext(request).isIndexFile(),
+               "resource-uri",         RequestContext.getRequestContext(request).getResourceURI(),
+               "resource-acl",         aclToMap(RequestContext.getRequestContext(request).getResourceAcl()),
+               "read-restricted",      isReadRestricted(RequestContext.getRequestContext(request).getResourceAcl()),
+               "collection",           RequestContext.getRequestContext(request).getCurrentCollection().equals(
+                                           RequestContext.getRequestContext(request).getResourceURI()),
+               "request-url",          new URLType(URL.create(request)),
+               "headers",              headersToMap(request),
+               "principal",            RequestContext.getRequestContext(request).getPrincipal(),
+               "view-unauthenticated", RequestContext.getRequestContext(request).isViewUnauthenticated(),
+               "principal-metadata",   principalMetadata(request)
              );
-            this.requestContext = requestContext;
+            this.request = request;
         }
         public Path currentCollection() { return (Path) get("current-collection"); }
         public Boolean indexFile()      { return (Boolean) get("index-file"); }
@@ -153,7 +154,7 @@ final class DomainTypes {
             { return (Boolean) get("view-unauthenticated"); }
         public Map<String, Object> headers()
             { return (Map<String, Object>) get("headers"); }
-        RequestContext requestContext () { return requestContext; }
+        RequestContext requestContext () { return RequestContext.getRequestContext(request); }
     }
 
 

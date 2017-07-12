@@ -56,12 +56,12 @@ public class MessageListingAtomFeedView extends ListingFeedView {
                 Namespace.STRUCTURED_RESOURCE_NAMESPACE, "listingDisplayedMessage");
         if (messageProp != null) {
             try {
-                URL baseURL = viewService.urlConstructor(RequestContext.getRequestContext().getRequestURL())
+                URL baseURL = viewService.urlConstructor(RequestContext.getRequestContext(request).getRequestURL())
                         .withURI(result.getURI())
                         .constructURL();
                 HtmlFragment summary = HtmlUtil.linkResolveFilter(
                         messageProp.getStringValue(), baseURL, RequestContext
-                        .getRequestContext().getRequestURL(), 
+                        .getRequestContext(request).getRequestURL(), 
                         useProtocolRelativeImages);
                 setFeedEntrySummary(entry, summary);
             }

@@ -38,8 +38,8 @@
   </bean>
 
   <bean id="contentTypeMatchesAudio" 
-        class="vtk.web.service.ResourceContentTypeRegexpAssertion">
-    <property name="pattern" value="audio/(.+)" />
+        class="vtk.repository.resourcetype.ResourceContentTypeRegexpAssertion">
+    <constructor-arg name="pattern" value="audio/(.+)" />
   </bean>
 
   <bean id="audioAuthorPropDef"

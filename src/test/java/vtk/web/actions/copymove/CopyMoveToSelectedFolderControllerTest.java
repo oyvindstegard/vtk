@@ -50,73 +50,76 @@ import vtk.web.AbstractControllerTest;
  * @author Gyrd Thane Lange
  */
 public class CopyMoveToSelectedFolderControllerTest extends AbstractControllerTest {
-	
-	private CopyMoveToSelectedFolderController controller = null;
-	private HttpSession mockHttpSession = new MockHttpSession();
-	private ModelAndView result = null;
-	private CopyMoveSessionBean sessionBeanAfterRequest = null;
-	
-	@Override
-	protected Path getRequestPath() {
-		return Path.fromString("/somewhere/?action=something");
-	}
-	
-	@Override
+
+    private CopyMoveToSelectedFolderController controller = null;
+    private HttpSession mockHttpSession = new MockHttpSession();
+    private ModelAndView result = null;
+    private CopyMoveSessionBean sessionBeanAfterRequest = null;
+
+    @Override
+    protected Path getRequestPath() {
+        return Path.fromString("/somewhere");
+    }
+
+    @Override
     @Before
-	public void setUp() throws Exception {
-		super.setUp();
-		controller = new CopyMoveToSelectedFolderController();
-	}
+    public void setUp() throws Exception {
+        super.setUp();
+        controller = new CopyMoveToSelectedFolderController();
+    }
 
     @Test
-	public void testNormal() throws Exception {
-		doRequest(false, false);
-		assertNull("session bean should be cleared", sessionBeanAfterRequest);
-	}
+    public void testNormal() throws Exception {
+        doRequest(false, false);
+        assertNull("session bean should be cleared", sessionBeanAfterRequest);
+    }
 
     @Test
-	public void testCancel() throws Exception {
-		doRequest(true, false);
-		assertNotNull("session bean should be intact", sessionBeanAfterRequest);
-	}
+    public void testCancel() throws Exception {
+        doRequest(true, false);
+        assertNotNull("session bean should be intact", sessionBeanAfterRequest);
+    }
 
     @Test
-	public void testClear() throws Exception {
-		doRequest(false, true);
-		assertNull("session bean should be cleared", sessionBeanAfterRequest);
-	}
-	
-	private void doRequest(final boolean withCancel, final boolean withClear) throws Exception {
-		// setup
-		context.checking(new Expectations() {{
-			//allowing(mockRequest).getSession(); will(returnValue(mockHttpSession));
-			allowing(mockRequest).getSession(true); will(returnValue(mockHttpSession));
-                        allowing(mockRequest).getParameter("revision");
-                        allowing(mockRequest).getParameter("vrtxPreviewUnpublished");
-                        
-			//allowing(mockRequest).getSession(false); will(returnValue(mockHttpSession));
-			//allowing(mockRequest).getMethod(); will(returnValue("POST"));
-			//allowing(mockRequest).getParameterNames(); will(returnValue(new Vector<String>().elements()));
-			allowing(mockRequest).getParameter("overwrite"); will(returnValue(null));
-			allowing(mockRequest).getParameter("existing-skipped-files"); will(returnValue(null));
+    public void testClear() throws Exception {
+        doRequest(false, true);
+        assertNull("session bean should be cleared", sessionBeanAfterRequest);
+    }
+
+    private void doRequest(final boolean withCancel, final boolean withClear) throws Exception {
+        // setup
+        context.checking(new Expectations() {{
+            //allowing(mockRequest).getSession(); will(returnValue(mockHttpSession));
+            //allowing(mockRequest).getRequestURL(); will(returnValue(new StringBuffer("http://localhost/" + getRequestPath())));
+            allowing(mockRequest).getSession(true); will(returnValue(mockHttpSession));
             
-			allowing(mockRequest).getParameter("cancel-action"); will(returnValue(withCancel ? "" : null));
-			allowing(mockRequest).getParameter("clear-action"); will(returnValue(withClear ? "" : null));
-		}});
-		
-		CopyMoveSessionBean sessionBean = new CopyMoveSessionBean();
-//		This will force an exception in the "normal" path,
-//		Useful to show that this path is actually taken.
-//		sessionBean.setAction("copy");
-//		List<String> fileNames = new ArrayList<String>();
-//		fileNames.add("/does/not/exist");
-//		sessionBean.setFilesToBeCopied(fileNames);
-		mockHttpSession.setAttribute(CopyMoveToSelectedFolderController.COPYMOVE_SESSION_ATTRIBUTE, sessionBean);
-		
-		result = controller.handleRequest(mockRequest, mockResponse);
-		sessionBeanAfterRequest = (CopyMoveSessionBean) mockHttpSession.getAttribute(CopyMoveToSelectedFolderController.COPYMOVE_SESSION_ATTRIBUTE);
+            //allowing(mockRequest).getParameter("revision");
+            //allowing(mockRequest).getParameter("vrtxPreviewUnpublished");
 
-		assertNotNull(result);
-	}
-	
+            //allowing(mockRequest).getSession(false); will(returnValue(mockHttpSession));
+            //allowing(mockRequest).getMethod(); will(returnValue("POST"));
+            //allowing(mockRequest).getParameterNames(); will(returnValue(new Vector<String>().elements()));
+            allowing(mockRequest).getParameter("overwrite"); will(returnValue(null));
+            allowing(mockRequest).getParameter("existing-skipped-files"); will(returnValue(null));
+
+            allowing(mockRequest).getParameter("cancel-action"); will(returnValue(withCancel ? "" : null));
+            allowing(mockRequest).getParameter("clear-action"); will(returnValue(withClear ? "" : null));
+        }});
+
+        CopyMoveSessionBean sessionBean = new CopyMoveSessionBean();
+        //		This will force an exception in the "normal" path,
+        //		Useful to show that this path is actually taken.
+        //		sessionBean.setAction("copy");
+        //		List<String> fileNames = new ArrayList<String>();
+        //		fileNames.add("/does/not/exist");
+        //		sessionBean.setFilesToBeCopied(fileNames);
+        mockHttpSession.setAttribute(CopyMoveToSelectedFolderController.COPYMOVE_SESSION_ATTRIBUTE, sessionBean);
+
+        result = controller.handleRequest(mockRequest, mockResponse);
+        sessionBeanAfterRequest = (CopyMoveSessionBean) 
+                mockHttpSession.getAttribute(CopyMoveToSelectedFolderController.COPYMOVE_SESSION_ATTRIBUTE);
+
+        assertNotNull(result);
+    }
+
 }

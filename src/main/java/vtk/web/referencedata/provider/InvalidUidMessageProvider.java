@@ -61,7 +61,7 @@ public class InvalidUidMessageProvider implements ReferenceDataProvider {
     @Override
     public void referenceData(Map<String, Object> model, HttpServletRequest request) {
 
-        RequestContext context = RequestContext.getRequestContext();
+        RequestContext context = RequestContext.getRequestContext(request);
         Repository repository = context.getRepository();
         Path resourcePath = context.getResourceURI();
         String token = SecurityContext.getSecurityContext().getToken();

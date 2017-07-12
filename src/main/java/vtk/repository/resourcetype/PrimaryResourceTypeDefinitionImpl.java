@@ -33,8 +33,6 @@ package vtk.repository.resourcetype;
 import java.util.Collections;
 import java.util.List;
 
-import vtk.web.service.RepositoryAssertion;
-
 
 public class PrimaryResourceTypeDefinitionImpl
   extends AbstractResourceTypeDefinitionImpl implements PrimaryResourceTypeDefinition {

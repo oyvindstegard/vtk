@@ -64,7 +64,7 @@ public class ServiceHandlerMapping implements HandlerMapping {
     public final HandlerExecutionChain getHandler(HttpServletRequest request)
         throws Exception {
 
-        RequestContext requestContext = RequestContext.getRequestContext();
+        RequestContext requestContext = RequestContext.getRequestContext(request);
         if (requestContext == null) {
             throw new IllegalStateException(
                 "Unable to perform handler mapping: no request context available.");

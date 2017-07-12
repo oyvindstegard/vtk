@@ -32,6 +32,7 @@ package vtk.web.decorating.components;
 
 import java.util.LinkedHashMap;
 import java.util.Map;
+
 import org.springframework.beans.factory.annotation.Required;
 
 import vtk.web.decorating.DecoratorRequest;
@@ -72,14 +73,15 @@ public class IncludeMediaPlayerComponent extends ViewRenderingDecoratorComponent
         String poster = request.getStringParameter(PARAMETER_POSTER);
         String showDL = request.getStringParameter(PARAMETER_SHOW_DOWNLOAD_LINK);
 
-        mediaPlayer.addMediaPlayer(model, url, height, width, autoplay, contentType, streamType, poster, showDL);
+        mediaPlayer.addMediaPlayer(request.getServletRequest(), model, url, 
+                height, width, autoplay, contentType, streamType, poster, showDL);
 
         super.processModel(model, request, response);
     }
 
     @Override
     protected Map<String, String> getParameterDescriptionsInternal() {
-        Map<String, String> map = new LinkedHashMap<String, String>();
+        Map<String, String> map = new LinkedHashMap<>();
         map.put(PARAMETER_URL, PARAMETER_URL_DESCRIPTION);
         map.put(PARAMETER_HEIGHT, PARAMETER_HEIGHT_DESCRIPTION);
         map.put(PARAMETER_WIDTH, PARAMETER_WIDTH_DESCRIPTION);

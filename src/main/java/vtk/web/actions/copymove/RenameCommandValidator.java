@@ -34,34 +34,31 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.regex.Pattern;
 
+import javax.servlet.http.HttpServletRequest;
+
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Required;
 import org.springframework.validation.Errors;
-import org.springframework.validation.Validator;
+
 import vtk.repository.Path;
 import vtk.repository.Repository;
 import vtk.repository.Resource;
 import vtk.web.RequestContext;
+import vtk.web.SimpleFormController;
 
-public class RenameCommandValidator implements Validator {
+public class RenameCommandValidator implements SimpleFormController.Validator<RenameCommand> {
 
     private static Logger logger = LoggerFactory.getLogger(RenameCommandValidator.class);
     private Map<String, String> replaceNameChars;
 
-    @SuppressWarnings("rawtypes")
-    public boolean supports(Class clazz) {
-        return (clazz == RenameCommand.class);
-    }
+    public void validate(HttpServletRequest request, RenameCommand command, Errors errors) {
 
-    public void validate(Object command, Errors errors) {
-
-        RenameCommand renameCommand = (RenameCommand) command;
-        if (renameCommand.getCancel() != null)
+        if (command.getCancel() != null)
             return;
 
-        String name = renameCommand.getName();
+        String name = command.getName();
 
         if (StringUtils.isBlank(name)) {
             errors.rejectValue("name", "manage.rename.resource.missing.name",
@@ -75,24 +72,24 @@ public class RenameCommandValidator implements Validator {
             return;
         }
 
-        Resource resource = renameCommand.getResource();
-        Path newUri = renameCommand.getRenamePath();
+        Resource resource = command.getResource();
+        Path newUri = command.getRenamePath();
 
-        RequestContext requestContext = RequestContext.getRequestContext();
+        RequestContext requestContext = RequestContext.getRequestContext(request);
         String token = requestContext.getSecurityToken();
         Repository repository = requestContext.getRepository();
 
         try {
             if (repository.exists(token, newUri)) {
                 Resource existing = repository.retrieve(token, newUri, false);
-                if (renameCommand.getOverwrite() == null) {
+                if (command.getOverwrite() == null) {
                     if (resource.isCollection() || existing.isCollection()) {
                         errors.rejectValue("name", "manage.rename.resource.exists",
                                 "A resource of this name already exists");
                     } else {
                         errors.rejectValue("name", "manage.rename.resource.overwrite",
                                 "A resource of this name already exists, do you want to overwrite it?");
-                        renameCommand.setConfirmOverwrite(true);
+                        command.setConfirmOverwrite(true);
                     }
                 }
             }

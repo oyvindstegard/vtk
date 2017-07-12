@@ -59,9 +59,9 @@ public class EventListingAtomFeedView extends ListingFeedView {
     @Override
     protected String getFeedTitle(HttpServletRequest request, Map<String, ?> model,
             Resource feedScope) {
-        RequestContext requestContext = RequestContext.getRequestContext();
+        RequestContext requestContext = RequestContext.getRequestContext(request);
         Service service = requestContext.getService();
-        String feedTitle = service.getLocalizedName(feedScope, requestContext.getServletRequest());
+        String feedTitle = service.getLocalizedName(feedScope, request);
         feedTitle = feedTitle == null ? super.getFeedTitle(request, model, feedScope) : feedTitle;
 
         Property displayTypeProp = feedScope.getProperty(displayTypePropDef);
@@ -72,7 +72,8 @@ public class EventListingAtomFeedView extends ListingFeedView {
                 String messageKey = searchType == SpecificDateSearchType.Day ? "eventListing.specificDayEvent"
                         : "eventListing.specificDateEvent";
                 feedTitle = helper.getEventTypeTitle(request, feedScope, searchType, date, messageKey, true, false);
-            } else {
+            }
+            else {
                 String viewType = request.getParameter(EventListingHelper.REQUEST_PARAMETER_VIEW);
                 if (EventListingHelper.VIEW_TYPE_ALL_UPCOMING.equals(viewType)
                         || EventListingHelper.VIEW_TYPE_ALL_PREVIOUS.equals(viewType)) {

@@ -59,7 +59,7 @@ public class AdvancedPublishDialogController extends SimpleFormController<EditPu
 
     @Override
     protected EditPublishingCommand formBackingObject(HttpServletRequest request) throws Exception {
-        RequestContext requestContext = RequestContext.getRequestContext();
+        RequestContext requestContext = RequestContext.getRequestContext(request);
         Repository repository = requestContext.getRepository();
         Path uri = requestContext.getResourceURI();
         String token = requestContext.getSecurityToken();
@@ -89,7 +89,8 @@ public class AdvancedPublishDialogController extends SimpleFormController<EditPu
     protected ModelAndView onSubmit(HttpServletRequest request,
             HttpServletResponse response, EditPublishingCommand command,
             BindException errors) throws Exception {
-
+        RequestContext requestContext = RequestContext
+                .getRequestContext(request);
         Map<String, Object> model = new HashMap<>();
         model.put("command", command);
 
@@ -98,27 +99,27 @@ public class AdvancedPublishDialogController extends SimpleFormController<EditPu
             Date publishDate = null;
             if (command.getPublishDateValue() != null) {
                 publishDate = command.getPublishDateValue().getDateValue();
-                setPropertyDateValue(publishDatePropDef, publishDate);
-            } else {
-                removePropertyValue(publishDatePropDef);
+                setPropertyDateValue(publishDatePropDef, publishDate, requestContext);
+            }
+            else {
+                removePropertyValue(publishDatePropDef, requestContext);
             }
 
             Date unpublishDate = null;
             if (command.getUnpublishDateValue() != null) {
                 unpublishDate = command.getUnpublishDateValue().getDateValue();
                 if (publishDate != null && unpublishDate.after(publishDate)) {
-                    setPropertyDateValue(unpublishDatePropDef, unpublishDate);
+                    setPropertyDateValue(unpublishDatePropDef, unpublishDate, requestContext);
                 }
             } else {
-                removePropertyValue(unpublishDatePropDef);
+                removePropertyValue(unpublishDatePropDef, requestContext);
             }
 
         }
         return new ModelAndView(getSuccessView(), model);
     }
 
-    private void removePropertyValue(PropertyTypeDefinition propDef) throws Exception {
-        RequestContext requestContext = RequestContext.getRequestContext();
+    private void removePropertyValue(PropertyTypeDefinition propDef, RequestContext requestContext) throws Exception {
         Repository repository = requestContext.getRepository();
         String token = SecurityContext.getSecurityContext().getToken();
         Path uri = requestContext.getResourceURI();
@@ -129,8 +130,8 @@ public class AdvancedPublishDialogController extends SimpleFormController<EditPu
         }
     }
 
-    private void setPropertyDateValue(PropertyTypeDefinition datePropDef, Date date) throws Exception {
-        RequestContext requestContext = RequestContext.getRequestContext();
+    private void setPropertyDateValue(PropertyTypeDefinition datePropDef, Date date, 
+            RequestContext requestContext) throws Exception {
         Repository repository = requestContext.getRepository();
         String token = SecurityContext.getSecurityContext().getToken();
         Path uri = requestContext.getResourceURI();

@@ -36,6 +36,7 @@ import java.util.Map;
 import javax.servlet.http.HttpServletRequest;
 
 import org.springframework.beans.factory.annotation.Required;
+
 import vtk.repository.Resource;
 import vtk.repository.resourcetype.PropertyTypeDefinition;
 import vtk.repository.search.PropertySortField;
@@ -149,7 +150,7 @@ public class MyDocumentsReporter extends DocumentReporter {
     //made public for testing
     //Pass the existing map as a parameter to avoid the overhead of creating a new map and merge
     public void addToMap(Map<String, Object> map, HttpServletRequest request) {
-        ArrayList<ReportSubType> reportSubTypes = new ArrayList<ReportSubType>();
+        ArrayList<ReportSubType> reportSubTypes = new ArrayList<>();
         ReportSubTypeEnum currentSubType = guessSubType(request);
         for (ReportSubTypeEnum subType: ReportSubTypeEnum.values())
         {
@@ -168,8 +169,8 @@ public class MyDocumentsReporter extends DocumentReporter {
     }
 
     @Override
-    public Map<String, Object> getReportContent(String token, Resource resource, HttpServletRequest request) {
-        Map<String, Object> map = super.getReportContent(token, resource, request);
+    public Map<String, Object> getReportContent(HttpServletRequest request, String token, Resource resource) {
+        Map<String, Object> map = super.getReportContent(request, token, resource);
         addToMap(map, request);
         return map;
     }

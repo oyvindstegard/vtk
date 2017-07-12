@@ -30,11 +30,14 @@
  */
 package vtk.repository.search.preprocessor;
 
-import org.junit.Test;
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
 
 import org.jmock.Expectations;
 import org.jmock.Mockery;
+import org.junit.Test;
+
+import vtk.repository.Path;
+import vtk.repository.search.preprocessor.QueryStringPreProcessor.ProcessorContext;
 
 /**
  *
@@ -49,19 +52,21 @@ public class QueryStringPreProcessorImplTest {
 
         QueryStringPreProcessorImpl preproc = new QueryStringPreProcessorImpl();
         Mockery context = new Mockery();
+        final ProcessorContext mockContext = 
+                new ProcessorContext(Path.ROOT, Path.ROOT);
         final ExpressionEvaluator evaluator = context.mock(ExpressionEvaluator.class);
         final String var = "dummy";
         context.checking(new Expectations(){
             {
                 oneOf(evaluator).matches(var);
                 will(returnValue(true));
-                oneOf(evaluator).evaluate(var);
+                oneOf(evaluator).evaluate(var, mockContext);
                 will(returnValue("The\\ Dummy"));
             }
         });
         preproc.setExpressionEvaluators(new ExpressionEvaluator[]{ evaluator });
         
-        String result = preproc.process("uri = /a\\ b* AND title = {$dummy} AND contentLength > 0");
+        String result = preproc.process("uri = /a\\ b* AND title = {$dummy} AND contentLength > 0", mockContext);
         context.assertIsSatisfied();
         
         assertEquals("uri = /a\\ b* AND title = The\\ Dummy AND contentLength > 0", result);

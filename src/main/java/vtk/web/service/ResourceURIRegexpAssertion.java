@@ -30,8 +30,11 @@
  */
 package vtk.web.service;
 
+import java.util.Optional;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+
+import javax.servlet.http.HttpServletRequest;
 
 import vtk.repository.Resource;
 import vtk.security.Principal;
@@ -39,7 +42,7 @@ import vtk.security.Principal;
 /**
  *
  */
-public class ResourceURIRegexpAssertion extends AbstractRepositoryAssertion {
+public class ResourceURIRegexpAssertion extends AbstractAssertion {
 
     private Pattern pattern = null;
     private boolean invert = false;
@@ -56,19 +59,8 @@ public class ResourceURIRegexpAssertion extends AbstractRepositoryAssertion {
     }
 
     @Override
-    public boolean conflicts(Assertion assertion) {
+    public boolean conflicts(WebAssertion assertion) {
         return false;
-    }
-
-    @Override
-    public boolean matches(Resource resource, Principal principal) {
-        if (resource == null) {
-            return false;
-        }
-        Matcher m = this.pattern.matcher(resource.getURI().toString());
-        if (this.invert)
-            return !m.matches();
-        return m.matches();
     }
     
     @Override
@@ -79,4 +71,29 @@ public class ResourceURIRegexpAssertion extends AbstractRepositoryAssertion {
         return "request.uri ~ " + this.pattern.pattern(); 
     }
 
+    @Override
+    public Optional<URL> processURL(URL url, Resource resource,
+            Principal principal) {
+        if (matches(resource)) {
+            return Optional.of(url);
+        }
+        return Optional.empty();
+    }
+
+    @Override
+    public URL processURL(URL url) {
+        return url;
+    }
+
+    @Override
+    public boolean matches(HttpServletRequest request, Resource resource,
+            Principal principal) {
+        return matches(resource);
+    }
+
+    private boolean matches(Resource resource) {
+        Matcher m = this.pattern.matcher(resource.getURI().toString());
+        if (invert) return !m.matches();
+        return m.matches();
+    }
 }

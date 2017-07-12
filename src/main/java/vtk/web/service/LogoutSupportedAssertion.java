@@ -32,6 +32,8 @@ package vtk.web.service;
 
 import java.util.Optional;
 
+import javax.servlet.http.HttpServletRequest;
+
 import vtk.repository.Resource;
 import vtk.security.Principal;
 import vtk.security.token.TokenManager;
@@ -39,7 +41,7 @@ import vtk.security.web.AuthenticationHandler;
 import vtk.security.web.AuthenticationHandlerRegistry;
 import vtk.web.RequestContext;
 
-public class LogoutSupportedAssertion extends AbstractRepositoryAssertion {
+public class LogoutSupportedAssertion extends AbstractAssertion {
 
     private TokenManager tokenManager;
     private AuthenticationHandlerRegistry authHandlerRegistry;
@@ -49,10 +51,19 @@ public class LogoutSupportedAssertion extends AbstractRepositoryAssertion {
         this.tokenManager = tokenManager;
         this.authHandlerRegistry = authHandlerRegistry;
     }
-
     @Override
-    public boolean matches(Resource resource, Principal principal) {
-        RequestContext requestContext = RequestContext.getRequestContext();
+    public Optional<URL> processURL(URL url, Resource resource, Principal principal) {
+        return Optional.of(url);
+    }
+    
+    @Override
+    public URL processURL(URL url) {
+        return url;
+    }
+    
+    @Override
+    public boolean matches(HttpServletRequest request, Resource resource, Principal principal) {
+        RequestContext requestContext = RequestContext.getRequestContext(request);
         String token = requestContext.getSecurityToken();
         if (token == null) {
             return false;
@@ -67,7 +78,7 @@ public class LogoutSupportedAssertion extends AbstractRepositoryAssertion {
     }
 
     @Override
-    public boolean conflicts(Assertion assertion) {
+    public boolean conflicts(WebAssertion assertion) {
         return false;
     }
     

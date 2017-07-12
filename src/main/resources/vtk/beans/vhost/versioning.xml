@@ -94,7 +94,9 @@
   <bean id="versioning.handleRevisionAssertions" class="vtk.web.service.AndAssertion">
     <property name="assertions">
       <list>
-        <ref bean="json.isManagedObjectResourceType" />
+        <bean class="vtk.web.service.RepositoryAssertionWrapper">
+          <constructor-arg name="assertion" ref="json.isManagedObjectResourceType" />
+        </bean>
         <ref bean="resourceTypeIsNotSamletProgram" />
         <ref bean="resourceTypeIsNotSamletRetning" />
         <ref bean="resourceTypeIsNotCourseSchedule" />

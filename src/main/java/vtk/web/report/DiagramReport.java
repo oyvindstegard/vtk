@@ -70,15 +70,16 @@ public class DiagramReport extends AbstractReporter {
     private LinkedHashMap<String, TermOperator> fileTypes;
 
     @Override
-    public Map<String, Object> getReportContent(String token, Resource resource, HttpServletRequest request) {
+    public Map<String, Object> getReportContent(HttpServletRequest request, String token, Resource resource) {
         Map<String, Object> result = new HashMap<>();
         result.put(REPORT_NAME, this.getName());
         int total, totalWebpages, files;
 
         /* Create base URL. */
-        RequestContext requestContext = RequestContext.getRequestContext();
+        RequestContext requestContext = RequestContext.getRequestContext(request);
         Principal p = SecurityContext.getSecurityContext().getPrincipal();
-        Service service = RequestContext.getRequestContext().getService();
+
+        Service service = RequestContext.getRequestContext(request).getService();
         
         URL baseURL = service.urlConstructor(requestContext.getRequestURL())
                 .withResource(resource)

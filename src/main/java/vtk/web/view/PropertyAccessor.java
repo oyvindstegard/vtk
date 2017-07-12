@@ -48,9 +48,10 @@ public class PropertyAccessor {
 
     private ResourceTypeTree resourceTypeTree;
 
-    public String propertyValue(String uri, String prefix, String name, String format) {
+    public String propertyValue(HttpServletRequest request, String uri, 
+            String prefix, String name, String format) {
 
-        RequestContext requestContext = RequestContext.getRequestContext();
+        RequestContext requestContext = RequestContext.getRequestContext(request);
         Path path = requestContext.getResourceURI();
 
         if (uri != null && !uri.equals("")) {
@@ -77,7 +78,6 @@ public class PropertyAccessor {
             format = null;
         }
         String token = requestContext.getSecurityToken();
-        HttpServletRequest request = requestContext.getServletRequest();
         Locale locale = 
             new org.springframework.web.servlet.support.RequestContext(request, request.getServletContext()).getLocale();
         Repository repository = requestContext.getRepository();

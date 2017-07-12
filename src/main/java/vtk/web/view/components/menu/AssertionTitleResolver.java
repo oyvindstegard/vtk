@@ -35,15 +35,15 @@ import javax.servlet.http.HttpServletRequest;
 import vtk.repository.Resource;
 import vtk.security.Principal;
 import vtk.web.RequestContext;
-import vtk.web.service.Assertion;
+import vtk.web.service.WebAssertion;
 import vtk.web.service.Service;
 
 public class AssertionTitleResolver implements ListMenuTitleResolver {
-    private Assertion assertion;
+    private WebAssertion assertion;
     private String messageKey;
     
     public String resolve(Resource resource, Service service, HttpServletRequest request) {
-        RequestContext requestContext = RequestContext.getRequestContext();
+        RequestContext requestContext = RequestContext.getRequestContext(request);
         Principal principal = requestContext.getPrincipal();
         boolean match = this.assertion.matches(request, resource, principal);
         if (!match) {
@@ -54,7 +54,7 @@ public class AssertionTitleResolver implements ListMenuTitleResolver {
         return springContext.getMessage(this.messageKey, (String) null);
     }
     
-    public void setAssertion(Assertion assertion) {
+    public void setAssertion(WebAssertion assertion) {
         this.assertion = assertion;
     }
 

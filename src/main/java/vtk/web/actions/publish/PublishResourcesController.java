@@ -61,7 +61,7 @@ public class PublishResourcesController implements Controller {
     
     @Override
     public ModelAndView handleRequest(HttpServletRequest request, HttpServletResponse response) {
-        RequestContext requestContext = RequestContext.getRequestContext();
+        RequestContext requestContext = RequestContext.getRequestContext(request);
         Repository repository = requestContext.getRepository();
         String token = requestContext.getSecurityToken();
 

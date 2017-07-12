@@ -31,12 +31,13 @@
 package vtk.web.service;
 
 import java.util.Map;
+import java.util.Optional;
+import java.util.function.BiFunction;
 
 import vtk.repository.Path;
 import vtk.repository.Resource;
 
 public class ConfigurableURLPostProcessor implements URLPostProcessor {
-
     private String protocol = null; 
     private String host = null;
     private Integer port = null;
@@ -44,30 +45,28 @@ public class ConfigurableURLPostProcessor implements URLPostProcessor {
     private Map<String, String> parameters;
     
     @Override
-    public void processURL(URL url, Resource resource, Service service)
-            throws Exception {
-        processURL(url, service);
-    }
-
-    @Override
-    public void processURL(URL url, Service service) throws Exception {
-        if (this.protocol != null) {
-            url.setProtocol(this.protocol);
-        }
-        if (this.host != null) {
-            url.setHost(this.host);
-        }
-        if (this.port != null) {
-            url.setPort(this.port);
-        }
-        if (this.path != null) {
-            url.setPath(this.path);
-        }
-        if (this.parameters != null) {
-            for (String param: this.parameters.keySet()) {
-                url.setParameter(param, this.parameters.get(param));
+    public BiFunction<URL, Optional<Resource>, URL> urlProcessor(
+            Service service, URL base) {
+        return (url, optResource) -> {
+            if (protocol != null) {
+                url.setProtocol(protocol);
             }
-        }
+            if (host != null) {
+                url.setHost(host);
+            }
+            if (port != null) {
+                url.setPort(port);
+            }
+            if (path != null) {
+                url.setPath(path);
+            }
+            if (parameters != null) {
+                for (String param: parameters.keySet()) {
+                    url.setParameter(param, parameters.get(param));
+                }
+            }
+            return url;
+        };
     }
 
     public void setProtocol(String protocol) {

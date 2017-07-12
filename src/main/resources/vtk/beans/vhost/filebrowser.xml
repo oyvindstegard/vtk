@@ -10,7 +10,7 @@
           <property name="parameterName" value="vrtx" />
           <property name="parameterValue" value="filebrowser" />
         </bean>
-        <bean class="vtk.web.service.ResourceIsCollectionAssertion" />
+        <bean class="vtk.repository.resourcetype.ResourceIsCollectionAssertion" />
       </list>
     </property>
     <property name="authenticationChallenge" ref="${webAuthenticationChallenge}" />

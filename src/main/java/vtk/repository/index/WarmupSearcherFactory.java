@@ -35,8 +35,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+
 import org.apache.lucene.index.IndexReader;
 import org.apache.lucene.search.Filter;
 import org.apache.lucene.search.IndexSearcher;
@@ -44,12 +43,17 @@ import org.apache.lucene.search.Query;
 import org.apache.lucene.search.SearcherFactory;
 import org.apache.lucene.search.Sort;
 import org.apache.lucene.search.TopDocs;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Required;
-import vtk.repository.search.Parser;
+
+import vtk.repository.search.QueryParserFactory;
 import vtk.repository.search.Search;
+import vtk.repository.search.SortingParserFactory;
 import vtk.repository.search.query.LuceneQueryBuilder;
 import vtk.util.text.TextUtils;
+import vtk.web.search.SearchParser;
 
 /**
  *
@@ -58,7 +62,8 @@ public class WarmupSearcherFactory extends SearcherFactory implements Initializi
 
     private LuceneQueryBuilder luceneQueryBuilder;
     
-    private Parser searchParser;
+    private QueryParserFactory queryParserFactory;
+    private SortingParserFactory sortingParserFactory;
     
     private List<Search> warmupSearches = Collections.emptyList();
     
@@ -79,7 +84,7 @@ public class WarmupSearcherFactory extends SearcherFactory implements Initializi
     }
     
     private List<Search> buildWarmupSearches(List<String> searchSpecs) throws Exception {
-        List<Search> searches = new ArrayList<Search>();
+        List<Search> searches = new ArrayList<>();
         for (String spec: searchSpecs) {
             String queryString = "";
             String sortString = "";
@@ -100,12 +105,13 @@ public class WarmupSearcherFactory extends SearcherFactory implements Initializi
             }
             
             Search search  = new Search();
-            search.setQuery(searchParser.parse(queryString));
+            search.setQuery(queryParserFactory.getParser().parse(queryString));
             if (!sortString.isEmpty()) {
                 if ("null".equals(sortString)) {
                     search.setSorting(null);
-                } else {
-                    search.setSorting(searchParser.parseSortString(sortString));
+                }
+                else {
+                    search.setSorting(sortingParserFactory.parser().parse(sortString));
                 }
             }
             if (!limitString.isEmpty()) {
@@ -146,13 +152,18 @@ public class WarmupSearcherFactory extends SearcherFactory implements Initializi
     }
     
     @Required
-    public void setSearchParser(Parser searchParser) {
-        this.searchParser = searchParser;
+    public void setQueryParserFactory(QueryParserFactory queryParserFactory) {
+        this.queryParserFactory = queryParserFactory;
+    }
+
+    @Required
+    public void setSortingParserFactory(SortingParserFactory sortingParserFactory) {
+        this.sortingParserFactory = sortingParserFactory;
     }
 
     /**
      * Set warmup searches as a list of comma-separated values. Searches use
-     * the VTK syntax and are parsed by {@link Parser}.
+     * the VTK syntax and are parsed by {@link SearchParser}.
      * First value is query, second is sorting and third is limit.
      * @param searchSpecs List of 3-part comma-separated tuples on the form
      * "&lt;query&gt;, &lt;sort&gt;, &lt;limit&gt;". Use backslashes to escape

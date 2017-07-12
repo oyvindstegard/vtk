@@ -379,7 +379,7 @@ public class VTKServlet extends DispatcherServlet {
             return;
         }
         SecurityContext securityContext = SecurityContext.getSecurityContext();
-        RequestContext requestContext = RequestContext.getRequestContext();
+        RequestContext requestContext = RequestContext.getRequestContext(req);
 
         String remoteHost = req.getRemoteHost();
 

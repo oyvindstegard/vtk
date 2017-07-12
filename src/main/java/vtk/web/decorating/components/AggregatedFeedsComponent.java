@@ -197,7 +197,7 @@ public class AggregatedFeedsComponent extends AbstractFeedComponent {
             model.put("feedMapping", new FeedMapping(feedMapping));
         }
 
-        URL requestURL = RequestContext.getRequestContext().getRequestURL();
+        URL requestURL = RequestContext.getRequestContext(request.getServletRequest()).getRequestURL();
 
         String[] urlArray = urls.split(",");
         Map<String, String> imgMap = new HashMap<>();
@@ -252,7 +252,8 @@ public class AggregatedFeedsComponent extends AbstractFeedComponent {
     void parseFeeds(DecoratorRequest request, List<SyndEntry> entries, Map<SyndEntry, SyndFeed> feedMapping,
             Map<String, String> imgMap, Map<String, String> descriptionNoImage, URL requestURL, String[] urlArray)
             throws Exception {
-
+        RequestContext requestContext = RequestContext
+                .getRequestContext(request.getServletRequest());
         for (String url : urlArray) {
             url = url.trim();
             SyndFeed tmpFeed = null;
@@ -261,7 +262,7 @@ public class AggregatedFeedsComponent extends AbstractFeedComponent {
             try {
                 if (feedURL.getHost().equals(requestURL.getHost())) {
                     baseURL = new URL(requestURL);
-                    retrieveLocalResource(feedURL);
+                    retrieveLocalResource(feedURL, requestContext);
                     tmpFeed = this.localFeedFetcher.getFeed(feedURL, request);
                 }
                 else {

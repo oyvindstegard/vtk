@@ -36,6 +36,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import javax.servlet.FilterChain;
 import javax.servlet.ServletException;
@@ -53,14 +54,14 @@ import vtk.web.servlet.VTKServlet;
 
 public class DecoratingServletFilter extends AbstractServletFilter {
     private HtmlPageParser htmlParser;
-    private List<HtmlNodeFilter> filters;
+    private List<HtmlNodeFilterFactory> filters;
     private DecorationResolver resolver;
     private String preventDecoratingParameter;
     private Map<String, String> staticHeaders;
     private long maxSize;
     
     public DecoratingServletFilter(HtmlPageParser htmlParser,
-            List<HtmlNodeFilter> filters, DecorationResolver resolver,
+            List<HtmlNodeFilterFactory> filters, DecorationResolver resolver,
             String preventDecoratingParameter,
             Map<String, String> staticHeaders,
             long maxSize) {
@@ -81,9 +82,13 @@ public class DecoratingServletFilter extends AbstractServletFilter {
             return;
         }
         
+        List<HtmlNodeFilter> htmlFilters = filters.stream()
+                .map(factory -> factory.nodeFilter(request))
+                .collect(Collectors.toList());
+        
         response = new DecoratingServletResponse(
                 request, response, resolver, htmlParser, 
-                filters, maxSize);
+                htmlFilters, maxSize);
         if (staticHeaders != null) {
             response = new StaticHeadersResponse(response, staticHeaders);
         }
@@ -99,7 +104,7 @@ public class DecoratingServletFilter extends AbstractServletFilter {
         if (preventDecoratingParameter == null) return false;
         if (request.getParameter(preventDecoratingParameter) != null)
             return true;
-        Service service = RequestContext.getRequestContext().getService();
+        Service service = RequestContext.getRequestContext(request).getService();
         while (service != null) {
             if ("true".equals(service.getAttribute(preventDecoratingParameter))) {
                 return true;

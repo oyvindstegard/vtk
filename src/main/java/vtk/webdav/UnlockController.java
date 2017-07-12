@@ -53,7 +53,7 @@ public class UnlockController extends AbstractWebdavController {
     public void handleRequest(HttpServletRequest request,
             HttpServletResponse response) throws IOException {
          
-        RequestContext requestContext = RequestContext.getRequestContext();
+        RequestContext requestContext = RequestContext.getRequestContext(request);
         Repository repository = requestContext.getRepository();
         String token = requestContext.getSecurityToken();
         Path uri = requestContext.getResourceURI();

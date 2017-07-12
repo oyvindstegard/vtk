@@ -58,7 +58,7 @@ public class DisplayMarkdownView implements View {
     public void render(Map<String, ?> model, HttpServletRequest request,
             HttpServletResponse response) throws Exception {
         
-        RequestContext requestContext = RequestContext.getRequestContext();
+        RequestContext requestContext = RequestContext.getRequestContext(request);
         Repository repository = requestContext.getRepository();
         String token = requestContext.getSecurityToken();
         Path uri = requestContext.getResourceURI();

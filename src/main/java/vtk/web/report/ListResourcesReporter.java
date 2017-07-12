@@ -39,13 +39,12 @@ import vtk.repository.Resource;
 
 public class ListResourcesReporter extends AbstractReporter {
 
-	public Map<String, Object> getReportContent(String token, Resource currentResource, HttpServletRequest request) {
-	    
-	    Map<String, Object> result = new HashMap<String, Object>();
-	    
-		result.put("uri", currentResource.getURI().toString());
+    @Override
+    public Map<String, Object> getReportContent(HttpServletRequest request,
+            String token, Resource currentResource) {
+        Map<String, Object> result = new HashMap<>();
+        result.put("uri", currentResource.getURI().toString());
+        return result;
+    }
 
-		return result;
-	}
-	
 }

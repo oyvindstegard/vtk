@@ -60,10 +60,10 @@ import vtk.repository.store.PrincipalMetadataDAO;
 import vtk.security.AuthenticationException;
 import vtk.security.SecurityContext;
 import vtk.security.token.TokenManager;
-import vtk.web.service.Assertion;
 import vtk.web.service.Service;
 import vtk.web.service.ServiceResolver;
 import vtk.web.service.URL;
+import vtk.web.service.WebAssertion;
 
 /**
  * Request context initializer. On every request the {@link Service}
@@ -151,7 +151,7 @@ public class RequestContextInitializer implements ContextInitializer, ServiceRes
         for (Service root: rootServices) {
             List<Service> children = childServices.get(root);
             if (children != null) {
-                List<Assertion> assertions = root.getAssertions();
+                List<WebAssertion> assertions = root.getAssertions();
                 for (Service child : children) {
                     validateAssertions(child, assertions);
                 }
@@ -248,24 +248,24 @@ public class RequestContextInitializer implements ContextInitializer, ServiceRes
             RequestContext.setRequestContext(
                 new RequestContext(request, securityContext, service, this, resource, 
                         uri, indexFileUri, isIndexFile, viewUnauthenticated,
-                        inRepository, repository, principalMetadataDAO));
+                        inRepository, repository, principalMetadataDAO), request);
             
             // Resolve the request to a service:
             if (resolveService(service, request, resource, securityContext)) {
                 break;
             }
              
-            RequestContext.setRequestContext(null);
+            RequestContext.setRequestContext(null, request);
         }
 
-        if (RequestContext.getRequestContext() == null) {
+        if (RequestContext.getRequestContext(request) == null) {
             throw new UnmappableRequestException("Unable to map request " 
                     + url + " to a valid service", request);
         }
     }
 
     public void destroyContext() {
-        RequestContext.setRequestContext(null);
+//        RequestContext.setRequestContext(null);
     }
 
 
@@ -293,10 +293,10 @@ public class RequestContextInitializer implements ContextInitializer, ServiceRes
             logger.trace("Matching for service " + service.getName() +
                          ", having assertions: " + service.getAssertions());
         }
-        RequestContext requestContext = RequestContext.getRequestContext();
+        RequestContext requestContext = RequestContext.getRequestContext(request);
 
         try {
-            for (Assertion assertion: service.getAssertions()) {
+            for (WebAssertion assertion: service.getAssertions()) {
 
                 if (!assertion.matches(request,resource,securityContext.getPrincipal())) {
                     if (logger.isTraceEnabled()) {
@@ -310,7 +310,8 @@ public class RequestContextInitializer implements ContextInitializer, ServiceRes
                             " for service " + service.getName());
                 } 
             }
-        } catch (AuthenticationException e) {
+        }
+        catch (AuthenticationException e) {
             RequestContext.setRequestContext(
                 new RequestContext(request, securityContext, service, this, resource,
                                    requestContext.getResourceURI(),
@@ -318,7 +319,7 @@ public class RequestContextInitializer implements ContextInitializer, ServiceRes
                                    requestContext.isIndexFile(),
                                    requestContext.isViewUnauthenticated(),
                                    requestContext.isInRepository(),
-                                   repository, principalMetadataDAO));
+                                   repository, principalMetadataDAO), request);
             throw(e);
         }
 
@@ -347,7 +348,7 @@ public class RequestContextInitializer implements ContextInitializer, ServiceRes
                                requestContext.isIndexFile(),
                                requestContext.isViewUnauthenticated(),
                                requestContext.isInRepository(),
-                               repository, principalMetadataDAO));
+                               repository, principalMetadataDAO), request);
         return true;
     }
 
@@ -378,11 +379,12 @@ public class RequestContextInitializer implements ContextInitializer, ServiceRes
             buffer.append(service.getName());
             if (service.getOrder() == Integer.MAX_VALUE) {
                 buffer.append(" (*)");
-            } else {
+            }
+            else {
                 buffer.append(" (").append(service.getOrder()).append(")");
             }
             if (printAssertions) {
-                for (Assertion assertion: service.getAssertions()) {
+                for (WebAssertion assertion: service.getAssertions()) {
                     buffer.append(lineSeparator);
                     for (int i = indent.length(); i > 0; i--) buffer.append(' ');
                     buffer.append("   ").append(assertion);
@@ -402,11 +404,11 @@ public class RequestContextInitializer implements ContextInitializer, ServiceRes
     }
     
     private void validateAssertions(Service child, 
-            List<Assertion> parentAssertions) throws BeanInitializationException {
+            List<WebAssertion> parentAssertions) throws BeanInitializationException {
 
-        for (Assertion assertion : child.getAssertions()) {
+        for (WebAssertion assertion : child.getAssertions()) {
         
-            for (Assertion parentAssertion : parentAssertions) {
+            for (WebAssertion parentAssertion : parentAssertions) {
             
                 if (assertion.conflicts(parentAssertion)) {
                     throw new BeanInitializationException(
@@ -422,7 +424,7 @@ public class RequestContextInitializer implements ContextInitializer, ServiceRes
             return;
         }
         
-        List<Assertion> assertions = new ArrayList<>(parentAssertions);
+        List<WebAssertion> assertions = new ArrayList<>(parentAssertions);
         assertions.addAll(child.getAssertions());
         for (Service myChild : myChildren) {
             validateAssertions(myChild, assertions);

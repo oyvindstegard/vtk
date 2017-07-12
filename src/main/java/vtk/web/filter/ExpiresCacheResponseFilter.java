@@ -75,7 +75,7 @@ public class ExpiresCacheResponseFilter extends AbstractServletFilter {
     
     private HttpServletResponse filterResponse(HttpServletRequest request, 
             HttpServletResponse response) throws IOException, ServletException {
-        RequestContext requestContext = RequestContext.getRequestContext();
+        RequestContext requestContext = RequestContext.getRequestContext(request);
         Path uri = requestContext.getResourceURI();
 
         if (!requestContext.isInRepository()) {

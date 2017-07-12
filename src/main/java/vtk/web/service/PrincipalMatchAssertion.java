@@ -31,10 +31,14 @@
 package vtk.web.service;
 
 import java.util.HashSet;
+import java.util.Optional;
 import java.util.Set;
+
+import javax.servlet.http.HttpServletRequest;
 
 import org.springframework.beans.factory.BeanInitializationException;
 import org.springframework.beans.factory.InitializingBean;
+
 import vtk.repository.Resource;
 import vtk.security.Principal;
 import vtk.security.PrincipalManager;
@@ -53,12 +57,12 @@ import vtk.security.PrincipalManager;
  *   the current principal against.
  * </ul>
  */
-public class PrincipalMatchAssertion extends AbstractRepositoryAssertion
+public class PrincipalMatchAssertion extends AbstractAssertion
   implements InitializingBean {
 
     private PrincipalManager principalManager;
 
-    private Set<String> principals = new HashSet<String>();
+    private Set<String> principals = new HashSet<>();
     private Principal[] groups = new Principal[0];
     
     public void setPrincipals(Set<String> principals) {
@@ -82,7 +86,6 @@ public class PrincipalMatchAssertion extends AbstractRepositoryAssertion
             throw new BeanInitializationException(
                 "JavaBean property 'groups' cannot be null");
         }
-        
         if (this.principalManager == null) {
             throw new BeanInitializationException(
                 "JavaBean property 'principalManager' cannot be null");
@@ -90,15 +93,36 @@ public class PrincipalMatchAssertion extends AbstractRepositoryAssertion
 
     }
 
+    @Override
+    public boolean matches(HttpServletRequest request, Resource resource,
+            Principal principal) {
+        return matches(principal);
+    }
+    
+    @Override
+    public boolean conflicts(WebAssertion assertion) {
+        return false;
+    }
 
-    public boolean matches(Resource resource, Principal principal) {
+    @Override
+    public Optional<URL> processURL(URL url, Resource resource,
+            Principal principal) {
+        if (!matches(principal)) {
+            return Optional.empty();
+        }
+        return Optional.of(url);
+    }
+
+    @Override
+    public URL processURL(URL url) {
+        return url;
+    }
+
+    private boolean matches(Principal principal) {
         if (principal != null) {
-           
             if (this.principals.contains(principal.getQualifiedName())) {
                 return true;
             }
-
-            
             for (int i = 0; i < this.groups.length; i++) {
                 Principal group = this.groups[i];
                 if (this.principalManager.isMember(principal, group)) {
@@ -106,11 +130,8 @@ public class PrincipalMatchAssertion extends AbstractRepositoryAssertion
                 }
             }
         }
-        
         return false;
+        
     }
     
-    public boolean conflicts(Assertion assertion) {
-        return false;
-    }
 }

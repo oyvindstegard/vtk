@@ -53,7 +53,7 @@ public class CreateFromDropDownController implements Controller {
     public ModelAndView handleRequest(HttpServletRequest request, HttpServletResponse response) throws Exception {
         Map<String, Object> model = new HashMap<String, Object>();
 
-        Path uri = RequestContext.getRequestContext().getCurrentCollection();
+        Path uri = RequestContext.getRequestContext(request).getCurrentCollection();
 
         model.put("uri", uri);
 
@@ -67,7 +67,7 @@ public class CreateFromDropDownController implements Controller {
         model.put("uris", uris);
         model.put("type", type);
         if(addParam != null) {
-            model.put("addParam", addParam + "=" + RequestContext.getRequestContext().getRequestURL().getParameter(addParam));
+            model.put("addParam", addParam + "=" + RequestContext.getRequestContext(request).getRequestURL().getParameter(addParam));
         }
 
         return new ModelAndView(this.viewName, model);

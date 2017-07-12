@@ -128,7 +128,8 @@ public class SimpleArticleListingController extends BaseCollectionListingControl
             totalHits += defaultArticles.getTotalHits();
             defaultArticles = null;
         }
-        RequestContext requestContext = RequestContext.getRequestContext();
+
+        RequestContext requestContext = RequestContext.getRequestContext(request);
         Service service = requestContext.getService();
         URL baseURL = service.urlConstructor(requestContext.getRequestURL())
                 .withURI(requestContext.getResourceURI())

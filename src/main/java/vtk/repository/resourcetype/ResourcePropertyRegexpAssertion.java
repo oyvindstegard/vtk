@@ -28,19 +28,18 @@
  * NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package vtk.web.service;
+package vtk.repository.resourcetype;
 
+import java.util.Optional;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import vtk.repository.Namespace;
 import vtk.repository.Property;
 import vtk.repository.Resource;
-import vtk.repository.resourcetype.Value;
 import vtk.security.Principal;
 
-public class ResourcePropertyRegexpAssertion
-  extends AbstractRepositoryAssertion {
+public class ResourcePropertyRegexpAssertion implements RepositoryAssertion {
 
     private Namespace namespace;
     private String name;
@@ -82,11 +81,6 @@ public class ResourcePropertyRegexpAssertion
     }
 
     @Override
-    public boolean conflicts(Assertion assertion) {
-        return false;
-    }
-
-    @Override
     public String toString() {
         StringBuilder sb = new StringBuilder();
         
@@ -107,27 +101,33 @@ public class ResourcePropertyRegexpAssertion
         sb.append(")");
         return sb.toString();
     }
-
+    
     @Override
-    public boolean matches(Resource resource, Principal principal) {
-        boolean match = false;
-        if (resource != null) {
-            Property property = resource.getProperty(this.namespace, this.name);
-            if (property != null) {
-                Value[] values = property.getDefinition().isMultiple() ? 
-                        property.getValues() : new Value[] { property.getValue() } ;
-                for (Value v: values) {
-                    String s = v.getStringValue();
-                    for (Pattern p: this.patterns) {
-                        Matcher m = p.matcher(s);
-                        match = m.find();
-                        if (!match) break;
-                    }
-                    if (match) break;
-                }
-            }
+    public boolean matches(Optional<Resource> resource,
+            Optional<Principal> principal) {
+        if (resource.isPresent()) {
+            return matches(resource.get());
         }
+        return invert;
+    }
 
+
+    private boolean matches(Resource resource) {
+        boolean match = false;
+        Property property = resource.getProperty(this.namespace, this.name);
+        if (property != null) {
+            Value[] values = property.getDefinition().isMultiple() ? 
+                    property.getValues() : new Value[] { property.getValue() } ;
+                    for (Value v: values) {
+                        String s = v.getStringValue();
+                        for (Pattern p: this.patterns) {
+                            Matcher m = p.matcher(s);
+                            match = m.find();
+                            if (!match) break;
+                        }
+                        if (match) break;
+                    }
+        }
         return match && !invert;
     }
 

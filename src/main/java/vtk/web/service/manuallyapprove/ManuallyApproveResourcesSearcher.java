@@ -43,6 +43,8 @@ import java.util.Map.Entry;
 import java.util.Optional;
 import java.util.Set;
 
+import javax.servlet.http.HttpServletRequest;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Required;
@@ -70,7 +72,6 @@ import vtk.repository.search.query.TermOperator;
 import vtk.repository.search.query.TypeTermQuery;
 import vtk.repository.search.query.UriPrefixQuery;
 import vtk.repository.search.query.UriSetQuery;
-import vtk.security.SecurityContext;
 import vtk.web.RequestContext;
 import vtk.web.display.collection.aggregation.AggregationResolver;
 import vtk.web.display.collection.aggregation.CollectionListingAggregatedResources;
@@ -130,16 +131,17 @@ public class ManuallyApproveResourcesSearcher {
      * @return
      * @throws Exception 
      */
-    public List<ManuallyApproveResource> getManuallyApproveResources(Resource collection, Set<String> locations,
+    public List<ManuallyApproveResource> getManuallyApproveResources(
+            HttpServletRequest request, Resource collection, Set<String> locations,
             Set<String> alreadyApproved) throws Exception {
 
+        RequestContext requestContext = RequestContext.getRequestContext(request);
+        
         // The final product. Will be populated with search results.
         List<ManuallyApproveResource> result = new ArrayList<>();
         
-        RequestContext requestContext = RequestContext.getRequestContext();
-
         Repository repository = requestContext.getRepository();
-        String token = SecurityContext.getSecurityContext().getToken();
+        String token = requestContext.getSecurityToken();
         URL localHostURL = viewService.urlConstructor(requestContext.getRequestURL())
                 .withURI(Path.ROOT)
                 .constructURL();
@@ -183,7 +185,8 @@ public class ManuallyApproveResourcesSearcher {
                 continue;
             }
 
-            CollectionListingAggregatedResources clar = aggregationResolver.getAggregatedResources(resource);
+            CollectionListingAggregatedResources clar = aggregationResolver
+                    .getAggregatedResources(request, resource);
 
             boolean isOtherHostLocation = isOtherHostLocation(location, localHostURL);
             boolean isMultiHostSearch = multiHostSearcher.isMultiHostSearchEnabled()
@@ -192,7 +195,7 @@ public class ManuallyApproveResourcesSearcher {
             Query query = generateQuery(locationURL.get(), resourceTypeQuery, clar, localHostURL, isMultiHostSearch);
 
             Search search = new Search();
-            if (RequestContext.getRequestContext().isPreviewUnpublished()) {
+            if (RequestContext.getRequestContext(request).isPreviewUnpublished()) {
                 search.removeFilterFlag(Search.FilterFlag.UNPUBLISHED_COLLECTIONS);
             }
             search.setQuery(query);
@@ -232,8 +235,8 @@ public class ManuallyApproveResourcesSearcher {
 
         // Get any already approved resource where the source might be gone
         // (e.g. removed)
-        Set<PropertySet> alreadyApprovedMissingSource = getAlreadyApprovedMissingSource(alreadyApproved, result,
-                repository, token, localHostURL);
+        Set<PropertySet> alreadyApprovedMissingSource = getAlreadyApprovedMissingSource(request, 
+                alreadyApproved, result, repository, token, localHostURL);
         for (PropertySet ps : alreadyApprovedMissingSource) {
             URL url = getPropertySetURL(ps, localHostURL);
             String source = url.relativeURL(url.getPath().getParent().toString()).toString();
@@ -361,8 +364,9 @@ public class ManuallyApproveResourcesSearcher {
         return null;
     }
 
-    private Set<PropertySet> getAlreadyApprovedMissingSource(Set<String> alreadyApproved,
-            List<ManuallyApproveResource> result, Repository repository, String token, URL localHostURL) {
+    private Set<PropertySet> getAlreadyApprovedMissingSource(HttpServletRequest request, 
+            Set<String> alreadyApproved, List<ManuallyApproveResource> result, 
+            Repository repository, String token, URL localHostURL) {
 
         Set<String> missingAlreadyApproved = new HashSet<>();
         for (String s : alreadyApproved) {
@@ -402,7 +406,7 @@ public class ManuallyApproveResourcesSearcher {
             if (!localPathsAsStringSet.isEmpty()) {
                 UriSetQuery uriSetQuery = new UriSetQuery(localPathsAsStringSet, TermOperator.IN);
                 Search search = new Search();
-                if (RequestContext.getRequestContext().isPreviewUnpublished()) {
+                if (RequestContext.getRequestContext(request).isPreviewUnpublished()) {
                     search.removeFilterFlag(Search.FilterFlag.UNPUBLISHED_COLLECTIONS);
                 }
                 search.setQuery(uriSetQuery);

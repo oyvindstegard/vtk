@@ -1,12 +1,15 @@
-package vtk.web.service;
+package vtk.repository.resourcetype;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertTrue;
+
+import java.util.Optional;
 
 import org.apache.commons.lang.ArrayUtils;
 import org.jmock.Expectations;
 import org.jmock.Mockery;
 import org.junit.Before;
 import org.junit.Test;
+
 import vtk.repository.Resource;
 import vtk.security.Principal;
 import vtk.security.Principal.Type;
@@ -14,7 +17,6 @@ import vtk.security.PrincipalImpl;
 
 public class ResourceContentTypeRegexpAssertionTest {
     
-    private ResourceContentTypeRegexpAssertion assertion;
     private Principal principal;
     
     /* MSOffice 2007+: http://filext.com/faq/office_mime_types.php */
@@ -50,11 +52,10 @@ public class ResourceContentTypeRegexpAssertionTest {
             "application/vnd.ms-powerpoint.slideshow.macroEnabled.12" };
     
     // And all together..
-    private String[] testOoXmlContentTypes = (String[]) ArrayUtils.addAll(testWordContentTypes, (String[]) ArrayUtils.addAll(testExcelContentTypes, testPowerpointContentTypes));
+    private String[] testOoXmlContentTypes = (String[]) ArrayUtils.addAll(testWordContentTypes, ArrayUtils.addAll(testExcelContentTypes, testPowerpointContentTypes));
     
     @Before
     public void setUp() {
-        assertion = new ResourceContentTypeRegexpAssertion();
         principal = new PrincipalImpl("user", Type.USER);
     }
     
@@ -101,7 +102,7 @@ public class ResourceContentTypeRegexpAssertionTest {
     }
     
     private boolean matchTestContentTypeWithPattern(final String testContentType, String pattern) {
-        assertion.setPattern(pattern);
+        ResourceContentTypeRegexpAssertion assertion = new ResourceContentTypeRegexpAssertion(pattern);
         Mockery context = new Mockery();
         final Resource resource = context.mock(Resource.class);
         context.checking(new Expectations(){
@@ -110,7 +111,7 @@ public class ResourceContentTypeRegexpAssertionTest {
                 will(returnValue(testContentType));
             }
         });
-        return assertion.matches(resource, principal);
+        return assertion.matches(Optional.ofNullable(resource), Optional.ofNullable(principal));
     }
 
 }

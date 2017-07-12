@@ -105,9 +105,9 @@ public abstract class AbstractFeedComponent extends ViewRenderingDecoratorCompon
      * Retrieves the resource corresponding to a local feed for authorization
      * purposes
      */
-    protected Resource retrieveLocalResource(URL feedURL) throws ResourceNotFoundException,
+    protected Resource retrieveLocalResource(URL feedURL, RequestContext requestContext) 
+            throws ResourceNotFoundException,
     AuthorizationException, AuthenticationException, Exception {
-        RequestContext requestContext = RequestContext.getRequestContext();
         Repository repository = requestContext.getRepository();
         String token = requestContext.isViewUnauthenticated() ? null : requestContext.getSecurityToken(); // VTK-2460
         return repository.retrieve(token, feedURL.getPath(), true);

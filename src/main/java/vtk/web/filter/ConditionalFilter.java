@@ -40,17 +40,17 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import vtk.web.service.Assertion;
+import vtk.web.service.WebAssertion;
 import vtk.web.servlet.AbstractServletFilter;
 
 
 /**
- * Conditional servlet filter. Performs an {@link Assertion} match on
+ * Conditional servlet filter. Performs an {@link WebAssertion} match on
  * the request before conditionally invoking the target filter.
  *
  * <p>Constructor arguments:
  * <ul>
- *   <li><code>assertion</code> - the {@link Assertion} to match
+ *   <li><code>assertion</code> - the {@link WebAssertion} to match
  *   <li><code>filter</code> - the target {@link Filter
  *   servlet filter} which is invoked upon an assertion match
  * </ul>
@@ -58,9 +58,9 @@ import vtk.web.servlet.AbstractServletFilter;
 public class ConditionalFilter extends AbstractServletFilter {
 
     private Filter filter;
-    private Assertion assertion;
+    private WebAssertion assertion;
     
-    public ConditionalFilter(Assertion assertion, Filter filter) {
+    public ConditionalFilter(WebAssertion assertion, Filter filter) {
         this.filter = filter;
         this.assertion = assertion;
     }

@@ -116,7 +116,7 @@ public class ResourcePrincipalPermissionsProvider implements ReferenceDataProvid
     public void referenceData(Map<String, Object> model, HttpServletRequest request) {
         boolean result = false;
         Map<String, Object> permissionsModel = new HashMap<>();
-        RequestContext requestContext = RequestContext.getRequestContext();
+        RequestContext requestContext = RequestContext.getRequestContext(request);
         String scheme = request.getScheme();
         Integer port = request.getServerPort();
         

@@ -113,7 +113,7 @@ public class BreadCrumbProvider implements ReferenceDataProvider, InitializingBe
     @Override
     public void referenceData(Map<String, Object> model, HttpServletRequest request) {
 
-        RequestContext requestContext = RequestContext.getRequestContext();
+        RequestContext requestContext = RequestContext.getRequestContext(request);
         Repository repository = requestContext.getRepository();
         String token = requestContext.isViewUnauthenticated() ? null : requestContext.getSecurityToken(); // VTK-2460
         Path uri = requestContext.getResourceURI();
@@ -203,9 +203,7 @@ public class BreadCrumbProvider implements ReferenceDataProvider, InitializingBe
                 title = StringUtils.isBlank(navigationTitle) ? title : navigationTitle;
 
                 URL url = service.urlConstructor(requestContext.getRequestURL())
-                        .withResource(r)
-                        .withPrincipal(principal)
-                        .matchAssertions(false)
+                        .withURI(r.getURI())
                         .constructURL();
                 if (!skipLastElement) {
                     if (i == length - 1) {

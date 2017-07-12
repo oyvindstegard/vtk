@@ -40,9 +40,9 @@ import java.util.Optional;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
 import org.springframework.beans.factory.annotation.Required;
 import org.springframework.web.servlet.ModelAndView;
 import org.springframework.web.servlet.mvc.Controller;
@@ -98,11 +98,10 @@ public abstract class FilteredCollectionListingController implements Controller 
     private PropertyTypeDefinition numberOfResultSetsPropDef;
 
     /* Override if other searcher is needed. (Example: multihostSearcher) */
-    protected ResultSet search(Resource collection, Query query, int offset) {
+    protected ResultSet search(HttpServletRequest request, Resource collection, Query query, int offset) {
 
         Search search = new Search();
-
-        if (RequestContext.getRequestContext().isPreviewUnpublished()) {
+        if (RequestContext.getRequestContext(request).isPreviewUnpublished()) {
             search.removeFilterFlag(Search.FilterFlag.UNPUBLISHED_COLLECTIONS);
         }
 
@@ -118,11 +117,11 @@ public abstract class FilteredCollectionListingController implements Controller 
         search.setLimit(pageLimit);
 
         String token = SecurityContext.getSecurityContext().getToken();
-        return RequestContext.getRequestContext().getRepository().search(token, search);
+        return RequestContext.getRequestContext(request).getRepository().search(token, search);
     }
 
     /* Override if other locations are needed. (Examples: Aggregation or prefix) */
-    protected Query getLocationQuery(Resource collection) {
+    protected Query getLocationQuery(HttpServletRequest request, Resource collection) {
         return new UriPrefixQuery(collection.getURI().toString(), false);
     }
 
@@ -144,42 +143,42 @@ public abstract class FilteredCollectionListingController implements Controller 
     }
 
     /* Override if special filter handling is needed. */
-    protected Map<String, List<String>> getFilters() {
+    protected Map<String, List<String>> getFilters(HttpServletRequest request) {
         return filters;
     }
 
     /* Override if collection requires specific values for view. */
-    protected Map<String, Object> getCollectionSpecificValues(Resource collection) {
+    protected Map<String, Object> getCollectionSpecificValues(HttpServletRequest request, Resource collection) {
         return new HashMap<>();
     }
 
     @Override
     public ModelAndView handleRequest(HttpServletRequest request, HttpServletResponse response) throws Exception {
 
-        final RequestContext rc = RequestContext.getRequestContext();
+        final RequestContext rc = RequestContext.getRequestContext(request);
         Repository repository = rc.getRepository();
         String token = rc.getSecurityToken();
         Path uri = rc.getResourceURI();
         Resource collection = repository.retrieve(token, uri, false);
 
         Map<String, Object> model = new HashMap<>();
-        Map<String, Object> collectionSpecificValues = getCollectionSpecificValues(collection);
+        Map<String, Object> collectionSpecificValues = getCollectionSpecificValues(request, collection);
 
         int page = ListingPager.getPage(request, ListingPager.UPCOMING_PAGE_PARAM);
         int offset = (page - 1) * pageLimit;
 
-        Query locationQuery = getLocationQuery(collection);
+        Query locationQuery = getLocationQuery(request, collection);
         Query baseQuery = buildBaseQuery(request, collectionSpecificValues, collection);
         Query facetQuery = baseQuery != null ? combineQueries(locationQuery, baseQuery) : locationQuery;
 
         Map<String, List<String>> facets = runFacetSearch(request, collectionSpecificValues, collection, facetQuery,
-                getFilters());
+                getFilters(request));
 
         Query filterQuery = buildFilterQuery(request, collectionSpecificValues, collection, facets);
 
         Query fullQuery = filterQuery != null ? combineQueries(facetQuery, filterQuery) : facetQuery;
 
-        ResultSet rs = search(collection, fullQuery, offset);
+        ResultSet rs = search(request, collection, fullQuery, offset);
 
         Map<String, Map<String, FilterURL>> urlFilters = new LinkedHashMap<>();
         if (facets != null) {

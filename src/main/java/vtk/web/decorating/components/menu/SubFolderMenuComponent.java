@@ -34,6 +34,8 @@ import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
+import javax.servlet.http.HttpServletRequest;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.BeanInitializationException;
@@ -145,7 +147,8 @@ public class SubFolderMenuComponent extends ListMenuComponent {
                 return;
             }
         }
-        RequestContext requestContext = RequestContext.getRequestContext();
+        HttpServletRequest servletRequest = request.getServletRequest();
+        RequestContext requestContext = RequestContext.getRequestContext(servletRequest);
         String token = requestContext.isViewUnauthenticated() ? 
                 null : requestContext.getSecurityToken(); // VTK-2460
         Repository repository = requestContext.getRepository();
@@ -188,7 +191,7 @@ public class SubFolderMenuComponent extends ListMenuComponent {
         ResultSet rs = repository.search(token, search);
         logger.debug("Executed search: " + search + ", hits: " + rs.getSize());
         ListMenu<PropertySet> menu = menuGenerator
-                .buildListMenu(rs, menuRequest, modelName, ascendingSort);
+                .buildListMenu(servletRequest, rs, menuRequest, modelName, ascendingSort);
         Map<String, Object> menuModel = menuGenerator.buildMenuModel(
                 menu, menuRequest, ascendingSort);
         model.put(modelName, menuModel);
@@ -245,7 +248,7 @@ public class SubFolderMenuComponent extends ListMenuComponent {
 
     @Override
     protected Map<String, String> getParameterDescriptionsInternal() {
-        Map<String, String> map = new LinkedHashMap<String, String>();
+        Map<String, String> map = new LinkedHashMap<>();
         map.put(PARAMETER_TITLE, PARAMETER_TITLE_DESC);
         map.put(PARAMETER_SORT, PARAMETER_SORT_DESC);
         map.put(PARAMETER_SORT_DIRECTION, PARAMETER_SORT_DIRECTION_DESC);

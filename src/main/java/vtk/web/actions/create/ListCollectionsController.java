@@ -82,7 +82,7 @@ public class ListCollectionsController implements Controller {
             return null;
         }
         
-        String token = RequestContext.getRequestContext().getSecurityToken();
+        String token = RequestContext.getRequestContext(request).getSecurityToken();
         List<Resource> resources = provider.buildSearchAndPopulateResources(uri, token);
         writeResults(resources, request, response, token);
         return null;
@@ -126,7 +126,8 @@ public class ListCollectionsController implements Controller {
     
     private JSONObject generateJSONObjectNode(Resource resource, String token, HttpServletRequest request, Map<String, List<String>> uriParameters, String buttonText) {
         JSONObject o = new JSONObject();
-        RequestContext requestContext = RequestContext.getRequestContext();
+
+        RequestContext requestContext = RequestContext.getRequestContext(request);
         Principal principal = requestContext.getPrincipal();
 
         String title;

@@ -57,10 +57,11 @@ public class BlogListingController extends CollectionListingController {
     public void runSearch(HttpServletRequest request, Resource collection, Map<String, Object> model, int pageLimit)
             throws Exception {
         super.runSearch(request, collection, model, pageLimit);
-        RequestContext requestContext = RequestContext.getRequestContext();
+        RequestContext requestContext = RequestContext.getRequestContext(request);
         String token = requestContext.getSecurityToken();
         Repository repository = requestContext.getRepository();
-        List<TagElement> tagElements = tagElementsProvider.getTagElements(collection.getURI(), token, 1, 5, 20, 1);
+        List<TagElement> tagElements = tagElementsProvider
+                .getTagElements(request, collection.getURI(), token, 1, 5, 20, 1);
         model.put("tagElements", tagElements);
         List<Comment> comments = repository.getComments(token, collection, true, 4);
 

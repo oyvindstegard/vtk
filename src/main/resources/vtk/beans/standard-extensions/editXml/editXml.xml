@@ -33,11 +33,14 @@
     <property name="arguments" ref="editService" />
   </bean>
 
-  <bean id="editXslStylesheetAvailable"
-        class="vtk.web.service.XmlSchemaXPathAssertion">
-    <property name="schemaRegistry" ref="schemaRegistry" />
-    <property name="schemaPropertyDefinition" ref="schemaPropDef" />
-    <property name="xpath" value="${editXslTransformationSchemaXPath}" />
+  <bean id="editXslStylesheetAvailable" class="vtk.web.service.RepositoryAssertionWrapper">
+    <constructor-arg name="assertion">
+      <bean class="vtk.repository.resourcetype.XmlSchemaXPathAssertion">
+        <constructor-arg name="schemaRegistry" ref="schemaRegistry" />
+        <constructor-arg name="schemaPropertyDefinition" ref="schemaPropDef" />
+        <constructor-arg name="xpath" value="${editXslTransformationSchemaXPath}" />
+      </bean>
+    </constructor-arg>
   </bean>
 
 
@@ -48,7 +51,7 @@
     <property name="transformerManager" ref="editTransformerManager" />
     <property name="schemaPropDef" ref="schemaPropDef" />
 
-    <property name="viewName" value="edit" />
+    <property name="viewName" value="xmlEditView" />
     <property name="finishViewName" value="redirectToManage" />
 
   </bean>
@@ -70,7 +73,7 @@
 
   <!-- XML edit view -->
 
-  <bean id="editView" class="vtk.web.view.xslt.ResourceXsltView">
+  <bean id="xmlEditView" class="vtk.web.view.xslt.ResourceXsltView">
     <property name="staticAttributes" ref="xslTransformerParameterMap" />
     <property name="referenceDataProviders">
       <list>

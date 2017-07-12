@@ -579,7 +579,8 @@
     <property name="handler" ref="editReadProcessedPermissionsHandler" />
   </bean>
 
-  <bean id="resourceTypeIsHtml" class="vtk.web.service.ResourceTypeAssertion" parent="repositoryAware">
+  <bean id="resourceTypeIsHtml" 
+        class="vtk.repository.resourcetype.ResourceTypeAssertion" parent="repositoryAware">
     <property name="resourceTypeDefinition" ref="htmlResourceTypeDefinition" />
   </bean>
 
@@ -667,7 +668,7 @@
     </property>
     <property name="assertions">
       <list>
-        <bean class="vtk.web.service.ResourceTypeAssertion" parent="repositoryAware">
+        <bean class="vtk.repository.resourcetype.ResourceTypeAssertion" parent="repositoryAware">
           <property name="resourceTypeDefinition" ref="collectionResourceTypeDefinition" />
           <property name="invert" value="true" />
         </bean>
@@ -701,7 +702,6 @@
     <property name="messageKey" value="tabs.previewWorkingCopy" />
   </bean>
 
-
   <bean id="preview.mixedModeService" class="vtk.web.service.ServiceImpl">
     <property name="parent" ref="previewService" />
     <property name="order" value="-1" />
@@ -709,25 +709,25 @@
       <list>
         <!-- <bean class="vtk.web.service.RequestProtocolAssertion"> <property name="protocol" value="https" />
           </bean> -->
-        <bean class="vtk.web.service.OrAssertion">
-          <property name="assertions">
+        <bean class="vtk.repository.resourcetype.RepositoryOrAssertion">
+          <constructor-arg name="assertions">
             <list>
-              <bean class="vtk.web.service.ResourcePropertyRegexpAssertion">
+              <bean class="vtk.repository.resourcetype.ResourcePropertyRegexpAssertion">
                 <property name="namespace" ref="DEFAULT_NAMESPACE" />
                 <property name="name" value="sslMixedMode" />
                 <property name="pattern" value="(img|iframe|frame|embed|link|base|object|applet|property|xml:img:?):http://" />
               </bean>
-              <bean class="vtk.web.service.ResourcePropertyRegexpAssertion">
+              <bean class="vtk.repository.resourcetype.ResourcePropertyRegexpAssertion">
                 <property name="namespace" ref="DEFAULT_NAMESPACE" />
                 <property name="name" value="sslMixedMode" />
                 <property name="pattern" value="element:style" />
               </bean>
-              <bean class="vtk.web.service.ResourcePropertyRegexpAssertion">
+              <bean class="vtk.repository.resourcetype.ResourcePropertyRegexpAssertion">
                 <property name="namespace" ref="DEFAULT_NAMESPACE" />
                 <property name="name" value="sslMixedMode" />
                 <property name="pattern" value="script:" />
               </bean>
-              <bean class="vtk.web.service.ResourcePropertyRegexpAssertion">
+              <bean class="vtk.repository.resourcetype.ResourcePropertyRegexpAssertion">
                 <property name="namespace" ref="DEFAULT_NAMESPACE" />
                 <property name="name" value="sslMixedMode" />
                 <property name="patterns">
@@ -738,15 +738,15 @@
                   </list>
                 </property>
               </bean>
-              <bean class="vtk.web.service.ResourcePropertyRegexpAssertion">
+              <bean class="vtk.repository.resourcetype.ResourcePropertyRegexpAssertion">
                 <property name="namespace" ref="DEFAULT_NAMESPACE" />
                 <property name="name" value="sslMixedMode" />
                 <property name="pattern" value="attr:style" />
               </bean>
-              <!-- <bean class="vtk.web.service.ResourcePropertyRegexpAssertion"> <property name="namespace" ref="DEFAULT_NAMESPACE"
-                /> <property name="name" value="sslMixedMode" /> <property name="pattern" value="attr:on" /> </bean> -->
+              <!-- <bean class="vtk.repository.resourcetype.ResourcePropertyRegexpAssertion"> <property name="namespace" ref="DEFAULT_NAMESPACE"
+                   /> <property name="name" value="sslMixedMode" /> <property name="pattern" value="attr:on" /> </bean> -->
             </list>
-          </property>
+          </constructor-arg>
         </bean>
       </list>
     </property>
@@ -810,8 +810,12 @@
       <bean class="vtk.web.service.OrAssertion">
         <property name="assertions">
           <list>
-            <ref bean="contentTypeMatchesAnyText" />
-            <ref bean="json.contentTypeAssertion" />
+              <bean class="vtk.web.service.RepositoryAssertionWrapper">
+                <constructor-arg name="assertion" ref="contentTypeMatchesAnyText" />
+              </bean>
+              <bean class="vtk.web.service.RepositoryAssertionWrapper">
+                <constructor-arg name="assertion" ref="json.contentTypeAssertion" />
+              </bean>
           </list>
         </property>
       </bean>

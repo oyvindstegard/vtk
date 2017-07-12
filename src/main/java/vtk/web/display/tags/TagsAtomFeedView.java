@@ -52,10 +52,9 @@ public class TagsAtomFeedView extends ListingFeedView {
 
     @Override
     protected void addFeedLinks(HttpServletRequest request, Resource feedScope, Feed feed) {
-        RequestContext requestContext = RequestContext.getRequestContext();
+        RequestContext requestContext = RequestContext.getRequestContext(request);
         URL feedAlternateURL = viewService.urlConstructor(requestContext.getRequestURL())
-                .withResource(feedScope)
-                .matchAssertions(false)
+                .withURI(feedScope.getURI())
                 .constructURL();
         String tag = requestContext.getRequestURL().getParameter("tag");
         if (tag != null) feedAlternateURL.addParameter("tag", tag);
@@ -66,7 +65,7 @@ public class TagsAtomFeedView extends ListingFeedView {
 
     @Override
     protected Resource getFeedScope(HttpServletRequest request) throws Exception {
-        RequestContext requestContext = RequestContext.getRequestContext();
+        RequestContext requestContext = RequestContext.getRequestContext(request);
         String token = requestContext.getSecurityToken();
 
         return tagsHelper.getScopedResource(token, request);
@@ -75,7 +74,7 @@ public class TagsAtomFeedView extends ListingFeedView {
     @Override
     protected String getFeedTitle(HttpServletRequest request, Map<String, ?> model,
             Resource feedScope) {
-        RequestContext requestContext = RequestContext.getRequestContext();
+        RequestContext requestContext = RequestContext.getRequestContext(request);
         Service service = requestContext.getService();
         return service.getLocalizedName(feedScope, request);
     }

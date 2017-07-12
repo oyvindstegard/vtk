@@ -30,15 +30,15 @@
  */
 package vtk.repository.search.preprocessor;
 
-
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
 import vtk.repository.Path;
 import vtk.repository.search.QueryException;
-import vtk.web.RequestContext;
+import vtk.repository.search.preprocessor.QueryStringPreProcessor.ProcessorContext;
 
 
 /**
@@ -49,9 +49,7 @@ import vtk.web.RequestContext;
  *  <p>Note: The current implementation can return a negative depth value.
  */
 public class CurrentDepthExpressionEvaluator implements ExpressionEvaluator {
-    
     private static Logger logger = LoggerFactory.getLogger(CurrentDepthExpressionEvaluator.class);
-    
     private String variableName = "currentDepth";
     private Pattern pattern = compilePattern();
     
@@ -64,7 +62,7 @@ public class CurrentDepthExpressionEvaluator implements ExpressionEvaluator {
         this.variableName = variableName;
         this.pattern = compilePattern();
     }
-
+    
     @Override
     public boolean matches(String token) {
         Matcher m = this.pattern.matcher(token);
@@ -72,32 +70,29 @@ public class CurrentDepthExpressionEvaluator implements ExpressionEvaluator {
     }
     
     @Override
-    public String evaluate(String token) throws QueryException {
-
+    public String evaluate(String token, ProcessorContext ctx) throws QueryException {
         Matcher m = this.pattern.matcher(token);
         if (!m.matches()) {
             throw new QueryException("Illegal query token: '" + token + "'");
         }
-
-        RequestContext requestContext = RequestContext.getRequestContext();
-        Path uri = requestContext.getResourceURI();
-
+        
+        Path uri = ctx.currentURI;
         int depth = uri.getDepth();
 
         if (m.group(1) != null) {
             String operator = m.group(2);
             int qty = Integer.parseInt(m.group(3));
             
-            if (operator.equals("+"))
+            if (operator.equals("+")) {
                 depth += qty;
-            else
+            }
+            else {
                 depth -= qty;
+            }
         }
-        
-        if (logger.isDebugEnabled())
-            logger.debug("Evaluated depth variable '" + token + "' to depth " + depth);
-        
-        return "" + depth;
+        logger.debug("Evaluated depth variable '{}' to depth {}", token, depth);
+        return String.valueOf(depth);
     }
+
 }
 

@@ -16,7 +16,7 @@
 	</select>
 	<div id="${inputFieldName}Descriptions">
 	  <#list sharedTextProps[inputFieldName]?keys as y >
-            <#local language = resourceLocaleResolver.resolveLocale(null)?string />
+            <#local language = resourceLocaleResolver.resolveLocale(VRTX_SERVLET_REQUEST)?string />
     	    <#if language == "no_NO">
     	      <#local language = "no" />
     	    <#elseif language == "no_NO_NY">

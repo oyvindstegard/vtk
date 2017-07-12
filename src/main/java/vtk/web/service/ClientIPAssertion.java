@@ -30,6 +30,7 @@
  */
 package vtk.web.service;
 
+import java.util.Optional;
 import java.util.regex.Pattern;
 
 import javax.servlet.http.HttpServletRequest;
@@ -40,7 +41,7 @@ import vtk.security.Principal;
 /**
  * Assertion that performs regexp matching on the client IP address.
  */
-public class ClientIPAssertion implements Assertion {
+public class ClientIPAssertion implements WebAssertion {
     
     private Pattern pattern;
     
@@ -49,13 +50,14 @@ public class ClientIPAssertion implements Assertion {
     }
 
     @Override
-    public boolean processURL(URL url, Resource resource, Principal principal,
-            boolean match) {
-        return match;
+    public Optional<URL> processURL(URL url, Resource resource, Principal principal) {
+        return Optional.of(url);
     }
 
     @Override
-    public void processURL(URL url) {
+    public URL processURL(URL url) {
+        return url;
+        
     }
 
     @Override
@@ -65,7 +67,7 @@ public class ClientIPAssertion implements Assertion {
     }
 
     @Override
-    public boolean conflicts(Assertion assertion) {
+    public boolean conflicts(WebAssertion assertion) {
         return false;
     }
 
@@ -73,4 +75,5 @@ public class ClientIPAssertion implements Assertion {
     public String toString() {
         return "client.ip ~ " + pattern.toString();
     }
+
 }

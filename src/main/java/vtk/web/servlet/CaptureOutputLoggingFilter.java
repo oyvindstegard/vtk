@@ -86,7 +86,7 @@ public class CaptureOutputLoggingFilter extends AbstractServletFilter
             HttpServletResponse response, FilterChain chain)
             throws IOException, ServletException {
 
-        if (!logForService(RequestContext.getRequestContext().getService())) {
+        if (!logForService(RequestContext.getRequestContext(request).getService())) {
             chain.doFilter(request, response);
             return;
         }

@@ -158,12 +158,13 @@ public class ListMenuComponent extends ViewRenderingDecoratorComponent {
         }
 
         // Build main menu
-        ListMenu<PropertySet> menu = buildMainMenu(menuRequest);
+        ListMenu<PropertySet> menu = buildMainMenu(menuRequest, request);
 
         // Add sub menu?
         MenuItem<PropertySet> activeItem = menu.getActiveItem();
         if (activeItem != null && menuRequest.getDepth() > 1) {
-            ListMenu<PropertySet> submenu = buildSubMenu(menuRequest, request.getServletRequest().getRequestURI());
+            ListMenu<PropertySet> submenu = buildSubMenu(menuRequest, request,
+                    request.getServletRequest().getRequestURI());
             if (submenu != null) {
                 activeItem.setSubMenu(submenu);
             }
@@ -172,13 +173,15 @@ public class ListMenuComponent extends ViewRenderingDecoratorComponent {
         model.put(this.modelName, menu);
     }
 
-    private ListMenu<PropertySet> buildMainMenu(ListMenuRequest menuRequest) {
+    private ListMenu<PropertySet> buildMainMenu(ListMenuRequest menuRequest, 
+            DecoratorRequest request) {
 
+        RequestContext requestContext = RequestContext.getRequestContext(request.getServletRequest());
         ListMenu<PropertySet> menu = new ListMenu<>();
         menu.setLabel(menuRequest.getStyle());
 
         Query query = buildMainSearch(menuRequest);
-        ResultSet rs = search(menuRequest.getToken(), query);
+        ResultSet rs = search(menuRequest.getToken(), query, requestContext);
 
         Path currentURI = menuRequest.getCurrentURI();
         String[] childNames = menuRequest.getChildNames();
@@ -195,7 +198,7 @@ public class ListMenuComponent extends ViewRenderingDecoratorComponent {
                 continue;
             }
 
-            MenuItem<PropertySet> item = buildItem(resource);
+            MenuItem<PropertySet> item = buildItem(request, resource);
             Path uri = resource.getURI();
 
             // Hidden?
@@ -315,7 +318,7 @@ public class ListMenuComponent extends ViewRenderingDecoratorComponent {
         return q;
     }
 
-    private ResultSet doSubSearch(ListMenuRequest menuRequest) {
+    private ResultSet doSubSearch(ListMenuRequest menuRequest, RequestContext requestContext) {
 
         OrQuery orQuery = new OrQuery();
 
@@ -329,12 +332,11 @@ public class ListMenuComponent extends ViewRenderingDecoratorComponent {
             orQuery.add(getChildrenQuery(uri, i + 1));
         }
 
-        return search(menuRequest.getToken(), orQuery);
+        return search(menuRequest.getToken(), orQuery, requestContext);
     }
 
-    private ResultSet search(String token, Query query) {
+    private ResultSet search(String token, Query query, RequestContext requestContext) {
 
-        RequestContext requestContext = RequestContext.getRequestContext();
         Repository repository = requestContext.getRepository();
 
         // We are searching for collections
@@ -355,7 +357,7 @@ public class ListMenuComponent extends ViewRenderingDecoratorComponent {
         }
 
         Search search = new Search();
-        if (RequestContext.getRequestContext().isPreviewUnpublished()) {
+        if (requestContext.isPreviewUnpublished()) {
             search.removeFilterFlag(Search.FilterFlag.UNPUBLISHED_COLLECTIONS, Search.FilterFlag.UNPUBLISHED);
         }
         search.setSorting(null);
@@ -400,9 +402,11 @@ public class ListMenuComponent extends ViewRenderingDecoratorComponent {
     /**
      * Add sub menu if current uri is below uri
      */
-    private ListMenu<PropertySet> buildSubMenu(ListMenuRequest menuRequest, String requestURI) {
+    private ListMenu<PropertySet> buildSubMenu(ListMenuRequest menuRequest, DecoratorRequest request, 
+            String requestURI) {
 
-        ResultSet rs = doSubSearch(menuRequest);
+        RequestContext requestContext = RequestContext.getRequestContext(request.getServletRequest());
+        ResultSet rs = doSubSearch(menuRequest, requestContext);
 
         if (rs == null || rs.getSize() == 0) {
             return null;
@@ -439,11 +443,11 @@ public class ListMenuComponent extends ViewRenderingDecoratorComponent {
         List<Path> uris = menuRequest.getCurrentURI().getPaths();
         Path rootUri = uris.get(rootDepth);
 
-        return buildSubItems(rootUri, childMap, menuRequest);
+        return buildSubItems(rootUri, childMap, request, menuRequest);
     }
 
     private ListMenu<PropertySet> buildSubItems(Path childrenKey, Map<Path, List<PropertySet>> childMap,
-            ListMenuRequest menuRequest) {
+            DecoratorRequest request, ListMenuRequest menuRequest) {
 
         List<MenuItem<PropertySet>> items = new ArrayList<>();
         List<PropertySet> children = childMap.get(childrenKey);
@@ -459,12 +463,12 @@ public class ListMenuComponent extends ViewRenderingDecoratorComponent {
                 continue;
             }
 
-            MenuItem<PropertySet> item = buildItem(resource);
+            MenuItem<PropertySet> item = buildItem(request, resource);
 
             items.add(item);
 
             if (isActive(menuRequest.getCurrentURI(), resource.getURI())) {
-                item.setSubMenu(buildSubItems(resource.getURI(), childMap, menuRequest));
+                item.setSubMenu(buildSubItems(resource.getURI(), childMap, request, menuRequest));
                 item.setActive(true);
             }
         }
@@ -474,14 +478,14 @@ public class ListMenuComponent extends ViewRenderingDecoratorComponent {
         return submenu;
     }
 
-    protected MenuItem<PropertySet> buildItem(PropertySet resource) {
+    protected MenuItem<PropertySet> buildItem(DecoratorRequest request, PropertySet resource) {
         MenuItem<PropertySet> item = new MenuItem<>(resource);
 
         // Url
         Path uri = resource.getURI();
         
         URL url = menuGenerator.getViewService()
-                .urlConstructor(RequestContext.getRequestContext().getRequestURL())
+                .urlConstructor(RequestContext.getRequestContext(request.getServletRequest()).getRequestURL())
                 .withURI(uri)
                 .constructURL();
                 
@@ -530,7 +534,7 @@ public class ListMenuComponent extends ViewRenderingDecoratorComponent {
         private List<String> excludedChildren = new ArrayList<>();
 
         ListMenuRequest(DecoratorRequest request) {
-            RequestContext requestContext = RequestContext.getRequestContext();
+            RequestContext requestContext = RequestContext.getRequestContext(request.getServletRequest());
             this.currentURI = requestContext.getResourceURI();
             this.currentFolder = requestContext.getCurrentCollection();
             this.locale = request.getLocale();

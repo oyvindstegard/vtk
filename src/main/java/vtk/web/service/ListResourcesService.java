@@ -71,7 +71,7 @@ public class ListResourcesService implements Controller {
             return null;
         }
         
-        RequestContext requestContext = RequestContext.getRequestContext();
+        RequestContext requestContext = RequestContext.getRequestContext(request);
         String token = requestContext.getSecurityToken();
         List<Resource> resources = this.provider.buildSearchAndPopulateResources(Path.fromString(uri), token, request);
         writeResults(resources, request, response);
@@ -101,7 +101,7 @@ public class ListResourcesService implements Controller {
     
     private void writeResults(List<Resource> resources, HttpServletRequest request, HttpServletResponse response)
             throws Exception {
-        RequestContext requestContext = RequestContext.getRequestContext();
+        RequestContext requestContext = RequestContext.getRequestContext(request);
 
         Json.ListContainer list = new Json.ListContainer();
         for (Resource r : resources) {

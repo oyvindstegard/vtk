@@ -54,7 +54,7 @@ public class PersonPressPhotoLinkComponent extends ViewRenderingDecoratorCompone
     protected void processModel(Map<String, Object> model, DecoratorRequest request, DecoratorResponse response)
             throws Exception {
 
-        RequestContext requestContext = RequestContext.getRequestContext();
+        RequestContext requestContext = RequestContext.getRequestContext(request.getServletRequest());
         String token = requestContext.getSecurityToken();
         Repository repository = requestContext.getRepository();
         Resource currentDocument = repository.retrieve(token, requestContext.getResourceURI(), true);
@@ -70,7 +70,7 @@ public class PersonPressPhotoLinkComponent extends ViewRenderingDecoratorCompone
             return;
         }
 
-        URL base = URL.create(requestContext.getServletRequest());
+        URL base = requestContext.getRequestURL();
         
         Path imageUri = base.relativeURL(pictureProp.getStringValue()).getPath();
         

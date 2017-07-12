@@ -44,10 +44,11 @@ import vtk.web.decorating.DecoratorResponse;
  *       - multiple should provide JSON or select with a parameter to component */
 public class PermissionProviderComponent extends ViewRenderingDecoratorComponent {
 
+    @Override
     protected void processModel(Map<String, Object> model, DecoratorRequest request, DecoratorResponse response)
             throws Exception {
 
-        RequestContext requestContext = RequestContext.getRequestContext();
+        RequestContext requestContext = RequestContext.getRequestContext(request.getServletRequest());
         String token = requestContext.getSecurityToken();
         Repository repository = requestContext.getRepository();
         Resource resource = repository.retrieve(token, requestContext.getResourceURI(), false);

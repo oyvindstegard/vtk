@@ -35,15 +35,16 @@ package vtk.web.service;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Optional;
 import java.util.regex.Pattern;
 
 import javax.servlet.http.HttpServletRequest;
 
 import org.springframework.beans.factory.BeanInitializationException;
 import org.springframework.beans.factory.InitializingBean;
+
 import vtk.repository.Resource;
 import vtk.security.Principal;
-import vtk.web.RequestContext;
 
 /**
  * Assertion that matches a regular expression (or a list of regular
@@ -61,9 +62,9 @@ import vtk.web.RequestContext;
  *   none of the patterns match.
  * </ul>
  */
-public class RequestHeaderRegexpAssertion implements Assertion, InitializingBean {
+public class RequestHeaderRegexpAssertion implements WebAssertion, InitializingBean {
 
-    private List<Pattern> patternsList = new ArrayList<Pattern>();
+    private List<Pattern> patternsList = new ArrayList<>();
     private String header;
     private boolean invert = false;
 
@@ -104,7 +105,7 @@ public class RequestHeaderRegexpAssertion implements Assertion, InitializingBean
     }
     
 
-    public boolean conflicts(Assertion assertion) {
+    public boolean conflicts(WebAssertion assertion) {
         return false;
     }
 
@@ -138,6 +139,16 @@ public class RequestHeaderRegexpAssertion implements Assertion, InitializingBean
 
     }
      
+    @Override
+    public Optional<URL> processURL(URL url, Resource resource, Principal principal) {
+        return Optional.of(url);
+    }
+
+    @Override
+    public URL processURL(URL url) {
+        return url;
+    }
+
     private boolean match(HttpServletRequest request) {
         String headerValue = request.getHeader(this.header);
         if (headerValue == null) {
@@ -153,26 +164,9 @@ public class RequestHeaderRegexpAssertion implements Assertion, InitializingBean
     }
 
 
-    @Override
-    public void processURL(URL url) {
-    }
-
-    @Override
-    public boolean processURL(URL url, Resource resource, Principal principal,
-                              boolean match) {
-
-        RequestContext requestContext = RequestContext.getRequestContext();
-        HttpServletRequest request = requestContext.getServletRequest();
-
-        if (match && request != null) {
-            return matches(requestContext.getServletRequest(), resource, principal); 
-        }
-        return true;
-    }
-
-
     public void setInvert(boolean invert) {
         this.invert = invert;
     }
+
 
 }

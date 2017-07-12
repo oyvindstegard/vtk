@@ -55,7 +55,7 @@ public class ACLTooltipHelper {
     }
 
     public String generateTitle(PropertySet r, Acl acl, boolean isInheritedAcl, String name, HttpServletRequest request) {
-        RequestContext requestContext = RequestContext.getRequestContext();
+        RequestContext requestContext = RequestContext.getRequestContext(request);
         
         boolean authorizedToRead = authorizedTo(acl, requestContext.getPrincipal(), Privilege.READ);
         boolean authorizedToAdmin = authorizedTo(acl, requestContext.getPrincipal(), Privilege.ALL);

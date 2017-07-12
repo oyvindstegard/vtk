@@ -104,7 +104,7 @@
     <property name="successView" value="redirectToManageView" />
     <property name="cancelView" value="redirectToManageView" />
     <property name="validator">
-      <bean class="vtk.web.actions.convert.ArchiveCommandValidator" />
+      <bean class="vtk.web.actions.convert.CopyResourceCommandValidator" />
     </property>
   </bean>
   

@@ -30,6 +30,10 @@
  */
 package vtk.web.service;
 
+import java.util.Optional;
+
+import javax.servlet.http.HttpServletRequest;
+
 import vtk.repository.Resource;
 import vtk.security.AuthenticationException;
 import vtk.security.Principal;
@@ -49,25 +53,33 @@ import vtk.security.Principal;
  *   </li>
  * </ul>
  */
-public class IsAuthenticatedAssertion extends AbstractRepositoryAssertion {
-
-
+public class IsAuthenticatedAssertion extends AbstractAssertion {
     private boolean requiresAuthentication = false;
     private boolean invert = false;
     
-    @Override
-    public boolean matches(Resource resource, Principal principal) {
-        if (this.requiresAuthentication && principal == null)
-            throw new AuthenticationException();
-        
-        if (principal == null) 
-            return this.invert;
 
-        return !this.invert;
+    @Override
+    public Optional<URL> processURL(URL url, Resource resource,
+            Principal principal) {
+        if (!matches(resource, principal)) {
+            return Optional.empty();
+        }
+        return Optional.of(url);
     }
 
     @Override
-    public boolean conflicts(Assertion assertion) {
+    public URL processURL(URL url) {
+        return url;
+    }
+
+    @Override
+    public boolean matches(HttpServletRequest request, Resource resource,
+            Principal principal) {
+        return matches(resource, principal);
+    }
+    
+    @Override
+    public boolean conflicts(WebAssertion assertion) {
         if (assertion instanceof IsAuthenticatedAssertion) {
             IsAuthenticatedAssertion a = (IsAuthenticatedAssertion) assertion;
             return (isInvert() != a.isInvert());
@@ -91,6 +103,16 @@ public class IsAuthenticatedAssertion extends AbstractRepositoryAssertion {
     @Override
     public String toString() {
         return "request.isAuthenticated";
+    }
+
+    private boolean matches(Resource resource, Principal principal) {
+        if (this.requiresAuthentication && principal == null)
+            throw new AuthenticationException();
+        
+        if (principal == null) 
+            return this.invert;
+
+        return !this.invert;
     }
 
 }

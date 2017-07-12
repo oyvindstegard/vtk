@@ -30,12 +30,14 @@
  */
 package vtk.web.service;
 
+import java.util.Optional;
+
 import javax.servlet.http.HttpServletRequest;
 
 import org.springframework.util.StringUtils;
+
 import vtk.repository.Resource;
 import vtk.security.Principal;
-import vtk.web.RequestContext;
 
 /**
  * Assertion that matches on the request hostname.
@@ -47,7 +49,7 @@ import vtk.web.RequestContext;
  *   list of hostnames is also allowed.
  * </ul>
  */
-public class RequestHostNameAssertion implements Assertion {
+public class RequestHostNameAssertion implements WebAssertion {
 
     private String defaultHostName;
     private String[] hostNames;
@@ -74,7 +76,7 @@ public class RequestHostNameAssertion implements Assertion {
     }
     
     @Override
-    public boolean conflicts(Assertion assertion) {
+    public boolean conflicts(WebAssertion assertion) {
         if (assertion instanceof RequestHostNameAssertion) { 
             boolean conflict = true;
            for (String hostName: this.hostNames) {
@@ -100,28 +102,24 @@ public class RequestHostNameAssertion implements Assertion {
     }
 
     @Override
-    public void processURL(URL url) {
-        url.setHost(this.defaultHostName);
-        RequestContext requestContext = RequestContext.getRequestContext();
-
-        if (requestContext != null) {
-            String requestHostName = requestContext.getServletRequest().getServerName();
-            for (String hostName: this.hostNames) {
-
-                if ("*".equals(hostName)
-                    || requestHostName.equals(hostName)) {
-                    url.setHost(requestHostName);
-                    break;
-                }
+    public Optional<URL> processURL(URL url, Resource resource, Principal principal) {
+        return Optional.of(processURL(url));
+    }
+    
+    @Override
+    public URL processURL(URL url) {
+        boolean found = false;
+        for (String hostName: this.hostNames) {
+            if ("*".equals(hostName)
+                    || url.getHost().equals(hostName)) {
+                found = true;
+                break;
             }
         }
-    }
-
-    @Override
-    public boolean processURL(URL url, Resource resource,
-                              Principal principal, boolean match) {
-        processURL(url);
-        return true;
+        if (!found) {
+            url.setHost(defaultHostName);
+        }
+        return url;
     }
 
     @Override
@@ -149,4 +147,5 @@ public class RequestHostNameAssertion implements Assertion {
         sb.append(")");
         return sb.toString();
     }
+
 }

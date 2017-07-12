@@ -49,7 +49,6 @@ import vtk.repository.Property;
 import vtk.repository.PropertySet;
 import vtk.repository.Resource;
 import vtk.repository.resourcetype.HtmlValueFormatter;
-import vtk.web.RequestContext;
 import vtk.web.service.URL;
 
 public final class EventAsICalHelper {
@@ -60,7 +59,7 @@ public final class EventAsICalHelper {
     private String introduction;
     private String title;
 
-    public String getAsICal(List<PropertySet> events) {
+    public String getAsICal(List<PropertySet> events, String repositoryId) {
 
         if (events == null || events.size() < 1) {
             return null;
@@ -72,7 +71,6 @@ public final class EventAsICalHelper {
         ical.append("METHOD:PUBLISH\n");
         ical.append("PRODID:-//UiO//VTK//NONSGML v1.0//NO\n");
 
-        String repositoryId = RequestContext.getRequestContext().getRepository().getId();
         for (PropertySet event : events) {
             String iCalEntry = createICalEntryFromEvent(event, repositoryId);
             ical.append(iCalEntry);

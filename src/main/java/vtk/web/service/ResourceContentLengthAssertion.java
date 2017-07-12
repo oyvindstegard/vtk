@@ -30,29 +30,51 @@
  */
 package vtk.web.service;
 
+import java.util.Optional;
+
+import javax.servlet.http.HttpServletRequest;
+
 import vtk.repository.Resource;
 import vtk.security.Principal;
 
-public class ResourceContentLengthAssertion extends AbstractRepositoryAssertion {
-
+public class ResourceContentLengthAssertion extends AbstractAssertion {
     private long greaterThanValue = -1;
     private long lessThanValue = -1;
     
     @Override
-    public boolean matches(Resource resource, Principal principal) {
-        long contentLength = resource.getContentLength();
-        if (this.greaterThanValue > 0 && contentLength < this.greaterThanValue) {
-            return false;
+    public boolean matches(HttpServletRequest request, Resource resource,
+            Principal principal) {
+        return matches(resource);
+    }
+    
+    @Override
+    public Optional<URL> processURL(URL url, Resource resource,
+            Principal principal) {
+        if (!matches(resource)) {
+            return Optional.empty();
         }
-        if (this.lessThanValue > 0 && contentLength > this.lessThanValue) {
-            return false;
-        }
-        return true;
+        return Optional.of(url);
     }
 
     @Override
-    public boolean conflicts(Assertion assertion) {
+    public URL processURL(URL url) {
+        return url;
+    }
+
+    @Override
+    public boolean conflicts(WebAssertion assertion) {
         return false;
+    }
+
+    @Override
+    public String toString() {
+        if (this.greaterThanValue > 0) {
+            return "resource.contentLength > " + this.greaterThanValue;
+        }
+        if (this.lessThanValue > 0) {
+            return "resource.contentLength < " + this.lessThanValue;
+        }
+        return "resource.contentLength = *";
     }
 
     public void setGreaterThanValue(long greaterThanValue) {
@@ -63,15 +85,15 @@ public class ResourceContentLengthAssertion extends AbstractRepositoryAssertion 
         this.lessThanValue = lessThanValue;
     }
     
-    @Override
-    public String toString() {
-        if (this.greaterThanValue > 0) {
-            return "resource.contentLength > " + this.greaterThanValue;
+    private boolean matches(Resource resource) {
+        long contentLength = resource.getContentLength();
+        if (this.greaterThanValue > 0 && contentLength < this.greaterThanValue) {
+            return false;
         }
-        if (this.lessThanValue > 0) {
-            return "resource.contentLength < " + this.lessThanValue;
+        if (this.lessThanValue > 0 && contentLength > this.lessThanValue) {
+            return false;
         }
-        return "resource.contentLength = *";
+        return true;
     }
 
 }

@@ -30,6 +30,8 @@
  */
 package vtk.web.service;
 
+import java.util.Optional;
+
 import javax.servlet.http.HttpServletRequest;
 
 import vtk.repository.Resource;
@@ -38,9 +40,9 @@ import vtk.security.Principal;
 /**
  * Assertion that matches on requests that have no query string.
  */
-public class RequestEmptyQueryStringAssertion implements Assertion {
+public class RequestEmptyQueryStringAssertion implements WebAssertion {
 
-    public boolean conflicts(Assertion assertion) {
+    public boolean conflicts(WebAssertion assertion) {
         if (assertion instanceof RequestParameterAssertion) {
             return true;
         }
@@ -53,12 +55,13 @@ public class RequestEmptyQueryStringAssertion implements Assertion {
     }
 
     @Override
-    public boolean processURL(URL url, Resource resource, Principal principal, boolean match) {
-        return true;
+    public Optional<URL> processURL(URL url, Resource resource, Principal principal) {
+        return Optional.of(url);
     }
 
     @Override
-    public void processURL(URL url) {
+    public URL processURL(URL url) {
+        return url;
     }
 
     @Override

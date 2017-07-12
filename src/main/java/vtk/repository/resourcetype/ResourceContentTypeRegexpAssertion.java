@@ -28,8 +28,10 @@
  * NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package vtk.web.service;
+package vtk.repository.resourcetype;
 
+import java.util.Objects;
+import java.util.Optional;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -49,49 +51,28 @@ import vtk.security.Principal;
  *   assertion from matching.
  * </ul>
  */
-public class ResourceContentTypeRegexpAssertion
-  extends AbstractRepositoryAssertion {
-
+public class ResourceContentTypeRegexpAssertion implements RepositoryAssertion {
     private Pattern pattern;
     private Pattern exceptionPattern;
     
-
-    public void setPattern(String pattern) {
-        if (pattern == null) throw new IllegalArgumentException(
-            "Property 'pattern' cannot be null");
-    
+    public ResourceContentTypeRegexpAssertion(String pattern) {
+        Objects.requireNonNull(pattern, "pattern cannot be null");
         this.pattern = Pattern.compile(pattern);
     }
     
-    
-    public void setExceptionPattern(String exceptionPattern) {
-        if (exceptionPattern == null) {
-            this.exceptionPattern = null;
-            return;
-        }
+    public ResourceContentTypeRegexpAssertion(String pattern, String exceptionPattern) {
+        this(pattern);
+        Objects.requireNonNull(exceptionPattern, "exceptionPattern cannot be null");
         this.exceptionPattern = Pattern.compile(exceptionPattern);
     }
-    
-    
-    public boolean conflicts(Assertion assertion) {
-        if (assertion instanceof ResourceContentTypeAssertion) {
-            String contentType = ((ResourceContentTypeAssertion) assertion).getContentType();
-            Matcher m = this.pattern.matcher(contentType);
-            boolean match = m.matches();
-
-            if (this.exceptionPattern != null) {
-                m = this.exceptionPattern.matcher(contentType);
-                if (m.matches()) {
-                    match = false;
-                }
-            }
-
-            return ! match;
-        }
-        return false;
+        
+    @Override
+    public boolean matches(Optional<Resource> resource,
+            Optional<Principal> principal) {
+        return resource.map(r -> matches(r)).orElse(false);
     }
-
-
+    
+    @Override
     public String toString() {
         StringBuilder sb = new StringBuilder();
         sb.append("property.content-type ~ ");
@@ -104,8 +85,7 @@ public class ResourceContentTypeRegexpAssertion
         return sb.toString();
     }
 
-
-    public boolean matches(Resource resource, Principal principal) {
+    private boolean matches(Resource resource) {
         if (resource != null && resource.getContentType() != null) {
             Matcher m = this.pattern.matcher(resource.getContentType());
             boolean match = m.matches();

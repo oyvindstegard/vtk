@@ -33,10 +33,12 @@ package vtk.repository;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Optional;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Required;
+
 import vtk.repository.PropertyEvaluationContext.Type;
 import vtk.repository.resourcetype.ConstraintViolationException;
 import vtk.repository.resourcetype.Content;
@@ -46,11 +48,11 @@ import vtk.repository.resourcetype.PrimaryResourceTypeDefinition;
 import vtk.repository.resourcetype.PropertyEvaluator;
 import vtk.repository.resourcetype.PropertyType;
 import vtk.repository.resourcetype.PropertyTypeDefinition;
+import vtk.repository.resourcetype.RepositoryAssertion;
 import vtk.repository.resourcetype.ResourceTypeDefinition;
 import vtk.repository.resourcetype.Value;
 import vtk.security.AuthenticationException;
 import vtk.security.Principal;
-import vtk.web.service.RepositoryAssertion;
 
 public class RepositoryResourceHelper {
 
@@ -518,45 +520,42 @@ public class RepositoryResourceHelper {
 
         Resource resource = ctx.getNewResource();
         Principal principal = ctx.getPrincipal();
+        
+        Optional<Resource> optResource = Optional.ofNullable(resource);
+        Optional<Principal> optPrincipal = Optional.ofNullable(principal);
+        
 
         RepositoryAssertion[] assertions = rt.getAssertions();
 
         if (assertions != null) {
             for (int i = 0; i < assertions.length; i++) {
-                if (logger.isDebugEnabled()) {
-                    logger.debug("Checking assertion " + assertions[i] + " for resource " + resource);
-                }
+                logger.debug("Checking assertion {} for resource {}", assertions[i], resource);
 
                 if (assertions[i] instanceof RepositoryContentEvaluationAssertion) {
                     // XXX Hack for all assertions that implement this interface
                     // (they need content)
                     RepositoryContentEvaluationAssertion cea = (RepositoryContentEvaluationAssertion) assertions[i];
 
-                    if (!cea.matches(resource, principal, ctx.getContent())) {
-                        if (logger.isDebugEnabled()) {
-                            logger.debug("Checking for type '" + rt.getName() + "', resource " + resource
-                                    + " failed, unmatched content evaluation assertion: " + cea);
-                        }
+                    if (!cea.matches(optResource, optPrincipal, Optional.ofNullable(ctx.getContent()))) {
+                        logger.debug("Checking for type '{}', resource {} "
+                                + "failed, unmatched content evaluation assertion: {}", 
+                                rt.getName(), resource, cea);
                         return false;
                     }
-                } else {
+                }
+                else {
                     // Normal assertions that should not require content or
                     // resource input stream:
-                    if (!assertions[i].matches(resource, principal)) {
-
-                        if (logger.isDebugEnabled()) {
-                            logger.debug("Checking for type '" + rt.getName() + "', resource " + resource
-                                    + " failed, unmatched assertion: " + assertions[i]);
-                        }
+                    if (!assertions[i].matches(optResource, optPrincipal)) {
+                        logger.debug("Checking for type '{}', resource {} failed, unmatched assertion: {}", 
+                                rt.getName(), resource, assertions[i]);
                         return false;
                     }
                 }
             }
         }
-        if (logger.isDebugEnabled()) {
-            logger.debug("Checking for type '" + rt.getName() + "', resource " + resource
-                    + " succeeded, assertions matched: " + (assertions != null ? Arrays.asList(assertions) : null));
-        }
+        logger.debug("Checking for type '{}', resource succeeded, assertions matched: {}",
+                rt.getName(), resource, (assertions != null ? Arrays.asList(assertions) : null));
         return true;
     }
     

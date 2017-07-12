@@ -34,7 +34,6 @@ package vtk.web.service;
 import vtk.repository.Path;
 import vtk.repository.Resource;
 import vtk.util.net.NetUtils;
-import vtk.web.RequestContext;
 
 /**
  * Canonical resource URL construction.
@@ -77,32 +76,24 @@ public class CanonicalUrlConstructorImpl implements CanonicalUrlConstructor {
         int port;
         
         if (WILDCARD_VALUE.equals(this.webHostName)) {
-            if (RequestContext.exists()) {
-                host = RequestContext.getRequestContext().getServletRequest().getServerName();
-            } else {
-                host = FALLBACK_WEB_HOST_NAME;
-            }
-        } else {
+            host = FALLBACK_WEB_HOST_NAME;
+        }
+        else {
             host = this.webHostName;
         }
         
         if (WILDCARD_VALUE.equals(this.webProtocol)) {
-            if (RequestContext.exists()) {
-                protocol = RequestContext.getRequestContext().getServletRequest().isSecure() ? "https" : "http";
-            } else {
-                protocol = "http";
-            }
-        } else {
+            protocol = "http";
+        }
+        else {
             protocol = this.webProtocol;
         }
         
         if (this.webPort == PORT_ANY) {
-            if (RequestContext.exists()) {
-                port = RequestContext.getRequestContext().getServletRequest().getServerPort();
-            } else {
+          protocol = "http";
                 port = 80;
-            }
-        } else {
+        }
+        else {
             port = this.webPort;
         }
         
@@ -114,7 +105,6 @@ public class CanonicalUrlConstructorImpl implements CanonicalUrlConstructor {
                     port = 443;
                 }
             }
-            
             if (this.webPortRestricted != PORT_ANY) {
                 port = this.webPortRestricted;
             }
@@ -149,7 +139,8 @@ public class CanonicalUrlConstructorImpl implements CanonicalUrlConstructor {
     public void setWebPort(String webPort) throws NumberFormatException {
         if (WILDCARD_VALUE.equals(webPort)) {
             this.webPort = PORT_ANY;
-        } else {
+        }
+        else {
             this.webPort = Integer.parseInt(webPort);
         }
     }
@@ -157,7 +148,8 @@ public class CanonicalUrlConstructorImpl implements CanonicalUrlConstructor {
     public void setWebPortRestricted(String webPortRestricted) throws NumberFormatException {
         if (WILDCARD_VALUE.equals(webPortRestricted)) {
             this.webPortRestricted = PORT_ANY;
-        } else {
+        }
+        else {
             this.webPortRestricted = Integer.parseInt(webPortRestricted);
         }
     }

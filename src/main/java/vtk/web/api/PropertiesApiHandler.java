@@ -71,7 +71,7 @@ public class PropertiesApiHandler implements HttpRequestHandler {
     public void handleRequest(HttpServletRequest request,
             HttpServletResponse response) throws ServletException, IOException {
 
-        RequestContext requestContext = RequestContext.getRequestContext();
+        RequestContext requestContext = RequestContext.getRequestContext(request);
         Result<Optional<Resource>> res = retrieve(requestContext, requestContext.getResourceURI());
         Result<ApiResponseBuilder> bldr = res.flatMap(opt -> {
            if (!opt.isPresent()) {
@@ -82,11 +82,11 @@ public class PropertiesApiHandler implements HttpRequestHandler {
                Resource resource = opt.get();
                switch (request.getMethod()) {
                case "GET": 
-                   return getProperties(resource, requestContext);
+                   return getProperties(request, resource);
                case "PATCH": 
-                   return updateProperties(resource, requestContext);
+                   return updateProperties(request, resource);
                default: 
-                   return unknownMethod(resource, requestContext);
+                   return unknownMethod(request, resource);
                }
            }
         });
@@ -109,11 +109,11 @@ public class PropertiesApiHandler implements HttpRequestHandler {
     }
     
     
-    private Result<ApiResponseBuilder> unknownMethod(Resource resource, 
-            RequestContext requestContext) {
+    private Result<ApiResponseBuilder> unknownMethod(HttpServletRequest request, 
+            Resource resource) {
         return Result.success(new ApiResponseBuilder(HttpServletResponse.SC_BAD_REQUEST)
             .header("Content-Type", "text/plain;charset=utf-8")
-            .message("Request method " + requestContext.getServletRequest().getMethod() 
+            .message("Request method " + request.getMethod() 
                     + " not supported: on " + resource.getURI()));
     }
     
@@ -139,9 +139,10 @@ public class PropertiesApiHandler implements HttpRequestHandler {
     }
     
     
-    private Result<ApiResponseBuilder> getProperties(Resource resource, 
-            RequestContext requestContext) {
-        
+    private Result<ApiResponseBuilder> getProperties(HttpServletRequest request,
+            Resource resource) {
+        RequestContext requestContext = RequestContext
+                .getRequestContext(request);
         PropertySetMapper<Consumer<JsonStreamer>> mapper = 
                 ResourceMappers.jsonStreamer(LOCALE)
                 .uris(false).types(false).acls(false).compact(true).build();
@@ -178,9 +179,10 @@ public class PropertiesApiHandler implements HttpRequestHandler {
         });
     }
     
-    private Result<ApiResponseBuilder> updateProperties(Resource resource, 
-            RequestContext requestContext) {
-        HttpServletRequest request = requestContext.getServletRequest();
+    private Result<ApiResponseBuilder> updateProperties(HttpServletRequest request, 
+            Resource resource) {
+        RequestContext requestContext = RequestContext
+                .getRequestContext(request);
         if (!"application/merge-patch+json".equals(request.getContentType())) {
             return Result.success(ApiResponseBuilder.badRequest(
                     "Content-Type 'application/merge-patch+json' is required for PATCH method"));

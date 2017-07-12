@@ -67,7 +67,6 @@ import vtk.web.RequestContext;
 import vtk.web.service.URL;
 
 public class DynamicDecoratorTemplateFactory implements TemplateFactory, InitializingBean {
-
     private Repository repository;
     private PropertyTypeDefinition aspectsPropdef;
     PropertyAspectDescription fieldConfig;
@@ -81,11 +80,13 @@ public class DynamicDecoratorTemplateFactory implements TemplateFactory, Initial
         return new DynamicDecoratorTemplate(templateSource, this.componentResolver, this.directiveHandlers, null);
     }
 
-    @Required public void setRepository(Repository repository) {
+    @Required
+    public void setRepository(Repository repository) {
         this.repository = repository;
     }
 
-    @Required public void setAspectsPropdef(PropertyTypeDefinition aspectsPropdef) {
+    @Required
+    public void setAspectsPropdef(PropertyTypeDefinition aspectsPropdef) {
         this.aspectsPropdef = aspectsPropdef;
     }
     
@@ -97,7 +98,8 @@ public class DynamicDecoratorTemplateFactory implements TemplateFactory, Initial
         this.token = token;
     }
 
-    @Required public void setComponentResolver(ComponentResolver componentResolver) {
+    @Required
+    public void setComponentResolver(ComponentResolver componentResolver) {
         this.componentResolver = componentResolver;
     }
 
@@ -124,7 +126,7 @@ public class DynamicDecoratorTemplateFactory implements TemplateFactory, Initial
                 new DefineHandler(functionResolver),
                 new CaptureHandler(),
                 new ComponentInvokerNodeFactory("call",
-                        new DynamicDecoratorTemplate.ComponentSupport(), functionResolver)
+                        componentResolver, functionResolver)
         });
     }
 
@@ -152,12 +154,12 @@ public class DynamicDecoratorTemplateFactory implements TemplateFactory, Initial
 
         @Override
         public Object eval(Context ctx, Object... args) {
-//            RequestContext requestContext = RequestContext.getRequestContext();
+//            RequestContext requestContext = RequestContext.getRequestContext(request);
 //            HttpServletRequest request = requestContext.getServletRequest();
             HttpServletRequest request = (HttpServletRequest) ctx.getAttribute(DynamicDecoratorTemplate.SERVLET_REQUEST_CONTEXT_ATTR);
 
             URL url = URL.create(request);
-            Map<String, Object> map = new HashMap<String, Object>();
+            Map<String, Object> map = new HashMap<>();
             map.put("url", url);
             map.put("scheme", url.getProtocol());
             map.put("host", url.getHost());
@@ -175,7 +177,7 @@ public class DynamicDecoratorTemplateFactory implements TemplateFactory, Initial
 
         @Override
         public Object eval(Context ctx, Object... args) {
-//            RequestContext requestContext = RequestContext.getRequestContext();
+//            RequestContext requestContext = RequestContext.getRequestContext(request);
 //            HttpServletRequest request = requestContext.getServletRequest();
             HttpServletRequest request = (HttpServletRequest) ctx.getAttribute(DynamicDecoratorTemplate.SERVLET_REQUEST_CONTEXT_ATTR);
             
@@ -196,7 +198,7 @@ public class DynamicDecoratorTemplateFactory implements TemplateFactory, Initial
 
         @Override
         public Object eval(Context ctx, Object... args) {
-//            RequestContext requestContext = RequestContext.getRequestContext();
+//            RequestContext requestContext = RequestContext.getRequestContext(request);
 //            HttpServletRequest request = requestContext.getServletRequest();
             HttpServletRequest request = (HttpServletRequest) ctx.getAttribute(DynamicDecoratorTemplate.SERVLET_REQUEST_CONTEXT_ATTR);
 
@@ -218,7 +220,7 @@ public class DynamicDecoratorTemplateFactory implements TemplateFactory, Initial
 
         @Override
         public Object eval(Context ctx, Object... args) {
-//            RequestContext requestContext = RequestContext.getRequestContext();
+//            RequestContext requestContext = RequestContext.getRequestContext(request);
 //            HttpServletRequest request = requestContext.getServletRequest();
             HttpServletRequest request = (HttpServletRequest) ctx.getAttribute(DynamicDecoratorTemplate.SERVLET_REQUEST_CONTEXT_ATTR);
 
@@ -240,7 +242,8 @@ public class DynamicDecoratorTemplateFactory implements TemplateFactory, Initial
         
         @Override
         public Object eval(Context ctx, Object... args) {
-            RequestContext requestContext = RequestContext.getRequestContext();
+            HttpServletRequest request = (HttpServletRequest) ctx.getAttribute(DynamicDecoratorTemplate.SERVLET_REQUEST_CONTEXT_ATTR);
+            RequestContext requestContext = RequestContext.getRequestContext(request);
             Object o = args[0];
             if (o == null) {
                 throw new IllegalArgumentException("Argument must be a valid name");
@@ -303,8 +306,10 @@ public class DynamicDecoratorTemplateFactory implements TemplateFactory, Initial
             }
 
             if (resource == null) {
+                HttpServletRequest request = (HttpServletRequest) 
+                        ctx.getAttribute(DynamicDecoratorTemplate.SERVLET_REQUEST_CONTEXT_ATTR);
                 RequestContext requestContext = RequestContext
-                        .getRequestContext();
+                        .getRequestContext(request);
                 Repository repository = requestContext.getRepository();
                 Path uri = ".".equals(ref) 
                 ? requestContext.getResourceURI()

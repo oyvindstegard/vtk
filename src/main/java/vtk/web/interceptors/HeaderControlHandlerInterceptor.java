@@ -144,7 +144,7 @@ public class HeaderControlHandlerInterceptor implements HandlerInterceptor {
         Resource resource = null;
         @SuppressWarnings("rawtypes") Map model = modelAndView.getModel();
 
-        RequestContext requestContext = RequestContext.getRequestContext();
+        RequestContext requestContext = RequestContext.getRequestContext(request);
         Repository repository = requestContext.getRepository();
         Path uri = requestContext.getResourceURI();
         String token = requestContext.getSecurityToken();
@@ -266,7 +266,7 @@ public class HeaderControlHandlerInterceptor implements HandlerInterceptor {
     @SuppressWarnings("rawtypes") 
     protected void setCacheControlHeader(Resource resource, Map model, 
                                          HttpServletRequest request, HttpServletResponse response) throws Exception {
-        RequestContext requestContext = RequestContext.getRequestContext();
+        RequestContext requestContext = RequestContext.getRequestContext(request);
         Repository repository = requestContext.getRepository();
         if (resource == null || this.includeNoCacheHeader) {
             response.setHeader("Cache-Control", "no-cache");

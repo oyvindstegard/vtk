@@ -204,7 +204,7 @@ public class ActionTemplateHandler implements HttpRequestHandler {
               for (String key: model.keySet()) {
                   ctx.define(key, model.get(key), true);
               }
-              RequestContext rc = RequestContext.getRequestContext();
+              RequestContext rc = RequestContext.getRequestContext(request);
               Principal p = rc.getPrincipal();
               ctx.define("userName", p.getName(), true);
               ctx.define("userDescription", p.getDescription(), true);

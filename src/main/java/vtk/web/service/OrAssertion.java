@@ -32,6 +32,7 @@ package vtk.web.service;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 import javax.servlet.http.HttpServletRequest;
@@ -47,34 +48,35 @@ import vtk.security.Principal;
  * XXX: Needs typed assertions to deal with or-ing 
  * on link construction
  */
-public class OrAssertion implements Assertion {
+public class OrAssertion implements WebAssertion {
 
-    private List<Assertion> assertions = new ArrayList<Assertion>();
+    private List<WebAssertion> assertions = new ArrayList<>();
 
-    public void setAssertions(List<Assertion> assertions) {
+    public void setAssertions(List<WebAssertion> assertions) {
         this.assertions = assertions;
     }
     
     @Override
-    public void processURL(URL url) {
-        this.assertions.get(0).processURL(url);
+    public URL processURL(URL url) {
+        return assertions.get(0).processURL(url);
     }
-    
+
     @Override
-    public boolean processURL(URL url, Resource resource, Principal principal, boolean match) {
-        for (Assertion assertion : assertions) {
+    public Optional<URL> processURL(URL url, Resource resource, Principal principal) {
+        for (WebAssertion assertion : assertions) {
             // Process URL only for first matching assertion:
-            if (assertion.processURL(url, resource, principal, match)) {
-                return true;
+            Optional<URL> opt = assertion.processURL(url, resource, principal);
+            if (opt.isPresent()) {
+                return opt;
             }
         }
-        return false;
+        return Optional.empty();
     }
     
 
     @Override
     public boolean matches(HttpServletRequest request, Resource resource, Principal principal) {
-        for (Assertion assertion : assertions) {
+        for (WebAssertion assertion : assertions) {
             if (assertion.matches(request, resource, principal)) {
                 return true;
             }
@@ -84,8 +86,8 @@ public class OrAssertion implements Assertion {
     
 
     @Override
-    public boolean conflicts(Assertion otherAssertion) {
-        for (Assertion assertion : assertions) {
+    public boolean conflicts(WebAssertion otherAssertion) {
+        for (WebAssertion assertion : assertions) {
             if (!assertion.conflicts(otherAssertion)) {
                 return false;
             }

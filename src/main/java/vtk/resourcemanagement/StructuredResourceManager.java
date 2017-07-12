@@ -51,6 +51,7 @@ import vtk.repository.resourcetype.PrimaryResourceTypeDefinitionImpl;
 import vtk.repository.resourcetype.PropertyType;
 import vtk.repository.resourcetype.PropertyType.Type;
 import vtk.repository.resourcetype.PropertyTypeDefinition;
+import vtk.repository.resourcetype.RepositoryAssertion;
 import vtk.repository.resourcetype.ResourceTypeDefinition;
 import vtk.repository.resourcetype.Value;
 import vtk.repository.resourcetype.ValueFactory;
@@ -62,7 +63,6 @@ import vtk.resourcemanagement.property.EvaluatorResolver;
 import vtk.resourcemanagement.property.JSONPropertyDescription;
 import vtk.resourcemanagement.property.PropertyDescription;
 import vtk.resourcemanagement.property.SimplePropertyDescription;
-import vtk.web.service.RepositoryAssertion;
 
 public class StructuredResourceManager {
     private static final Logger logger = LoggerFactory.getLogger(StructuredResourceManager.class);

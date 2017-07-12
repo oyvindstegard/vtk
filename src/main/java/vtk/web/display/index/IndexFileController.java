@@ -93,7 +93,7 @@ public class IndexFileController implements Controller, LastModified, Initializi
 
     public ModelAndView handleRequest(HttpServletRequest request, HttpServletResponse response) throws Exception {
 
-        RequestContext requestContext = RequestContext.getRequestContext();
+        RequestContext requestContext = RequestContext.getRequestContext(request);
         String token = requestContext.getSecurityToken();
         Path currentURI = requestContext.getResourceURI();
         Repository repository = requestContext.getRepository();

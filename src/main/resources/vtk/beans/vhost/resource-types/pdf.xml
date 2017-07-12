@@ -16,8 +16,8 @@
     <constructor-arg value="pdf" />
   </bean>
 
-  <bean id="contentTypeMatchesPDF"  class="vtk.web.service.ResourceContentTypeRegexpAssertion">
-    <property name="pattern" value="(application/pdf|text/pdf)" />
+  <bean id="contentTypeMatchesPDF"  class="vtk.repository.resourcetype.ResourceContentTypeRegexpAssertion">
+    <constructor-arg name="pattern" value="(application/pdf|text/pdf)" />
   </bean>
 
 

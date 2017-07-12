@@ -31,12 +31,13 @@
 package vtk.repository.search.preprocessor;
 
 import vtk.repository.search.QueryException;
+import vtk.repository.search.preprocessor.QueryStringPreProcessor.ProcessorContext;
 
 public interface ExpressionEvaluator {
     
     public boolean matches(String token);
 
-    public String evaluate(String token) throws QueryException;
+    public String evaluate(String token, ProcessorContext ctx) throws QueryException;
 
 }
 

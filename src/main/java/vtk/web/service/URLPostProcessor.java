@@ -30,13 +30,26 @@
  */
 package vtk.web.service;
 
+import java.util.Optional;
+import java.util.function.BiFunction;
+
 import vtk.repository.Resource;
+import vtk.web.service.Service.URLConstructor;
 
-
+/**
+ * A URL post processor. This gives services an opportunity to influence 
+ * URL construction after the normal {@link URLConstructor assertion-based}
+ * process, by inspecting the URL before and after.
+ */
 public interface URLPostProcessor {
-
-    public void processURL(URL url, Resource resource, Service service) throws Exception;
-
-    public void processURL(URL url, Service service) throws Exception;
-
+    
+    /**
+     * Gets a URL post processor function for a given service and base URL. This method
+     * is invoked before the URL is manipulated as part of the URL construction, 
+     * and the function itself is invoked after {@link URLConstructor#constructURL} is called
+     * @param service
+     * @param base
+     * @return
+     */
+    public BiFunction<URL, Optional<Resource>, URL> urlProcessor(Service service, URL base);
 }

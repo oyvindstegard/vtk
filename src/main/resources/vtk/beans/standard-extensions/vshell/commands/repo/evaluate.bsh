@@ -20,7 +20,7 @@ void execute(context, args, out) {
     token = beanContext.getBean("writeAllToken");
     tm = beanContext.getBean("repository.transactionManager");
     searcher = beanContext.getBean("systemIndexSearcher");
-    parser = beanContext.getBean("searchParser");
+    parserFactory = beanContext.getBean("queryParserFactory");
 
     setAccessibility(true);
     cache = beanContext.getBean("repository.cache");
@@ -30,7 +30,7 @@ void execute(context, args, out) {
     contentStore = beanContext.getBean("repository.fsContentStore");
     contentRegistry = beanContext.getBean("contentRepresentationRegistry");
 
-    query = parser.parse(args.get("query"));
+    query = parser.getParser().parse(args.get("query"));
 
     log = out;
     logFile = args.get("logfile");

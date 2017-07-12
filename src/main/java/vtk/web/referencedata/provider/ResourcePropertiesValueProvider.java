@@ -174,7 +174,7 @@ implements ReferenceDataProvider, InitializingBean {
 
     @Override
     public void referenceData(Map<String, Object> model, HttpServletRequest request) {
-        RequestContext requestContext = RequestContext.getRequestContext();
+        RequestContext requestContext = RequestContext.getRequestContext(request);
         Repository repository = requestContext.getRepository();
         String token = requestContext.getSecurityToken();
         try {

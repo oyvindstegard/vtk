@@ -74,7 +74,7 @@ public class ForwardingController implements Controller, ServletContextAware {
     @Override
     public ModelAndView handleRequest(HttpServletRequest request,
             HttpServletResponse response) throws Exception {
-        RequestContext requestContext = RequestContext.getRequestContext();
+        RequestContext requestContext = RequestContext.getRequestContext(request);
         Path uri = requestContext.getResourceURI();
         URL requestedURL = requestContext.getRequestURL();
         

@@ -28,9 +28,10 @@
  * NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package vtk.web.display.search;
+package vtk.web.search;
 
 import java.io.OutputStream;
+import java.util.function.Function;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -45,11 +46,11 @@ import org.springframework.beans.factory.BeanInitializationException;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.web.servlet.ModelAndView;
 import org.springframework.web.servlet.mvc.Controller;
+import org.w3c.dom.Document;
+
 import vtk.repository.Path;
 import vtk.repository.Repository;
-import vtk.repository.search.XmlSearcher;
 import vtk.web.RequestContext;
-import org.w3c.dom.Document;
 
 
 /**
@@ -69,11 +70,11 @@ public class XmlQueryController implements Controller, InitializingBean {
     private String authenticatedParameterName = "authenticated";
     private String unpublishedParameter = "unpublished";
     private int defaultMaxLimit = 500;
-    private XmlSearcher xmlSearcher;
+    private Function<HttpServletRequest, XmlSearcher> xmlSearcherFactory;
     private boolean defaultAuthenticated = false;
     
-    public void setXmlSearcher(XmlSearcher xmlSearcher) {
-        this.xmlSearcher = xmlSearcher;
+    public void setXmlSearcherFactory(Function<HttpServletRequest, XmlSearcher> xmlSearcherFactory) {
+        this.xmlSearcherFactory = xmlSearcherFactory;
     }
 
     public void setExpressionParameterName(String expressionParameterName) {
@@ -98,9 +99,9 @@ public class XmlQueryController implements Controller, InitializingBean {
 
     public void afterPropertiesSet()
         throws BeanInitializationException {
-        if (this.xmlSearcher == null) {
+        if (this.xmlSearcherFactory == null) {
             throw new BeanInitializationException("Property" +
-                    " 'xmlSearcher' not set");
+                    " 'xmlSearcherFactory' not set");
         }
     }
     
@@ -108,7 +109,7 @@ public class XmlQueryController implements Controller, InitializingBean {
             HttpServletResponse response) throws Exception {
 
         // Attempt to retrieve resource
-        RequestContext requestContext = RequestContext.getRequestContext();
+        RequestContext requestContext = RequestContext.getRequestContext(request);
         String token = requestContext.getSecurityToken();
         Path uri = requestContext.getResourceURI();
         Repository repository = requestContext.getRepository();
@@ -144,8 +145,10 @@ public class XmlQueryController implements Controller, InitializingBean {
         }
         
         boolean includeUnpublished = "true".equals(request.getParameter(unpublishedParameter));
+        
+        XmlSearcher searcher = xmlSearcherFactory.apply(request);
 
-        Document result = this.xmlSearcher.executeDocumentQuery(query, sortStr,
+        Document result = searcher.executeDocumentQuery(query, sortStr,
                 maxResults, offset, fields, authenticated, includeUnpublished);
 
         OutputStream outputStream = null;

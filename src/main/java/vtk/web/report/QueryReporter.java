@@ -38,7 +38,7 @@ import java.util.Map;
 import javax.servlet.http.HttpServletRequest;
 
 import vtk.repository.Resource;
-import vtk.repository.search.QueryParser;
+import vtk.repository.search.QueryParserFactory;
 import vtk.repository.search.Search;
 import vtk.repository.search.Sorting;
 import vtk.repository.search.query.Query;
@@ -47,26 +47,26 @@ import vtk.web.service.URL;
 
 public class QueryReporter extends DocumentReporter {
     
-    private QueryParser parser;
+    private QueryParserFactory parserFactory;
     private static String DEFAULT_QUERY = "type IN resource";
     
-    public QueryReporter(QueryParser parser) {
+    public QueryReporter(QueryParserFactory parserFactory) {
         super();
-        this.parser = parser;
+        this.parserFactory = parserFactory;
     }
     
     @Override
-    public Map<String, Object> getReportContent(String token, Resource resource, HttpServletRequest request) {
-        Map<String, Object> model = super.getReportContent(token, resource, request);
+    public Map<String, Object> getReportContent(HttpServletRequest request, String token, Resource resource) {
+        Map<String, Object> model = super.getReportContent(request, token, resource);
         model.put("specificCollectionReporter", true);
 
-        Map<String, Object> form = new HashMap<String, Object>();
-        URL action = new URL(RequestContext.getRequestContext().getRequestURL());
+        Map<String, Object> form = new HashMap<>();
+        URL action = new URL(RequestContext.getRequestContext(request).getRequestURL());
         
         String query = action.getParameter("query");
         if (query == null || "".equals(query.trim())) query = DEFAULT_QUERY;
         
-        List<Object> inputs = new ArrayList<Object>();
+        List<Object> inputs = new ArrayList<>();
         inputs.add(formElement("query", query, "text"));
         
         for (String name: action.getParameterNames()) {
@@ -92,13 +92,13 @@ public class QueryReporter extends DocumentReporter {
         //sorting.addSortField(new PropertySortField(this.sortPropDef, this.sortOrder));
         //search.setSorting(sorting);
         
-        Query query = parser.parse(queryStr);
+        Query query = parserFactory.getParser().parse(queryStr);
         search.setQuery(query);
         return search;
     }
 
     private Object formElement(String name, String value, String type) {
-        Map<String, Object> element = new HashMap<String, Object>();
+        Map<String, Object> element = new HashMap<>();
         element.put("name", name);
         element.put("value", value);
         element.put("type", type);

@@ -32,6 +32,8 @@ package vtk.web.actions.convert;
 
 import java.util.Map;
 
+import javax.servlet.http.HttpServletRequest;
+
 import vtk.repository.Path;
 
 public interface CopyAction {
@@ -45,6 +47,7 @@ public interface CopyAction {
      *            Special properties to consider/process during copy
      * @throws Exception
      */
-    public void process(Path originalUri, Path copyUri, Map<String, Object> properties) throws Exception;
+    public void process(HttpServletRequest request, 
+            Path originalUri, Path copyUri, Map<String, Object> properties) throws Exception;
 
 }

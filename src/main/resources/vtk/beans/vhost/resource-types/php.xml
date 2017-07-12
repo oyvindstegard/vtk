@@ -17,8 +17,8 @@
   </bean>
 
   <bean id="contentTypeMatchesPhp" 
-        class="vtk.web.service.ResourceContentTypeRegexpAssertion">
-    <property name="pattern" value="(application/x-php)|(text/x-php)|(text/php)" />
+        class="vtk.repository.resourcetype.ResourceContentTypeRegexpAssertion">
+    <constructor-arg name="pattern" value="(application/x-php)|(text/x-php)|(text/php)" />
   </bean>
 
 </beans>

@@ -32,6 +32,8 @@ package vtk.resourcemanagement.view.tl;
 
 import java.io.InputStream;
 
+import javax.servlet.http.HttpServletRequest;
+
 import vtk.repository.Path;
 import vtk.repository.Repository;
 import vtk.text.tl.Context;
@@ -39,6 +41,7 @@ import vtk.text.tl.Symbol;
 import vtk.text.tl.expr.Function;
 import vtk.util.text.Json;
 import vtk.web.RequestContext;
+import vtk.web.decorating.DynamicDecoratorTemplate;
 
 public class RetrieveJsonHandler extends Function {
 
@@ -51,7 +54,13 @@ public class RetrieveJsonHandler extends Function {
 
         Object arg = args[0];
         String ref = arg.toString();
-        RequestContext requestContext = RequestContext.getRequestContext();
+        HttpServletRequest request = (HttpServletRequest) 
+                ctx.getAttribute(DynamicDecoratorTemplate.SERVLET_REQUEST_CONTEXT_ATTR);
+        if (request == null) {
+            throw new RuntimeException("Servlet request not found in context by attribute: "
+                    + DynamicDecoratorTemplate.SERVLET_REQUEST_CONTEXT_ATTR);
+        }
+        RequestContext requestContext = RequestContext.getRequestContext(request);
         Repository repository = requestContext.getRepository();
 
         try {

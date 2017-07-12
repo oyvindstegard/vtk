@@ -61,7 +61,7 @@ public class FileBrowserController implements HttpRequestHandler {
     public void handleRequest(
             HttpServletRequest request, HttpServletResponse response
     ) throws ServletException, IOException {
-        RequestContext rc = RequestContext.getRequestContext();
+        RequestContext rc = RequestContext.getRequestContext(request);
         if (rc.getPrincipal() == null) {
             throw new AuthenticationException();
         }

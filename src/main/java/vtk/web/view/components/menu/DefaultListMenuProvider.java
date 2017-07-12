@@ -96,7 +96,6 @@ import vtk.web.service.URL;
  *
  */
 public class DefaultListMenuProvider implements ReferenceDataProvider {
-
     private String modelName;
     private String label;
     private Iterable<Service> services;
@@ -110,15 +109,18 @@ public class DefaultListMenuProvider implements ReferenceDataProvider {
         this(label, label, true, services);
     }
 
-    public DefaultListMenuProvider(String label, String modelName, Iterable<Service> services) {
+    public DefaultListMenuProvider(String label, String modelName,
+            Iterable<Service> services) {
         this(label, modelName, true, services);
     }
 
-    public DefaultListMenuProvider(String label, String modelName, boolean matchAssertions, Iterable<Service> services) {
+    public DefaultListMenuProvider(String label, String modelName, 
+            boolean matchAssertions, Iterable<Service> services) {
         this(label, modelName, matchAssertions, services, null);
     }
 
-    public DefaultListMenuProvider(String label, String modelName, boolean matchAssertions, Iterable<Service> services,
+    public DefaultListMenuProvider(String label, String modelName, 
+            boolean matchAssertions, Iterable<Service> services,
             Iterable<ReferenceDataProvider> referenceDataProviders) {
         if (label == null)
             throw new IllegalArgumentException("Argument 'label' cannot be null");
@@ -134,8 +136,9 @@ public class DefaultListMenuProvider implements ReferenceDataProvider {
         this.referenceDataProviders = referenceDataProviders;
     }
 
-    public DefaultListMenuProvider(String label, String modelName, boolean matchAssertions,
-            Iterable<Service> services, Iterable<ReferenceDataProvider> referenceDataProviders,
+    public DefaultListMenuProvider(String label, String modelName, 
+            boolean matchAssertions, Iterable<Service> services, 
+            Iterable<ReferenceDataProvider> referenceDataProviders,
             ReferenceDataProvider referenceDataProvider) {
         if (label == null)
             throw new IllegalArgumentException("Argument 'label' cannot be null");
@@ -165,7 +168,7 @@ public class DefaultListMenuProvider implements ReferenceDataProvider {
         ListMenu<String> menu = new ListMenu<>();
         menu.setLabel(label);
 
-        RequestContext requestContext = RequestContext.getRequestContext();
+        RequestContext requestContext = RequestContext.getRequestContext(request);
         Principal principal = requestContext.getPrincipal();
         Repository repository = requestContext.getRepository();
         try {
@@ -182,14 +185,22 @@ public class DefaultListMenuProvider implements ReferenceDataProvider {
                 String title = getTitle(resource, service, request);
                 URL url = null;
                 try {
-                    url = service.urlConstructor(requestContext.getRequestURL())
-                            .withResource(resource)
-                            .withPrincipal(principal)
-                            .matchAssertions(matchAssertions)
-                            .constructURL();
+                    if (matchAssertions) {
+                        url = service.urlConstructor(requestContext.getRequestURL())
+                                .withPrincipal(principal)
+                                .withResource(resource)
+                                .constructURL();
+                    }
+                    else {
+                        url = service.urlConstructor(requestContext.getRequestURL())
+                                .withURI(resource.getURI())
+                                .constructURL();
+                        
+                    }
                     servicesLinkableCounts++;
-                } catch (ServiceUnlinkableException ex) {
-                    // ok
+                }
+                catch (ServiceUnlinkableException ex) {
+                    // OK
                 }
 
                 MenuItem<String> item = new MenuItem<>(title);

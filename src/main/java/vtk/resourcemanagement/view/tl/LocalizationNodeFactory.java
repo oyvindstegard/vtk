@@ -73,7 +73,7 @@ public class LocalizationNodeFactory implements DirectiveHandler {
         context.add(new Node() {
             public boolean render(Context ctx, Writer out) throws Exception {
                 String key = code.getValue(ctx).toString();
-                //RequestContext requestContext = RequestContext.getRequestContext();
+                //RequestContext requestContext = RequestContext.getRequestContext(request);
                 //HttpServletRequest request = requestContext.getServletRequest();
                 HttpServletRequest request = (HttpServletRequest) ctx.getAttribute(DynamicDecoratorTemplate.SERVLET_REQUEST_CONTEXT_ATTR);
                 Object o = request.getAttribute(StructuredResourceDisplayController.MVC_MODEL_REQ_ATTR);

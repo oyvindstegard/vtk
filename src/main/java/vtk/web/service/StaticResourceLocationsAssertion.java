@@ -34,6 +34,7 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 
 import javax.servlet.http.HttpServletRequest;
@@ -42,14 +43,15 @@ import org.springframework.beans.factory.BeanFactoryUtils;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
+
 import vtk.repository.Path;
 import vtk.repository.Resource;
-import vtk.security.Principal;
 import vtk.resourcemanagement.StaticResourceLocation;
+import vtk.security.Principal;
 
 
 public class StaticResourceLocationsAssertion
-  implements Assertion, ApplicationContextAware, InitializingBean {
+  implements WebAssertion, ApplicationContextAware, InitializingBean {
 
     private Set<Path> prefixes;
     private ApplicationContext applicationContext;
@@ -66,7 +68,7 @@ public class StaticResourceLocationsAssertion
         Map matchingBeans = BeanFactoryUtils.beansOfTypeIncludingAncestors(
             this.applicationContext, StaticResourceLocation.class, true, false);
         Collection<StaticResourceLocation> allLocations = matchingBeans.values();
-        this.prefixes = new HashSet<Path>();
+        this.prefixes = new HashSet<>();
 
         for (StaticResourceLocation location: allLocations) {
             Path uri = location.getPrefix();
@@ -76,7 +78,7 @@ public class StaticResourceLocationsAssertion
 
 
     @Override
-    public boolean conflicts(Assertion assertion) {
+    public boolean conflicts(WebAssertion assertion) {
         return false;
     }
 
@@ -88,8 +90,13 @@ public class StaticResourceLocationsAssertion
 
 
     @Override
-    public boolean processURL(URL url, Resource resource, Principal principal, boolean match) {
-        return true;
+    public Optional<URL> processURL(URL url, Resource resource, Principal principal) {
+        return Optional.of(url);
+    }
+
+    @Override
+    public URL processURL(URL url) {
+        return url;
     }
 
 
@@ -106,9 +113,5 @@ public class StaticResourceLocationsAssertion
         return false;
     }
 
-
-    @Override
-    public void processURL(URL url) {
-    }
 
 }

@@ -40,7 +40,8 @@ public interface Reporter {
 
     public boolean isEnabled();
 
-    public Map<String, Object> getReportContent(String token, Resource currentResource, HttpServletRequest request);
+    public Map<String, Object> getReportContent(HttpServletRequest request, 
+            String token, Resource currentResource);
 
     public String getName();
 

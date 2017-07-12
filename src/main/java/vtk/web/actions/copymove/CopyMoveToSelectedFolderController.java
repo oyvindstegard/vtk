@@ -100,8 +100,8 @@ public class CopyMoveToSelectedFolderController implements Controller {
     @Override
     public ModelAndView handleRequest(HttpServletRequest request, HttpServletResponse response) throws Exception {
 
-        CopyMoveSessionBean sessionBean = (CopyMoveSessionBean) request.getSession(true).getAttribute(
-                COPYMOVE_SESSION_ATTRIBUTE);
+        CopyMoveSessionBean sessionBean = (CopyMoveSessionBean) 
+                request.getSession(true).getAttribute(COPYMOVE_SESSION_ATTRIBUTE);
         if (sessionBean == null) {
             return new ModelAndView(this.viewName);
         }
@@ -115,8 +115,8 @@ public class CopyMoveToSelectedFolderController implements Controller {
             return new ModelAndView(this.viewName);
         }
         long before = System.currentTimeMillis();
-        ArrayList<String> userProcessExistingFileNames = performAction(sessionBean);
-        if(userProcessExistingFileNames == null) {
+        ArrayList<String> userProcessExistingFileNames = performAction(request, sessionBean);
+        if (userProcessExistingFileNames == null) {
             // Removing session variable
             request.getSession(true).removeAttribute(COPYMOVE_SESSION_ATTRIBUTE);
 
@@ -125,133 +125,144 @@ public class CopyMoveToSelectedFolderController implements Controller {
                 logger.debug("Milliseconds spent on this copy/move operation: " + total);
             }
             return new ModelAndView(this.viewName);
-        } else {
-            Map<String, Object> model = new HashMap<String, Object>();
-            if(userProcessExistingFileNames.size() == 0) {
+        }
+        else {
+            Map<String, Object> model = new HashMap<>();
+            if (userProcessExistingFileNames.size() == 0) {
                 model.put("moveToSameFolder", "yes");
-            } else {
+            }
+            else {
                 model.put("existingFilenames", userProcessExistingFileNames);
             }
             return new ModelAndView(this.viewName, model);
         }
     }
 
-	private ArrayList<String> performAction(CopyMoveSessionBean sessionBean) throws Exception {
-        RequestContext requestContext = RequestContext.getRequestContext();
-        String token = requestContext.getSecurityToken();
-        Path destinationUri = requestContext.getCurrentCollection();
-        Repository repository = requestContext.getRepository();
-		
-		String action = sessionBean.getAction();
-        boolean moveAction = "move-resources".equals(action);
+	private ArrayList<String> performAction(HttpServletRequest request, CopyMoveSessionBean sessionBean) throws Exception {
+	    RequestContext requestContext = RequestContext.getRequestContext(request);
+	    String token = requestContext.getSecurityToken();
+	    Path destinationUri = requestContext.getCurrentCollection();
+	    Repository repository = requestContext.getRepository();
 
-        List<String> filesToMoveOrCopy = sessionBean.getFilesToBeCopied();
+	    String action = sessionBean.getAction();
+	    boolean moveAction = "move-resources".equals(action);
 
-        // Map of files that for some reason failed on copy/move. Separated by a
-        // key (String) that specifies type of failure and identifies list of
-        // paths to resources that failed.
-        Map<String, List<Path>> failures = new HashMap<String, List<Path>>();
-        String msgKey = "manage".concat(moveAction ? ".move" : ".copy").concat(".error.");
+	    List<String> filesToMoveOrCopy = sessionBean.getFilesToBeCopied();
 
-        boolean shouldOverwriteExisting = requestContext.getServletRequest().getParameter("overwrite") != null;
-        String existingSkippedFiles = requestContext.getServletRequest().getParameter("existing-skipped-files");
-        String[] existingSkippedFilesArr = null;
-        if(existingSkippedFiles != null) {
-            existingSkippedFilesArr = existingSkippedFiles.split(",");
-        }
-        boolean gatherExistingFilenames = false;
+	    // Map of files that for some reason failed on copy/move. Separated by a
+	    // key (String) that specifies type of failure and identifies list of
+	    // paths to resources that failed.
+	    Map<String, List<Path>> failures = new HashMap<>();
+	    String msgKey = "manage".concat(moveAction ? ".move" : ".copy").concat(".error.");
 
-        for (String filePath : filesToMoveOrCopy) {
+	    boolean shouldOverwriteExisting = request.getParameter("overwrite") != null;
+	    String existingSkippedFiles = request.getParameter("existing-skipped-files");
+	    String[] existingSkippedFilesArr = null;
+	    if (existingSkippedFiles != null) {
+	        existingSkippedFilesArr = existingSkippedFiles.split(",");
+	    }
+	    boolean gatherExistingFilenames = false;
 
-            Path fileUri = Path.fromString(filePath);
-            if (!repository.exists(token, fileUri)) {
-                // A selected object for copying/moving no longer exists
-                this.addToFailures(failures, fileUri, msgKey, "nonExisting");
-                continue;
-            }
+	    for (String filePath : filesToMoveOrCopy) {
 
-            String name = fileUri.getName();
-            Path newResourceUri = destinationUri.extend(name);
-            boolean isSameFolder = newResourceUri.toString().equals(fileUri.toString());
+	        Path fileUri = Path.fromString(filePath);
+	        if (!repository.exists(token, fileUri)) {
+	            // A selected object for copying/moving no longer exists
+	            this.addToFailures(failures, fileUri, msgKey, "nonExisting");
+	            continue;
+	        }
 
-            if(isSameFolder && moveAction && shouldOverwriteExisting) { // Give error-message if moving to same folder
-                return new ArrayList<String>();
-            }
+	        String name = fileUri.getName();
+	        Path newResourceUri = destinationUri.extend(name);
+	        boolean isSameFolder = newResourceUri.toString().equals(fileUri.toString());
 
-            try {
-                if (repository.exists(token, newResourceUri) && !(!moveAction && isSameFolder)) { // Duplicate if copying to same folder
-                    if(existingSkippedFilesArr == null) {
-                        this.addToFailures(failures, fileUri, msgKey, "namingConflict");
-                        gatherExistingFilenames = true;
-                        continue;
-                    } else {
-                        boolean isSkippingFile = false;
-                        for(String existingSkippedFile : existingSkippedFilesArr) {
-                            if(fileUri.toString().equals(existingSkippedFile)) {
-                                isSkippingFile = true;
-                                break;
-                            }
-                        }
-                        if(isSkippingFile) { // Skip
-                            continue;
-                        } else { // Overwrite
-                            repository.delete(token, newResourceUri, false);
-                        }
-                    }
-                }
-                if(!gatherExistingFilenames || !shouldOverwriteExisting) {
-                    if (moveAction) {
-                        repository.move(token, fileUri, newResourceUri, false);
-                    } else {
-                        Path destUri = newResourceUri;
-                        Resource src = repository.retrieve(token, fileUri, false);
-                        newResourceUri = this.copyHelper.copyResource(fileUri, destUri, repository, token, src, null);
-                    }
-                }
+	        if (isSameFolder && moveAction && shouldOverwriteExisting) { // Give error-message if moving to same folder
+	            return new ArrayList<>();
+	        }
 
-            } catch (AuthorizationException ae) {
-                this.addToFailures(failures, fileUri, msgKey, "unAuthorized");
-            } catch (ResourceLockedException rle) {
-                this.addToFailures(failures, fileUri, msgKey, "locked");
-            } catch (ResourceOverwriteException roe) {
-                this.addToFailures(failures, fileUri, msgKey, "namingConflict");
-            } catch (Exception e) {
-                StringBuilder msg = new StringBuilder("Could not perform ");
-                msg.append(moveAction ? "move of " : "copy of ").append(filePath);
-                msg.append(": ").append(e.getMessage());
-                logger.warn(msg.toString());
-                this.addToFailures(failures, fileUri, msgKey, "generic");
-            }
-        }
+	        try {
+	            if (repository.exists(token, newResourceUri) && !(!moveAction && isSameFolder)) { // Duplicate if copying to same folder
+	                if (existingSkippedFilesArr == null) {
+	                    this.addToFailures(failures, fileUri, msgKey, "namingConflict");
+	                    gatherExistingFilenames = true;
+	                    continue;
+	                }
+	                else {
+	                    boolean isSkippingFile = false;
+	                    for (String existingSkippedFile : existingSkippedFilesArr) {
+	                        if (fileUri.toString().equals(existingSkippedFile)) {
+	                            isSkippingFile = true;
+	                            break;
+	                        }
+	                    }
+	                    if (isSkippingFile) { // Skip
+	                        continue;
+	                    }
+	                    else { // Overwrite
+	                        repository.delete(token, newResourceUri, false);
+	                    }
+	                }
+	            }
+	            if (!gatherExistingFilenames || !shouldOverwriteExisting) {
+	                if (moveAction) {
+	                    repository.move(token, fileUri, newResourceUri, false);
+	                }
+	                else {
+	                    Path destUri = newResourceUri;
+	                    Resource src = repository.retrieve(token, fileUri, false);
+	                    newResourceUri = this.copyHelper
+	                            .copyResource(request, fileUri, destUri, repository, token, src, null);
+	                }
+	            }
 
-        ArrayList<String> existingFilenames = new ArrayList<String>();
-        for (Entry<String, List<Path>> entry : failures.entrySet()) {
-            String key = entry.getKey();
-            List<Path> failedResources = entry.getValue();
-            
-            if(key.contains("namingConflict") && shouldOverwriteExisting) {
-                for (Path p : failedResources) {
-                    existingFilenames.add(p.toString());
-                }
-            } else {
-              Message msg = new Message(key);
-              for (Path p : failedResources) {
-                  msg.addMessage(p.getName());
-              }
-              requestContext.addErrorMessage(msg);
-            }
-        }
-        if(existingFilenames.size() > 0 && requestContext.getErrorMessages().size() == 0) {
-            return existingFilenames;
-        }
-        return null;
+	        }
+	        catch (AuthorizationException ae) {
+	            this.addToFailures(failures, fileUri, msgKey, "unAuthorized");
+	        }
+	        catch (ResourceLockedException rle) {
+	            this.addToFailures(failures, fileUri, msgKey, "locked");
+	        }
+	        catch (ResourceOverwriteException roe) {
+	            this.addToFailures(failures, fileUri, msgKey, "namingConflict");
+	        }
+	        catch (Exception e) {
+	            StringBuilder msg = new StringBuilder("Could not perform ");
+	            msg.append(moveAction ? "move of " : "copy of ").append(filePath);
+	            msg.append(": ").append(e.getMessage());
+	            logger.warn(msg.toString());
+	            this.addToFailures(failures, fileUri, msgKey, "generic");
+	        }
+	    }
+
+	    ArrayList<String> existingFilenames = new ArrayList<>();
+	    for (Entry<String, List<Path>> entry : failures.entrySet()) {
+	        String key = entry.getKey();
+	        List<Path> failedResources = entry.getValue();
+
+	        if (key.contains("namingConflict") && shouldOverwriteExisting) {
+	            for (Path p : failedResources) {
+	                existingFilenames.add(p.toString());
+	            }
+	        }
+	        else {
+	            Message msg = new Message(request, key);
+	            for (Path p : failedResources) {
+	                msg.addMessage(p.getName());
+	            }
+	            requestContext.addErrorMessage(msg);
+	        }
+	    }
+	    if (existingFilenames.size() > 0 && requestContext.getErrorMessages().size() == 0) {
+	        return existingFilenames;
+	    }
+	    return null;
 	}
 
     private void addToFailures(Map<String, List<Path>> failures, Path fileUri, String msgKey, String failureType) {
         String key = msgKey.concat(failureType);
         List<Path> failedPaths = failures.get(key);
         if (failedPaths == null) {
-            failedPaths = new ArrayList<Path>();
+            failedPaths = new ArrayList<>();
             failures.put(key, failedPaths);
         }
         failedPaths.add(fileUri);

@@ -76,17 +76,19 @@ public class JSONObjectSelectAssertion implements RepositoryContentEvaluationAss
     }
     
     @Override
-    public boolean matches(Resource resource, Principal principal) {
-        return matches(resource, principal, null);
+    public boolean matches(Optional<Resource> resource, Optional<Principal> principal) {
+        return matches(resource, principal, Optional.empty());
     }
     
     @Override
-    public boolean matches(Resource resource, Principal principal, Content content) {
-        if (content == null) return false;
-        if (resource.isCollection()) return false;
+    public boolean matches(Optional<Resource> resource, 
+            Optional<Principal> principal, Optional<Content> content) {
+        if (!content.isPresent()) return false;
+        if (!resource.isPresent()) return false;
+        if (resource.get().isCollection()) return false;
         
         try {
-            JsonParseResult result = content.getContentRepresentation(JsonParseResult.class);
+            JsonParseResult result = content.get().getContentRepresentation(JsonParseResult.class);
             if (result.value.failure.isPresent()) {
                 return false;
             }

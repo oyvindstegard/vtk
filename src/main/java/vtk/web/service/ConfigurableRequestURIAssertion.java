@@ -31,17 +31,19 @@
 package vtk.web.service;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.Properties;
 
 import javax.servlet.http.HttpServletRequest;
 
 import org.springframework.beans.factory.annotation.Required;
 import org.springframework.util.Assert;
+
 import vtk.repository.Path;
 import vtk.repository.Resource;
 import vtk.security.Principal;
 
-public class ConfigurableRequestURIAssertion implements Assertion {
+public class ConfigurableRequestURIAssertion implements WebAssertion {
 
     private String matchValue;
     private Properties configuration;
@@ -51,7 +53,8 @@ public class ConfigurableRequestURIAssertion implements Assertion {
         this.configuration = configuration;
     }
     
-    @Required public void setMatchValue(String matchValue) {
+    @Required
+    public void setMatchValue(String matchValue) {
         Assert.notNull(matchValue, "Argument cannot be NULL");
         this.matchValue = matchValue;
     }
@@ -60,22 +63,24 @@ public class ConfigurableRequestURIAssertion implements Assertion {
         this.matchOnEmptyConfiguration = matchOnEmptyConfiguration;
     }
     
-    public boolean conflicts(Assertion assertion) {
+    public boolean conflicts(WebAssertion assertion) {
         return false;
     }
 
-    public void processURL(URL url) {
+    @Override
+    public URL processURL(URL url) {
+        return url;
+    }
+    
+    @Override
+    public Optional<URL> processURL(URL url, Resource resource, Principal principal) {
+        boolean matches = matchInternal(url.getPath());
+        if (matches) return Optional.of(url);
+        return Optional.empty();
     }
 
-    public boolean processURL(URL url, Resource resource, Principal principal, boolean match) {
-        boolean matches = true;
-        if (match) {
-            matches = matchInternal(url.getPath());
-        }
-        return matches;
-    }
 
-
+    @Override
     public boolean matches(HttpServletRequest request, Resource resource,
                            Principal principal) {
         URL url = URL.create(request);

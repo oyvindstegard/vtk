@@ -49,7 +49,6 @@ import javax.servlet.http.HttpServletRequest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import vtk.resourcemanagement.view.tl.ComponentInvokerNodeFactory;
 import vtk.text.html.HtmlPage;
 import vtk.text.html.HtmlPageParser;
 import vtk.text.tl.Context;
@@ -74,24 +73,11 @@ public class DynamicDecoratorTemplate implements Template {
     private List<DirectiveHandler> directiveHandlers;
     private HtmlPageParser htmlParser;
     
-    private static final String CR_REQ_ATTR = "__component_resolver__";
-    private static final String HTML_REQ_ATTR = "__html_page__";
-    private static final String PARAMS_REQ_ATTR = "__template_params__";
+    public static final String CR_REQ_ATTR = "__component_resolver__";
+    public static final String HTML_REQ_ATTR = "__html_page__";
+    public static final String PARAMS_REQ_ATTR = "__template_params__";
     public static final String SERVLET_REQUEST_CONTEXT_ATTR = "HTTP_SERVLET_REQUEST";
-    
-    public static class ComponentSupport implements ComponentInvokerNodeFactory.ComponentSupport {
 
-        public ComponentResolver getComponentResolver(Context context) {
-            return (ComponentResolver) context.get(CR_REQ_ATTR);
-        }
-
-        @Override
-        public HtmlPage getHtmlPage(Context context) {
-            return (HtmlPage) context.get(HTML_REQ_ATTR);
-        }
-        
-    }
-    
     public DynamicDecoratorTemplate(InputSource templateSource,
                                      ComponentResolver componentResolver,
                                      List<DirectiveHandler> directiveHandlers, 
@@ -111,7 +97,8 @@ public class DynamicDecoratorTemplate implements Template {
         this.htmlParser = htmlParser;
         try {
             compile();
-        } catch (Exception e) {
+        }
+        catch (Exception e) {
             throw new InvalidTemplateException("Unable to compile template " 
                     + templateSource, e);
         }
@@ -127,20 +114,25 @@ public class DynamicDecoratorTemplate implements Template {
 
         return parameters.get(name);
     }
-    
+    public static void addGlobalContextAttributes(Context context, 
+            HttpServletRequest request, 
+            HtmlPage page) {
+        context.setAttribute(SERVLET_REQUEST_CONTEXT_ATTR, request);
+        context.setAttribute(HTML_REQ_ATTR, page);
+    }
 
     @Override
     public void render(HtmlPage page, OutputStream out, Charset encoding,
             HttpServletRequest request, Map<String, Object> model,
             Map<String, Object> templateParameters) {
-        Locale locale = RequestContext.getRequestContext().getLocale();
+        Locale locale = RequestContext.getRequestContext(request).getLocale();
         Context context = new Context(locale);
+        addGlobalContextAttributes(context, request, page);
+        
+        context.setAttribute(CR_REQ_ATTR, componentResolver);
         for (String name: templateParameters.keySet()) {
             context.define(name, templateParameters.get(name), true);
         }
-        context.setAttribute(SERVLET_REQUEST_CONTEXT_ATTR, request);
-        context.define(CR_REQ_ATTR, componentResolver, true);
-        context.define(HTML_REQ_ATTR, page, true);
         request.setAttribute(PARAMS_REQ_ATTR, templateParameters);
         
         try (Writer writer = new OutputStreamWriter(out)) {
@@ -175,14 +167,13 @@ public class DynamicDecoratorTemplate implements Template {
             }
             @Override
             public void directive(final Directive directive, TemplateContext context) {
-                // XXX: should write error message to page:
-//                context.add(new Node() {
-//                    @Override
-//                    public boolean render(Context ctx, Writer out)
-//                            throws Exception {
-//                        out.write("Unknown directive: " + directive);
-//                        return true;
-//                    }});
+                context.add(new Node() {
+                    @Override
+                    public boolean render(Context ctx, Writer out)
+                            throws Exception {
+                        out.write("Unknown directive: " + directive);
+                        return true;
+                    }});
                 logger.debug("Unknown directive: " + directive);
             }
         };

@@ -36,6 +36,8 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 
+import javax.servlet.http.HttpServletRequest;
+
 import org.springframework.beans.factory.annotation.Required;
 
 import vtk.repository.Path;
@@ -82,7 +84,8 @@ public final class MenuGenerator {
         return menuRequest;
     }
 
-	public ListMenu<PropertySet> buildListMenu(ResultSet rs, MenuRequest menuRequest, String modelName, boolean ascendingSort) {
+    public ListMenu<PropertySet> buildListMenu(HttpServletRequest request, 
+            ResultSet rs, MenuRequest menuRequest, String modelName, boolean ascendingSort) {
         ListMenu<PropertySet> menu = new ListMenu<>();
         Map<Path, List<PropertySet>> childMap = new HashMap<>();
         List<PropertySet> toplevel = new ArrayList<>();
@@ -110,12 +113,12 @@ public final class MenuGenerator {
         List<MenuItem<PropertySet>> toplevelItems = new ArrayList<>();
 
         for (PropertySet resource : toplevel) {
-            toplevelItems.add(buildItem(resource, childMap, menuRequest));
+            toplevelItems.add(buildItem(request, resource, childMap, menuRequest));
         }
 
         menu.setComparator(new ListMenuComparator(menuRequest.getLocale(), this.importancePropDef,
-				this.navigationTitlePropDef, ascendingSort, menuRequest.isSortByName(), menuRequest
-                        .getSortProperty()));
+                this.navigationTitlePropDef, ascendingSort, menuRequest.isSortByName(), menuRequest
+                .getSortProperty()));
 
         menu.addAllItems(toplevelItems);
         menu.setTitle(menuRequest.getTitle());
@@ -123,13 +126,13 @@ public final class MenuGenerator {
         return menu;
     }
 
-    private MenuItem<PropertySet> buildItem(PropertySet resource, Map<Path, List<PropertySet>> childMap,
-            MenuRequest menuRequest) {
+    private MenuItem<PropertySet> buildItem(HttpServletRequest request, PropertySet resource, 
+            Map<Path, List<PropertySet>> childMap, MenuRequest menuRequest) {
 
         Path uri = resource.getURI();
 
         URL url = null;
-        url = viewService.urlConstructor(RequestContext.getRequestContext().getRequestURL())
+        url = viewService.urlConstructor(RequestContext.getRequestContext(request).getRequestURL())
                 .withURI(uri)
                 .constructURL();
         url.setCollection(true);
@@ -153,13 +156,13 @@ public final class MenuGenerator {
 
             subMenu.setComparator(new ListMenuComparator(menuRequest.getLocale(), this.importancePropDef,
                     this.navigationTitlePropDef, menuRequest.isAscendingSort(), menuRequest.isSortByName(), menuRequest
-                            .getSortProperty()));
+                    .getSortProperty()));
 
             for (PropertySet child : children) {
-                subMenu.addItem(buildItem(child, childMap, menuRequest));
+                subMenu.addItem(buildItem(request, child, childMap, menuRequest));
             }
-            
-            URL moreUrl = viewService.urlConstructor(RequestContext.getRequestContext().getRequestURL())
+
+            URL moreUrl = viewService.urlConstructor(RequestContext.getRequestContext(request).getRequestURL())
                     .withURI(resource.getURI())
                     .constructURL();
             moreUrl.setCollection(true);
@@ -208,8 +211,8 @@ public final class MenuGenerator {
 
             ListMenu<PropertySet> m = new ListMenu<>();
             m.setComparator(new ListMenuComparator(menuRequest.getLocale(), this.importancePropDef,
-					this.navigationTitlePropDef, ascendingSort, menuRequest.isSortByName(), menuRequest
-                            .getSortProperty()));
+                    this.navigationTitlePropDef, ascendingSort, menuRequest.isSortByName(), menuRequest
+                    .getSortProperty()));
 
             m.setTitle(menu.getTitle());
             m.setLabel(menu.getLabel());
@@ -240,11 +243,11 @@ public final class MenuGenerator {
         return hiddenPropDef;
     }
 
-	public PropertyTypeDefinition getSortDescendingPropDef() {
-		return sortDescendingPropDef;
-	}
+    public PropertyTypeDefinition getSortDescendingPropDef() {
+        return sortDescendingPropDef;
+    }
 
-	public PropertyTypeDefinition getImportancePropDef() {
+    public PropertyTypeDefinition getImportancePropDef() {
         return importancePropDef;
     }
 
@@ -271,12 +274,12 @@ public final class MenuGenerator {
         this.hiddenPropDef = hiddenPropDef;
     }
 
-	@Required
-	public void setSortDescendingPropDef(PropertyTypeDefinition sortDescendingPropDef) {
-		this.sortDescendingPropDef = sortDescendingPropDef;
-	}
+    @Required
+    public void setSortDescendingPropDef(PropertyTypeDefinition sortDescendingPropDef) {
+        this.sortDescendingPropDef = sortDescendingPropDef;
+    }
 
-	@Required
+    @Required
     public void setImportancePropDef(PropertyTypeDefinition importancePropDef) {
         this.importancePropDef = importancePropDef;
     }

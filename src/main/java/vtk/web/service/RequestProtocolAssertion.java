@@ -30,13 +30,14 @@
  */
 package vtk.web.service;
 
+import java.util.Optional;
+
 import javax.servlet.http.HttpServletRequest;
 
 import org.springframework.util.StringUtils;
 
 import vtk.repository.Resource;
 import vtk.security.Principal;
-import vtk.web.RequestContext;
 
 
 /**
@@ -49,7 +50,7 @@ import vtk.web.RequestContext;
  *   <code>https</code>. A comma separated list of values is accepted.
  * </ul>
  */
-public class RequestProtocolAssertion implements Assertion {
+public class RequestProtocolAssertion implements WebAssertion {
 	
     private final static String PROTO_HTTP = "http";
     private final static String PROTO_HTTPS = "https";
@@ -85,7 +86,7 @@ public class RequestProtocolAssertion implements Assertion {
     }
     
     @Override
-    public boolean conflicts(Assertion assertion) {
+    public boolean conflicts(WebAssertion assertion) {
         if (assertion instanceof RequestProtocolAssertion) {
             boolean conflict = true;
 
@@ -113,11 +114,26 @@ public class RequestProtocolAssertion implements Assertion {
     }
 
     @Override
-    public void processURL(URL url) {
-        RequestContext requestContext = RequestContext.getRequestContext();
-        if (requestContext != null && preferRequestProtocol) {
-            String requestProtocol = getProtocol(requestContext.getServletRequest());
-
+    public URL processURL(URL url) {
+        boolean set = false;
+        for (String proto: protocols) {
+            if (!PROTO_ANY.equals(proto)) {
+                url.setProtocol(proto);
+                set = true;
+                break;
+            }
+        }
+        if (!set) {
+            url.setProtocol(PROTO_HTTP);
+        }
+        return url;
+    }
+    
+    @Override
+    public Optional<URL> processURL(URL url, Resource resource, Principal principal) {
+        String requestProtocol = url.getProtocol();
+        
+        if (preferRequestProtocol) {
             for (String proto: protocols) {
                 if (PROTO_ANY.equals(proto)) {
                     url.setProtocol(requestProtocol);
@@ -145,23 +161,10 @@ public class RequestProtocolAssertion implements Assertion {
                 }
             }
             if (!set) {
-                if (requestContext != null) {
-                    String requestProtocol = getProtocol(requestContext.getServletRequest());
-                    url.setProtocol(requestProtocol);
-                } else {
-                    url.setProtocol(PROTO_HTTP);
-                }
+                url.setProtocol(requestProtocol);
             }
-
         }
-        
-    }
-    
-    @Override
-    public boolean processURL(URL url, Resource resource,
-                              Principal principal, boolean match) {
-        processURL(url);
-        return true;
+        return Optional.of(url);
     }
 
 
@@ -202,4 +205,6 @@ public class RequestProtocolAssertion implements Assertion {
     private String getProtocol(HttpServletRequest request) {
         return request.isSecure() ? PROTO_HTTPS : PROTO_HTTP;
     }
+
+
 }

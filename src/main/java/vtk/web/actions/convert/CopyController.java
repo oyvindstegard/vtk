@@ -57,13 +57,14 @@ public abstract class CopyController<T extends CopyCommand> extends SimpleFormCo
 
     protected CopyAction copyAction;
 
-    protected abstract void processCopyAction(Path originalUri, Path copyUri, T copyCommand) throws Exception;
+    protected abstract void processCopyAction(HttpServletRequest request, 
+            Path originalUri, Path copyUri, T copyCommand) throws Exception;
 
-    protected abstract T createCommand(String name, String url);
+    protected abstract T createCommand(HttpServletRequest request, String name, String url);
 
     @Override
     protected T formBackingObject(HttpServletRequest request) throws Exception {
-        RequestContext requestContext = RequestContext.getRequestContext();
+        RequestContext requestContext = RequestContext.getRequestContext(request);
         Service service = requestContext.getService();
         Repository repository = requestContext.getRepository();
         String token = requestContext.getSecurityToken();
@@ -85,7 +86,7 @@ public abstract class CopyController<T extends CopyCommand> extends SimpleFormCo
         if (this.resourceName != null) {
             name = this.resourceName;
         }
-        return createCommand(name, url.toString());
+        return createCommand(request, name, url.toString());
     }
 
     
@@ -97,7 +98,7 @@ public abstract class CopyController<T extends CopyCommand> extends SimpleFormCo
 
         Map<String, Object> model = errors.getModel();
 
-        RequestContext requestContext = RequestContext.getRequestContext();
+        RequestContext requestContext = RequestContext.getRequestContext(request);
         String token = requestContext.getSecurityToken();
         Repository repository = requestContext.getRepository();
         Path uri = requestContext.getResourceURI();
@@ -113,7 +114,7 @@ public abstract class CopyController<T extends CopyCommand> extends SimpleFormCo
         Path copyUri = copyToCollection.extend(copyCommand.getName());
 
         // perform the actual copy action
-        this.processCopyAction(uri, copyUri, copyCommand);
+        this.processCopyAction(request, uri, copyUri, copyCommand);
 
         copyCommand.setDone(true);
 
@@ -121,7 +122,8 @@ public abstract class CopyController<T extends CopyCommand> extends SimpleFormCo
 
         if (this.parentViewOnSuccess) {
             resource = repository.retrieve(token, copyToCollection, false);
-        } else {
+        }
+        else {
             resource = repository.retrieve(token, copyUri, false);
         }
         model.put("resource", resource);

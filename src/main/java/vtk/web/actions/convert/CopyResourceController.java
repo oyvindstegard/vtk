@@ -30,18 +30,21 @@
  */
 package vtk.web.actions.convert;
 
+import javax.servlet.http.HttpServletRequest;
+
 import vtk.repository.Path;
 
 public class CopyResourceController extends CopyController<CopyCommand> {
 
     @Override
-    protected CopyCommand createCommand(String name, String url) {
+    protected CopyCommand createCommand(HttpServletRequest request, String name, String url) {
         return new CopyCommand(name, url);
     }
 
     @Override
-    protected void processCopyAction(Path originalUri, Path copyUri, CopyCommand copyCommand) throws Exception {
-        this.copyAction.process(originalUri, copyUri, null);
+    protected void processCopyAction(HttpServletRequest request, 
+            Path originalUri, Path copyUri, CopyCommand copyCommand) throws Exception {
+        this.copyAction.process(request, originalUri, copyUri, null);
     }
 
 }

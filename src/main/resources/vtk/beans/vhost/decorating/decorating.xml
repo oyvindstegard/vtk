@@ -266,7 +266,7 @@
     <property name="order" value="-200" />
     <property name="assertions">
       <list>
-        <bean class="vtk.web.service.ResourceTypeAssertion" parent="repositoryAware">
+        <bean class="vtk.repository.resourcetype.ResourceTypeAssertion" parent="repositoryAware">
           <property name="resourceTypeDefinition" ref="htmlResourceTypeDefinition" />
         </bean>
         <bean class="vtk.web.service.ResourceURIRegexpAssertion">
@@ -292,7 +292,7 @@
     <property name="order" value="-200" />
     <property name="assertions">
       <list>
-        <bean class="vtk.web.service.ResourceTypeAssertion" parent="repositoryAware">
+        <bean class="vtk.repository.resourcetype.ResourceTypeAssertion" parent="repositoryAware">
           <property name="resourceTypeDefinition" ref="htmlResourceTypeDefinition" />
         </bean>
         <bean class="vtk.web.service.ResourceURIRegexpAssertion">
@@ -318,7 +318,7 @@
     <property name="order" value="-200" />
     <property name="assertions">
       <list>
-        <bean class="vtk.web.service.ResourceTypeAssertion"
+        <bean class="vtk.repository.resourcetype.ResourceTypeAssertion"
               parent="repositoryAware">
           <property name="resourceTypeDefinition" ref="json.managedObjectResourceType" />
         </bean>

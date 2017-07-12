@@ -37,6 +37,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import javax.servlet.http.HttpServletRequest;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Required;
@@ -113,7 +115,8 @@ public class CollectionListingAggregationResolver implements AggregationResolver
     private int maxRecursiveDepth = DEFAULT_RECURSIVE_DEPTH;
 
     @Override
-    public CollectionListingAggregatedResources getAggregatedResources(PropertySet collection) {
+    public CollectionListingAggregatedResources getAggregatedResources(HttpServletRequest request,
+            PropertySet collection) {
 
         CollectionListingAggregatedResources clar = new CollectionListingAggregatedResources();
 
@@ -128,7 +131,7 @@ public class CollectionListingAggregationResolver implements AggregationResolver
 
             // Resolve the aggregation
             URL currentHostURL = startCollectionURL.relativeURL("/");
-            resolveAggregatedResources(aggregationSet, manuallyApprovedSet, collection, currentHostURL,
+            resolveAggregatedResources(request, aggregationSet, manuallyApprovedSet, collection, currentHostURL,
                     startCollectionURL, 0);
 
             clar.setAggregationSet(aggregationSet);
@@ -140,7 +143,8 @@ public class CollectionListingAggregationResolver implements AggregationResolver
         return clar;
     }
 
-    private void resolveAggregatedResources(Map<URL, Set<Path>> aggregationSet,
+    private void resolveAggregatedResources(HttpServletRequest request, 
+            Map<URL, Set<Path>> aggregationSet,
                 Map<URL, Set<Path>> manuallyApprovedSet, PropertySet resource,
                 URL currentHostURL, URL startCollectionURL, int depth) {
 
@@ -170,22 +174,26 @@ public class CollectionListingAggregationResolver implements AggregationResolver
         }
 
         // Resolve aggregation
-        Set<PropertySet> set = resolveAggregation(resource, aggregationSet, currentHostURL, startCollectionURL);
+        Set<PropertySet> set = resolveAggregation(request, 
+                resource, aggregationSet, currentHostURL, startCollectionURL);
         if (depth < maxRecursiveDepth) {
             depth += 1;
             for (PropertySet ps : set) {
                 currentHostURL = resolveCurrentCollectionURL(ps).relativeURL("/");
                 // Recursively repeat until depth is reached
-                resolveAggregatedResources(aggregationSet, manuallyApprovedSet, ps, currentHostURL, startCollectionURL,
+                resolveAggregatedResources(request, aggregationSet, 
+                        manuallyApprovedSet, ps, currentHostURL, startCollectionURL,
                         depth);
             }
         }
 
     }
 
-    private Set<PropertySet> resolveAggregation(PropertySet resource, Map<URL, Set<Path>> aggregationSet,
+    private Set<PropertySet> resolveAggregation(HttpServletRequest request, 
+            PropertySet resource, Map<URL, Set<Path>> aggregationSet,
             URL currentHostURL, URL startCollectionURL) {
-
+        RequestContext requestContext = RequestContext
+                .getRequestContext(request);
         Set<PropertySet> resultSet = new HashSet<>();
         if (isDisplayAggregation(resource)) {
             Property aggregationProp = resource.getProperty(aggregationPropDef);
@@ -224,7 +232,7 @@ public class CollectionListingAggregationResolver implements AggregationResolver
 
                 }
 
-                Set<PropertySet> resources = getResources(urlSet);
+                Set<PropertySet> resources = getResources(requestContext, urlSet);
                 for (PropertySet ps : resources) {
 
                     // Add resource to return set for further aggregation
@@ -232,7 +240,7 @@ public class CollectionListingAggregationResolver implements AggregationResolver
                     // hosts and paths to aggregate from
                     resultSet.add(ps);
 
-                    URL aggregationURL = viewService.urlConstructor(RequestContext.getRequestContext().getRequestURL())
+                    URL aggregationURL = viewService.urlConstructor(requestContext.getRequestURL())
                             .withURI(ps.getURI())
                             .constructURL();
     
@@ -301,14 +309,11 @@ public class CollectionListingAggregationResolver implements AggregationResolver
         return displayManuallyApprovedProp != null && displayManuallyApprovedProp.getBooleanValue();
     }
 
-    private Set<PropertySet> getResources(Set<URL> urls) {
+    private Set<PropertySet> getResources(RequestContext requestContext, Set<URL> urls) {
 
         Set<PropertySet> result = new HashSet<>();
 
-        String token = null;
-        if (RequestContext.exists()) {
-            token = RequestContext.getRequestContext().getSecurityToken();
-        }
+        String token = requestContext.getSecurityToken();
         try {
 
             if (multiHostSearcher.isMultiHostSearchEnabled() && includesOtherHostRef(getLocalHostUrl(), urls)) {
@@ -329,7 +334,7 @@ public class CollectionListingAggregationResolver implements AggregationResolver
 
                     UriSetQuery uriSetQuery = new UriSetQuery(uris);
                     Search search = new Search();
-                    if (RequestContext.getRequestContext().isPreviewUnpublished()) {
+                    if (requestContext.isPreviewUnpublished()) {
                         search.removeFilterFlag(Search.FilterFlag.UNPUBLISHED_COLLECTIONS);
                     }
                     search.setQuery(uriSetQuery);
@@ -366,14 +371,13 @@ public class CollectionListingAggregationResolver implements AggregationResolver
     }
 
     @Override
-    public Set<Path> getAggregationPaths(Path pathToResource) {
-        String token = null;
-        if (RequestContext.exists()) {
-            token = RequestContext.getRequestContext().getSecurityToken();
-        }
+    public Set<Path> getAggregationPaths(HttpServletRequest request, Path pathToResource) {
+        RequestContext requestContext = RequestContext
+                .getRequestContext(request);
+        String token = requestContext.getSecurityToken();
         try {
             Resource collection = repository.retrieve(token, pathToResource, false);
-            CollectionListingAggregatedResources clar = getAggregatedResources(collection);
+            CollectionListingAggregatedResources clar = getAggregatedResources(request, collection);
             return clar.getHostAggregationSet(getLocalHostUrl());
         } catch (Exception e) {
             return null;

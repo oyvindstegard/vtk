@@ -115,7 +115,7 @@ public class EventListingController extends BaseCollectionListingController {
                     String title = springRequestContext.getMessage(ongoingSearchCompName, (String) null);
 
                     int splitIdx = ongoingLastIdx + 1;
-                    Listing ongoing = new Listing(resourceManager.createResourceWrapper(collection), title,
+                    Listing ongoing = new Listing(resourceManager.createResourceWrapper(request, collection), title,
                             ongoingSearchCompName, 0);
                     ongoing.setEntries(events.subList(0, splitIdx));
                     ongoing.setDisplayPropDefs(upcoming.getDisplayPropDefs());
@@ -170,7 +170,8 @@ public class EventListingController extends BaseCollectionListingController {
             totalHits += previous.getTotalHits();
             previous = null;
         }
-        RequestContext requestContext = RequestContext.getRequestContext();
+
+        RequestContext requestContext = RequestContext.getRequestContext(request);
         Service service = requestContext.getService();
         URL baseURL = service.urlConstructor(requestContext.getRequestURL())
                 .withURI(requestContext.getResourceURI())

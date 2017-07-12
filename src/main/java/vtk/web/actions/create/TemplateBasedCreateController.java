@@ -74,7 +74,7 @@ public class TemplateBasedCreateController extends SimpleFormController<CreateDo
 
     @Override
     protected CreateDocumentCommand formBackingObject(HttpServletRequest request) throws Exception {
-        RequestContext requestContext = RequestContext.getRequestContext();
+        RequestContext requestContext = RequestContext.getRequestContext(request);
         Service service = requestContext.getService();
         Path uri = requestContext.getResourceURI();
         String token = requestContext.getSecurityToken();
@@ -140,12 +140,12 @@ public class TemplateBasedCreateController extends SimpleFormController<CreateDo
     protected Map<String, Object> referenceData(HttpServletRequest request,
             CreateDocumentCommand command, Errors errors) throws Exception {
         
-        RequestContext requestContext = RequestContext.getRequestContext();
+        RequestContext requestContext = RequestContext.getRequestContext(request);
         String token = requestContext.getSecurityToken();
 
         Map<String, Object> model = new HashMap<>();
         Path uri = requestContext.getResourceURI();
-        Repository repo = RequestContext.getRequestContext().getRepository();
+        Repository repo = RequestContext.getRequestContext(request).getRepository();
         Resource collection = repo.retrieve(token, uri, false);
         String collectionType = collection.getResourceType();
         
@@ -260,7 +260,7 @@ public class TemplateBasedCreateController extends SimpleFormController<CreateDo
                     "You must choose a document type");
         }
 
-        RequestContext requestContext = RequestContext.getRequestContext();
+        RequestContext requestContext = RequestContext.getRequestContext(request);
 
         Path uri = requestContext.getResourceURI();
         String token = requestContext.getSecurityToken();
@@ -324,7 +324,7 @@ public class TemplateBasedCreateController extends SimpleFormController<CreateDo
             command.setDone(true);
             return new ModelAndView(cancelView);
         }
-        RequestContext requestContext = RequestContext.getRequestContext();
+        RequestContext requestContext = RequestContext.getRequestContext(request);
         Path uri = requestContext.getResourceURI();
         String token = requestContext.getSecurityToken();
         Repository repository = requestContext.getRepository();

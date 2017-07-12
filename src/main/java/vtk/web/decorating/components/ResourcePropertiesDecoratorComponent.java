@@ -35,6 +35,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Required;
+
 import vtk.repository.Path;
 import vtk.repository.Property;
 import vtk.repository.Repository;
@@ -80,7 +81,7 @@ public class ResourcePropertiesDecoratorComponent extends AbstractDecoratorCompo
     
     public void render(DecoratorRequest request, DecoratorResponse response)
             throws Exception {
-        RequestContext requestContext = RequestContext.getRequestContext();
+        RequestContext requestContext = RequestContext.getRequestContext(request.getServletRequest());
         Repository repository = requestContext.getRepository();
         String token = requestContext.getSecurityToken();
         Path uri = requestContext.getResourceURI();
@@ -112,7 +113,7 @@ public class ResourcePropertiesDecoratorComponent extends AbstractDecoratorCompo
                 if (uriString != null && uriString.startsWith("/")) {
                     uri = Path.fromString(uriString);                    
                 } else {
-                    uri = RequestContext.getRequestContext().getCurrentCollection();
+                    uri = RequestContext.getRequestContext(request.getServletRequest()).getCurrentCollection();
                     uri = uri.expand(uriString);
                     if (uri == null) {
                         throw new IllegalArgumentException("Unable to expand URI: " + uriString);
@@ -195,6 +196,7 @@ public class ResourcePropertiesDecoratorComponent extends AbstractDecoratorCompo
         this.resourceTypeTree = resourceTypeTree;
     }
 
+    @Override
     protected String getDescriptionInternal() {
         if (this.relative)
             return DESCRIPTION_RELATIVE;
@@ -202,8 +204,9 @@ public class ResourcePropertiesDecoratorComponent extends AbstractDecoratorCompo
         return DESCRIPTION;
     }
 
+    @Override
     protected Map<String, String> getParameterDescriptionsInternal() {
-        Map<String, String> map = new HashMap<String, String>();
+        Map<String, String> map = new HashMap<>();
         map.put(PARAMETER_ID, PARAMETER_ID_DESC);
         if (this.relative) {
             map.put(PARAMETER_URI, PARAMETER_URI_DESC);

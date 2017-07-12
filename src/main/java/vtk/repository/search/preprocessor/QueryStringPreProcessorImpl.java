@@ -45,16 +45,15 @@ public class QueryStringPreProcessorImpl implements QueryStringPreProcessor {
         this.expressionEvaluators = expressionEvaluators;
     }
     
-
     @Override
-    public String process(String queryString) throws QueryException {
+    public String process(String queryString, ProcessorContext ctx) throws QueryException {
         SimpleTemplate template = SimpleTemplate.
                 compile(queryString, expressionStart, expressionEnd);
         final StringBuilder result = new StringBuilder();
 
         template.apply(token -> {
             ExpressionEvaluator e = resolveExpressionEvaluator(token);
-            return e != null ? e.evaluate(token) : expressionStart + token + expressionEnd;
+            return e != null ? e.evaluate(token, ctx) : expressionStart + token + expressionEnd;
         }, s -> result.append(s));
 
         return result.toString();
@@ -63,10 +62,12 @@ public class QueryStringPreProcessorImpl implements QueryStringPreProcessor {
 
     private ExpressionEvaluator resolveExpressionEvaluator(String token) {
         for (int i = 0; i < expressionEvaluators.length; i++) {
+            
             if (expressionEvaluators[i].matches(token)) {
                 return expressionEvaluators[i];
             }
         }
         return null;
     }
+
 }

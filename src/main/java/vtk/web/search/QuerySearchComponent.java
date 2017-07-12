@@ -76,7 +76,7 @@ public abstract class QuerySearchComponent implements SearchComponent {
     public Listing execute(HttpServletRequest request, Resource collection, int page, int pageLimit, int baseOffset)
             throws Exception {
 
-        RequestContext requestContext = RequestContext.getRequestContext();
+        RequestContext requestContext = RequestContext.getRequestContext(request);
         String token = requestContext.isViewUnauthenticated() ? null : requestContext.getSecurityToken();
 
         int offset = baseOffset + (pageLimit * (page - 1));
@@ -151,7 +151,7 @@ public abstract class QuerySearchComponent implements SearchComponent {
             title = springRequestContext.getMessage(titleLocalizationKey, (String) null);
         }
 
-        ResourceWrapper resourceWrapper = resourceManager.createResourceWrapper(collection);
+        ResourceWrapper resourceWrapper = resourceManager.createResourceWrapper(request, collection);
 
         Listing listing = new Listing(resourceWrapper, title, name, offset);
         listing.setMore(more);

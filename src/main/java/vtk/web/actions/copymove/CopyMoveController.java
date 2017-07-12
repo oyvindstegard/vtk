@@ -89,7 +89,7 @@ public class CopyMoveController implements Controller {
 
         if (sessionBean == null) {
             sessionBean = new CopyMoveSessionBean();
-            List<String> filesToBeCopied = new ArrayList<String>();
+            List<String> filesToBeCopied = new ArrayList<>();
 
             /*
              * Walk through the request-parameters to find the resources
@@ -99,7 +99,7 @@ public class CopyMoveController implements Controller {
             Enumeration<String> e = request.getParameterNames();
 
             while (e.hasMoreElements()) {
-                String name = (String) e.nextElement();
+                String name = e.nextElement();
 
                 try {
                     Path.fromString(name);
@@ -115,9 +115,9 @@ public class CopyMoveController implements Controller {
             request.getSession(true).setAttribute(COPYMOVE_SESSION_ATTRIBUTE, sessionBean);
         }
         
-        RequestContext requestContext = RequestContext.getRequestContext();
+        RequestContext requestContext = RequestContext.getRequestContext(request);
         String msgCode = "copyMove." + sessionBean.getAction() + ".info";
-        requestContext.addInfoMessage(new Message(msgCode));
+        requestContext.addInfoMessage(new Message(request, msgCode));
         
         return new ModelAndView(this.viewName);
     }

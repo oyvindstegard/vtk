@@ -137,12 +137,12 @@ public class TagsComponent extends ViewRenderingDecoratorComponent implements In
             throws Exception {
 
         super.processModel(model, request, response);
-        RequestContext requestContext = RequestContext.getRequestContext();
+        RequestContext requestContext = RequestContext.getRequestContext(request.getServletRequest());
         Path scopeUri = requestContext.getCurrentCollection();
         String token = requestContext.isViewUnauthenticated() ? null : requestContext.getSecurityToken(); // VTK-2460
 
         if (request.getStringParameter(PARAMETER_SCOPE) != null) {
-            scopeUri = buildScopePath(request.getStringParameter(PARAMETER_SCOPE));
+            scopeUri = buildScopePath(request);
         }
 
         int limit = PARAMETER_TAG_LIMIT_DEFAULT_VALUE;
@@ -214,8 +214,10 @@ public class TagsComponent extends ViewRenderingDecoratorComponent implements In
 
         // Legacy exception handling, should be refactored.
         try {
-            List<TagElement> tagElements = tagElementsProvider.getTagElements(scopeUri, token, 1, 1, limit, 1,
-                    resourceTypeDefs, urlSortingParmas, overrideResTypeTitle, displayScope, whiteList);
+            List<TagElement> tagElements = tagElementsProvider
+                    .getTagElements(request.getServletRequest(), scopeUri, token, 1, 1, limit, 1,
+                            resourceTypeDefs, urlSortingParmas, overrideResTypeTitle, 
+                            displayScope, whiteList);
             
             String urlPattern = request.getStringParameter(PARAMETER_URL_PATTERN);
             if (urlPattern != null) {
@@ -281,11 +283,13 @@ public class TagsComponent extends ViewRenderingDecoratorComponent implements In
         return null;
     }
 
-    Path buildScopePath(String href) {
+    Path buildScopePath(DecoratorRequest request) {
+        String href = request.getStringParameter(PARAMETER_SCOPE);
         if (href.startsWith("/")) {
             return Path.fromString(href);
         }
-        Path requestURI = RequestContext.getRequestContext().getResourceURI();
+        Path requestURI = RequestContext
+                .getRequestContext(request.getServletRequest()).getResourceURI();
         return requestURI.expand(href);
     }
 

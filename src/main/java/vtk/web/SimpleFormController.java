@@ -36,11 +36,8 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.validation.BindException;
 import org.springframework.validation.Errors;
-import org.springframework.validation.Validator;
 import org.springframework.web.bind.ServletRequestDataBinder;
 import org.springframework.web.servlet.ModelAndView;
 import org.springframework.web.servlet.mvc.Controller;
@@ -58,14 +55,15 @@ import org.springframework.web.servlet.mvc.Controller;
  * @param <T> type of the command object
  */
 public abstract class SimpleFormController<T> implements Controller {
-    
     private String formView;
     private String successView;
     private String commandName = "form";
     private boolean sessionForm;
-    private Validator validator;
-    
-    private final Logger logger = LoggerFactory.getLogger(SimpleFormController.class.getName());
+    private Validator<T> validator;
+
+    public static interface Validator<T> {
+        public void validate(HttpServletRequest request, T target, Errors errors);
+    }
 
     public String getFormView() {
         return formView;
@@ -91,11 +89,11 @@ public abstract class SimpleFormController<T> implements Controller {
         this.commandName = commandName;
     }
     
-    public Validator getValidator() {
+    public Validator<T> getValidator() {
         return validator;
     }
     
-    public void setValidator(Validator validator) {
+    public void setValidator(Validator<T> validator) {
         this.validator = validator;
     }
     
@@ -156,7 +154,7 @@ public abstract class SimpleFormController<T> implements Controller {
         binder.bind(request);
         
         if (validator != null) {
-            validator.validate(command, errors);
+            validator.validate(request, command, errors);
         }
         onBindAndValidate(request, command, errors);
         return binder;

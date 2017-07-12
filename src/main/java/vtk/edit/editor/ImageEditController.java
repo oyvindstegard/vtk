@@ -28,7 +28,6 @@
  * NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-
 package vtk.edit.editor;
 
 import java.io.InputStream;
@@ -85,7 +84,7 @@ public class ImageEditController extends ResourceEditController {
         ImageResourceEditWrapper wrapper = (ImageResourceEditWrapper) wrapperObj;
         
         Resource resource = wrapper.getResource();
-        RequestContext requestContext = RequestContext.getRequestContext();
+        RequestContext requestContext = RequestContext.getRequestContext(request);
         Principal principal = requestContext.getPrincipal();
         Repository repository = requestContext.getRepository();
         String token = requestContext.getSecurityToken();
@@ -96,7 +95,7 @@ public class ImageEditController extends ResourceEditController {
         }
         
         if (!wrapper.isSave() && !wrapper.isSaveCopy() && !wrapper.isView()) {
-            this.resourceManager.unlock();
+            this.resourceManager.unlock(request);
             return new ModelAndView(getSuccessView(), new HashMap<String, Object>());
         }
         
@@ -113,8 +112,9 @@ public class ImageEditController extends ResourceEditController {
                 wrapper.getNewWidth(), wrapper.getNewHeight());
 
         if (wrapper.isSaveCopy()) {
-            Path destUri = copyHelper.copyResource(resource.getURI(), resource.getURI(), repository, token, resource, is);
-            this.resourceManager.unlock();
+            Path destUri = copyHelper.copyResource(request, 
+                    resource.getURI(), resource.getURI(), repository, token, resource, is);
+            this.resourceManager.unlock(request);
             URL url = editService.urlConstructor(URL.create(request))
                     .withURI(destUri)
                     .constructURL();
@@ -129,18 +129,18 @@ public class ImageEditController extends ResourceEditController {
         if (!wrapper.isView()) {
             Map<String, Object> model = getModelProperties(wrapper, resource, principal, repository);
             wrapper.setSave(false);
-            model = addImageEditorServices(model, resource, principal);
+            model = addImageEditorServices(request, model, resource, principal);
             return new ModelAndView(getFormView(), model);
         }
 
-        this.resourceManager.unlock();
+        this.resourceManager.unlock(request);
         return new ModelAndView(getSuccessView());
     }
 
     @Override
     protected Map<String, Object> referenceData(HttpServletRequest request, ResourceEditWrapper command, Errors errors) throws Exception {
         Resource resource = ((ResourceWrapper) command).getResource();
-        RequestContext requestContext = RequestContext.getRequestContext();
+        RequestContext requestContext = RequestContext.getRequestContext(request);
         Principal principal = requestContext.getPrincipal();
 
         Map<String, Object> model = super.referenceData(request, command, errors);
@@ -149,20 +149,22 @@ public class ImageEditController extends ResourceEditController {
             model = new HashMap<>();
         }
 
-        model = addImageEditorServices(model, resource, principal);
+        model = addImageEditorServices(request, model, resource, principal);
 
         return model;
     }
 
-    private Map<String, Object> addImageEditorServices(Map<String, Object> model, Resource resource, Principal principal) {
+    private Map<String, Object> addImageEditorServices(HttpServletRequest request, 
+            Map<String, Object> model, Resource resource, Principal principal) {
         if (this.loadImageService != null) {
             
-            RequestContext requestContext = RequestContext.getRequestContext();
+            RequestContext requestContext = RequestContext.getRequestContext(request);
             URL imageSourceURL = loadImageService.urlConstructor(requestContext.getRequestURL())
                     .withResource(resource)
                     .withPrincipal(principal)
                     .constructURL();
-            if(requestContext.getServletRequest().isSecure() && imageSourceURL.getProtocol().equals("http")) {
+            
+            if (request.isSecure() && imageSourceURL.getProtocol().equals("http")) {
                 imageSourceURL.setProtocol("https");
             }
             model.put("imageURL", imageSourceURL);

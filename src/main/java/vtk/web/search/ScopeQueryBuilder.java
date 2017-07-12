@@ -35,6 +35,7 @@ import java.util.Set;
 import javax.servlet.http.HttpServletRequest;
 
 import org.springframework.beans.factory.annotation.Required;
+
 import vtk.repository.Path;
 import vtk.repository.Resource;
 import vtk.repository.search.query.OrQuery;
@@ -54,8 +55,7 @@ public class ScopeQueryBuilder implements SearchComponentQueryBuilder {
             return null;
         }
         UriPrefixQuery baseQuery = new UriPrefixQuery(base + "/");
-
-        Set<Path> aggregationPaths = this.aggregationResolver.getAggregationPaths(base);
+        Set<Path> aggregationPaths = this.aggregationResolver.getAggregationPaths(request, base);
         OrQuery aggregateUriPrefixQuery = null;
         if (aggregationPaths != null && aggregationPaths.size() > 0) {
             aggregateUriPrefixQuery = new OrQuery();

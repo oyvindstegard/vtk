@@ -33,6 +33,7 @@ package vtk.web.decorating.components;
 import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Required;
+
 import vtk.repository.Namespace;
 import vtk.repository.Path;
 import vtk.repository.Property;
@@ -51,7 +52,7 @@ public class ResourceMediaPlayerComponent extends ViewRenderingDecoratorComponen
     protected void processModel(Map<String, Object> model, DecoratorRequest request, DecoratorResponse response)
             throws Exception {
         
-        RequestContext requestContext = RequestContext.getRequestContext();
+        RequestContext requestContext = RequestContext.getRequestContext(request.getServletRequest());
         String token = requestContext.getSecurityToken();
         Path uri = requestContext.getResourceURI();
         Repository repository = requestContext.getRepository();
@@ -70,7 +71,7 @@ public class ResourceMediaPlayerComponent extends ViewRenderingDecoratorComponen
         model.put("showDL", "true");
 
         String resourceReferance = mediaProperty.getStringValue();
-        mediaPlayer.addMediaPlayer(model, resourceReferance);
+        mediaPlayer.addMediaPlayer(request.getServletRequest(), model, resourceReferance);
 
         super.processModel(model, request, response);
     }

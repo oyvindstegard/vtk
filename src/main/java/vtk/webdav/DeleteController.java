@@ -58,7 +58,7 @@ public class DeleteController extends AbstractWebdavController {
     public void handleRequest(HttpServletRequest request,
             HttpServletResponse response) throws IOException {
 
-        RequestContext requestContext = RequestContext.getRequestContext();
+        RequestContext requestContext = RequestContext.getRequestContext(request);
         String token = requestContext.getSecurityToken();
         Path uri = requestContext.getResourceURI();
         Repository repository = requestContext.getRepository();

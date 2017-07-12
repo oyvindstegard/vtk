@@ -36,11 +36,6 @@ import org.springframework.beans.BeansException;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 
-import vtk.repository.Path;
-import vtk.web.RequestContext;
-import vtk.web.service.Service;
-import vtk.web.service.URL;
-
 /**
  * 
  * XXX: fix lazy bean-lookup
@@ -61,40 +56,10 @@ public class ImageRefValueFormatter implements ValueFormatter, ApplicationContex
         if (val.startsWith("http://") || val.startsWith("https://")) {
             return val;
         }
-        if (!"thumbnail".equals(format)) {
-            return val;
+        if ("thumbnail".equals(format)) {
+            throw new IllegalArgumentException("Thumbnail property value format is deprecated");
         }
-        Service thumbnailService = null;
-        if (this.thumbnailServiceBeanName != null) {
-            Object obj = this.applicationContext.getBean(
-                    this.thumbnailServiceBeanName);
-            if (obj != null && obj instanceof Service) {
-                thumbnailService = (Service) obj;
-            }
-        }
-        if (this.requireThumbnailService && thumbnailService == null) {
-            throw new IllegalStateException(
-                    "No bean named '" + this.thumbnailServiceBeanName 
-                    + "' defined in context");
-        }
-        if (thumbnailService == null) {
-            return val;
-        }
-        try {
-            Path ref = null;
-            if (val.startsWith("/")) {
-                ref = Path.fromString(val);
-            } else {
-                RequestContext requestContext = RequestContext.getRequestContext();
-                ref = requestContext.getCurrentCollection().extend(val);
-            }
-            URL url = thumbnailService.urlConstructor(RequestContext.getRequestContext().getRequestURL())
-                    .withURI(ref)
-                    .constructURL();
-            return url.getPathRepresentation();
-        } catch (Throwable t) {
-            return val;
-        }
+        return val;
     }
     
     public void setThumbnailServiceBeanName(String thumbnailServiceBeanName) {

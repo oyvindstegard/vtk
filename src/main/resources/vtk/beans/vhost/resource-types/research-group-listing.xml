@@ -8,7 +8,7 @@
     <property name="parentTypeDefinition" ref="collectionResourceTypeDefinition" />
     <property name="assertions">
       <list>
-        <bean class="vtk.web.service.ResourcePropertyAssertion">
+        <bean class="vtk.repository.resourcetype.ResourcePropertyAssertion">
           <property name="namespace" ref="DEFAULT_NAMESPACE" />
           <property name="name" value="collection-type" />
           <property name="value" value="research-group-listing" />
@@ -56,7 +56,8 @@
   </bean>
   
 
-  <bean id="resourceIsResearchGroupListing" class="vtk.web.service.ResourceTypeAssertion" parent="repositoryAware">
+  <bean id="resourceIsResearchGroupListing" class="vtk.repository.resourcetype.ResourceTypeAssertion" 
+        parent="repositoryAware">
     <property name="resourceTypeDefinition" ref="researchGroupListingResourceTypeDefinition" />
     <property name="exactMatch" value="true" />
   </bean>

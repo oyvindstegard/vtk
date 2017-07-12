@@ -32,7 +32,7 @@ package vtk.repository.search.preprocessor;
 
 
 import vtk.repository.search.QueryException;
-import vtk.web.RequestContext;
+import vtk.repository.search.preprocessor.QueryStringPreProcessor.ProcessorContext;
 
 
 public class CurrentUriExpressionEvaluator implements ExpressionEvaluator {
@@ -47,17 +47,13 @@ public class CurrentUriExpressionEvaluator implements ExpressionEvaluator {
         return this.variableName.equals(token);
     }
     
-    public String evaluate(String token) throws QueryException {
+    @Override
+    public String evaluate(String token, ProcessorContext ctx)
+            throws QueryException {
 
         if (!this.variableName.equals(token)) {
             throw new QueryException("Unknown query token: '" + token + "'");
         }
-
-        RequestContext requestContext = RequestContext.getRequestContext();
-        if (requestContext != null) {
-            return requestContext.getResourceURI().toString();
-        }
-
-        return token;
+        return ctx.currentURI.toString();
     }
 }

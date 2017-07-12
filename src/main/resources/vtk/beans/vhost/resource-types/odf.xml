@@ -54,28 +54,34 @@
 	<property name="parentTypeDefinition" ref="odfResourceTypeDefinition" />
   </bean>
 
-  <bean id="contentTypeMatchesOdf" class="vtk.web.service.ResourceContentTypeRegexpAssertion">
-    <property name="pattern" value="application/vnd\.oasis\.opendocument\.(text|presentation|spreadsheet|graphics|database)" />
+  <bean id="contentTypeMatchesOdf" 
+        class="vtk.repository.resourcetype.ResourceContentTypeRegexpAssertion">
+    <constructor-arg name="pattern" 
+                     value="application/vnd\.oasis\.opendocument\.(text|presentation|spreadsheet|graphics|database)" />
   </bean>
 
-  <bean id="contentTypeMatchesOdfText"  class="vtk.web.service.ResourceContentTypeRegexpAssertion">
-    <property name="pattern" value="application/vnd\.oasis\.opendocument\.text" />
+  <bean id="contentTypeMatchesOdfText"
+        class="vtk.repository.resourcetype.ResourceContentTypeRegexpAssertion">
+    <constructor-arg name="pattern" value="application/vnd\.oasis\.opendocument\.text" />
   </bean>
 
-  <bean id="contentTypeMatchesOdfPresentation"  class="vtk.web.service.ResourceContentTypeRegexpAssertion">
-    <property name="pattern" value="application/vnd\.oasis\.opendocument\.presentation" />
+  <bean id="contentTypeMatchesOdfPresentation" 
+        class="vtk.repository.resourcetype.ResourceContentTypeRegexpAssertion">
+    <constructor-arg name="pattern" value="application/vnd\.oasis\.opendocument\.presentation" />
   </bean>
   
-  <bean id="contentTypeMatchesOdfSpreadsheet"  class="vtk.web.service.ResourceContentTypeRegexpAssertion">
-    <property name="pattern" value="application/vnd\.oasis\.opendocument\.spreadsheet" />
+  <bean id="contentTypeMatchesOdfSpreadsheet" 
+        class="vtk.repository.resourcetype.ResourceContentTypeRegexpAssertion">
+    <constructor-arg name="pattern" value="application/vnd\.oasis\.opendocument\.spreadsheet" />
   </bean>
   
-  <bean id="contentTypeMatchesOdfGraphics"  class="vtk.web.service.ResourceContentTypeRegexpAssertion">
-    <property name="pattern" value="application/vnd\.oasis\.opendocument\.graphics" />
+  <bean id="contentTypeMatchesOdfGraphics" 
+        class="vtk.repository.resourcetype.ResourceContentTypeRegexpAssertion">
+    <constructor-arg name="pattern" value="application/vnd\.oasis\.opendocument\.graphics" />
   </bean>
   
-  <bean id="contentTypeMatchesOdfDatabase"  class="vtk.web.service.ResourceContentTypeRegexpAssertion">
-    <property name="pattern" value="application/vnd\.oasis\.opendocument\.database" />
+  <bean id="contentTypeMatchesOdfDatabase"  class="vtk.repository.resourcetype.ResourceContentTypeRegexpAssertion">
+    <constructor-arg name="pattern" value="application/vnd\.oasis\.opendocument\.database" />
   </bean>
   
 </beans>

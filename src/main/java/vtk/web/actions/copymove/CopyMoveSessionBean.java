@@ -47,7 +47,7 @@ public class CopyMoveSessionBean implements Serializable {
 
     private static final long serialVersionUID = -5825472640041042602L;
     String action = "";
-    List<String> filesToBeCopied = new ArrayList<String>();
+    List<String> filesToBeCopied = new ArrayList<>();
 
     public List<String> getFilesToBeCopied() {
         return this.filesToBeCopied;
@@ -65,4 +65,8 @@ public class CopyMoveSessionBean implements Serializable {
         this.action = action;
     }
 
+    @Override
+    public String toString() {
+        return getClass().getSimpleName() + "(" + action + "," + filesToBeCopied + ")";
+    }
 }

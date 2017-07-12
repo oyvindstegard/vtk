@@ -82,7 +82,7 @@ import vtk.web.service.URL;
  * <p>Description of query parameters
  * <ul>
  * <li>{@code q} - the query string, which is parsed using 
- *      {@link vtk.repository.search.Parser}
+ *      {@link vtk.web.search.SearchParser}
  * <li>{@code properties} or {@code fields} - a comma-separated list of property 
  *      names to include in the result set. If the string {@code *} appears in the list, 
  *      all properties are included. In addition, the special 
@@ -161,7 +161,7 @@ public final class QueryHandler implements HttpRequestHandler {
             HttpServletResponse response) throws IOException {
         HttpServletRequest wrappedRequest 
             = new ParameterRequestWrapper(request, defaultParameters);
-        RequestContext requestContext = RequestContext.getRequestContext();
+        RequestContext requestContext = RequestContext.getRequestContext(request);
         String token = requestContext.getSecurityToken();
 
         Result<ResponseHandler> format = outputFormat(wrappedRequest);
@@ -339,6 +339,7 @@ public final class QueryHandler implements HttpRequestHandler {
 
             response.setStatus(HttpServletResponse.SC_OK);
             response.setContentType("application/json");            
+
             PropertySetMapper<Consumer<JsonStreamer>> mapper = ResourceMappers
                     .jsonStreamer(requestContext.getLocale())
                     .compact(true)
@@ -374,7 +375,7 @@ public final class QueryHandler implements HttpRequestHandler {
         SuccessfulResponseHandler successHandler = (q, rs) -> {
 
             response.setStatus(HttpServletResponse.SC_OK);
-            response.setContentType("application/json");
+            response.setContentType("application/json;charset=utf-8");
             
             PropertySetMapper<Consumer<JsonStreamer>> mapper = ResourceMappers
                     .jsonStreamer(requestContext.getLocale())

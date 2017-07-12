@@ -8,6 +8,10 @@
     <property name="resourceTypeTree" ref="resourceTypeTree" />
   </bean>
 
+  <bean id="sortingParserFactory"
+        class="vtk.repository.search.SortingParserFactoryImpl">
+  </bean>
+
   <bean id="SORT_ORDER.ASC" class="vtk.repository.search.SortField.Direction"
         factory-method="valueOf">
     <constructor-arg value="ASC" />
@@ -18,10 +22,10 @@
     <constructor-arg value="DESC" />
   </bean>
 
-  <bean id="searchParser" class="vtk.repository.search.ParserImpl">
-    <property name="parserFactory" ref="queryParserFactory" />
-    <property name="queryStringPreProcessor" ref="queryStringPreProcessor" />
-    <property name="resourceTypeTree" ref="resourceTypeTree" />
+  <bean id="searchParser" class="vtk.web.search.SearchParser">
+    <constructor-arg name="parserFactory" ref="queryParserFactory" />
+    <constructor-arg name="sortingFactory" ref="sortingParserFactory" />
+    <constructor-arg name="queryProcessor" ref="queryStringPreProcessor" />
   </bean>
 
   <bean id="queryStringPreProcessor"
@@ -59,7 +63,8 @@
   Configure common or general queries and sortings to warm up useful parts. -->
   <bean id="searcherFactory" class="vtk.repository.index.WarmupSearcherFactory">
     <property name="luceneQueryBuilder" ref="queryBuilder" />
-    <property name="searchParser" ref="searchParser" />
+    <property name="queryParserFactory" ref="queryParserFactory" />
+    <property name="sortingParserFactory" ref="sortingParserFactory" />
     <property name="warmupSearchSpecs">
       <list>
         <value>(uri = /* OR type IN collection) AND depth = 3, lastModified DESC\,uri, 2500</value>

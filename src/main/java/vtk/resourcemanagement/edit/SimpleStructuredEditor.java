@@ -87,7 +87,7 @@ public class SimpleStructuredEditor implements Controller {
     public ModelAndView handleRequest(HttpServletRequest request, HttpServletResponse response) throws Exception {
         Map<String, Object> model = new HashMap<>();
 
-        RequestContext requestContext = RequestContext.getRequestContext();
+        RequestContext requestContext = RequestContext.getRequestContext(request);
         String token = requestContext.getSecurityToken();
         Path uri = requestContext.getResourceURI();
         Repository repository = requestContext.getRepository();
@@ -142,7 +142,7 @@ public class SimpleStructuredEditor implements Controller {
             Path document, String action) throws IOException, Exception {
         response.addIntHeader("Refresh", 0);
 
-        RequestContext requestContext = RequestContext.getRequestContext();
+        RequestContext requestContext = RequestContext.getRequestContext(request);
         
         URL url = viewService.urlConstructor(requestContext.getRequestURL())
                 .withURI(collection)

@@ -27,7 +27,8 @@
     </property>
   </bean>
 
-  <bean id="resourceTypeIsManagedXml" class="vtk.web.service.ResourceTypeAssertion" parent="repositoryAware">
+  <bean id="resourceTypeIsManagedXml" class="vtk.repository.resourcetype.ResourceTypeAssertion" 
+        parent="repositoryAware">
     <property name="resourceTypeDefinition" ref="managedXmlResource" />
   </bean>
 
@@ -72,7 +73,7 @@
   </bean>
 
 
-  <bean id="schemaPropSet" class="vtk.web.service.ResourcePropertyAssertion">
+  <bean id="schemaPropSet" class="vtk.repository.resourcetype.ResourcePropertyAssertion">
     <property name="namespace" ref="DEFAULT_NAMESPACE" />
     <property name="name" value="schema" />
     <property name="checkExistenceOnly" value="true" />

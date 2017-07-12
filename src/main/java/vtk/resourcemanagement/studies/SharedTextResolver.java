@@ -37,6 +37,8 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 
+import javax.servlet.http.HttpServletRequest;
+
 import org.springframework.beans.factory.annotation.Required;
 
 import vtk.repository.Path;
@@ -133,9 +135,10 @@ public class SharedTextResolver {
         return getSharedTextValuesMap(sharedTextPath, sharedTextFileName);
     }
 
-    public Map<String, Map<String, Json.MapContainer>> resolveSharedTexts() throws Exception {
+    public Map<String, Map<String, Json.MapContainer>> 
+        resolveSharedTexts(HttpServletRequest request) throws Exception {
 
-        RequestContext requestContext = RequestContext.getRequestContext();
+        RequestContext requestContext = RequestContext.getRequestContext(request);
         String token = requestContext.getSecurityToken();
         Path currentResource = requestContext.getResourceURI();
         Resource resource = repository.retrieve(token, currentResource, false);

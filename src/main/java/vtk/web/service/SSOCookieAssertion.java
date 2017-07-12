@@ -1,6 +1,7 @@
 package vtk.web.service;
 
 import java.util.Date;
+import java.util.Optional;
 
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
@@ -23,7 +24,7 @@ import vtk.security.web.SecurityInitializer;
  * 
  */
 
-public class SSOCookieAssertion implements Assertion {
+public class SSOCookieAssertion implements WebAssertion {
 
     private String uioAuthSSO;
     private String serviceProviderURI;
@@ -31,7 +32,7 @@ public class SSOCookieAssertion implements Assertion {
     private Long ssoTimeout;
 
     @Override
-    public boolean conflicts(Assertion assertion) {
+    public boolean conflicts(WebAssertion assertion) {
         // TODO Auto-generated method stub
         return false;
     }
@@ -70,15 +71,13 @@ public class SSOCookieAssertion implements Assertion {
     }
 
     @Override
-    public boolean processURL(URL url, Resource resource, Principal principal, boolean match) {
-        // TODO Auto-generated method stub
-        return false;
+    public Optional<URL> processURL(URL url, Resource resource, Principal principal) {
+        return Optional.empty();
     }
 
     @Override
-    public void processURL(URL url) {
-        // TODO Auto-generated method stub
-
+    public URL processURL(URL url) {
+        return url;
     }
 
     public void setUioAuthSSO(String uioAuthSSO) {

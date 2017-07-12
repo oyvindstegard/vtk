@@ -152,11 +152,11 @@ public class XSLReferenceDataProvider implements ReferenceDataProvider {
 
     @Override
     public void referenceData(Map<String, Object> model, HttpServletRequest request) {
-        RequestContext requestContext = RequestContext.getRequestContext();
+        RequestContext requestContext = RequestContext.getRequestContext(request);
         Principal principal = requestContext.getPrincipal();
         String token = requestContext.getSecurityToken();
 
-        Path uri = RequestContext.getRequestContext().getResourceURI();
+        Path uri = RequestContext.getRequestContext(request).getResourceURI();
         Resource resource = (Resource) model.get("resource");
 
         try {
@@ -183,9 +183,7 @@ public class XSLReferenceDataProvider implements ReferenceDataProvider {
             subModel.put(PARENT_COLLECTION, resource.getURI().getParent());
             subModel.put(CURRENT_URL, request.getRequestURL());
             URL adminURL = adminService.urlConstructor(URL.create(request))
-                    .withResource(resource)
-                    .withPrincipal(principal)
-                    .matchAssertions(matchAdminServiceAssertions)
+                    .withURI(resource.getURI())
                     .constructURL();
             
             subModel.put(ADMIN_URL, adminURL.toString());

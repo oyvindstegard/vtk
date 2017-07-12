@@ -70,13 +70,21 @@
     <property name="handler" ref="plaintextEdit.documentTooLargeHandler" />
   </bean>
 
-  <bean id="resourceTypeIsText" class="vtk.web.service.ResourceTypeAssertion" parent="repositoryAware">
-    <property name="resourceTypeDefinition" ref="textResourceTypeDefinition" />
+  <bean id="resourceTypeIsText" class="vtk.web.service.RepositoryAssertionWrapper">
+    <constructor-arg name="assertion">
+      <bean class="vtk.repository.resourcetype.ResourceTypeAssertion" parent="repositoryAware">
+        <property name="resourceTypeDefinition" ref="textResourceTypeDefinition" />
+      </bean>
+    </constructor-arg>
   </bean>
 
-  <bean id="resourceTypeIsNotManagedJSON" class="vtk.web.service.ResourceTypeAssertion" parent="repositoryAware">
-    <property name="resourceTypeDefinition" ref="json.managedObjectResourceType" />
-    <property name="invert" value="true" />
+  <bean id="resourceTypeIsNotManagedJSON" class="vtk.web.service.RepositoryAssertionWrapper">
+    <constructor-arg name="assertion">
+      <bean class="vtk.repository.resourcetype.ResourceTypeAssertion" parent="repositoryAware">
+        <property name="resourceTypeDefinition" ref="json.managedObjectResourceType" />
+        <property name="invert" value="true" />
+      </bean>
+    </constructor-arg>
   </bean>
 
   <bean id="resourceTypeIsNotManagedXml" parent="resourceTypeIsManagedXml">
@@ -84,10 +92,14 @@
   </bean>
 
   <bean id="plaintextEditPropertyIsSet"
-        class="vtk.web.service.ResourcePropertyAssertion">
-    <property name="namespace" ref="DEFAULT_NAMESPACE" />
-    <property name="name" value="plaintext-edit" />
-    <property name="checkExistenceOnly" value="true" />
+        class="vtk.web.service.RepositoryAssertionWrapper">
+    <constructor-arg name="assertion">
+      <bean class="vtk.repository.resourcetype.ResourcePropertyAssertion">
+        <property name="namespace" ref="DEFAULT_NAMESPACE" />
+        <property name="name" value="plaintext-edit" />
+        <property name="checkExistenceOnly" value="true" />
+      </bean>
+    </constructor-arg>
   </bean>
 
   <bean id="actionParameterEqualsPlaintextEdit"

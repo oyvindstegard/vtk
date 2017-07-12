@@ -48,7 +48,7 @@ public class UnlockFormController extends SimpleFormController<UnlockFormCommand
 
     @Override
     protected UnlockFormCommand formBackingObject(HttpServletRequest request) throws Exception {
-        RequestContext requestContext = RequestContext.getRequestContext();
+        RequestContext requestContext = RequestContext.getRequestContext(request);
         Path uri = requestContext.getResourceURI();
         Service service = requestContext.getService();
         Repository repository = requestContext.getRepository();
@@ -70,7 +70,7 @@ public class UnlockFormController extends SimpleFormController<UnlockFormCommand
         if (command.getCancel() != null) {
             return new ModelAndView(getSuccessView());
         }
-        RequestContext requestContext = RequestContext.getRequestContext();
+        RequestContext requestContext = RequestContext.getRequestContext(request);
         Path uri = requestContext.getResourceURI();
         String token = requestContext.getSecurityToken();
         Repository repository = requestContext.getRepository();

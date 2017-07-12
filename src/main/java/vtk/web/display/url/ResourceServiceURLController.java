@@ -81,16 +81,14 @@ public class ResourceServiceURLController implements Controller {
 
     public ModelAndView handleRequest(HttpServletRequest request, HttpServletResponse response) throws Exception {
 
-        RequestContext requestContext = RequestContext.getRequestContext();
+        RequestContext requestContext = RequestContext.getRequestContext(request);
         Principal principal = requestContext.getPrincipal();
         String token = requestContext.getSecurityToken();
         Repository repository = requestContext.getRepository();
         Path uri = requestContext.getResourceURI();
         Resource resource = repository.retrieve(token, uri, false);
         URL resourceViewURL = service.urlConstructor(requestContext.getRequestURL())
-                .withResource(resource)
-                .withPrincipal(principal)
-                .matchAssertions(false)
+                .withURI(resource.getURI())
                 .constructURL();
 
         Map<String, Object> model = new HashMap<>();

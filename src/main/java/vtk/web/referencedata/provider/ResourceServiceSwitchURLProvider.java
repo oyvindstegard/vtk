@@ -42,7 +42,7 @@ import vtk.repository.Repository;
 import vtk.repository.Resource;
 import vtk.web.RequestContext;
 import vtk.web.referencedata.ReferenceDataProvider;
-import vtk.web.service.Assertion;
+import vtk.web.service.WebAssertion;
 import vtk.web.service.Service;
 import vtk.web.service.URL;
 
@@ -55,7 +55,7 @@ public class ResourceServiceSwitchURLProvider implements ReferenceDataProvider {
 
     @Override
     public void referenceData(Map<String, Object> model, HttpServletRequest request) {
-        RequestContext requestContext = RequestContext.getRequestContext();
+        RequestContext requestContext = RequestContext.getRequestContext(request);
         Repository repository = requestContext.getRepository();
         String token = requestContext.getSecurityToken();
         Path resourceURI = requestContext.getResourceURI();
@@ -67,8 +67,8 @@ public class ResourceServiceSwitchURLProvider implements ReferenceDataProvider {
                     .withURI(resource.getURI()).constructURL();
             
             boolean displayResource = true;
-            List<Assertion> serviceAssertions = getService().getAssertions();
-            for (Assertion assertion : serviceAssertions) {
+            List<WebAssertion> serviceAssertions = getService().getAssertions();
+            for (WebAssertion assertion : serviceAssertions) {
 
                 if (!assertion.matches(request, resource, requestContext.getPrincipal())) {
                     displayResource = false;

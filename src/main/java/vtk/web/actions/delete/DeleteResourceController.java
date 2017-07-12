@@ -57,7 +57,7 @@ public class DeleteResourceController extends SimpleFormController<DeleteCommand
     
     @Override
     protected DeleteCommand formBackingObject(HttpServletRequest request) throws Exception {
-        RequestContext requestContext = RequestContext.getRequestContext();
+        RequestContext requestContext = RequestContext.getRequestContext(request);
         Service service = requestContext.getService();
         Repository repository = requestContext.getRepository();
         String token = requestContext.getSecurityToken();
@@ -76,7 +76,7 @@ public class DeleteResourceController extends SimpleFormController<DeleteCommand
     public ModelAndView onSubmit(HttpServletRequest request, HttpServletResponse response,
             DeleteCommand command, BindException errors) throws Exception {
 
-        RequestContext requestContext = RequestContext.getRequestContext();
+        RequestContext requestContext = RequestContext.getRequestContext(request);
         String token = requestContext.getSecurityToken();
         Repository repository = requestContext.getRepository();
         Path uri = requestContext.getResourceURI();
@@ -97,7 +97,7 @@ public class DeleteResourceController extends SimpleFormController<DeleteCommand
         
         ActionsHelper.deleteResource(repository, token, uri, true, failures);
         
-        ActionsHelper.addFailureMessages(failures, requestContext);
+        ActionsHelper.addFailureMessages(failures, request);
         if (!failures.isEmpty()) {
             return new ModelAndView(getFormView(), model);
         }

@@ -116,10 +116,9 @@ public class EventCalendarListingController extends EventListingController {
             model.put(EventListingHelper.DISPLAY_LISTING_ICAL_LINK, true);
         }
         
-        RequestContext requestContext = RequestContext.getRequestContext();
+        RequestContext requestContext = RequestContext.getRequestContext(request);
         URL viewAllUpcomingURL = viewAllUpcomingService.urlConstructor(requestContext.getRequestURL())
-                .withResource(collection)
-                .matchAssertions(false)
+                .withURI(collection.getURI())
                 .constructURL();
         
         model.put("viewAllUpcomingURL", viewAllUpcomingURL);
@@ -127,8 +126,7 @@ public class EventCalendarListingController extends EventListingController {
                 this.helper.getEventTypeTitle(request, collection, "eventListing.viewAllUpcoming", false));
 
         URL viewAllPreviousURL = viewAllPreviousService.urlConstructor(requestContext.getRequestURL())
-                .withResource(collection)
-                .matchAssertions(false)
+                .withURI(collection.getURI())
                 .constructURL();
 
         model.put("viewAllPreviousURL", viewAllPreviousURL);

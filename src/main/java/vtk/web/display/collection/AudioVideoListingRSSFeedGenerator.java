@@ -35,6 +35,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import javax.servlet.http.HttpServletRequest;
+
 import org.apache.commons.lang.time.FastDateFormat;
 import org.springframework.beans.factory.annotation.Required;
 
@@ -60,10 +62,10 @@ public class AudioVideoListingRSSFeedGenerator extends RSSFeedGenerator {
     private PropertyTypeDefinition contentTypePropDef;
 
     @Override
-    protected List<Map<String, Object>> getFeedEntries(Resource feedScope) throws Exception {
+    protected List<Map<String, Object>> getFeedEntries(Resource feedScope, 
+            HttpServletRequest request) throws Exception {
 
-        Listing entryElements = searchComponent.execute(RequestContext.getRequestContext().getServletRequest(),
-                feedScope, 1, 500, 0);
+        Listing entryElements = searchComponent.execute(request, feedScope, 1, 500, 0);
 
         List<Map<String, Object>> feedEntries = new ArrayList<>();
 
@@ -92,8 +94,7 @@ public class AudioVideoListingRSSFeedGenerator extends RSSFeedGenerator {
                 urlString = URL.parse(urlProp.getStringValue()).toString();
             }
             else {
-                urlString = viewService.urlConstructor(
-                        URL.create(RequestContext.getRequestContext().getServletRequest()))
+                urlString = viewService.urlConstructor(RequestContext.getRequestContext(request).getRequestURL())
                         .withURI(ps.getURI())
                         .constructURL()
                         .toString();

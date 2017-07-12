@@ -74,7 +74,7 @@ public class DisplayXmlResourceControllerTest {
         RequestContext requestContext = new RequestContext(
                 request, securityContext, null, null, null, uri, null, false, false, true,
                 mockRepository, new DefaultPrincipalMetadataDAO());
-        RequestContext.setRequestContext(requestContext);
+        RequestContext.setRequestContext(requestContext, request);
     }
 
     @Test

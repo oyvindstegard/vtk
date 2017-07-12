@@ -35,7 +35,7 @@ public class CopyBackupController implements Controller {
         }
 
         // Retrieve resource
-        RequestContext requestContext = RequestContext.getRequestContext();
+        RequestContext requestContext = RequestContext.getRequestContext(request);
         String token = requestContext.getSecurityToken();
         Repository repository = requestContext.getRepository();
         Resource resource = repository.retrieve(token, resourceToCopySrcUri, false);

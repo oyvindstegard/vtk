@@ -32,6 +32,8 @@ package vtk.web.display.media;
 
 import java.util.Map;
 
+import javax.servlet.http.HttpServletRequest;
+
 import org.springframework.beans.factory.annotation.Required;
 
 import vtk.repository.AuthorizationException;
@@ -84,16 +86,19 @@ public class MediaPlayer {
      * @param showDL
      * @throws AuthorizationException
      */
-    public void addMediaPlayer(Map<String, Object> model, String mediaRef, String height, String width,
+    public void addMediaPlayer(HttpServletRequest request,
+            Map<String, Object> model, String mediaRef, String height, String width,
             String autoplay, String contentType, String streamType, String poster, String showDL) {
 
         if (URL.isEncoded(mediaRef)) {
             mediaRef = urlDecodeMediaRef(mediaRef);
         }
 
+        RequestContext requestContext = RequestContext.getRequestContext(request);
+        
         Resource mediaResource = null;
         try {
-            mediaResource = getLocalResource(mediaRef);
+            mediaResource = getLocalResource(requestContext, mediaRef);
         } catch (AuthorizationException | AuthenticationException e) {
             return; // not able to read local resource - abort
         } catch (Exception e) {
@@ -122,25 +127,28 @@ public class MediaPlayer {
         if (poster != null && !poster.isEmpty()) {
             model.put("poster", poster);
         } else {
-            addPosterUrl(mediaResource, model);
+            addPosterUrl(request, mediaResource, model);
         }
 
         addLinkProperties(mediaResource, model);
 
         if (contentType != null && !contentType.isEmpty()) {
             model.put("contentType", contentType);
-        } else if (mediaResource != null) {
+        }
+        else if (mediaResource != null) {
             model.put("contentType", mediaResource.getContentType());
-        } else {
+        }
+        else {
             model.put("contentType", MimeHelper.map(mediaRef));
         }
         model.put("extension", MimeHelper.findExtension(mediaRef));
         model.put("nanoTime", System.nanoTime());
 
         if (mediaResource != null) {
-            addMediaUrl(mediaResource, model);
-        } else {
-            addMediaUrl(mediaRef, model);
+            addMediaUrl(request, mediaResource, model);
+        }
+        else {
+            addMediaUrl(request, mediaRef, model);
         }
     }
 
@@ -157,18 +165,20 @@ public class MediaPlayer {
      * @param mediaRef media reference/link as string
      *
      */
-    public void addMediaPlayer(Map<String, Object> model, String mediaRef) {
-
+    public void addMediaPlayer(HttpServletRequest request, Map<String, Object> model, String mediaRef) {
+        RequestContext requestContext = RequestContext.getRequestContext(request);
         if (URL.isEncoded(mediaRef)) {
             mediaRef = urlDecodeMediaRef(mediaRef);
         }
 
         Resource mediaResource = null;
         try {
-            mediaResource = getLocalResource(mediaRef);
-        } catch (AuthorizationException | AuthenticationException e) {
+            mediaResource = getLocalResource(requestContext, mediaRef);
+        }
+        catch (AuthorizationException | AuthenticationException e) {
             return; // not able to read local resource - abort
-        } catch (Exception e) {
+        }
+        catch (Exception e) {
             // ignore
         }
 
@@ -176,28 +186,29 @@ public class MediaPlayer {
             model.put("mediaResource", mediaResource);
         }
 
-        addPosterUrl(mediaResource, model);
+        addPosterUrl(request, mediaResource, model);
         addLinkProperties(mediaResource, model);
         model.put("extension", MimeHelper.findExtension(mediaRef));
 
         if (mediaResource != null) {
             model.put("contentType", mediaResource.getContentType());
-        } else {
+        }
+        else {
             model.put("contentType", MimeHelper.map(mediaRef));
         }
 
         model.put("nanoTime", System.nanoTime());
 
         if (mediaResource != null) {
-            addMediaUrl(mediaResource, model);
-        } else {
-            addMediaUrl(mediaRef, model);
+            addMediaUrl(request, mediaResource, model);
+        }
+        else {
+            addMediaUrl(request, mediaRef, model);
         }
     }
 
-    private Resource getLocalResource(String resourceRef) throws Exception {
+    private Resource getLocalResource(RequestContext requestContext, String resourceRef) throws Exception {
         if (resourceRef != null && resourceRef.startsWith("/")) {
-            RequestContext requestContext = RequestContext.getRequestContext();
             Repository repository = requestContext.getRepository();
             String token = requestContext.getSecurityToken();
             return repository.retrieve(token, Path.fromString(resourceRef), true);
@@ -206,11 +217,10 @@ public class MediaPlayer {
         return null;
     }
 
-    private void addMediaUrl(Resource mediaResource, Map<String, Object> model) {
-        RequestContext requestContext = RequestContext.getRequestContext();
+    private void addMediaUrl(HttpServletRequest request, Resource mediaResource, Map<String, Object> model) {
+        RequestContext requestContext = RequestContext.getRequestContext(request);
         URL mediaURL = viewService.urlConstructor(requestContext.getRequestURL())
-                .withResource(mediaResource)
-                .matchAssertions(false)
+                .withURI(mediaResource.getURI())
                 .constructURL();
                 
         model.put("media", mediaURL);
@@ -219,18 +229,19 @@ public class MediaPlayer {
     // Adds media URL to model, possibly non-local or unreadable local resource. Local resources are resolved to absolute
     // URLs and external URLs are parsed for validity. In case of invalid
     // URL, nothing is added to model.
-    private void addMediaUrl(String resourceRef, Map<String, Object> model) {
-        URL url = createUrl(resourceRef);
+    private void addMediaUrl(HttpServletRequest request, String resourceRef, Map<String, Object> model) {
+        URL url = createUrl(request, resourceRef);
         if (url != null) {
-            if (RequestContext.getRequestContext().isPreviewUnpublished()) {
+            RequestContext requestContext = RequestContext
+                    .getRequestContext(request);
+            if (requestContext.isPreviewUnpublished()) {
                 url.setParameter("vrtxPreviewUnpublished", "true");
             }
-
             model.put("media", url);
         }
     }
 
-    private void addPosterUrl(Resource mediaResource, Map<String, Object> model) {
+    private void addPosterUrl(HttpServletRequest request, Resource mediaResource, Map<String, Object> model) {
         if (mediaResource == null) {
             return;
         }
@@ -238,18 +249,17 @@ public class MediaPlayer {
         Property posterImageProp = mediaResource.getProperty(posterImagePropDef);
         Property thumbnail = mediaResource.getProperty(thumbnailPropDef);
         if (posterImageProp != null) {
-            poster = createUrl(posterImageProp.getStringValue());
+            poster = createUrl(request, posterImageProp.getStringValue());
         }
         else if (thumbnail != null) {
-            RequestContext requestContext = RequestContext.getRequestContext();
+            RequestContext requestContext = RequestContext.getRequestContext(request);
             poster = thumbnailService.urlConstructor(requestContext.getRequestURL())
-                    .withResource(mediaResource)
-                    .matchAssertions(false)
+                    .withURI(mediaResource.getURI())
                     .constructURL();
             // Work-around for SelectiveProtocolManager URL post-processing which sets
             // URL protocol to "http" for open resources, but this causes mixed-mode
             // in secure page context, since this URL points to an inline element (image).
-            if (RequestContext.getRequestContext().getServletRequest().isSecure()) {
+            if (request.isSecure()) {
                 poster.setProtocol("https");
             }
         }
@@ -284,7 +294,7 @@ public class MediaPlayer {
      *
      * @return a {@link URL} instance, or <code>null</code> if no appropriate URL could be created from reference.
      */
-    private URL createUrl(String mediaRef) {
+    private URL createUrl(HttpServletRequest request, String mediaRef) {
 
         if (mediaRef == null) {
             return null;
@@ -297,7 +307,7 @@ public class MediaPlayer {
         if (mediaRef.startsWith("/")) {
             URL localURL = null;
             try {
-                RequestContext requestContext = RequestContext.getRequestContext();
+                RequestContext requestContext = RequestContext.getRequestContext(request);
 
                 Path uri = Path.fromString(mediaRef);
                 localURL = viewService.urlConstructor(requestContext.getRequestURL())

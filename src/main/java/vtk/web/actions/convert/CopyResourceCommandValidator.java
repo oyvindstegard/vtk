@@ -30,27 +30,24 @@
  */
 package vtk.web.actions.convert;
 
+import javax.servlet.http.HttpServletRequest;
+
 import org.springframework.validation.Errors;
+
 import vtk.repository.Path;
 import vtk.web.RequestContext;
 
 public class CopyResourceCommandValidator extends CopyCommandValidator {
 
     @Override
-    @SuppressWarnings("rawtypes")
-    protected boolean supportsClass(Class clazz) {
-        return clazz == CopyCommand.class;
-    }
-
-    @Override
-    protected Path getCopyToURI(String name) {
-        RequestContext requestContext = RequestContext.getRequestContext();
+    protected Path getCopyToURI(HttpServletRequest request, String name) {
+        RequestContext requestContext = RequestContext.getRequestContext(request);
         Path parentCollection = requestContext.getCurrentCollection();
         return parentCollection.extend(name);
     }
 
     @Override
-    protected boolean validateName(String name, Errors errors) {
+    protected boolean validateName(HttpServletRequest request, String name, Errors errors) {
         if (name.contains("/")) {
             errors.rejectValue("name", "manage.create.document.invalid.name", "This is an invalid document name");
             return false;

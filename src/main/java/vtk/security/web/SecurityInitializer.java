@@ -55,7 +55,7 @@ import vtk.security.SecurityContext;
 import vtk.security.token.TokenManager;
 import vtk.security.web.AuthenticationHandler.AuthResult;
 import vtk.web.RequestContext;
-import vtk.web.service.Assertion;
+import vtk.web.service.WebAssertion;
 import vtk.web.service.Service;
 
 /**
@@ -114,7 +114,7 @@ public class SecurityInitializer {
     private boolean rememberAuthMethod = false;
 
     // Assertion that must match in order to use authentication challenge from cookie:
-    private Assertion spCookieAssertion;
+    private WebAssertion spCookieAssertion;
 
     /**
      *
@@ -250,7 +250,7 @@ public class SecurityInitializer {
 
     public void challenge(HttpServletRequest request, HttpServletResponse response, AuthenticationException ex)
             throws AuthenticationProcessingException {
-        Service service = RequestContext.getRequestContext().getService();
+        Service service = RequestContext.getRequestContext(request).getService();
         AuthenticationChallenge challenge = getAuthenticationChallenge(request, service);
 
         if (logger.isDebugEnabled()) {
@@ -460,7 +460,7 @@ public class SecurityInitializer {
         }
     }
 
-    public void setSpCookieAssertion(Assertion spCookieAssertion) {
+    public void setSpCookieAssertion(WebAssertion spCookieAssertion) {
         this.spCookieAssertion = spCookieAssertion;
     }
 

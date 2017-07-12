@@ -93,7 +93,7 @@ public class SwitchLocaleProvider implements ReferenceDataProvider {
     public void referenceData(Map<String, Object> model, HttpServletRequest request) {
         Map<String, Object> localeMap = new HashMap<>();
 
-        RequestContext requestContext = RequestContext.getRequestContext();
+        RequestContext requestContext = RequestContext.getRequestContext(request);
         Principal principal = requestContext.getPrincipal();
         Repository repository = requestContext.getRepository();
         String token = requestContext.getSecurityToken();

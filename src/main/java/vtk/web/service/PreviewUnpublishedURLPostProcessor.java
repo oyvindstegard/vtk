@@ -31,27 +31,31 @@
 
 package vtk.web.service;
 
+import java.util.Optional;
+import java.util.function.BiFunction;
+
 import vtk.repository.Resource;
 import vtk.repository.resourcetype.PropertyTypeDefinition;
 import vtk.web.RequestContext;
 
 public class PreviewUnpublishedURLPostProcessor implements URLPostProcessor {
-
     private PropertyTypeDefinition unpublishedCollectionPropDef;
-
-    public void processURL(URL url, Resource resource, Service service) throws Exception {
-        if (resource.getProperty(unpublishedCollectionPropDef) != null) {
-            url.addParameter(RequestContext.PREVIEW_UNPUBLISHED_PARAM_NAME, RequestContext.PREVIEW_UNPUBLISHED_PARAM_VALUE);
-        }
-    }
-
-    public void processURL(URL url, Service service) throws Exception {
-        // TODO Auto-generated method stub
-
-    }
 
     public void setUnpublishedCollectionPropDef(PropertyTypeDefinition unpublishedCollectionPropDef) {
         this.unpublishedCollectionPropDef = unpublishedCollectionPropDef;
     }
 
+    @Override
+    public BiFunction<URL, Optional<Resource>, URL> urlProcessor(
+            Service service, URL base) {
+        return (url, optResource) -> {
+            if (!optResource.isPresent()) return url;
+            Resource resource = optResource.get();
+            if (resource.getProperty(unpublishedCollectionPropDef) != null) {
+                url.addParameter(RequestContext.PREVIEW_UNPUBLISHED_PARAM_NAME, 
+                        RequestContext.PREVIEW_UNPUBLISHED_PARAM_VALUE);
+            }
+            return url;
+        };
+    }
 }

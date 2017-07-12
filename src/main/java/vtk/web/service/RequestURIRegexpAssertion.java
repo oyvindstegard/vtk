@@ -30,12 +30,14 @@
  */
 package vtk.web.service;
 
+import java.util.Optional;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import javax.servlet.http.HttpServletRequest;
 
 import org.springframework.beans.factory.annotation.Required;
+
 import vtk.repository.Resource;
 import vtk.security.Principal;
 
@@ -49,7 +51,7 @@ import vtk.security.Principal;
  *   </li>
  * </ul>
  */
-public class RequestURIRegexpAssertion implements Assertion {
+public class RequestURIRegexpAssertion implements WebAssertion {
 
     private Pattern pattern;
 
@@ -59,7 +61,7 @@ public class RequestURIRegexpAssertion implements Assertion {
     }
     
     @Override
-    public boolean conflicts(Assertion assertion) {
+    public boolean conflicts(WebAssertion assertion) {
         return false;
     }
 
@@ -69,12 +71,13 @@ public class RequestURIRegexpAssertion implements Assertion {
     }
 
     @Override
-    public void processURL(URL url) {
+    public URL processURL(URL url) {
+        return url;
     }
 
     @Override
-    public boolean processURL(URL url, Resource resource, Principal principal, boolean match) {
-        return true;
+    public Optional<URL> processURL(URL url, Resource resource, Principal principal) {
+        return Optional.of(url);
     }
 
     @Override

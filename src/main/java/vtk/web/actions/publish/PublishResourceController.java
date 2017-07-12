@@ -66,7 +66,7 @@ public class PublishResourceController extends SimpleFormController<PublishResou
 
     @Override
     protected PublishResourceCommand formBackingObject(HttpServletRequest request) throws Exception {
-        RequestContext requestContext = RequestContext.getRequestContext();
+        RequestContext requestContext = RequestContext.getRequestContext(request);
         Repository repository = requestContext.getRepository();
         Service service = requestContext.getService();
 
@@ -88,10 +88,10 @@ public class PublishResourceController extends SimpleFormController<PublishResou
     public ModelAndView onSubmit(HttpServletRequest request, HttpServletResponse response,
             PublishResourceCommand publishResourceCommand, BindException errors) throws Exception {
         
-        RequestContext requestContext = RequestContext.getRequestContext();
+        RequestContext requestContext = RequestContext.getRequestContext(request);
         Repository repository = requestContext.getRepository();
         String token = requestContext.getSecurityToken();
-        Path resourceURI = RequestContext.getRequestContext().getResourceURI();
+        Path resourceURI = RequestContext.getRequestContext(request).getResourceURI();
 
         String action = request.getParameter(ACTION_PARAM);
         
@@ -109,7 +109,7 @@ public class PublishResourceController extends SimpleFormController<PublishResou
                         repository, token, resourceURI, failures);
             }
         }
-        ActionsHelper.addFailureMessages(failures, requestContext);
+        ActionsHelper.addFailureMessages(failures, request);
         return new ModelAndView(getSuccessView(), new HashMap<String, Object>());
     }
     

@@ -42,7 +42,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Optional;
-import java.util.function.Function;
+import java.util.function.BiFunction;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -69,8 +69,8 @@ import vtk.text.tl.ValHandler;
 import vtk.text.tl.expr.Expression;
 import vtk.util.io.IO;
 import vtk.util.repository.LocaleHelper;
-import vtk.web.service.Assertion;
 import vtk.web.service.URL;
+import vtk.web.service.WebAssertion;
 
 public class AjaxEditorController implements Controller {
 
@@ -80,13 +80,10 @@ public class AjaxEditorController implements Controller {
     private final String appPath;
     private final String staticResourcesURL;
 
-    public AjaxEditorController(
-            View editView,
+    public AjaxEditorController(View editView,
             StaticResourceResolver staticResourceResolver,
-            String appResourceURL,
-            String appPath,
-            String staticResourcesURL
-    ) {
+            String appResourceURL, String appPath,
+            String staticResourcesURL) {
         this.editView = editView;
         this.staticResourceResolver = staticResourceResolver;
         this.appResourceURL = appResourceURL;
@@ -94,14 +91,14 @@ public class AjaxEditorController implements Controller {
         this.staticResourcesURL = staticResourcesURL;
     }
     
-    public Assertion editAssertion() {        
-        return new EditorExistsAssertion(type -> templateExists(type, "editor.tl"));
+    public WebAssertion editAssertion() {        
+        return new EditorExistsAssertion((request, type) -> templateExists(type, "editor.tl", request));
     }
     
-    private static class EditorExistsAssertion implements Assertion {
-        private Function<String, Boolean> existsFunction;
+    private static class EditorExistsAssertion implements WebAssertion {
+        private BiFunction<HttpServletRequest, String, Boolean> existsFunction;
         
-        public EditorExistsAssertion(Function<String, Boolean> existsFunction) {
+        public EditorExistsAssertion(BiFunction<HttpServletRequest, String, Boolean> existsFunction) {
             this.existsFunction = existsFunction;
         }
     
@@ -110,31 +107,30 @@ public class AjaxEditorController implements Controller {
                 Principal principal) {
             if (resource == null) return false;
             String type = resource.getResourceType();
-            return existsFunction.apply(type);
+            return existsFunction.apply(request, type);
         }
 
         @Override
-        public boolean processURL(URL url, Resource resource,
-                Principal principal, boolean match) {
-            return true;
+        public Optional<URL> processURL(URL url, Resource resource,
+                Principal principal) {
+            return Optional.of(url);
         }
 
         @Override
-        public void processURL(URL url) {
-        }
-
-        @Override
-        public boolean conflicts(Assertion assertion) {
+        public boolean conflicts(WebAssertion assertion) {
             return false;
+        }
+
+        @Override
+        public URL processURL(URL url) {
+            return url;
         }
 
     }
 
     @Override
-    public ModelAndView handleRequest(
-            HttpServletRequest httpServletRequest, HttpServletResponse httpServletResponse
-    ) throws Exception {
-        RequestContext rc = RequestContext.getRequestContext();
+    public ModelAndView handleRequest(HttpServletRequest request, HttpServletResponse response) throws Exception {
+        RequestContext rc = RequestContext.getRequestContext(request);
         Repository repository = rc.getRepository();
         String token = rc.getSecurityToken();
         Principal p = rc.getPrincipal();
@@ -148,11 +144,11 @@ public class AjaxEditorController implements Controller {
                 null
         );
         String type = resource.getResourceType();
-        Locale locale = RequestContextUtils.getLocale(httpServletRequest);
+        Locale locale = RequestContextUtils.getLocale(request);
 
         Map<String, Object> model = new HashMap<>();
-        model.put("editorJsURI", getStaticResourcePath(type, "editor.js"));
-        model.put("editorCssURI", getStaticResourcePath(type, "editor.css"));
+        model.put("editorJsURI", getStaticResourcePath(type, "editor.js", rc));
+        model.put("editorCssURI", getStaticResourcePath(type, "editor.css", rc));
         model.put("contentType", JSONObject.escape(resource.getContentType()));
         model.put("contentLanguage", JSONObject.escape(resource.getContentLanguage()));
         model.put("resourceName", resource.getName());
@@ -165,26 +161,25 @@ public class AjaxEditorController implements Controller {
         model.put("userUrl", p.getURL());
         model.put("locale", LocaleHelper.getPreferredLang(locale));
         
-        Optional<ReaderWithPath> template = getTemplateReader(type, "editor.tl");
+        Optional<ReaderWithPath> template = getTemplateReader(type, "editor.tl", rc);
         if (template.isPresent()) {
             ReaderWithPath reader = template.get();
             model.put("staticURL", reader.path.getParent());
-            this.renderTemplate(template.get(), model, httpServletRequest, httpServletResponse);
+            this.renderTemplate(template.get(), model, request, response);
             return null;
         }
         model.put("staticURL", this.staticResourcesURL);
         return new ModelAndView(editView, model);
     }
 
-    private Path getStaticResourcePath(String type, String filename) throws Exception {
-        RequestContext rc = RequestContext.getRequestContext();
+    private Path getStaticResourcePath(String type, String filename, RequestContext requestContext) throws Exception {
         Path repositoryPath = Path.fromString(this.appPath + "/" + type + "/" + filename);
         org.springframework.core.io.Resource systemPath = this.staticResourceResolver.resolve(
                 Path.fromString(this.staticResourcesURL + "/" + type + "/" + filename)
         );
 
         Path path;
-        if (rc.getRepository().exists(rc.getSecurityToken(), repositoryPath)) {
+        if (requestContext.getRepository().exists(requestContext.getSecurityToken(), repositoryPath)) {
             path = Path.fromString(this.appResourceURL + "/" + type + "/" + filename);
         } else if (systemPath != null && systemPath.exists()) {
             path = Path.fromString(this.staticResourcesURL + "/" + type + "/" + filename);
@@ -195,17 +190,17 @@ public class AjaxEditorController implements Controller {
     }
     
     
-    private boolean templateExists(String type, String filename) {
-        RequestContext rc = RequestContext.getRequestContext();
+    private boolean templateExists(String type, String filename, HttpServletRequest request) {
+        RequestContext rc = RequestContext.getRequestContext(request);
         Path repositoryPath = Path.fromString(this.appPath + "/" + type + "/" + filename);
         org.springframework.core.io.Resource systemPath = this.staticResourceResolver.resolve(
-                Path.fromString(this.staticResourcesURL + "/" + type + "/" + filename)
-        );
+                Path.fromString(this.staticResourcesURL + "/" + type + "/" + filename));
 
         try {
             if (rc.getRepository().exists(rc.getSecurityToken(), repositoryPath)) {
                 return true;
-            } else if (systemPath != null && systemPath.exists()) {
+            }
+            else if (systemPath != null && systemPath.exists()) {
                 return true;
             }
             return false;
@@ -217,10 +212,8 @@ public class AjaxEditorController implements Controller {
 
     
 
-    private Optional<ReaderWithPath> getTemplateReader(
-            String type, String filename
-    ) throws Exception {
-        RequestContext rc = RequestContext.getRequestContext();
+    private Optional<ReaderWithPath> getTemplateReader(String type, String filename, 
+            RequestContext rc) throws Exception {
         Path repositoryPath = Path.fromString(this.appPath + "/" + type + "/" + filename);
         org.springframework.core.io.Resource systemPath = this.staticResourceResolver.resolve(
                 Path.fromString(this.staticResourcesURL + "/" + type + "/" + filename)

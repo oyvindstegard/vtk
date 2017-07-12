@@ -110,7 +110,7 @@ public class TemplateLinksProvider implements ReferenceDataProvider {
 
         if (this.templateLinks == null) return;
 
-        RequestContext requestContext = RequestContext.getRequestContext();
+        RequestContext requestContext = RequestContext.getRequestContext(request);
         String token = requestContext.getSecurityToken();
         Repository repository = requestContext.getRepository();
 
@@ -153,7 +153,7 @@ public class TemplateLinksProvider implements ReferenceDataProvider {
                             } else {
                                 name = variable;
                             }
-                            String retVal = propValue(resource, prefix, name);
+                            String retVal = propValue(request, resource, prefix, name);
                             if (retVal.length() > truncateLimit) {
                                 retVal = retVal.substring(0, truncateLimit);
                                 retVal = retVal + truncation;
@@ -179,7 +179,7 @@ public class TemplateLinksProvider implements ReferenceDataProvider {
         }
     }
 
-    private String propValue(Resource resource, String prefix, String name) {
+    private String propValue(HttpServletRequest request, Resource resource, String prefix, String name) {
         String retVal = "";
         Property prop = resource.getPropertyByPrefix(prefix, name);
         if (prop == null) {
@@ -190,19 +190,22 @@ public class TemplateLinksProvider implements ReferenceDataProvider {
             if (def != null) {
                 if (def.getType() == PropertyType.Type.HTML) {
                     retVal = prop.getFormattedValue("flattened", null);
-                } else {
+                }
+                else {
                     retVal = prop.getFormattedValue();
+                    RequestContext requestContext = RequestContext.getRequestContext(request);
                     if (!retVal.isEmpty() && def.getType() == PropertyType.Type.IMAGE_REF) { // Construct absolute URLs
                         try {
                             if (!retVal.startsWith("/")) {
-                                Path currentCollection = RequestContext.getRequestContext().getCurrentCollection();
+                                Path currentCollection = requestContext.getCurrentCollection();
                                 retVal = currentCollection.expand(retVal).toString();
                             }
-                            retVal = viewService.urlConstructor(RequestContext.getRequestContext().getRequestURL())
+                            retVal = viewService.urlConstructor(requestContext.getRequestURL())
                                     .withURI(Path.fromString(retVal))
                                     .constructURL()
                                     .toString();
-                        } catch (Exception iae) {
+                        }
+                        catch (Exception iae) {
                             retVal = "";
                         }
                     }

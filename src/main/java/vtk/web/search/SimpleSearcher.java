@@ -43,12 +43,13 @@ import java.util.function.Function;
 import vtk.repository.ResourceTypeTree;
 import vtk.repository.resourcetype.PropertyTypeDefinition;
 import vtk.repository.search.ConfigurablePropertySelect;
-import vtk.repository.search.Parser;
 import vtk.repository.search.PropertySelect;
+import vtk.repository.search.QueryParserFactory;
 import vtk.repository.search.ResultSet;
 import vtk.repository.search.Search;
 import vtk.repository.search.Searcher;
 import vtk.repository.search.Sorting;
+import vtk.repository.search.SortingParserFactory;
 
 /**
  * Simple index searcher (built on top of the 
@@ -71,7 +72,8 @@ import vtk.repository.search.Sorting;
  * </pre>
  */
 public final class SimpleSearcher {
-    private Parser parser;
+    private QueryParserFactory parserFactory;
+    private SortingParserFactory sortingFactory;
     private Searcher searcher;
     private ResourceTypeTree resourceTypeTree;
     
@@ -85,8 +87,12 @@ public final class SimpleSearcher {
         SPECIAL_FIELDS = Collections.unmodifiableSet(fields);
     }
     
-    public SimpleSearcher(Parser parser, Searcher searcher, ResourceTypeTree resourceTypeTree) {
-        this.parser = Objects.requireNonNull(parser);
+    public SimpleSearcher(QueryParserFactory parserFactory, 
+            SortingParserFactory sortingFactory, 
+            Searcher searcher, 
+            ResourceTypeTree resourceTypeTree) {
+        this.parserFactory = Objects.requireNonNull(parserFactory);
+        this.sortingFactory = Objects.requireNonNull(sortingFactory);
         this.searcher = Objects.requireNonNull(searcher);
         this.resourceTypeTree = Objects.requireNonNull(resourceTypeTree);
     }
@@ -95,7 +101,7 @@ public final class SimpleSearcher {
      * Creates a new query builder
      */
     public QueryBuilder builder() {
-        return new QueryBuilder(parser, resourceTypeTree);
+        return new QueryBuilder(parserFactory, sortingFactory, resourceTypeTree);
     }
 
     /**
@@ -194,17 +200,21 @@ public final class SimpleSearcher {
         private PropertySelect select = PropertySelect.NONE;
         private boolean unpublished;
         
-        private Parser parser;
+        private QueryParserFactory parserFactory;
+        private SortingParserFactory sortingFactory;
         private ResourceTypeTree resourceTypeTree;
         
-        private QueryBuilder(Parser parser, ResourceTypeTree resourceTypeTree) {
-            this.parser = parser;
+        private QueryBuilder(QueryParserFactory parserFactory, 
+                SortingParserFactory sortingFactory,
+                ResourceTypeTree resourceTypeTree) {
+            this.parserFactory = parserFactory;
+            this.sortingFactory = sortingFactory;
             this.resourceTypeTree = resourceTypeTree;
         }
         
         public QueryBuilder query(String query) {
             Objects.requireNonNull(query);
-            this.query = parser.parse(query);
+            this.query = parserFactory.getParser().parse(query);
             return this;
         }
         
@@ -226,7 +236,7 @@ public final class SimpleSearcher {
         
         public QueryBuilder sorting(String sorting) {
             Objects.requireNonNull(sorting);
-            this.sorting = parser.parseSortString(sorting);
+            this.sorting = sortingFactory.parser().parse(sorting);
             return this;
         }
         

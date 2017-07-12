@@ -70,7 +70,7 @@ public class AclApiHandler implements HttpRequestHandler {
     @Override
     public void handleRequest(HttpServletRequest request, HttpServletResponse response) throws IOException {
         
-        RequestContext requestContext = RequestContext.getRequestContext();
+        RequestContext requestContext = RequestContext.getRequestContext(request);
         Result<Optional<Resource>> res = retrieve(requestContext, requestContext.getResourceURI());
         
         Result<ApiResponseBuilder> bldr = res.flatMap(opt -> {
@@ -85,11 +85,11 @@ public class AclApiHandler implements HttpRequestHandler {
                    return getAcl(resource, requestContext);
                case "PUT":
                case "POST": 
-                   return updateAcl(resource, requestContext);
+                   return updateAcl(request, resource);
                case "DELETE": 
-                   return deleteAcl(resource, requestContext);
+                   return deleteAcl(request, resource);
                default: 
-                   return unknownMethod(resource, requestContext);
+                   return unknownMethod(request, resource);
                }
            }
         });
@@ -135,10 +135,7 @@ public class AclApiHandler implements HttpRequestHandler {
     }
     
 
-    private Result<ApiResponseBuilder> updateAcl(Resource resource, 
-            RequestContext requestContext) {
-
-        HttpServletRequest request = requestContext.getServletRequest();
+    private Result<ApiResponseBuilder> updateAcl(HttpServletRequest request, Resource resource) {
         
         if (!"application/json".equals(request.getContentType())) {
             return Result.success(new ApiResponseBuilder(HttpServletResponse.SC_NOT_ACCEPTABLE)
@@ -146,6 +143,7 @@ public class AclApiHandler implements HttpRequestHandler {
                 .message("Content-Type application/json required for " 
                     + request.getMethod() + " method\n"));
         }
+
         boolean existed = !resource.isInheritedAcl();
         Result<InputStream> stream = Result.attempt(() -> {
            try {
@@ -161,6 +159,7 @@ public class AclApiHandler implements HttpRequestHandler {
         Result<Acl> newAcl = json.flatMap(aclMapper)
                 .recoverWith(t -> Result.failure(new InvalidRequestException(t.getMessage())));
         
+        RequestContext requestContext = RequestContext.getRequestContext(request);
         Result<Resource> updated = newAcl.flatMap(acl -> {
             return Result.attempt(() -> {
                 try {
@@ -187,8 +186,7 @@ public class AclApiHandler implements HttpRequestHandler {
         return result;
     }
     
-    private Result<ApiResponseBuilder> deleteAcl(Resource resource, 
-            RequestContext requestContext) {
+    private Result<ApiResponseBuilder> deleteAcl(HttpServletRequest request, Resource resource) {
         
         if (resource.isInheritedAcl()) {
             return Result.success(new ApiResponseBuilder(HttpServletResponse.SC_NOT_FOUND)
@@ -198,6 +196,7 @@ public class AclApiHandler implements HttpRequestHandler {
         
         Result<Resource> updated = Result.attempt(() -> {
             try {
+                RequestContext requestContext = RequestContext.getRequestContext(request);
                 return requestContext.getRepository()
                         .deleteACL(requestContext.getSecurityToken(), resource.getURI());
             }
@@ -213,11 +212,10 @@ public class AclApiHandler implements HttpRequestHandler {
         });
     }
     
-    private Result<ApiResponseBuilder> unknownMethod(Resource resource, 
-            RequestContext requestContext) {
+    private Result<ApiResponseBuilder> unknownMethod(HttpServletRequest request, Resource resource) {
         return Result.success(new ApiResponseBuilder(HttpServletResponse.SC_BAD_REQUEST)
             .header("Content-Type", "text/plain;charset=utf-8")
-            .message("Request method " + requestContext.getServletRequest().getMethod() 
+            .message("Request method " + request.getMethod() 
                     + " not supported: on " + resource.getURI()));
     }
     

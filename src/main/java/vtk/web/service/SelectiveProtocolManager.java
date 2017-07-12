@@ -30,13 +30,16 @@
  */
 package vtk.web.service;
 
+import java.util.Optional;
 import java.util.Set;
+import java.util.function.BiFunction;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.springframework.web.servlet.HandlerInterceptor;
 import org.springframework.web.servlet.ModelAndView;
+
 import vtk.repository.Repository;
 import vtk.repository.Resource;
 import vtk.security.Principal;
@@ -57,7 +60,7 @@ import vtk.web.RequestContext;
  * </ul>
  */
 public class SelectiveProtocolManager extends RequestProtocolAssertion 
-    implements Assertion, HandlerInterceptor, URLPostProcessor {
+    implements WebAssertion, HandlerInterceptor, URLPostProcessor {
 
     private Set<Service> genURLFileServices;
     private Set<Service> genURLCollectionServices;
@@ -66,58 +69,67 @@ public class SelectiveProtocolManager extends RequestProtocolAssertion
     private boolean selectiveAccessEnabled = false;
     
     
-    /**
-     * {@link RequestProtocolAssertion#processURL(URL, Resource, Principal, boolean)}
-     */
-    @Override
-    public boolean processURL(URL url, Resource resource, Principal principal,
-            boolean match) {
-        return super.processURL(url, resource, principal, match);
-    }
 
     /**
-     * {@link RequestProtocolAssertion#processURL(URL)}
+     * {@link URLPostProcessor#processURL(URL, Service, Optional<Resource>)}
      */
     @Override
-    public void processURL(URL url) {
-        super.processURL(url);
+    public BiFunction<URL, Optional<Resource>, URL> urlProcessor(
+            Service service, URL base) {
+        return (url, optResource) -> {
+            if (!this.selectiveAccessEnabled) {
+                return url;
+            }
+            if (!optResource.isPresent()) {
+                return url;
+            }
+            Resource resource = optResource.get();
+            if (resource.isReadRestricted()) {
+                return url;
+            }
+            Set<Service> services = resource.isCollection() ? 
+                    this.genURLCollectionServices : this.genURLFileServices;
+            if (services == null) {
+                return url;
+            }
+            if (!services.contains(service)) {
+                return url;
+            }
+            // XXX this is wrong if request [page] context is secure and the URL
+            // points to an element which will be used inline in document (causes mixed-mode
+            // in such cases). However, don't know if fix for such situations is appropriate here.
+            return url.setProtocol("http");
+        };
     }
-
-    /**
-     * {@link URLPostProcessor#processURL(URL, Resource, Service)}
-     */
-    @Override
-    public void processURL(URL url, Resource resource, Service service) throws Exception {
-        if (!this.selectiveAccessEnabled) {
-            return;
-        }
-        if (resource == null) {
-            return;
-        }
-        if (resource.isReadRestricted()) {
-            return;
-        }
-        Set<Service> services = resource.isCollection() ? 
-                this.genURLCollectionServices : this.genURLFileServices;
-        if (services == null) {
-            return;
-        }
-        if (!services.contains(service)) {
-            return;
-        }
-        // XXX this is wrong if request [page] context is secure and the URL
-        // points to an element which will be used inline in document (causes mixed-mode
-        // in such cases). However, don't know if fix for such situations is appropriate here.
-        url.setProtocol("http");
-    }
-
-    /**
-     * {@link URLPostProcessor#processURL(URL, Service)}
-     */
-    @Override
-    public void processURL(URL url, Service service) throws Exception {
-    }
-    
+//    /**
+//     * {@link URLPostProcessor#processURL(URL, Service, Optional<Resource>)}
+//     */
+//    @Override
+//    public void processURL(URL url, Service service,
+//            Optional<Resource> optResource) {
+//        if (!this.selectiveAccessEnabled) {
+//            return;
+//        }
+//        if (!optResource.isPresent()) {
+//            return;
+//        }
+//        Resource resource = optResource.get();
+//        if (resource.isReadRestricted()) {
+//            return;
+//        }
+//        Set<Service> services = resource.isCollection() ? 
+//                this.genURLCollectionServices : this.genURLFileServices;
+//        if (services == null) {
+//            return;
+//        }
+//        if (!services.contains(service)) {
+//            return;
+//        }
+//        // XXX this is wrong if request [page] context is secure and the URL
+//        // points to an element which will be used inline in document (causes mixed-mode
+//        // in such cases). However, don't know if fix for such situations is appropriate here.
+//        url.setProtocol("http");
+//    }
 
     @Override
     public boolean matches(HttpServletRequest request, Resource resource,
@@ -140,8 +152,8 @@ public class SelectiveProtocolManager extends RequestProtocolAssertion
         if (request.isSecure()) {
             return true;
         }
-        RequestContext requestContext = RequestContext.getRequestContext();
-        Resource resource = retrieveResource();
+        RequestContext requestContext = RequestContext.getRequestContext(request);
+        Resource resource = retrieveResource(request);
 
         if (resource.isReadRestricted()) {
             redirectSSL(request, response);
@@ -199,12 +211,12 @@ public class SelectiveProtocolManager extends RequestProtocolAssertion
         this.selectiveAccessEnabled = selectiveAccessEnabled;
     }
 
-    private Resource retrieveResource() throws Exception {
-        RequestContext requestContext = RequestContext.getRequestContext();
+    private Resource retrieveResource(HttpServletRequest request) throws Exception {
+        RequestContext requestContext = RequestContext.getRequestContext(request);
         Repository repository = requestContext.getRepository();
         String token = requestContext.getSecurityToken();
         Resource resource = repository.retrieve(token, requestContext.getResourceURI(), true);
         return resource;
     }
-    
+
 }

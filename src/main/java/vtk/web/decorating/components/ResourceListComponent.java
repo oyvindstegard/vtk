@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.apache.commons.lang.StringUtils;
+
 import vtk.repository.Path;
 import vtk.repository.Repository;
 import vtk.repository.Resource;
@@ -46,10 +47,10 @@ public class ResourceListComponent extends ViewRenderingDecoratorComponent {
         model.put("resultSets", numberOfResultSets);
 
         List<Path> validPaths = getValidFolderPaths(includeFolders, parentFolder);
-        List<Resource> validResources = new ArrayList<Resource>();
+        List<Resource> validResources = new ArrayList<>();
         for (Path folder : validPaths) {
 
-            RequestContext requestContext = RequestContext.getRequestContext();
+            RequestContext requestContext = RequestContext.getRequestContext(request.getServletRequest());
             String token = requestContext.getSecurityToken();
             Repository repository = requestContext.getRepository();
 
@@ -67,7 +68,7 @@ public class ResourceListComponent extends ViewRenderingDecoratorComponent {
             query.add(new UriPrefixQuery(folder.toString()));
 
             Search search = new Search();
-            if (RequestContext.getRequestContext().isPreviewUnpublished()) {
+            if (RequestContext.getRequestContext(request.getServletRequest()).isPreviewUnpublished()) {
                 search.removeFilterFlag(Search.FilterFlag.UNPUBLISHED_COLLECTIONS);
             }
             if (maxItems != null) {
@@ -96,7 +97,7 @@ public class ResourceListComponent extends ViewRenderingDecoratorComponent {
     }
 
     private List<Path> getValidFolderPaths(String includeFolders, String parentFolder) {
-        List<Path> validPaths = new ArrayList<Path>();
+        List<Path> validPaths = new ArrayList<>();
         String[] folders = includeFolders.split(",");
         Path parentPath = getValidPath(parentFolder);
         String parentPathString = parentPath != null ? parentPath.toString() : null;

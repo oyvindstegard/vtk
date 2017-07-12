@@ -142,7 +142,7 @@ public class ErrorHandlerFilter extends AbstractServletFilter {
             logger.debug("Caught unexpected throwable " + t.getClass()
             + ", resolving error handler");
         }
-        ErrorHandler handler = resolveErrorHandler(t);
+        ErrorHandler handler = resolveErrorHandler(req, t);
         if (handler == null) {
             logError("No error handler configured for " + t.getClass().getName(), req, t);
             throw new ServletException(t);
@@ -226,11 +226,11 @@ public class ErrorHandlerFilter extends AbstractServletFilter {
     }
     
 
-    private ErrorHandler resolveErrorHandler(Throwable t) {
+    private ErrorHandler resolveErrorHandler(HttpServletRequest request, Throwable t) {
         Service currentService = null;
 
-        if (RequestContext.exists()) {
-            RequestContext requestContext = RequestContext.getRequestContext();
+        if (RequestContext.exists(request)) {
+            RequestContext requestContext = RequestContext.getRequestContext(request);
             if (requestContext != null) {
                 currentService = requestContext.getService();
             }
@@ -285,8 +285,8 @@ public class ErrorHandlerFilter extends AbstractServletFilter {
     @SuppressWarnings("rawtypes")
     private void logError(String message, HttpServletRequest req, Throwable t) {
         Optional<RequestContext> requestContext = Optional.empty();
-        if (RequestContext.exists()) {
-            requestContext = Optional.of(RequestContext.getRequestContext());
+        if (RequestContext.exists(req)) {
+            requestContext = Optional.of(RequestContext.getRequestContext(req));
         }
         Optional<SecurityContext> securityContext = Optional.empty();
         if (SecurityContext.exists()) {

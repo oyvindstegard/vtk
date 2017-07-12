@@ -213,6 +213,10 @@
             <bean class="vtk.web.service.IsAuthenticatedAssertion" />
           </property>
         </bean>
+        <bean class="vtk.web.service.ConfigAssertion">
+          <property name="config" value="${webProtocolRestricted}" />
+          <property name="expectedValue" value="https" />
+        </bean>
         <bean class="vtk.web.service.RequestProtocolAssertion">
           <property name="protocol" value="http" />
         </bean>

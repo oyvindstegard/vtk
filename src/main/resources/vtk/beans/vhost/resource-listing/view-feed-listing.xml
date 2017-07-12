@@ -32,6 +32,7 @@
   <bean id="atomFeedView" class="vtk.web.display.feed.ListingFeedView" 
         abstract="true" depends-on="resourceTypetree">
     <property name="viewService" ref="viewService" />
+    <property name="imageThumbnailService" ref="displayThumbnailService" />
     <property name="abdera" ref="abdera" />
     <property name="resourceTypeTree" ref="resourceTypeTree" />
     <property name="publishDatePropDef" ref="publishDatePropDef" />

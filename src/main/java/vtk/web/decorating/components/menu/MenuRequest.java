@@ -31,7 +31,6 @@
 package vtk.web.decorating.components.menu;
 
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
 import java.util.StringTokenizer;
@@ -106,7 +105,7 @@ public class MenuRequest {
         this.titlePropDef = titlePropDef;
         this.collectionResourceType = collectionResourceType;
 
-        RequestContext requestContext = RequestContext.getRequestContext();
+        RequestContext requestContext = RequestContext.getRequestContext(request.getServletRequest());
         this.currentCollectionUri = requestContext.getCurrentCollection();
 
         boolean asCurrentUser = "true".equals(request
@@ -241,7 +240,7 @@ public class MenuRequest {
             }
         }
 
-        List<Path> children = new ArrayList<Path>();
+        List<Path> children = new ArrayList<>();
         Search search = getSearchForCollectionChildren(requestContext, currentCollectionUri, searchLimit);
         Repository repository = requestContext.getRepository();
         ResultSet rs = repository.search(token, search);
@@ -398,7 +397,7 @@ public class MenuRequest {
         mainQuery.add(new UriPrefixQuery(uri.toString()));
         mainQuery.add(new TypeTermQuery(this.collectionResourceType.getName(), TermOperator.IN));
         Search search = new Search();
-        if (RequestContext.getRequestContext().isPreviewUnpublished()) {
+        if (requestContext.isPreviewUnpublished()) {
             search.removeFilterFlag(Search.FilterFlag.UNPUBLISHED_COLLECTIONS);
         }
         search.setQuery(mainQuery);

@@ -78,7 +78,7 @@ public class TemplateBasedCreateCollectionController
 
     @Override
     protected CreateCollectionCommand formBackingObject(HttpServletRequest request) throws Exception {
-        RequestContext requestContext = RequestContext.getRequestContext();
+        RequestContext requestContext = RequestContext.getRequestContext(request);
         Service service = requestContext.getService();
         Repository repository = requestContext.getRepository();
         Resource resource = repository.retrieve(requestContext.getSecurityToken(), requestContext.getResourceURI(),
@@ -102,7 +102,7 @@ public class TemplateBasedCreateCollectionController
     protected Map<String, Object> referenceData(HttpServletRequest request,
             CreateCollectionCommand command, Errors errors) throws Exception {
         
-        RequestContext requestContext = RequestContext.getRequestContext();
+        RequestContext requestContext = RequestContext.getRequestContext(request);
         Map<String, Object> model = new HashMap<>();
 
         Path uri = requestContext.getResourceURI();
@@ -110,9 +110,8 @@ public class TemplateBasedCreateCollectionController
 
         List<ResourceTemplate> templates = templateManager.getFolderTemplates(token, uri);
 
-        HttpServletRequest servletRequest = requestContext.getServletRequest();
         org.springframework.web.servlet.support.RequestContext springRequestContext = new org.springframework.web.servlet.support.RequestContext(
-                servletRequest);
+                request);
         Map<String, String> tmp = new LinkedHashMap<>();
 
         String standardCollectionName = new MessageLocalizer("property.standardCollectionName", "Standard collection",
@@ -142,7 +141,7 @@ public class TemplateBasedCreateCollectionController
             command.setDone(true);
             return new ModelAndView(cancelView);
         }
-        RequestContext requestContext = RequestContext.getRequestContext();
+        RequestContext requestContext = RequestContext.getRequestContext(request);
         Repository repository = requestContext.getRepository();
         Path uri = requestContext.getResourceURI();
         String token = requestContext.getSecurityToken();
@@ -252,7 +251,7 @@ public class TemplateBasedCreateCollectionController
             CreateCollectionCommand command, BindException errors) throws Exception {
 
         super.onBindAndValidate(request, command, errors);
-        RequestContext requestContext = RequestContext.getRequestContext();
+        RequestContext requestContext = RequestContext.getRequestContext(request);
 
         if (command.getCancelAction() != null) {
             return;

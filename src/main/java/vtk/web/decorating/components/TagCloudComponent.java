@@ -36,6 +36,7 @@ import java.util.Map;
 
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Required;
+
 import vtk.repository.Path;
 import vtk.repository.search.QueryException;
 import vtk.web.RequestContext;
@@ -97,13 +98,15 @@ public class TagCloudComponent extends ViewRenderingDecoratorComponent implement
 
     private RepositoryTagElementsDataProvider tagElementsProvider;
     
+    @Override
     protected String getDescriptionInternal() {
         return DESCRIPTION;
     }
 
 
+    @Override
     protected Map<String, String> getParameterDescriptionsInternal() {
-        Map<String, String> map = new LinkedHashMap<String, String>();
+        Map<String, String> map = new LinkedHashMap<>();
 
         map.put(PARAMETER_SCOPE, PARAMETER_SCOPE_DESC);
         map.put(PARAMETER_TAG_LIMIT, PARAMETER_TAG_LIMIT_DESC);
@@ -116,16 +119,17 @@ public class TagCloudComponent extends ViewRenderingDecoratorComponent implement
     }
 
 
+    @Override
     protected void processModel(Map<String, Object> model, DecoratorRequest request, DecoratorResponse response)
     throws Exception {
 
         super.processModel(model, request, response);
-        RequestContext requestContext = RequestContext.getRequestContext();
+        RequestContext requestContext = RequestContext.getRequestContext(request.getServletRequest());
         Path scopeUri = requestContext.getCurrentCollection();
         String token = requestContext.isViewUnauthenticated() ? null : requestContext.getSecurityToken(); // VTK-2460
 
         if (request.getStringParameter(PARAMETER_SCOPE) != null) {
-            scopeUri = buildScopePath(request.getStringParameter(PARAMETER_SCOPE));
+            scopeUri = buildScopePath(request);
         }
 
         int magnitudeMin = PARAMETER_MAGNITUDE_MIN_DEFAULT_VALUE;
@@ -175,7 +179,8 @@ public class TagCloudComponent extends ViewRenderingDecoratorComponent implement
         // Legacy exception handling, should be refactored.
         try {
             List<TagElement> tagElements = 
-                tagElementsProvider.getTagElements(scopeUri, token, magnitudeMin,
+                tagElementsProvider.getTagElements(request.getServletRequest(), 
+                        scopeUri, token, magnitudeMin,
                         magnitudeMax, limit, tagOccurenceMin);
 
             // Populate model
@@ -189,11 +194,13 @@ public class TagCloudComponent extends ViewRenderingDecoratorComponent implement
     }
 
 
-    Path buildScopePath(String href) {
+    Path buildScopePath(DecoratorRequest request) {
+        String href = request.getStringParameter(PARAMETER_SCOPE);
         if (href.startsWith("/")) {
             return Path.fromString(href);
         }
-        Path requestURI = RequestContext.getRequestContext().getResourceURI();
+        Path requestURI = RequestContext
+                .getRequestContext(request.getServletRequest()).getResourceURI();
         return requestURI.expand(href);
     }
 

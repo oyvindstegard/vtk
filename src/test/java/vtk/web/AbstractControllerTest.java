@@ -3,6 +3,7 @@ package vtk.web;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.jmock.Expectations;
 import org.jmock.Mockery;
 import org.jmock.integration.junit4.JUnit4Mockery;
 
@@ -21,7 +22,7 @@ public abstract class AbstractControllerTest {
     }
 
     protected Mockery context = new JUnit4Mockery();
-    protected final HttpServletRequest mockRequest = context.mock(HttpServletRequest.class);
+    protected final HttpServletRequest mockRequest = context.mock(HttpServletRequest.class);    
     protected final HttpServletResponse mockResponse = context.mock(HttpServletResponse.class);
     protected final Service mockService = context.mock(Service.class);
     protected final Repository mockRepository = context.mock(Repository.class);
@@ -31,9 +32,35 @@ public abstract class AbstractControllerTest {
         BaseContext.pushContext();
         SecurityContext securityContext = new SecurityContext(null, null);
         SecurityContext.setSecurityContext(securityContext);
+        context.checking(new Expectations() {{ 
+            allowing(mockRequest).getRequestURL(); 
+            will(returnValue(new StringBuffer("http://localhost/" + getRequestPath())));
+            
+            allowing(mockRequest).isSecure(); 
+            will(returnValue(false));
+            
+            allowing(mockRequest).getQueryString(); 
+            will(returnValue(""));
+            
+            allowing(mockRequest).getParameter("vrtxPreviewUnpublished"); 
+            allowing(mockRequest).getParameter("revision");
+            allowing(mockRequest).getParameter("vrtxPreviewUnpublished");
+            allowing(mockRequest).getHeader("Referer");
+            
+            allowing(mockRequest).setAttribute(with(equal("vtk.web.RequestContext.requestAttribute")), 
+                    with(any(RequestContext.class)));
+            
+
+            allowing(mockService).getName();
+            
+        }});
         RequestContext requestContext = new RequestContext(mockRequest, securityContext, mockService, null,
                 null, getRequestPath(), null, false, false, true, mockRepository, mockPrincipalMetadataDao);
-        RequestContext.setRequestContext(requestContext);
+        context.checking(new Expectations() {{
+            allowing(mockRequest).getAttribute("vtk.web.RequestContext.requestAttribute");
+            will(returnValue(requestContext));
+        }});
+        RequestContext.setRequestContext(requestContext, mockRequest);
     }
 
     protected abstract Path getRequestPath();

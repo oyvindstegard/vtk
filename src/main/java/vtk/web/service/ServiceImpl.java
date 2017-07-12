@@ -36,6 +36,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 import javax.servlet.Filter;
@@ -46,6 +47,7 @@ import org.springframework.beans.factory.BeanNameAware;
 import org.springframework.web.servlet.HandlerInterceptor;
 
 import vtk.repository.Resource;
+import vtk.repository.resourcetype.RepositoryAssertion;
 import vtk.security.web.AuthenticationChallenge;
 import vtk.web.service.provider.ServiceNameProvider;
 import vtk.web.servlet.FilterFactory;
@@ -72,11 +74,11 @@ import vtk.web.servlet.FilterFactory;
  */
 public class ServiceImpl implements Service, BeanNameAware {
     // FIXME: Cache for all assertions, don't use directly!
-    private volatile List<Assertion> allAssertions;
+    private volatile List<WebAssertion> allAssertions;
 
     private AuthenticationChallenge authenticationChallenge;
     private Object handler;
-    private List<Assertion> assertions = new ArrayList<>();
+    private List<WebAssertion> assertions = new ArrayList<>();
     private Service parent;
     private String name;
     private Map<String, Object> attributes = new HashMap<>();
@@ -93,7 +95,7 @@ public class ServiceImpl implements Service, BeanNameAware {
     }
 
     @Override
-    public List<Assertion> getAllAssertions() {
+    public List<WebAssertion> getAllAssertions() {
         if (this.allAssertions == null) {
             synchronized (this) {
                 if (this.allAssertions != null) {
@@ -114,9 +116,29 @@ public class ServiceImpl implements Service, BeanNameAware {
         this.handler = handler;
     }
 	
-
-    public void setAssertions(List<Assertion> assertions) {
-        this.assertions = assertions;
+    /**
+     * Accepts either {@link WebAssertion} or {@link RepositoryAssertion} 
+     * objects
+     * @param assertions
+     */
+    public void setAssertions(List<?> assertions) {
+        if (assertions != null) {
+            List<WebAssertion> newAssertions = new ArrayList<>();
+            for (Object o: assertions) {
+                if (o instanceof WebAssertion) {
+                    newAssertions.add((WebAssertion) o);
+                }
+                else if (o instanceof RepositoryAssertion) {
+                    newAssertions.add(
+                            new RepositoryAssertionWrapper((RepositoryAssertion) o));
+                }
+                else {
+                    throw new IllegalArgumentException(
+                            "Unsupported assertion type: " + o.getClass());
+                }
+            }
+            this.assertions = newAssertions;
+        }
     }
 	
     @Override
@@ -162,10 +184,14 @@ public class ServiceImpl implements Service, BeanNameAware {
 	
 
     @Override
-    public List<Assertion> getAssertions() {
+    public List<WebAssertion> getAssertions() {
         return this.assertions;
     }
 	
+    @Override
+    public Optional<List<URLPostProcessor>> urlProcessors() {
+        return Optional.ofNullable(getAllURLPostProcessors());
+    }
 
     private List<URLPostProcessor> getAllURLPostProcessors() {
         if (this.accumulatedUrlPostProcessors != null) {
@@ -280,30 +306,7 @@ public class ServiceImpl implements Service, BeanNameAware {
     public void setOrder(int order) {
         this.order = order;
     }
-
-    // XXX: clean up
-    public void postProcess(URL urlObject, Resource resource) {
-        List<URLPostProcessor> urlPostProcessors = getAllURLPostProcessors();
-
-        if (urlPostProcessors != null) {
-            for (URLPostProcessor urlProcessor: urlPostProcessors) {
-                try {
-                    if (resource != null) {
-                        urlProcessor.processURL(urlObject, resource, this);
-                    }
-                    else {
-                        urlProcessor.processURL(urlObject, this);
-                    }
-                }
-                catch (Exception e) {
-                    throw new ServiceUnlinkableException("URL Post processor " + urlProcessor
-                                                         + " threw exception", e);
-                }
-            }
-        }
-    }
-
-
+    
     public void setServiceNameProvider(ServiceNameProvider serviceNameProvider) {
         this.serviceNameProvider = serviceNameProvider;
     }
@@ -370,7 +373,5 @@ public class ServiceImpl implements Service, BeanNameAware {
             return false;
         return true;
     }
-
-
 
 }

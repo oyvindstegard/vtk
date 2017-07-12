@@ -93,12 +93,12 @@ public class RecentCommentsProvider implements ReferenceDataProvider {
     }
 
     @Override
-    public void referenceData(final Map<String, Object> model, HttpServletRequest servletRequest) {
-        RequestContext requestContext = RequestContext.getRequestContext();
+    public void referenceData(final Map<String, Object> model, HttpServletRequest request) {
+        RequestContext requestContext = RequestContext.getRequestContext(request);
         Repository repository = requestContext.getRepository();
         String token = requestContext.getSecurityToken();
         Principal principal = requestContext.getPrincipal();
-        Path uri = RequestContext.getRequestContext().getResourceURI();
+        Path uri = requestContext.getResourceURI();
 
         // VTK-2460
         if (requestContext.isViewUnauthenticated()) {
