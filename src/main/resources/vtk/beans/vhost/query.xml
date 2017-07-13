@@ -10,6 +10,7 @@
 
   <bean id="sortingParserFactory"
         class="vtk.repository.search.SortingParserFactoryImpl">
+    <constructor-arg name="resourceTypeTree" ref="resourceTypeTree" />
   </bean>
 
   <bean id="SORT_ORDER.ASC" class="vtk.repository.search.SortField.Direction"
