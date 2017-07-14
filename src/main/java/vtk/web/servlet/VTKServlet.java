@@ -55,7 +55,6 @@ import org.springframework.web.servlet.DispatcherServlet;
 import org.springframework.web.util.WebUtils;
 
 import vtk.context.ApplicationInitializedEvent;
-import vtk.context.BaseContext;
 import vtk.security.AuthenticationException;
 import vtk.security.Principal;
 import vtk.security.web.SecurityInitializer;
@@ -316,7 +315,6 @@ public class VTKServlet extends DispatcherServlet {
                }
            }
            request.setAttribute(SERVLET_NAME_REQUEST_ATTRIBUTE, getServletName());
-           BaseContext.pushContext();
            Thread.currentThread().setName(this.getServletName() + "." + String.valueOf(number));
 
            if (this.repositoryContextInitializer != null) {
@@ -365,10 +363,10 @@ public class VTKServlet extends DispatcherServlet {
                                failureCause));
            }
 
-           this.securityInitializer.destroyContext();
-           this.requestContextInitializer.destroyContext();
+           this.securityInitializer.destroyContext(request);
+           this.requestContextInitializer.destroyContext(request);
+           this.repositoryContextInitializer.destroyContext(request);
            Thread.currentThread().setName(threadName);
-           BaseContext.popContext();
        }
    }
    

@@ -33,14 +33,16 @@ package vtk.repository.event;
 
 import vtk.repository.Repository;
 import vtk.repository.Resource;
+import vtk.security.Principal;
 
 /**
  *
  */
 public class InheritablePropertiesModificationEvent extends ResourceModificationEvent {
 
-    public InheritablePropertiesModificationEvent(Repository source, Resource resource, Resource original) {
-        super(source, resource, original);
+    public InheritablePropertiesModificationEvent(Repository source, Principal principal, 
+            Resource resource, Resource original) {
+        super(source, principal, resource, original);
     }
 
 }

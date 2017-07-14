@@ -34,6 +34,7 @@ import vtk.repository.Acl;
 import vtk.repository.Path;
 import vtk.repository.Repository;
 import vtk.repository.Resource;
+import vtk.security.Principal;
 
 
 public class ACLModificationEvent extends RepositoryEvent {
@@ -45,9 +46,9 @@ public class ACLModificationEvent extends RepositoryEvent {
     private Acl acl = null;
     private Acl originalACL = null;
 
-    public ACLModificationEvent(Repository source,
+    public ACLModificationEvent(Repository source, Principal principal,
                                 Resource resource, Resource original) {
-        super(source);
+        super(source, principal);
         this.resource = resource;
         this.original = original;
         this.acl = resource.getAcl();

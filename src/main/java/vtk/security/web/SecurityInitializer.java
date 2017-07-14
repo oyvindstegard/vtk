@@ -55,8 +55,8 @@ import vtk.security.SecurityContext;
 import vtk.security.token.TokenManager;
 import vtk.security.web.AuthenticationHandler.AuthResult;
 import vtk.web.RequestContext;
-import vtk.web.service.WebAssertion;
 import vtk.web.service.Service;
+import vtk.web.service.WebAssertion;
 
 /**
  * Initializer for the {@link SecurityContext security context}. 
@@ -143,7 +143,7 @@ public class SecurityInitializer {
             if (principal != null) {
                 logger.debug("Found valid token '" + token + "', principal " + principal
                         + " in request session, setting security context");
-                SecurityContext.setSecurityContext(new SecurityContext(token, principal, this));
+                SecurityContext.setSecurityContext(new SecurityContext(token, principal, this), req);
 
                 if (getCookie(req, VRTXLINK_COOKIE) == null && cookieLinksEnabled) {
                     UUID cookieLinkID = cookieLinkStore.addToken(req, token);
@@ -195,7 +195,7 @@ public class SecurityInitializer {
                     token = this.tokenManager.newToken(principal, handler);
                     SecurityContext securityContext = new SecurityContext(token, this.tokenManager.getPrincipal(token), this);
 
-                    SecurityContext.setSecurityContext(securityContext);
+                    SecurityContext.setSecurityContext(securityContext, req);
                     HttpSession session = req.getSession(true);
                     session.setAttribute(SECURITY_TOKEN_SESSION_ATTR, token);
 
@@ -244,7 +244,7 @@ public class SecurityInitializer {
                     + "attempt by any authentication handler. Creating default " + "security context.");
         }
 
-        SecurityContext.setSecurityContext(new SecurityContext(null, null, this));
+        SecurityContext.setSecurityContext(new SecurityContext(null, null, this), req);
         return true;
     }
 
@@ -276,16 +276,16 @@ public class SecurityInitializer {
         if (session != null) {
             session.invalidate();
         }
-        if (!SecurityContext.exists()) {
+        SecurityContext securityContext = SecurityContext.getSecurityContext(request);
+        if (securityContext == null) {
             return false;
         }
-        SecurityContext securityContext = SecurityContext.getSecurityContext();
         Principal principal = securityContext.getPrincipal();
         if (principal == null) {
             return false;
         }
         this.tokenManager.removeToken(securityContext.getToken());
-        SecurityContext.setSecurityContext(null);
+        SecurityContext.setSecurityContext(null, request);
         if (authLogger.isDebugEnabled()) {
             authLogger.debug(request.getRemoteAddr() + " - request-URI: " + request.getRequestURI() + " - "
                     +    "removeAuthState_method: Logout: principal: '" + principal
@@ -344,10 +344,10 @@ public class SecurityInitializer {
     public boolean logout(HttpServletRequest request, HttpServletResponse response)
             throws AuthenticationProcessingException, ServletException, IOException {
 
-        if (!SecurityContext.exists()) {
+        SecurityContext securityContext = SecurityContext.getSecurityContext(request);
+        if (securityContext == null) {
             return false;
         }
-        SecurityContext securityContext = SecurityContext.getSecurityContext();
         Principal principal = securityContext.getPrincipal();
         if (principal == null) {
             return false;
@@ -370,7 +370,7 @@ public class SecurityInitializer {
         }
 
         tokenManager.removeToken(securityContext.getToken());
-        SecurityContext.setSecurityContext(null);
+        SecurityContext.setSecurityContext(null, request);
 
         if (rememberAuthMethod) {
             List<String> spCookies = new ArrayList<>();
@@ -415,11 +415,8 @@ public class SecurityInitializer {
     /**
      * @see vtk.web.ContextInitializer#destroyContext()
      */
-    public void destroyContext() {
-        if (logger.isDebugEnabled()) {
-            logger.debug("Destroying security context: " + SecurityContext.getSecurityContext());
-        }
-        SecurityContext.setSecurityContext(null);
+    public void destroyContext(HttpServletRequest request) {
+        SecurityContext.setSecurityContext(null, request);
     }
 
     @Override

@@ -43,7 +43,7 @@ import java.util.Map;
 import java.util.Set;
 
 import org.springframework.beans.factory.BeanFactoryUtils;
-import vtk.context.BaseContext;
+
 import vtk.repository.Path;
 import vtk.security.SecurityContext;
 import vtk.shell.AbstractConsole;
@@ -51,8 +51,8 @@ import vtk.shell.AbstractConsole;
 public class VShell extends AbstractConsole {
 
     private List<VCommand> commands = null;
-    private Set<PathNode> toplevelNodes = new HashSet<PathNode>();
-    private VShellContext context = new VShellContext();
+    private Set<PathNode> toplevelNodes = new HashSet<>();
+    private VShellContext context;
     private SecurityContext securityContext;
     
     public void setCommands(List<VCommand> commands) {
@@ -77,10 +77,11 @@ public class VShell extends AbstractConsole {
     @SuppressWarnings({ "rawtypes", "unchecked" })
     @Override
     protected void init() {
+        this.context = new VShellContext(securityContext);
         if (this.commands == null) {
             Map m = BeanFactoryUtils.beansOfTypeIncludingAncestors(
                     getApplicationContext(), VCommand.class, false, true);
-            this.commands = new ArrayList<VCommand>();
+            this.commands = new ArrayList<>();
             this.commands.addAll(m.values());
         }
         
@@ -97,7 +98,7 @@ public class VShell extends AbstractConsole {
         List<String> tokens = tokenize(line);
         Set<PathNode> ctx = this.toplevelNodes;
  
-        List<PathNode> result = new ArrayList<PathNode>();
+        List<PathNode> result = new ArrayList<>();
         int n = findCommand(result, ctx, tokens, 0);
         if (n == -1) {
             incompleteCommand(result, out);
@@ -111,20 +112,11 @@ public class VShell extends AbstractConsole {
             return;
         }
         try {
-            if (this.securityContext != null) {
-                BaseContext.pushContext();
-                SecurityContext.setSecurityContext(this.securityContext);
-            }
             commandNode.getCommand().execute(this.context, args, out);
-        } catch (Throwable t) {
+        }
+        catch (Throwable t) {
           out.println("Evaluation error: " + t.getMessage());
           t.printStackTrace(out);
-            
-        } finally {
-            if (this.securityContext != null) {
-                SecurityContext.setSecurityContext(null);
-                BaseContext.popContext();
-            }
         }
     }
 
@@ -140,8 +132,8 @@ public class VShell extends AbstractConsole {
         String usage = c.getUsage();
         List<String> tokens = tokenize(usage);
 
-        List<String> intermediate = new ArrayList<String>();
-        List<ParamNode> args = new ArrayList<ParamNode>();
+        List<String> intermediate = new ArrayList<>();
+        List<ParamNode> args = new ArrayList<>();
         
         for (String s: tokens) {
             if (s.startsWith("<") || s.startsWith("[")) {
@@ -243,7 +235,7 @@ public class VShell extends AbstractConsole {
 
     
     private Map<String, Object> populateArgs(CommandNode commandNode, List<String> args, PrintStream out) {
-        Map<String, Object> result = new HashMap<String, Object>();
+        Map<String, Object> result = new HashMap<>();
         List<ParamNode> argList = commandNode.getParamNodes();
         int paramIdx = 0;
 
@@ -267,7 +259,7 @@ public class VShell extends AbstractConsole {
                     out.println("Error: missing argument(s) '" + arg.name + "'");
                     return null;
                 }
-                List<Object> multiple = new ArrayList<Object>();
+                List<Object> multiple = new ArrayList<>();
                 for (int i = paramIdx; i < args.size(); i++) {
                     try {
                         multiple.add(getTypedArg(args.get(i), arg.type));
@@ -334,7 +326,7 @@ public class VShell extends AbstractConsole {
     
 
     public List<String> tokenize(String command) {
-        List<String> result = new ArrayList<String>();
+        List<String> result = new ArrayList<>();
         StreamTokenizer st = new StreamTokenizer(new StringReader(command));
         st.resetSyntax();
         st.wordChars(0, 255);
@@ -401,7 +393,7 @@ public class VShell extends AbstractConsole {
             List<String> commands = (List<String>) args.get("command");
             
             if (commands != null) {
-                List<PathNode> result = new ArrayList<PathNode>();
+                List<PathNode> result = new ArrayList<>();
                 findCommand(result, toplevelNodes, commands, 0);
 
                 if (!result.isEmpty()) {
@@ -443,7 +435,7 @@ public class VShell extends AbstractConsole {
     private static class PathNode {
 
         private String name;
-        private Set<PathNode> children = new HashSet<PathNode>();
+        private Set<PathNode> children = new HashSet<>();
         
         public PathNode(String name) {
             this.name = name;
@@ -462,7 +454,7 @@ public class VShell extends AbstractConsole {
     private class CommandNode extends PathNode {
 
         private VCommand command;
-        private List<ParamNode> paramNodes = new ArrayList<ParamNode>();
+        private List<ParamNode> paramNodes = new ArrayList<>();
         
         public CommandNode(String name, VCommand command) {
             super(name);

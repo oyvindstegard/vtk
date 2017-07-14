@@ -44,7 +44,7 @@
   </bean>
 
   <bean parent="cluster.componentRegistration">
-    <property name="component" ref="repository.lockingCacheControlWrapper"/>
+    <property name="component" ref="repository"/>
   </bean>
 
   <!-- Default no-op cluster manager bean. -->  

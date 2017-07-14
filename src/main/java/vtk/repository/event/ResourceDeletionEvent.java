@@ -33,6 +33,7 @@ package vtk.repository.event;
 import vtk.repository.Path;
 import vtk.repository.Repository;
 import vtk.repository.Resource;
+import vtk.security.Principal;
 
 public class ResourceDeletionEvent extends RepositoryEvent {
 
@@ -40,8 +41,8 @@ public class ResourceDeletionEvent extends RepositoryEvent {
 
     private Resource resource;
 
-    public ResourceDeletionEvent(Repository source, Resource resource) {
-        super(source);
+    public ResourceDeletionEvent(Repository source, Principal principal, Resource resource) {
+        super(source, principal);
         this.resource = resource;
     }
 

@@ -31,6 +31,7 @@
 package vtk.web;
 
 import java.io.IOException;
+import java.io.UncheckedIOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -41,7 +42,6 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 
-import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 
 import org.slf4j.Logger;
@@ -183,9 +183,10 @@ public class RequestContextInitializer implements ContextInitializer, ServiceRes
     }
 
     @Override
-    public void createContext(HttpServletRequest request) throws IOException, ServletException {
+    public void createContext(HttpServletRequest request) {
 
-        SecurityContext securityContext = SecurityContext.getSecurityContext();
+        SecurityContext securityContext = SecurityContext.getSecurityContext(request);
+        Repository repository = RequestLocalRepository.create(request, this.repository);
         
     	URL url;
     	try {
@@ -218,12 +219,13 @@ public class RequestContextInitializer implements ContextInitializer, ServiceRes
             // Ignore, this is not an error
         }
         catch (RepositoryException e) {
-            String msg = "Unable to retrieve resource for service " +
-                "matching: " + uri + ". A valid token is required.";
-            logger.warn(msg, e);
-            throw new ServletException(msg, e);
+            throw e;
         }
-
+        catch (IOException e) {
+            throw new UncheckedIOException(e);
+        }
+        
+        
         Path indexFileUri = null;
         boolean isIndexFile = false;
         if (indexFileResolver != null && resource != null) {
@@ -264,8 +266,8 @@ public class RequestContextInitializer implements ContextInitializer, ServiceRes
         }
     }
 
-    public void destroyContext() {
-//        RequestContext.setRequestContext(null);
+    public void destroyContext(HttpServletRequest request) {
+        RequestContext.setRequestContext(null, request);
     }
 
 
@@ -287,7 +289,7 @@ public class RequestContextInitializer implements ContextInitializer, ServiceRes
      * 
      */
     private boolean resolveService(Service service, HttpServletRequest request,
-                                   Resource resource, SecurityContext securityContext) {
+            Resource resource, SecurityContext securityContext) {
 		
         if (logger.isTraceEnabled()) {
             logger.trace("Matching for service " + service.getName() +
@@ -319,7 +321,9 @@ public class RequestContextInitializer implements ContextInitializer, ServiceRes
                                    requestContext.isIndexFile(),
                                    requestContext.isViewUnauthenticated(),
                                    requestContext.isInRepository(),
-                                   repository, principalMetadataDAO), request);
+                                   requestContext.getRepository(), 
+                                   principalMetadataDAO), 
+                request);
             throw(e);
         }
 
@@ -348,7 +352,8 @@ public class RequestContextInitializer implements ContextInitializer, ServiceRes
                                requestContext.isIndexFile(),
                                requestContext.isViewUnauthenticated(),
                                requestContext.isInRepository(),
-                               repository, principalMetadataDAO), request);
+                               requestContext.getRepository(), 
+                               principalMetadataDAO), request);
         return true;
     }
 

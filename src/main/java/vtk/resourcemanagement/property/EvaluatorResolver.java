@@ -56,6 +56,7 @@ import vtk.resourcemanagement.property.DerivedPropertyEvaluationDescription.Eval
 import vtk.resourcemanagement.property.DerivedPropertyEvaluationDescription.Operator;
 import vtk.resourcemanagement.service.ExternalServiceInvoker;
 import vtk.resourcemanagement.studies.SharedTextResolver;
+import vtk.security.SecurityContext;
 import vtk.text.html.HtmlDigester;
 import vtk.text.html.HtmlUtil;
 import vtk.util.text.Json;
@@ -383,7 +384,8 @@ public class EvaluatorResolver {
                 Property prop = ctx.getNewResource().getProperty(Namespace.STRUCTURED_RESOURCE_NAMESPACE, propName);
                 String sharedText = null;
                 if (prop != null) {
-                    sharedText = sharedTextResolver.resolveSharedText(ctx.getOriginalResource(), prop);
+                    sharedText = sharedTextResolver.resolveSharedText(SecurityContext.ANONYMOUS_CONTEXT,
+                            ctx.getOriginalResource(), prop);
                     if (sharedText != null) {
                         sharedText = HtmlUtil.flatten(sharedText);
                     }

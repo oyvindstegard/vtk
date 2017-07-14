@@ -496,7 +496,7 @@ public class RepositoryImpl implements Repository, ApplicationContextAware,
             Content content = getContent(parent);
             parent = this.resourceHelper.contentModification(parent, principal, content);
             parent = this.dao.store(parent);
-            this.context.publishEvent(new ContentModificationEvent(this, (Resource) parent.clone(), originalParent));
+            this.context.publishEvent(new ContentModificationEvent(this, principal, (Resource) parent.clone(), originalParent));
 
             // Create on new collection resource
             ResourceImpl newResource = new ResourceImpl(uri);
@@ -522,7 +522,7 @@ public class RepositoryImpl implements Repository, ApplicationContextAware,
             newResource = this.dao.store(newResource);
             this.contentStore.createResource(newResource.getURI(), true);
 
-            this.context.publishEvent(new ResourceCreationEvent(this, (Resource) newResource.clone()));
+            this.context.publishEvent(new ResourceCreationEvent(this, principal, (Resource) newResource.clone()));
             return (Resource) newResource.clone();
         } catch (CloneNotSupportedException e) {
             throw new IOException("Failed to clone object", e);
@@ -570,7 +570,7 @@ public class RepositoryImpl implements Repository, ApplicationContextAware,
         if (dest != null) {
             this.dao.delete(dest);
             this.contentStore.deleteResource(dest.getURI());
-            this.context.publishEvent(new ResourceDeletionEvent(this, dest));
+            this.context.publishEvent(new ResourceDeletionEvent(this, principal, dest));
         }
 
         try {
@@ -617,8 +617,8 @@ public class RepositoryImpl implements Repository, ApplicationContextAware,
             newResource = this.dao.copy(src, destParent, newResource, copyAcl, fixedProps, uncopyableProperties);
             this.contentStore.copy(src.getURI(), newResource.getURI());
 
-            this.context.publishEvent(new ResourceCreationEvent(this, (Resource) newResource.clone()));
-            this.context.publishEvent(new ContentModificationEvent(this, destParent, destParentOriginal));
+            this.context.publishEvent(new ResourceCreationEvent(this, principal, (Resource) newResource.clone()));
+            this.context.publishEvent(new ContentModificationEvent(this, principal, destParent, destParentOriginal));
 
         } catch (CloneNotSupportedException e) {
             throw new IOException("Failed to clone object", e);
@@ -672,7 +672,7 @@ public class RepositoryImpl implements Repository, ApplicationContextAware,
         if (dest != null) {
             this.dao.delete(dest);
             this.contentStore.deleteResource(dest.getURI());
-            this.context.publishEvent(new ResourceDeletionEvent(this, dest));
+            this.context.publishEvent(new ResourceDeletionEvent(this, principal, dest));
         }
 
         try {
@@ -685,7 +685,7 @@ public class RepositoryImpl implements Repository, ApplicationContextAware,
                 Content content = getContent(srcParent);
                 srcParent = this.resourceHelper.contentModification(srcParent, principal, content);
                 this.dao.store(srcParent);
-                this.context.publishEvent(new ContentModificationEvent(this, (Resource) srcParent.clone(),
+                this.context.publishEvent(new ContentModificationEvent(this, principal, (Resource) srcParent.clone(),
                         srcParentOriginal));
             }
 
@@ -694,7 +694,7 @@ public class RepositoryImpl implements Repository, ApplicationContextAware,
             Content content = getContent(destParent);
             destParent = this.resourceHelper.contentModification(destParent, principal, content);
             this.dao.store(destParent);
-            this.context.publishEvent(new ContentModificationEvent(this, (Resource) destParent.clone(),
+            this.context.publishEvent(new ContentModificationEvent(this, principal, (Resource) destParent.clone(),
                     destParentOriginal));
 
             // Process move
@@ -720,7 +720,7 @@ public class RepositoryImpl implements Repository, ApplicationContextAware,
             this.contentStore.move(src.getURI(), newResource.getURI());
 
             this.context.publishEvent(new ResourceMovedEvent(
-                    this, (Resource) newResource.clone(), srcClone));
+                    this, principal, (Resource) newResource.clone(), srcClone));
             
         } catch (CloneNotSupportedException e) {
             throw new IOException("Failed to clone object", e);
@@ -765,7 +765,7 @@ public class RepositoryImpl implements Repository, ApplicationContextAware,
             Content content = getContent(parentCollection);
             parentCollection = this.resourceHelper.contentModification(parentCollection, principal, content);
             parentCollection = this.dao.store(parentCollection);
-            this.context.publishEvent(new ContentModificationEvent(this, (Resource) parentCollection.clone(),
+            this.context.publishEvent(new ContentModificationEvent(this, principal, (Resource) parentCollection.clone(),
                     originalParent));
 
             TypeHandlerHooks hooks = typeHandlerHooksHelper.getTypeHandlerHooks(resourceToDelete);
@@ -795,7 +795,7 @@ public class RepositoryImpl implements Repository, ApplicationContextAware,
                 this.contentStore.deleteResource(resourceToDelete.getURI());
             }
 
-            ResourceDeletionEvent event = new ResourceDeletionEvent(this, resourceToDelete);
+            ResourceDeletionEvent event = new ResourceDeletionEvent(this, principal, resourceToDelete);
             this.context.publishEvent(event);
         
         } catch (CloneNotSupportedException e) {
@@ -839,7 +839,7 @@ public class RepositoryImpl implements Repository, ApplicationContextAware,
         try {
             ResourceImpl recovered = this.dao.recover(parentUri, recoverableResource);
             this.contentStore.recover(parentUri, recoverableResource);
-            this.context.publishEvent(new ResourceCreationEvent(this, (Resource) recovered.clone()));
+            this.context.publishEvent(new ResourceCreationEvent(this, principal, (Resource) recovered.clone()));
 
             // Content modification on parent
             final ResourceImpl originalParent = (ResourceImpl) parent.clone();
@@ -847,7 +847,7 @@ public class RepositoryImpl implements Repository, ApplicationContextAware,
             Content content = getContent(parent);
             parent = this.resourceHelper.contentModification(parent, principal, content);
             parent = this.dao.store(parent);
-            this.context.publishEvent(new ContentModificationEvent(this, (Resource) parent.clone(), originalParent));
+            this.context.publishEvent(new ContentModificationEvent(this, principal, (Resource) parent.clone(), originalParent));
 
         } catch (CloneNotSupportedException c) {
             throw new IOException("Failed to clone object", c);
@@ -1044,7 +1044,7 @@ public class RepositoryImpl implements Repository, ApplicationContextAware,
 
             newResource = this.dao.store(newResource);
 
-            ResourceModificationEvent event = new ResourceModificationEvent(this, (Resource) newResource.clone(),
+            ResourceModificationEvent event = new ResourceModificationEvent(this, principal, (Resource) newResource.clone(),
                     originalClone);
             this.context.publishEvent(event);
 
@@ -1085,7 +1085,7 @@ public class RepositoryImpl implements Repository, ApplicationContextAware,
 
             newResource = this.dao.store(newResource);
 
-            ResourceModificationEvent event = new ResourceModificationEvent(this, (Resource) newResource.clone(),
+            ResourceModificationEvent event = new ResourceModificationEvent(this, principal, (Resource) newResource.clone(),
                     originalClone);
             this.context.publishEvent(event);
 
@@ -1132,7 +1132,7 @@ public class RepositoryImpl implements Repository, ApplicationContextAware,
             newResource = this.dao.store(newResource);
 
             InheritablePropertiesModificationEvent event = new InheritablePropertiesModificationEvent(this,
-                    (Resource) newResource.clone(), originalClone);
+                    principal, (Resource) newResource.clone(), originalClone);
             this.context.publishEvent(event);
 
             return (Resource) newResource.clone();
@@ -1169,7 +1169,7 @@ public class RepositoryImpl implements Repository, ApplicationContextAware,
             parent.addChildURI(uri);
             parent = this.resourceHelper.contentModification(parent, principal, getContent(parent));
             parent = this.dao.store(parent);
-            this.context.publishEvent(new ContentModificationEvent(this, (Resource) parent.clone(), originalParent));
+            this.context.publishEvent(new ContentModificationEvent(this, principal, (Resource) parent.clone(), originalParent));
 
             // Set up new resource
             ResourceImpl newResource = new ResourceImpl(uri);
@@ -1206,7 +1206,7 @@ public class RepositoryImpl implements Repository, ApplicationContextAware,
                     
             // Store new resource
             newResource = this.dao.store(newResource);
-            this.context.publishEvent(new ResourceCreationEvent(this, (Resource) newResource.clone()));
+            this.context.publishEvent(new ResourceCreationEvent(this, principal, (Resource) newResource.clone()));
 
             return (Resource) newResource.clone();
         } catch (CloneNotSupportedException e) {
@@ -1262,7 +1262,7 @@ public class RepositoryImpl implements Repository, ApplicationContextAware,
 
             Resource newResource = this.dao.store(r);
 
-            this.context.publishEvent(new ContentModificationEvent(this, (Resource) newResource.clone(), original));
+            this.context.publishEvent(new ContentModificationEvent(this, principal, (Resource) newResource.clone(), original));
 
             return (Resource) newResource.clone();
         } catch (CloneNotSupportedException e) {
@@ -1471,7 +1471,7 @@ public class RepositoryImpl implements Repository, ApplicationContextAware,
             newResource = (ResourceImpl) newResource.clone(); // Clone for event
                                                               // publishing
 
-            ACLModificationEvent event = new ACLModificationEvent(this, newResource, original);
+            ACLModificationEvent event = new ACLModificationEvent(this, principal, newResource, original);
 
             this.context.publishEvent(event);
 
@@ -1518,7 +1518,7 @@ public class RepositoryImpl implements Repository, ApplicationContextAware,
             newResource = (ResourceImpl) newResource.clone(); // clone for event
                                                               // publish
 
-            ACLModificationEvent event = new ACLModificationEvent(this, newResource, original);
+            ACLModificationEvent event = new ACLModificationEvent(this, principal, newResource, original);
 
             this.context.publishEvent(event);
 
@@ -1776,7 +1776,7 @@ public class RepositoryImpl implements Repository, ApplicationContextAware,
             newResource = this.dao.store(newResource);
 
             // Publish resource modification event
-            ResourceModificationEvent event = new ResourceModificationEvent(this, (Resource) newResource.clone(),
+            ResourceModificationEvent event = new ResourceModificationEvent(this, principal, (Resource) newResource.clone(),
                     original);
             this.context.publishEvent(event);
 
@@ -1832,7 +1832,7 @@ public class RepositoryImpl implements Repository, ApplicationContextAware,
 
             // Publish resource modification event (necessary to trigger
             // re-indexing, since a prop is now modified)
-            ResourceModificationEvent event = new ResourceModificationEvent(this, (Resource) newResource.clone(),
+            ResourceModificationEvent event = new ResourceModificationEvent(this, principal, (Resource) newResource.clone(),
                     original);
             this.context.publishEvent(event);
 
@@ -1872,7 +1872,7 @@ public class RepositoryImpl implements Repository, ApplicationContextAware,
 
             // Publish resource modification event (necessary to trigger
             // re-indexing, since a prop is now modified)
-            ResourceModificationEvent event = new ResourceModificationEvent(this, (Resource) newResource.clone(),
+            ResourceModificationEvent event = new ResourceModificationEvent(this, principal, (Resource) newResource.clone(),
                     original);
             this.context.publishEvent(event);
 

@@ -30,11 +30,15 @@
  */
 package vtk.security;
 
-import vtk.context.BaseContext;
-import vtk.security.token.TokenManager;
+import javax.servlet.http.HttpServletRequest;
+
 import vtk.security.web.SecurityInitializer;
 
 public class SecurityContext {
+    private static final String REQUEST_ATTRIBUTE = 
+            SecurityContext.class.getName() + ".requestAttribute";
+    
+    public static final SecurityContext ANONYMOUS_CONTEXT = new SecurityContext(null, null);
 
     private String token;
     private Principal principal;
@@ -50,24 +54,12 @@ public class SecurityContext {
         this.securityInitializer = securityInitializer;
     }
 
-    public static void setSecurityContext(SecurityContext securityContext) {
-        BaseContext ctx = BaseContext.getContext();
-        ctx.setAttribute(SecurityContext.class.getName(), securityContext);
+    public static void setSecurityContext(SecurityContext securityContext, HttpServletRequest request) {
+        request.setAttribute(REQUEST_ATTRIBUTE, securityContext);
     }
 
-    public static boolean exists() {
-        if (BaseContext.exists()) {
-            return BaseContext.getContext().getAttribute(SecurityContext.class.getName()) != null;
-        }
-
-        return false;
-    }
-
-    public static SecurityContext getSecurityContext() {
-        BaseContext ctx = BaseContext.getContext();
-        SecurityContext securityContext = (SecurityContext)
-            ctx.getAttribute(SecurityContext.class.getName());
-        return securityContext;
+    public static SecurityContext getSecurityContext(HttpServletRequest request) {
+        return (SecurityContext) request.getAttribute(REQUEST_ATTRIBUTE);
     }
     
     /**

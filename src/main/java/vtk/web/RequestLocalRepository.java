@@ -34,9 +34,10 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.List;
 
+import javax.servlet.http.HttpServletRequest;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Required;
 
 import vtk.repository.Acl;
 import vtk.repository.AuthorizationException;
@@ -65,426 +66,431 @@ import vtk.repository.search.Search;
 import vtk.security.AuthenticationException;
 import vtk.security.Principal;
 
-public class RequestLocalRepository implements Repository {
-
+public class RequestLocalRepository {
     private static Logger logger = LoggerFactory.getLogger(RequestLocalRepository.class);
-    private Repository repository;
 
-    @Required
-    public void setRepository(Repository repository) {
-        this.repository = repository;
+    public static final Repository create(HttpServletRequest request, Repository repository) {  
+        return new RequestLocalRepositoryImpl(request, repository);
     }
-
-
-    @Override
-    public TypeInfo getTypeInfo(Resource resource) {
-        return this.repository.getTypeInfo(resource);
-    }
-
-    @Override
-    public TypeInfo getTypeInfo(String name) {
-        return this.repository.getTypeInfo(name);
-    }
-
-    @Override
-    public Resource retrieve(String token, Path uri, boolean forProcessing) throws IOException {
-
-        RepositoryContext ctx = RepositoryContext.getRepositoryContext();
-        if (ctx == null) {
-            return this.repository.retrieve(token, uri, forProcessing);
+    
+    private static class RequestLocalRepositoryImpl implements Repository {
+        private HttpServletRequest request;
+        private Repository repository;
+        public RequestLocalRepositoryImpl(HttpServletRequest request, Repository repository) {
+            this.request = request;
+            this.repository = repository;
         }
 
-        Resource r = null;
-        Throwable t = null;
 
-        t = ctx.getResourceMiss(token, uri, forProcessing);
-        if (t != null) {
-            if (logger.isDebugEnabled()) {
-                logger.debug("Retrieval of resource " + uri + " caused throwable: " + t);
+        @Override
+        public TypeInfo getTypeInfo(Resource resource) {
+            return this.repository.getTypeInfo(resource);
+        }
+
+        @Override
+        public TypeInfo getTypeInfo(String name) {
+            return this.repository.getTypeInfo(name);
+        }
+
+        @Override
+        public Resource retrieve(String token, Path uri, boolean forProcessing) throws IOException {
+
+            RepositoryContext ctx = RepositoryContext.getRepositoryContext(request);
+            if (ctx == null) {
+                return this.repository.retrieve(token, uri, forProcessing);
             }
 
-            throwAppropriateException(t);
-        }
+            Resource r = null;
+            Throwable t = null;
 
-        r = ctx.getResourceHit(token, uri, forProcessing);
-        if (r != null) {
-            if (logger.isDebugEnabled()) {
-                logger.debug("Retrieve resource " + uri + ": found in cache");
+            t = ctx.getResourceMiss(token, uri, forProcessing);
+            if (t != null) {
+                if (logger.isDebugEnabled()) {
+                    logger.debug("Retrieval of resource " + uri + " caused throwable: " + t);
+                }
+
+                throwAppropriateException(t);
             }
-            return r;
-        }
 
-        try {
-            if (logger.isDebugEnabled()) {
-                logger.debug("Retrieve resource " + uri + ": retrieving from repository");
+            r = ctx.getResourceHit(token, uri, forProcessing);
+            if (r != null) {
+                if (logger.isDebugEnabled()) {
+                    logger.debug("Retrieve resource " + uri + ": found in cache");
+                }
+                return r;
             }
-            r = this.repository.retrieve(token, uri, forProcessing);
-            ctx.addResourceHit(token, r, forProcessing);
-            return r;
-        } catch (Throwable retrieveException) {
-            if (logger.isDebugEnabled()) {
-                logger.debug("Retrieve resource " + uri + ": caching throwable: " + retrieveException);
+
+            try {
+                if (logger.isDebugEnabled()) {
+                    logger.debug("Retrieve resource " + uri + ": retrieving from repository");
+                }
+                r = this.repository.retrieve(token, uri, forProcessing);
+                ctx.addResourceHit(token, r, forProcessing);
+                return r;
+            } catch (Throwable retrieveException) {
+                if (logger.isDebugEnabled()) {
+                    logger.debug("Retrieve resource " + uri + ": caching throwable: " + retrieveException);
+                }
+                ctx.addResourceMiss(token, uri, retrieveException, forProcessing);
+                throwAppropriateException(retrieveException);
+                return null;
             }
-            ctx.addResourceMiss(token, uri, retrieveException, forProcessing);
-            throwAppropriateException(retrieveException);
-            return null;
-        }
-    }
-
-    
-    
-    @Override
-    public Resource retrieve(String token, Path uri, boolean forProcessing,
-            Revision revision) throws ResourceNotFoundException,
-            AuthorizationException, AuthenticationException, IOException {
-        return this.repository.retrieve(token, uri, forProcessing, revision);
-    }
-
-    @Override
-    public Resource[] listChildren(String token, Path uri, boolean forProcessing) throws IOException {
-        return this.repository.listChildren(token, uri, forProcessing);
-    }
-
-    @Override
-    public Resource store(String token, Resource resource, StoreContext storeContext) 
-            throws IOException {
-        
-        RepositoryContext ctx = RepositoryContext.getRepositoryContext();
-        if (ctx != null) {
-            ctx.clear();
-        }
-        
-        return this.repository.store(token, resource, storeContext);
-    }
-
-    @Override
-    public Resource store(String token, Resource resource) throws IOException {
-
-        RepositoryContext ctx = RepositoryContext.getRepositoryContext();
-        if (ctx != null) {
-            ctx.clear();
         }
 
-        return this.repository.store(token, resource);
-    }
 
-    @Override
-    public Resource storeContent(String token, Path uri, ContentInputSource content) throws IOException {
 
-        RepositoryContext ctx = RepositoryContext.getRepositoryContext();
-        if (ctx != null) {
-            ctx.clear();
-        }
-        return this.repository.storeContent(token, uri, content);
-    }
-
-    @Override
-    public Resource storeContent(String token, Path uri, ContentInputSource content, Revision revision) throws IOException {
-
-        RepositoryContext ctx = RepositoryContext.getRepositoryContext();
-        if (ctx != null) {
-            ctx.clear();
-        }
-        return this.repository.storeContent(token, uri, content, revision);
-    }
-
-    @Override
-    public InputStream getInputStream(String token, Path uri, boolean forProcessing) throws IOException {
-
-        return this.repository.getInputStream(token, uri, forProcessing);
-    }
-    
-    @Override
-    public InputStream getInputStream(String token, Path uri, boolean forProcessing, Revision revision) throws IOException {
-
-        return this.repository.getInputStream(token, uri, forProcessing, revision);
-    }
-
-    @Override
-    public InputStream getAlternativeInputStream(String token, Path uri, boolean forProcessing, String contentIdentifier)
-            throws NoSuchContentException, ResourceNotFoundException, AuthorizationException, AuthenticationException, IOException {
-        return this.repository.getAlternativeInputStream(token, uri, forProcessing, contentIdentifier);
-    }
-    
-    @Override
-    public Resource createDocument(String token, Path uri, ContentInputSource content) throws IOException {
-
-        RepositoryContext ctx = RepositoryContext.getRepositoryContext();
-        if (ctx != null) {
-            ctx.clear();
-        }
-        return this.repository.createDocument(token, uri, content);
-    }
-
-    @Override
-    public Resource createCollection(String token, Path uri) throws IOException {
-        return this.repository.createCollection(token, uri);
-    }
-
-    @Override
-    public void copy(String token, Path srcUri, Path destUri, boolean overwrite, boolean preserveACL)
-            throws IOException {
-
-        RepositoryContext ctx = RepositoryContext.getRepositoryContext();
-        if (ctx != null) {
-            ctx.clear();
-        }
-        this.repository.copy(token, srcUri, destUri, overwrite, preserveACL);
-    }
-
-    @Override
-    public void move(String token, Path srcUri, Path destUri, boolean overwrite) throws IOException {
-
-        RepositoryContext ctx = RepositoryContext.getRepositoryContext();
-        if (ctx != null) {
-            ctx.clear();
-        }
-        this.repository.move(token, srcUri, destUri, overwrite);
-    }
-
-    @Override
-    public void delete(String token, Path uri, boolean restorable) throws IOException {
-
-        RepositoryContext ctx = RepositoryContext.getRepositoryContext();
-        if (ctx != null) {
-            ctx.clear();
-        }
-        this.repository.delete(token, uri, restorable);
-    }
-
-    @Override
-    public List<RecoverableResource> getRecoverableResources(String token, Path uri) throws ResourceNotFoundException,
-            AuthorizationException, AuthenticationException, IOException {
-        return this.repository.getRecoverableResources(token, uri);
-    }
-
-    @Override
-    public void recover(String token, Path parentUri, RecoverableResource recoverableResource)
-            throws ResourceNotFoundException, AuthorizationException, AuthenticationException, IOException {
-        this.repository.recover(token, parentUri, recoverableResource);
-    }
-
-    @Override
-    public void deleteRecoverable(String token, Path parentUri, RecoverableResource recoverableResource)
-            throws IOException {
-        this.repository.deleteRecoverable(token, parentUri, recoverableResource);
-    }
-
-    @Override
-    public boolean exists(String token, Path uri) throws IOException {
-
-        RepositoryContext ctx = RepositoryContext.getRepositoryContext();
-        if (ctx != null
-                && (ctx.getResourceHit(token, uri, true) != null || ctx.getResourceHit(token, uri, false) != null)) {
-            return true;
-        }
-        return this.repository.exists(token, uri);
-    }
-
-    @Override
-    public Resource lock(String token, Path uri, String ownerInfo, Depth depth, int requestedTimoutSeconds,
-            String lockToken) throws IOException {
-
-        RepositoryContext ctx = RepositoryContext.getRepositoryContext();
-        if (ctx != null) {
-            ctx.clear();
-        }
-        return this.repository.lock(token, uri, ownerInfo, depth, requestedTimoutSeconds, lockToken);
-    }
-
-    @Override
-    public void unlock(String token, Path uri, String lockToken) throws IOException {
-
-        RepositoryContext ctx = RepositoryContext.getRepositoryContext();
-        if (ctx != null) {
-            ctx.clear();
-        }
-        this.repository.unlock(token, uri, lockToken);
-    }
-
-    @Override
-    public Resource storeACL(String token, Path uri, Acl acl) throws IOException {
-
-        RepositoryContext ctx = RepositoryContext.getRepositoryContext();
-        if (ctx != null) {
-            ctx.clear();
-        }
-        return this.repository.storeACL(token, uri, acl);
-    }
-
-    @Override
-    public Resource storeACL(String token, Path uri, Acl acl, boolean validateACL) throws IOException {
-
-        RepositoryContext ctx = RepositoryContext.getRepositoryContext();
-        if (ctx != null) {
-            ctx.clear();
-        }
-        return this.repository.storeACL(token, uri, acl, validateACL);
-    }
-    
-    @Override
-    public Resource deleteACL(String token, Path uri)
-            throws ResourceNotFoundException, AuthorizationException,
-            AuthenticationException, IllegalOperationException,
-            ReadOnlyException, IOException {
-        RepositoryContext ctx = RepositoryContext.getRepositoryContext();
-        if (ctx != null) {
-            ctx.clear();
-        }
-        return this.repository.deleteACL(token, uri);
-    }
-
-    @Override
-    public boolean isValidAclEntry(Privilege privilege, Principal principal) {
-        return this.repository.isValidAclEntry(privilege, principal);
-    }
-
-    @Override
-    public boolean isBlacklisted(Privilege privilege, Principal principal) {
-        return this.repository.isBlacklisted(privilege, principal);
-    }
-    
-    @Override
-    public List<Comment> getComments(String token, Resource resource) throws RepositoryException,
-            AuthenticationException {
-        return this.repository.getComments(token, resource);
-    }
-
-    @Override
-    public List<Comment> getComments(String token, Resource resource, boolean deep, int max)
-            throws RepositoryException, AuthenticationException {
-        return this.repository.getComments(token, resource, deep, max);
-    }
-
-    @Override
-    public Comment addComment(String token, Resource resource, String title, String text) throws RepositoryException,
-            AuthenticationException {
-        return this.repository.addComment(token, resource, title, text);
-    }
-
-    @Override
-    public Comment addComment(String token, Comment comment) {
-        return this.repository.addComment(token, comment);
-    }
-
-    @Override
-    public void deleteComment(String token, Resource resource, Comment comment) throws RepositoryException,
-            AuthenticationException {
-        this.repository.deleteComment(token, resource, comment);
-    }
-
-    @Override
-    public void deleteAllComments(String token, Resource resource) throws RepositoryException, AuthenticationException {
-        this.repository.deleteAllComments(token, resource);
-    }
-
-    @Override
-    public Comment updateComment(String token, Resource resource, Comment comment) throws RepositoryException,
-            AuthenticationException {
-        return this.repository.updateComment(token, resource, comment);
-    }
-
-    @Override
-    public String getId() {
-        return this.repository.getId();
-    }
-
-    @Override
-    public boolean isReadOnly() {
-        return this.repository.isReadOnly();
-    }
-
-    @Override
-    public boolean isReadOnly(Path path, boolean forDelete) {
-        return this.repository.isReadOnly(path, forDelete);
-    }
-
-    @Override
-    public List<Path> getReadOnlyRoots() {
-        return this.repository.getReadOnlyRoots();
-    }
-    
-    @Override
-    public void setReadOnly(String token, boolean readOnly) throws IOException {
-        this.repository.setReadOnly(token, readOnly);
-    }
-
-    @Override
-    public ResultSet search(String token, Search search) throws QueryException {
-        return this.repository.search(token, search);
-    }
-
-    @Override
-    public boolean authorize(Principal principal, Acl acl, Privilege privilege) {
-        return this.repository.authorize(principal, acl, privilege);
-    }
-
-    
-    @Override
-    public boolean isAuthorized(Resource resource, RepositoryAction action, Principal principal, boolean considerLocks)
-            throws IOException {
-        return this.repository.isAuthorized(resource, action, principal, considerLocks);
-    }
-
-    // XXX: Losing stack traces unnecessary
-    private void throwAppropriateException(Throwable t) throws AuthenticationException, AuthorizationException,
-            FailedDependencyException, IOException, IllegalOperationException, ReadOnlyException,
-            ResourceLockedException, ResourceNotFoundException, ResourceOverwriteException {
-
-        if (logger.isDebugEnabled()) {
-            logger.debug("Re-throwing exception: " + t);
+        @Override
+        public Resource retrieve(String token, Path uri, boolean forProcessing,
+                Revision revision) throws ResourceNotFoundException,
+        AuthorizationException, AuthenticationException, IOException {
+            return this.repository.retrieve(token, uri, forProcessing, revision);
         }
 
-        if (t instanceof AuthenticationException) {
-            throw (AuthenticationException) t;
-        }
-        if (t instanceof AuthorizationException) {
-            throw (AuthorizationException) t;
-        }
-        if (t instanceof FailedDependencyException) {
-            throw (FailedDependencyException) t;
-        }
-        if (t instanceof IOException) {
-            throw (IOException) t;
-        }
-        if (t instanceof IllegalOperationException) {
-            throw (IllegalOperationException) t;
-        }
-        if (t instanceof ReadOnlyException) {
-            throw (ReadOnlyException) t;
-        }
-        if (t instanceof ResourceLockedException) {
-            throw (ResourceLockedException) t;
-        }
-        if (t instanceof ResourceNotFoundException) {
-            throw (ResourceNotFoundException) t;
-        }
-        if (t instanceof ResourceOverwriteException) {
-            throw (ResourceOverwriteException) t;
+        @Override
+        public Resource[] listChildren(String token, Path uri, boolean forProcessing) throws IOException {
+            return this.repository.listChildren(token, uri, forProcessing);
         }
 
-        if (t instanceof RuntimeException) {
-            throw (RuntimeException) t;
+        @Override
+        public Resource store(String token, Resource resource, StoreContext storeContext) 
+                throws IOException {
+
+            RepositoryContext ctx = RepositoryContext.getRepositoryContext(request);
+            if (ctx != null) {
+                ctx.clear();
+            }
+
+            return this.repository.store(token, resource, storeContext);
         }
 
-        throw new RuntimeException(t);
+        @Override
+        public Resource store(String token, Resource resource) throws IOException {
+
+            RepositoryContext ctx = RepositoryContext.getRepositoryContext(request);
+            if (ctx != null) {
+                ctx.clear();
+            }
+
+            return this.repository.store(token, resource);
+        }
+
+        @Override
+        public Resource storeContent(String token, Path uri, ContentInputSource content) throws IOException {
+
+            RepositoryContext ctx = RepositoryContext.getRepositoryContext(request);
+            if (ctx != null) {
+                ctx.clear();
+            }
+            return this.repository.storeContent(token, uri, content);
+        }
+
+        @Override
+        public Resource storeContent(String token, Path uri, ContentInputSource content, Revision revision) throws IOException {
+
+            RepositoryContext ctx = RepositoryContext.getRepositoryContext(request);
+            if (ctx != null) {
+                ctx.clear();
+            }
+            return this.repository.storeContent(token, uri, content, revision);
+        }
+
+        @Override
+        public InputStream getInputStream(String token, Path uri, boolean forProcessing) throws IOException {
+
+            return this.repository.getInputStream(token, uri, forProcessing);
+        }
+
+        @Override
+        public InputStream getInputStream(String token, Path uri, boolean forProcessing, Revision revision) throws IOException {
+
+            return this.repository.getInputStream(token, uri, forProcessing, revision);
+        }
+
+        @Override
+        public InputStream getAlternativeInputStream(String token, Path uri, boolean forProcessing, String contentIdentifier)
+                throws NoSuchContentException, ResourceNotFoundException, AuthorizationException, AuthenticationException, IOException {
+            return this.repository.getAlternativeInputStream(token, uri, forProcessing, contentIdentifier);
+        }
+
+        @Override
+        public Resource createDocument(String token, Path uri, ContentInputSource content) throws IOException {
+
+            RepositoryContext ctx = RepositoryContext.getRepositoryContext(request);
+            if (ctx != null) {
+                ctx.clear();
+            }
+            return this.repository.createDocument(token, uri, content);
+        }
+
+        @Override
+        public Resource createCollection(String token, Path uri) throws IOException {
+            return this.repository.createCollection(token, uri);
+        }
+
+        @Override
+        public void copy(String token, Path srcUri, Path destUri, boolean overwrite, boolean preserveACL)
+                throws IOException {
+
+            RepositoryContext ctx = RepositoryContext.getRepositoryContext(request);
+            if (ctx != null) {
+                ctx.clear();
+            }
+            this.repository.copy(token, srcUri, destUri, overwrite, preserveACL);
+        }
+
+        @Override
+        public void move(String token, Path srcUri, Path destUri, boolean overwrite) throws IOException {
+
+            RepositoryContext ctx = RepositoryContext.getRepositoryContext(request);
+            if (ctx != null) {
+                ctx.clear();
+            }
+            this.repository.move(token, srcUri, destUri, overwrite);
+        }
+
+        @Override
+        public void delete(String token, Path uri, boolean restorable) throws IOException {
+
+            RepositoryContext ctx = RepositoryContext.getRepositoryContext(request);
+            if (ctx != null) {
+                ctx.clear();
+            }
+            this.repository.delete(token, uri, restorable);
+        }
+
+        @Override
+        public List<RecoverableResource> getRecoverableResources(String token, Path uri) throws ResourceNotFoundException,
+        AuthorizationException, AuthenticationException, IOException {
+            return this.repository.getRecoverableResources(token, uri);
+        }
+
+        @Override
+        public void recover(String token, Path parentUri, RecoverableResource recoverableResource)
+                throws ResourceNotFoundException, AuthorizationException, AuthenticationException, IOException {
+            this.repository.recover(token, parentUri, recoverableResource);
+        }
+
+        @Override
+        public void deleteRecoverable(String token, Path parentUri, RecoverableResource recoverableResource)
+                throws IOException {
+            this.repository.deleteRecoverable(token, parentUri, recoverableResource);
+        }
+
+        @Override
+        public boolean exists(String token, Path uri) throws IOException {
+
+            RepositoryContext ctx = RepositoryContext.getRepositoryContext(request);
+            if (ctx != null
+                    && (ctx.getResourceHit(token, uri, true) != null || ctx.getResourceHit(token, uri, false) != null)) {
+                return true;
+            }
+            return this.repository.exists(token, uri);
+        }
+
+        @Override
+        public Resource lock(String token, Path uri, String ownerInfo, Depth depth, int requestedTimoutSeconds,
+                String lockToken) throws IOException {
+
+            RepositoryContext ctx = RepositoryContext.getRepositoryContext(request);
+            if (ctx != null) {
+                ctx.clear();
+            }
+            return this.repository.lock(token, uri, ownerInfo, depth, requestedTimoutSeconds, lockToken);
+        }
+
+        @Override
+        public void unlock(String token, Path uri, String lockToken) throws IOException {
+
+            RepositoryContext ctx = RepositoryContext.getRepositoryContext(request);
+            if (ctx != null) {
+                ctx.clear();
+            }
+            this.repository.unlock(token, uri, lockToken);
+        }
+
+        @Override
+        public Resource storeACL(String token, Path uri, Acl acl) throws IOException {
+
+            RepositoryContext ctx = RepositoryContext.getRepositoryContext(request);
+            if (ctx != null) {
+                ctx.clear();
+            }
+            return this.repository.storeACL(token, uri, acl);
+        }
+
+        @Override
+        public Resource storeACL(String token, Path uri, Acl acl, boolean validateACL) throws IOException {
+
+            RepositoryContext ctx = RepositoryContext.getRepositoryContext(request);
+            if (ctx != null) {
+                ctx.clear();
+            }
+            return this.repository.storeACL(token, uri, acl, validateACL);
+        }
+
+        @Override
+        public Resource deleteACL(String token, Path uri)
+                throws ResourceNotFoundException, AuthorizationException,
+                AuthenticationException, IllegalOperationException,
+                ReadOnlyException, IOException {
+            RepositoryContext ctx = RepositoryContext.getRepositoryContext(request);
+            if (ctx != null) {
+                ctx.clear();
+            }
+            return this.repository.deleteACL(token, uri);
+        }
+
+        @Override
+        public boolean isValidAclEntry(Privilege privilege, Principal principal) {
+            return this.repository.isValidAclEntry(privilege, principal);
+        }
+
+        @Override
+        public boolean isBlacklisted(Privilege privilege, Principal principal) {
+            return this.repository.isBlacklisted(privilege, principal);
+        }
+
+        @Override
+        public List<Comment> getComments(String token, Resource resource) throws RepositoryException,
+        AuthenticationException {
+            return this.repository.getComments(token, resource);
+        }
+
+        @Override
+        public List<Comment> getComments(String token, Resource resource, boolean deep, int max)
+                throws RepositoryException, AuthenticationException {
+            return this.repository.getComments(token, resource, deep, max);
+        }
+
+        @Override
+        public Comment addComment(String token, Resource resource, String title, String text) throws RepositoryException,
+        AuthenticationException {
+            return this.repository.addComment(token, resource, title, text);
+        }
+
+        @Override
+        public Comment addComment(String token, Comment comment) {
+            return this.repository.addComment(token, comment);
+        }
+
+        @Override
+        public void deleteComment(String token, Resource resource, Comment comment) throws RepositoryException,
+        AuthenticationException {
+            this.repository.deleteComment(token, resource, comment);
+        }
+
+        @Override
+        public void deleteAllComments(String token, Resource resource) throws RepositoryException, AuthenticationException {
+            this.repository.deleteAllComments(token, resource);
+        }
+
+        @Override
+        public Comment updateComment(String token, Resource resource, Comment comment) throws RepositoryException,
+        AuthenticationException {
+            return this.repository.updateComment(token, resource, comment);
+        }
+
+        @Override
+        public String getId() {
+            return this.repository.getId();
+        }
+
+        @Override
+        public boolean isReadOnly() {
+            return this.repository.isReadOnly();
+        }
+
+        @Override
+        public boolean isReadOnly(Path path, boolean forDelete) {
+            return this.repository.isReadOnly(path, forDelete);
+        }
+
+        @Override
+        public List<Path> getReadOnlyRoots() {
+            return this.repository.getReadOnlyRoots();
+        }
+
+        @Override
+        public void setReadOnly(String token, boolean readOnly) throws IOException {
+            this.repository.setReadOnly(token, readOnly);
+        }
+
+        @Override
+        public ResultSet search(String token, Search search) throws QueryException {
+            return this.repository.search(token, search);
+        }
+
+        @Override
+        public boolean authorize(Principal principal, Acl acl, Privilege privilege) {
+            return this.repository.authorize(principal, acl, privilege);
+        }
+
+
+        @Override
+        public boolean isAuthorized(Resource resource, RepositoryAction action, Principal principal, boolean considerLocks)
+                throws IOException {
+            return this.repository.isAuthorized(resource, action, principal, considerLocks);
+        }
+
+        // XXX: Losing stack traces unnecessary
+        private void throwAppropriateException(Throwable t) throws AuthenticationException, AuthorizationException,
+        FailedDependencyException, IOException, IllegalOperationException, ReadOnlyException,
+        ResourceLockedException, ResourceNotFoundException, ResourceOverwriteException {
+
+            if (logger.isDebugEnabled()) {
+                logger.debug("Re-throwing exception: " + t);
+            }
+
+            if (t instanceof AuthenticationException) {
+                throw (AuthenticationException) t;
+            }
+            if (t instanceof AuthorizationException) {
+                throw (AuthorizationException) t;
+            }
+            if (t instanceof FailedDependencyException) {
+                throw (FailedDependencyException) t;
+            }
+            if (t instanceof IOException) {
+                throw (IOException) t;
+            }
+            if (t instanceof IllegalOperationException) {
+                throw (IllegalOperationException) t;
+            }
+            if (t instanceof ReadOnlyException) {
+                throw (ReadOnlyException) t;
+            }
+            if (t instanceof ResourceLockedException) {
+                throw (ResourceLockedException) t;
+            }
+            if (t instanceof ResourceNotFoundException) {
+                throw (ResourceNotFoundException) t;
+            }
+            if (t instanceof ResourceOverwriteException) {
+                throw (ResourceOverwriteException) t;
+            }
+
+            if (t instanceof RuntimeException) {
+                throw (RuntimeException) t;
+            }
+
+            throw new RuntimeException(t);
+        }
+
+        @Override
+        public List<Revision> getRevisions(String token, Path uri) throws AuthorizationException, ResourceNotFoundException, AuthenticationException, IOException {
+            return this.repository.getRevisions(token, uri);
+        }
+
+        @Override
+        public Revision createRevision(String token, Path uri, Revision.Type type) throws AuthorizationException, ResourceNotFoundException, AuthenticationException, IOException {
+            return this.repository.createRevision(token, uri, type);
+        }
+
+        @Override
+        public void deleteRevision(String token, Path uri, Revision revision)
+                throws ResourceNotFoundException, AuthorizationException,
+                AuthenticationException, IOException {
+            this.repository.deleteRevision(token, uri, revision);
+        }
     }
-
-    @Override
-    public List<Revision> getRevisions(String token, Path uri) throws AuthorizationException, ResourceNotFoundException, AuthenticationException, IOException {
-        return this.repository.getRevisions(token, uri);
-    }
-
-    @Override
-    public Revision createRevision(String token, Path uri, Revision.Type type) throws AuthorizationException, ResourceNotFoundException, AuthenticationException, IOException {
-        return this.repository.createRevision(token, uri, type);
-    }
-
-    @Override
-    public void deleteRevision(String token, Path uri, Revision revision)
-            throws ResourceNotFoundException, AuthorizationException,
-            AuthenticationException, IOException {
-        this.repository.deleteRevision(token, uri, revision);
-    }
-
 }

@@ -41,6 +41,7 @@ import vtk.repository.event.ResourceCreationEvent;
 import vtk.repository.event.ResourceDeletionEvent;
 import vtk.repository.event.ResourceModificationEvent;
 import vtk.repository.event.ResourceMovedEvent;
+import vtk.security.Principal;
 
 
 /**
@@ -66,41 +67,43 @@ public abstract class AbstractRepositoryEventDumper implements ApplicationListen
         }
 
         if (event instanceof ResourceCreationEvent) {
-            created(((ResourceCreationEvent) event).getResource());
+            created(((ResourceCreationEvent) event).getResource(), event.getPrincipal());
         } else if (event instanceof ResourceDeletionEvent) {
-            deleted(((ResourceDeletionEvent) event).getResource());
+            deleted(((ResourceDeletionEvent) event).getResource(), event.getPrincipal());
         } else if (event instanceof ResourceMovedEvent) {
             moved(((ResourceMovedEvent) event).getResource(),
-                    ((ResourceMovedEvent) event).getFrom());
+                    ((ResourceMovedEvent) event).getFrom(), event.getPrincipal());
         } else if (event instanceof ResourceModificationEvent) {
             final Resource resource = ((ResourceModificationEvent)event).getResource();
             final Resource original = ((ResourceModificationEvent)event).getOriginal();
             if (event instanceof InheritablePropertiesModificationEvent) {
-                modifiedInheritableProperties(resource, original);
+                modifiedInheritableProperties(resource, original, event.getPrincipal());
             } else {
-                modified(resource, original);
+                modified(resource, original, event.getPrincipal());
             }
         } else if (event instanceof ContentModificationEvent) {
             contentModified(((ContentModificationEvent) event).getResource(),
-                            ((ContentModificationEvent) event).getOriginal());
+                            ((ContentModificationEvent) event).getOriginal(),
+                            event.getPrincipal());
         } else if (event instanceof ACLModificationEvent) {
             aclModified(((ACLModificationEvent)event).getResource(),
-                        ((ACLModificationEvent)event).getOriginalResource());
+                        ((ACLModificationEvent)event).getOriginalResource(), 
+                        event.getPrincipal());
         }
     }
 
-    public abstract void created(Resource resource);
+    public abstract void created(Resource resource, Principal principal);
 
-    public abstract void deleted(Resource resource);
+    public abstract void deleted(Resource resource, Principal principal);
 
-    public abstract void moved(Resource resource, Resource from);
+    public abstract void moved(Resource resource, Resource from, Principal principal);
     
-    public abstract void modified(Resource resource, Resource originalResource);
+    public abstract void modified(Resource resource, Resource originalResource, Principal principal);
     
-    public abstract void modifiedInheritableProperties(Resource resource, Resource originalResource);
+    public abstract void modifiedInheritableProperties(Resource resource, Resource originalResource, Principal principal);
 
-    public abstract void contentModified(Resource resource, Resource original);
+    public abstract void contentModified(Resource resource, Resource original, Principal principal);
 
-    public abstract void aclModified(Resource resource, Resource originalResource);
+    public abstract void aclModified(Resource resource, Resource originalResource, Principal principal);
 
 }

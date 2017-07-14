@@ -44,7 +44,7 @@
   </bean>
 
   <!-- Repository lock and cache control wrapper -->
-  <bean id="repository.lockingCacheControlWrapper" class="vtk.repository.LockingCacheControlRepositoryWrapper">
+  <bean id="repository" class="vtk.repository.LockingCacheControlRepositoryWrapper">
     <property name="wrappedRepository" ref="repository.internal" />
     <property name="cache" ref="repository.cache" />
     <property name="tempDir" value="${upload.tempDir}" />
@@ -60,11 +60,6 @@
     </property>
   </bean>
 
-
-  <!-- Wrapper around the repository that caches retrievals in thread-local context when executing in a servlet request: -->
-  <bean id="repository" class="vtk.web.RequestLocalRepository">
-    <property name="repository" ref="repository.lockingCacheControlWrapper" />
-  </bean>
 
   <!-- Default data source setup -->
   <bean id="repository.dataSource" class="org.apache.commons.dbcp2.BasicDataSource" destroy-method="close">

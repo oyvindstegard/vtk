@@ -33,6 +33,7 @@ package vtk.repository.event;
 import vtk.repository.Path;
 import vtk.repository.Repository;
 import vtk.repository.Resource;
+import vtk.security.Principal;
 
 
 public class ContentModificationEvent extends RepositoryEvent {
@@ -42,9 +43,9 @@ public class ContentModificationEvent extends RepositoryEvent {
     private Resource resource = null;
     private Resource original = null;
 
-    public ContentModificationEvent(Repository source, Resource resource,
+    public ContentModificationEvent(Repository source, Principal principal, Resource resource,
         Resource original) {
-        super(source);
+        super(source, principal);
         this.resource = resource;
         this.original = original;
     }

@@ -64,7 +64,6 @@ import vtk.repository.search.query.PropertyWildcardQuery;
 import vtk.repository.search.query.TermOperator;
 import vtk.repository.search.query.UriDepthQuery;
 import vtk.repository.search.query.UriPrefixQuery;
-import vtk.security.SecurityContext;
 import vtk.util.repository.AbstractRepositoryEventHandler;
 
 /**
@@ -135,8 +134,7 @@ public class ChangedUriReferencesPathSelector
         queue.drainTo(modified);
         
         Search mainSearch = referencingSearch(context, modified);
-        final String token = SecurityContext.exists() ? 
-                SecurityContext.getSecurityContext().getToken() : null;
+        final String token = context.getSecurityContext().getToken();
 
         ResultSet results = searcher.execute(token, mainSearch);
         callback.beginBatch(results.getSize());

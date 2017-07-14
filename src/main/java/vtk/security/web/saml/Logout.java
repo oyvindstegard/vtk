@@ -39,7 +39,6 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 
-import org.opensaml.common.SAMLObject;
 import org.opensaml.common.binding.BasicSAMLMessageContext;
 import org.opensaml.saml2.binding.decoding.HTTPRedirectDeflateDecoder;
 import org.opensaml.saml2.core.LogoutRequest;
@@ -56,9 +55,9 @@ import vtk.security.AuthenticationProcessingException;
 import vtk.security.SecurityContext;
 import vtk.security.web.SecurityInitializer;
 import vtk.web.InvalidRequestException;
-import vtk.web.service.WebAssertion;
 import vtk.web.service.Service;
 import vtk.web.service.URL;
+import vtk.web.service.WebAssertion;
 
 public class Logout extends SamlService {
 
@@ -129,7 +128,7 @@ public class Logout extends SamlService {
         String redirectURL = buildRedirectURL(logoutResponse, relayState, signingCredential);
 
         // Remove authentication state
-        SecurityContext securityContext = SecurityContext.getSecurityContext();
+        SecurityContext securityContext = SecurityContext.getSecurityContext(request);
         SecurityInitializer initializer = securityContext.securityInitializer();
         if (initializer != null) initializer.removeAuthState(request, response);
         //this.securityInitializer.removeAuthState(request, response);
@@ -183,7 +182,7 @@ public class Logout extends SamlService {
         LogoutResponse logoutResponse = getLogoutResponse(request);
         logoutResponse.validate(true);
 
-        SecurityContext securityContext = SecurityContext.getSecurityContext();
+        SecurityContext securityContext = SecurityContext.getSecurityContext(request);
         SecurityInitializer initializer = securityContext.securityInitializer();
         if (initializer != null) initializer.removeAuthState(request, response);
 

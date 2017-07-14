@@ -33,8 +33,15 @@ package vtk.shell.vshell;
 import java.util.HashMap;
 import java.util.Map;
 
+import vtk.security.SecurityContext;
+
 public class VShellContext {
-    private Map<Object, Object> context = new HashMap<Object, Object>();
+    private SecurityContext securityContext;
+    private Map<Object, Object> context = new HashMap<>();
+    
+    public VShellContext(SecurityContext securityContext) {
+        this.securityContext = securityContext;
+    }
     
     public Object get(Object key) {
         return this.context.get(key);

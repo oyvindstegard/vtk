@@ -86,9 +86,8 @@ public abstract class AbstractResourceJob extends RepositoryJob {
                 + ": will not run as scheduled, repository is in read-only mode.");
             return;
         }
-        
-        final String token = SecurityContext.exists() ? 
-                SecurityContext.getSecurityContext().getToken() : null;
+        SecurityContext securityContext = context.getSecurityContext();
+        final String token = securityContext.getToken();
 
         final ExecutionContext ctx = new ExecutionContext(repository, token, context);
         PathSelectCallback pathCallback = new PathSelectCallback() {
@@ -155,7 +154,7 @@ public abstract class AbstractResourceJob extends RepositoryJob {
     public static final class ExecutionContext {
         private int total;
         private int count = 0;
-        private final Map<String,Object> attributes = new HashMap<String,Object>();
+        private final Map<String,Object> attributes = new HashMap<>();
         private final Repository repository;
         private final String token;
         private final SystemChangeContext scs;

@@ -42,7 +42,6 @@ import org.springframework.beans.factory.annotation.Required;
 
 import vtk.cluster.ClusterAware;
 import vtk.cluster.ClusterRole;
-import vtk.context.BaseContext;
 import vtk.repository.Repository;
 import vtk.repository.ResourceTypeTree;
 import vtk.repository.SystemChangeContext;
@@ -61,7 +60,6 @@ import vtk.security.SecurityContext;
  * <p>XXX not sure if cluster role should be checked at this level, or some lower or higher level..
  */
 public abstract class RepositoryJob extends AbstractTask implements ClusterAware {
-
     private Optional<ClusterRole> clusterRole = Optional.empty();
 
     private SecurityContext securityContext;
@@ -82,20 +80,15 @@ public abstract class RepositoryJob extends AbstractTask implements ClusterAware
         }
 
         try {
-            BaseContext.pushContext();
-            SecurityContext.setSecurityContext(securityContext);
-
             SystemChangeContext systemChangeContext =
-                    new SystemChangeContext(getId(), lookupPropDefs(affectedPropertyNames),
+                    new SystemChangeContext(getId(), securityContext,
+                            lookupPropDefs(affectedPropertyNames),
                             systemJobStatusPropDef, ignoreLockingOnStore);
 
             executeWithRepository(repository, systemChangeContext);
         }
         catch (Throwable t) {
             logger.error("Error executing repository job", t);
-        }
-        finally {
-            BaseContext.popContext();
         }
     }
 

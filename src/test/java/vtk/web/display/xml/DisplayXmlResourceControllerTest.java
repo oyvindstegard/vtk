@@ -43,7 +43,6 @@ import org.junit.Before;
 import org.junit.Test;
 import org.springframework.mock.web.MockHttpServletRequest;
 
-import vtk.context.BaseContext;
 import vtk.repository.Path;
 import vtk.repository.Repository;
 import vtk.repository.Resource;
@@ -68,9 +67,8 @@ public class DisplayXmlResourceControllerTest {
     public void setUp() throws Exception {
         this.request = new MockHttpServletRequest();
         this.controller = new DisplayXmlResourceController();
-        BaseContext.pushContext();
         SecurityContext securityContext = new SecurityContext(this.token, null);
-        SecurityContext.setSecurityContext(securityContext);
+        SecurityContext.setSecurityContext(securityContext, request);
         RequestContext requestContext = new RequestContext(
                 request, securityContext, null, null, null, uri, null, false, false, true,
                 mockRepository, new DefaultPrincipalMetadataDAO());

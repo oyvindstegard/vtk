@@ -36,13 +36,13 @@ import java.util.Date;
 
 import org.springframework.beans.factory.BeanInitializationException;
 import org.springframework.beans.factory.InitializingBean;
+
 import vtk.repository.Path;
 import vtk.repository.Repository;
 import vtk.repository.RepositoryException;
 import vtk.repository.Resource;
 import vtk.repository.ResourceNotFoundException;
 import vtk.security.AuthenticationException;
-import vtk.security.SecurityContext;
 
 /**
  * Resolves abstract stylesheet identifiers into URIs of the content
@@ -96,36 +96,24 @@ public class RepositoryURIResolver extends AbstractPathBasedURIResolver
 
     
 
+    @Override
     public Date getLastModifiedInternal(Path path)
         throws Exception {
-        String token = this.token;
-        if (token == null) {
-            try {
-                SecurityContext context = SecurityContext.getSecurityContext();
-                if (context != null) {
-                    token = SecurityContext.getSecurityContext().getToken();
-                }
-            } catch (Throwable t) { }
-        }
         try {
             Resource r = this.repository.retrieve(token, path,
                                                   this.retrieveForProcessing);
             return r.getLastModified();
-        } catch (ResourceNotFoundException e) {
+        }
+        catch (ResourceNotFoundException e) {
             throw new IOException(
                 "Resource '" + path + "' does not exist");
         }
     }
 
     
+    @Override
     protected InputStream getInputStream(Path path) throws Exception {
         try {
-            String token = this.token;
-            if (token == null) {
-                if (SecurityContext.getSecurityContext() != null) {
-                    token = SecurityContext.getSecurityContext().getToken();
-                }
-            }
             InputStream inputStream = this.repository.getInputStream(
                 token, path, this.retrieveForProcessing);
             return inputStream;

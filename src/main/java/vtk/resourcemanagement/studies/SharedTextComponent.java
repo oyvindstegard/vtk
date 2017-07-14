@@ -39,6 +39,7 @@ import vtk.repository.Namespace;
 import vtk.repository.Property;
 import vtk.repository.Repository;
 import vtk.repository.Resource;
+import vtk.security.SecurityContext;
 import vtk.web.RequestContext;
 import vtk.web.decorating.DecoratorRequest;
 import vtk.web.decorating.DecoratorResponse;
@@ -56,7 +57,8 @@ public class SharedTextComponent extends ViewRenderingDecoratorComponent {
         String folder = request.getStringParameter("folder");
         String file = request.getStringParameter("file");
         String key = request.getStringParameter("key");
-
+        
+        SecurityContext securityContext = SecurityContext.getSecurityContext(request.getServletRequest());
         String sharedText = null;
         if (!StringUtils.isBlank(propName)) {
             Resource resource = getResource(request);
@@ -64,7 +66,7 @@ public class SharedTextComponent extends ViewRenderingDecoratorComponent {
 
             if (prop != null) {
                 model.put("id", propName + ":" + prop.getStringValue());
-                sharedText = sharedTextResolver.resolveSharedText(resource, prop);
+                sharedText = sharedTextResolver.resolveSharedText(securityContext, resource, prop);
             }
             else {
                 model.put("id", propName);
@@ -73,7 +75,7 @@ public class SharedTextComponent extends ViewRenderingDecoratorComponent {
         }
         else if (!StringUtils.isBlank(folder) && !StringUtils.isBlank(file) && !StringUtils.isBlank(key)) {
             model.put("id", file + ":" + key);
-            sharedText = sharedTextResolver.resolveSharedText(getResource(request), folder, file, key);
+            sharedText = sharedTextResolver.resolveSharedText(securityContext, getResource(request), folder, file, key);
         }
 
         if (sharedText != null) {

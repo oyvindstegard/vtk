@@ -33,7 +33,7 @@ package vtk.repository.search.query.security;
 import org.apache.lucene.search.CachingWrapperFilter;
 import org.apache.lucene.search.Filter;
 import org.apache.lucene.search.IndexSearcher;
-import vtk.context.BaseContext;
+
 import vtk.repository.search.query.filter.FilterFactory;
 
 /**
@@ -62,34 +62,39 @@ public class CachingQueryAuthorizationFilterFactory extends SimpleQueryAuthoriza
         if (token == null) {
             return this.cachingAclReadForAllFilter;
         } else {
-            // Check if any thread-local filter has been cached
-            if (! BaseContext.exists()) {
-                // Don't try this if there is no base context setup for current thread.
-                // (And we don't bother setting up our own thread local storage,
-                // since this caching mostly helps for web request threads.)
-                return super.authorizationQueryFilter(token, searcher);
-            }
-
-            BaseContext baseContext = BaseContext.getContext();
-
-            Filter aclFilter = (Filter) baseContext.getAttribute(CACHED_FILTER_THREADLOCAL_ATTRIBUTE_NAME);
-            if (aclFilter != null) {
-                return aclFilter;
-            }
-
-            // Need to build ACL filter, it will be null for principals with read-all role
-            aclFilter = super.authorizationQueryFilter(token, searcher);
-
-            if (aclFilter != null) {
-                // CachingWrapperFilter necessary here, because we might get a
-                // new index reader instance during execution of thread (for
-                // different queries) and the CachingWrapperFilter will automatically
-                // refresh the filter from the source if that happens.
-                aclFilter = FilterFactory.cacheWrapper(aclFilter);
-                baseContext.setAttribute(CACHED_FILTER_THREADLOCAL_ATTRIBUTE_NAME, aclFilter);
-            }
-
-            return aclFilter;
+            // XXX: BaseContext no longer exists, so cached filter must be
+            // placed in some other contextual object (one solution may be to 
+            // change factory methods of {@link QueryAuthorizationFilterFactory} to
+            // take an extra optional contextual parameter which could be used for caching)
+            return super.authorizationQueryFilter(token, searcher);
+//            // Check if any thread-local filter has been cached
+//            if (! BaseContext.exists()) {
+//                // Don't try this if there is no base context setup for current thread.
+//                // (And we don't bother setting up our own thread local storage,
+//                // since this caching mostly helps for web request threads.)
+//                return super.authorizationQueryFilter(token, searcher);
+//            }
+//
+//            BaseContext baseContext = BaseContext.getContext();
+//
+//            Filter aclFilter = (Filter) baseContext.getAttribute(CACHED_FILTER_THREADLOCAL_ATTRIBUTE_NAME);
+//            if (aclFilter != null) {
+//                return aclFilter;
+//            }
+//
+//            // Need to build ACL filter, it will be null for principals with read-all role
+//            aclFilter = super.authorizationQueryFilter(token, searcher);
+//
+//            if (aclFilter != null) {
+//                // CachingWrapperFilter necessary here, because we might get a
+//                // new index reader instance during execution of thread (for
+//                // different queries) and the CachingWrapperFilter will automatically
+//                // refresh the filter from the source if that happens.
+//                aclFilter = FilterFactory.cacheWrapper(aclFilter);
+//                baseContext.setAttribute(CACHED_FILTER_THREADLOCAL_ATTRIBUTE_NAME, aclFilter);
+//            }
+//
+//            return aclFilter;
         }
     }
 

@@ -38,7 +38,7 @@ public class RepositoryInitEvent extends RepositoryEvent {
     private static final long serialVersionUID = -8015005559559453491L;
 
     public RepositoryInitEvent(Repository source) {
-        super(source);
+        super(source, null);
     }
 
     @Override
