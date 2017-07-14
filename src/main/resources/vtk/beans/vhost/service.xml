@@ -640,7 +640,8 @@
   </bean>
 
   <bean id="propertySearch.searcher" class="vtk.web.search.SimpleSearcher">
-    <constructor-arg name="parser" ref="searchParser" />
+    <constructor-arg name="parserFactory" ref="queryParserFactory" />
+    <constructor-arg name="sortingFactory" ref="sortingParserFactory" />
     <constructor-arg name="searcher" ref="systemIndexSearcher" />
     <constructor-arg name="resourceTypeTree" ref="resourceTypeTree" />
   </bean>
