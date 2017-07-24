@@ -76,6 +76,9 @@
     <property name="order" value="-100" />
     <property name="assertions">
       <list>
+        <bean class="vtk.web.service.RepositoryAssertionWrapper">
+          <constructor-arg name="assertion" ref="json.isManagedObjectResourceType" />
+        </bean>
         <ref bean="versioning.displayActionParameter" />
         <!-- XXX: false when repo read-only: -->
         <ref bean="versioning.displayPermissionAssertion" />
@@ -91,17 +94,19 @@
     <property name="arguments" ref="versioning.displayRevisionsService" />
   </bean>
 
+  <!-- List of assertions which must all be satisfied for offering display of revisions for a structured resource.
+       This is an extension point where exceptions to the defaults can be added.  -->
+  <bean id="versioning.handleRevisionAssertions.list" class="java.util.ArrayList" />
+
+  <bean id="versioning.handleRevisionsAssertions.list.addValue"
+        class="org.springframework.beans.factory.config.MethodInvokingBean"
+        abstract="true">
+    <property name="targetObject" ref="versioning.handleRevisionAssertions.list"/>
+    <property name="targetMethod" value="add"/>
+  </bean>
+
   <bean id="versioning.handleRevisionAssertions" class="vtk.web.service.AndAssertion">
-    <property name="assertions">
-      <list>
-        <bean class="vtk.web.service.RepositoryAssertionWrapper">
-          <constructor-arg name="assertion" ref="json.isManagedObjectResourceType" />
-        </bean>
-        <ref bean="resourceTypeIsNotSamletProgram" />
-        <ref bean="resourceTypeIsNotSamletRetning" />
-        <ref bean="resourceTypeIsNotCourseSchedule" />
-      </list>
-    </property>
+    <property name="assertions" ref="versioning.handleRevisionAssertions.list" />
   </bean>
 
   <bean id="versioning.displayPermissionAssertion" parent="abstractResourcePrincipalPermissionAssertion">

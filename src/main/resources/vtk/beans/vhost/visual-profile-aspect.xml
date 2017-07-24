@@ -30,15 +30,20 @@
     <property name="arguments" ref="visualProfileAspect.editService" />
   </bean>
 
-  <bean id="showVisualProfileForResourceAssertion" class="vtk.web.service.AndAssertion">
-    <property name="assertions">
-      <list>
-        <ref bean="resourceTypeIsNotSamletProgram" />
-        <ref bean="resourceTypeIsNotSamletRetning" />
-      </list>
-    </property>
+  <!-- List of assertions which must all be satisfied for visual profile aspects to be presented in admin.
+       This is an extension point where exceptions to the defaults can be added.  -->
+  <bean id="showVisualProfileForResourceAssertion.list" class="java.util.ArrayList" />
+
+  <bean id="showVisualProfileForResourceAssertion.list.addValue"
+        class="org.springframework.beans.factory.config.MethodInvokingBean"
+        abstract="true">
+    <property name="targetObject" ref="showVisualProfileForResourceAssertion.list"/>
+    <property name="targetMethod" value="add"/>
   </bean>
 
+  <bean id="showVisualProfileForResourceAssertion" class="vtk.web.service.AndAssertion">
+    <property name="assertions" ref="showVisualProfileForResourceAssertion.list"/>
+  </bean>
 
   <bean id="visualProfileAspect.fieldConfig" class="vtk.util.repository.PropertyAspectDescription">
     <constructor-arg>

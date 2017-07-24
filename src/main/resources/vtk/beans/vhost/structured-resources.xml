@@ -95,75 +95,15 @@
     <property name="assertions" ref="editableResourcesAssertion.list" />
   </bean>
 
-  <bean id="editableResourcesAssertion.list" class="java.util.ArrayList">
-    <constructor-arg>
-      <list>
-        <ref bean="resourceTypeIsNotExam" />
-        <ref bean="resourceTypeIsNotExamInfo" />
-        <ref bean="resourceTypeIsNotSamletProgram" />
-        <ref bean="resourceTypeIsNotSamletRetning" />
-      </list>
-    </constructor-arg>
-  </bean>
+  <!-- List of assertions which must all be satisfied for editing of a structured resource.
+       This is an extension point where exceptions to the defaults can be added.  -->
+  <bean id="editableResourcesAssertion.list" class="java.util.ArrayList" />
 
   <bean id="editableResourcesAssertion.list.addValue" 
         class="org.springframework.beans.factory.config.MethodInvokingBean"
         abstract="true">
     <property name="targetObject" ref="editableResourcesAssertion.list"/>
     <property name="targetMethod" value="add"/>
-  </bean>
-
-  <bean id="resourceTypeIsNotExam" class="vtk.web.service.RepositoryAssertionWrapper">
-    <constructor-arg name="assertion">
-      <bean class="vtk.repository.resourcetype.ResourceTypeAssertion" parent="repositoryAware">
-        <property name="resourceType" value="exam" />
-        <property name="invert" value="true" />
-      </bean>
-    </constructor-arg>
-  </bean>
-  
-  <bean id="resourceTypeIsNotExamInfo" class="vtk.web.service.RepositoryAssertionWrapper">
-    <constructor-arg name="assertion">
-      <bean class="vtk.repository.resourcetype.ResourceTypeAssertion" parent="repositoryAware">
-        <property name="resourceType" value="exam-info" />
-        <property name="invert" value="true" />
-      </bean>
-    </constructor-arg>
-  </bean>
-
-  <bean id="resourceTypeIsNotSamletProgram" class="vtk.web.service.RepositoryAssertionWrapper">
-    <constructor-arg name="assertion">
-      <bean class="vtk.repository.resourcetype.ResourceTypeAssertion" parent="repositoryAware">
-        <property name="resourceType" value="samlet-program" />
-        <property name="invert" value="true" />
-      </bean>
-    </constructor-arg>
-  </bean>
-
-  <bean id="resourceTypeIsNotSamletRetning" class="vtk.web.service.RepositoryAssertionWrapper">
-    <constructor-arg name="assertion">
-      <bean class="vtk.repository.resourcetype.ResourceTypeAssertion" parent="repositoryAware">
-        <property name="resourceType" value="samlet-retning" />
-        <property name="invert" value="true" />
-      </bean>
-    </constructor-arg>
-  </bean>
-
-  <bean id="resourceTypeIsNotCourseSchedule" class="vtk.web.service.RepositoryAssertionWrapper">
-    <constructor-arg name="assertion">
-      <bean class="vtk.repository.resourcetype.ResourceTypeAssertion" parent="repositoryAware">
-        <property name="resourceType" value="course-schedule" />
-        <property name="invert" value="true" />
-      </bean>
-    </constructor-arg>
-  </bean>
-
-  <bean id="resourceTypeIsCourseSchedule" class="vtk.web.service.RepositoryAssertionWrapper">
-    <constructor-arg name="assertion">
-      <bean class="vtk.repository.resourcetype.ResourceTypeAssertion" parent="repositoryAware">
-        <property name="resourceType" value="course-schedule" />
-      </bean>
-    </constructor-arg>
   </bean>
 
   <bean id="structuredResources.workingCopyTabTitle" class="vtk.web.view.components.menu.AssertionTitleResolver">
@@ -587,6 +527,7 @@
     </constructor-arg>
   </bean>
 
+  <!-- TODO move out of VTK: -->
   <bean id="resourceTypeIsOrganizationalUnit" class="vtk.web.service.RepositoryAssertionWrapper">
     <constructor-arg name="assertion">
       <bean class="vtk.repository.resourcetype.ResourceTypeAssertion" parent="repositoryAware">
@@ -595,6 +536,7 @@
     </constructor-arg>
   </bean>
 
+  <!-- TODO move out of VTK: -->
   <bean id="resourceTypeIsOrganizationalUnitPublications" class="vtk.web.service.RepositoryAssertionWrapper">
     <constructor-arg name="assertion">
       <bean class="vtk.repository.resourcetype.ResourceTypeAssertion"
@@ -604,6 +546,7 @@
     </constructor-arg>
   </bean>
 
+  <!-- TODO move out of VTK: -->
   <bean id="resourceTypeIsProject" class="vtk.web.service.RepositoryAssertionWrapper">
     <constructor-arg name="assertion">
       <bean class="vtk.repository.resourcetype.ResourceTypeAssertion"
