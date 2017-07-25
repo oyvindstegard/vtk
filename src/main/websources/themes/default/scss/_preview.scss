@@ -59,18 +59,18 @@ body#vrtx-preview #app-content #contents .previewUnavailable {
   display: inline-block;
   float: right;
   @include wh(34px, 34px);
-  background: url('images/preview-index-file-overlay-close.png') no-repeat 0 0;
+  background: url(images/preview-index-file-overlay-close.png) no-repeat 0 0;
 
   &:focus,
   &:hover {
-    background-image: url('images/preview-index-file-overlay-close-rollover.png');
+    background-image: url(images/preview-index-file-overlay-close-rollover.png);
   }
 }
 
 p.previewUnavailableReasons {
   margin-top: 15px;
   padding-top: 15px;
-  background: url('images/line-dotted.gif') repeat-x 0 2px;
+  background: url(images/line-dotted.gif) repeat-x 0 2px;
 }
 
 #preview-loading {
@@ -89,7 +89,7 @@ p.previewUnavailableReasons {
 }
 
 #preview-loading-inner span {
-  background: transparent url('images/ajax-loader.gif') no-repeat center left;
+  background: transparent url(images/ajax-loader.gif) no-repeat center left;
   display: block;
   padding: 10px 5px 10px 42px;
   font-size: 1.308em;
@@ -159,7 +159,7 @@ ul#preview-mode {
 
 /* Move shadow below mobile */
 .mobile.horizontal.change-bg #previewIframeWrapper #previewIframeMobileBg {
-  background: transparent url('images/preview-mobile-bg-horizontal.png') no-repeat -2px 0;
+  background: transparent url(images/preview-mobile-bg-horizontal.png) no-repeat -2px 0;
   left: 4px;
   top: -167px;
   border: 1px solid transparent;
@@ -196,7 +196,7 @@ ul#preview-mode {
 .mobile body#vrtx-preview #app-content #contents #previewIframeWrapper #preview-mode-mobile-rotate-hv {
   display: inline-block;
   padding-left: 24px;
-  background: #ececec url('images/refresh.png') no-repeat center left;
+  background: #ececec url(images/refresh.png) no-repeat center left;
   font-size: 1.15em;
   top: -167px;
   position: relative;
@@ -223,12 +223,12 @@ ul#preview-actions li a {
 
 ul#preview-actions #preview-actions-share {
   padding-left: 20px;
-  background: url('images/preview-share.png') no-repeat center left;
+  background: url(images/preview-share.png) no-repeat center left;
 }
 
 ul#preview-actions #preview-actions-print {
   padding-left: 22px;
-  background: url('images/preview-print.png') no-repeat center left;
+  background: url(images/preview-print.png) no-repeat center left;
 }
 
 /* ^ Preview mode and actions  */
@@ -237,11 +237,11 @@ ul#preview-actions #preview-actions-print {
 
 ul#preview-actions #preview-actions-fullscreen-toggle {
   padding-left: 22px;
-  background: url('images/preview-maximize.png') no-repeat 0 3px;
+  background: url(images/preview-maximize.png) no-repeat 0 3px;
 }
 
 .fullscreen-toggle-open ul#preview-actions #preview-actions-fullscreen-toggle {
-  background-image: url('images/preview-minimize.png');
+  background-image: url(images/preview-minimize.png);
 }
 
 .fullscreen-toggle-open,
@@ -306,7 +306,7 @@ ul#preview-actions #preview-actions-fullscreen-toggle {
 .fullscreen-toggle-open #app-content .vrtx-sticky-preview-mode-actions .sticky-bg-ie8-below {
   @include posAbsBottom(-13px, 0);
   @include wh(100%, 13px);
-  background: transparent url('images/sticky-bar-fade-to-grey-ie8-bg.png') repeat-x bottom left;
+  background: transparent url(images/sticky-bar-fade-to-grey-ie8-bg.png) repeat-x bottom left;
   display: block;
 }
 
@@ -332,7 +332,7 @@ html#vrtx-preview-popup h1 {
 }
 
 html#vrtx-preview-popup h1 span#vrtx-preview-popup-close {
-  background: url('images/thickbox-close.png') no-repeat top right;
+  background: url(images/thickbox-close.png) no-repeat top right;
   display: block;
   @include wh(18px, 18px);
   @include posAbsBottomRight(14px, 5px);

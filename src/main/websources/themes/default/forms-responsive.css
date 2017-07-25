@@ -1,4 +1,4 @@
-/*
+/* 
  * Forms responsive
  *
  */
@@ -113,7 +113,7 @@ body .ui-dialog .ui-button,
 #menu-search form button {
   background: rgb(235,235,235) !important;
   background: -moz-linear-gradient(top, rgba(235,235,235,1) 0%, rgba(218,218,218,1) 51%, rgba(235,235,235,1) 100%) !important;
-  background: -webkit-gradient(linear, left top, left bottom, color-stop(0%,rgba(235,235,235,1)),
+  background: -webkit-gradient(linear, left top, left bottom, color-stop(0%,rgba(235,235,235,1)), 
                                                               color-stop(51%,rgba(218,218,218,1)),
                                                               color-stop(100%,rgba(235,235,235,1))) !important;
   background: -webkit-linear-gradient(top, rgba(235,235,235,1) 0%,rgba(218,218,218,1) 51%,rgba(235,235,235,1) 100%) !important;
@@ -311,7 +311,7 @@ body .ui-dialog .ui-button.ui-state-hover,
   background: linear-gradient(to bottom, rgba(117,197,233,1) 0%,rgba(103,182,227,1) 2%,rgba(94,169,222,1) 4%,
                                          rgba(81,153,215,1) 8%,rgba(78,150,214,1) 10%,rgba(54,117,189,1) 80%,
                                          rgba(48,110,184,1) 100%) !important;
-
+              
   cursor: pointer;
 }
 
@@ -327,12 +327,12 @@ body .ui-dialog .ui-button.ui-state-hover,
 
 .forms-new a.button-large span,
 #uiodoc-wrapper #uiodoc #main a.button-large span {
-  background: url('../images/mobile/black-arrow-forward-btn.png') no-repeat 100% 50% !important;
+  background: url(../images/mobile/black-arrow-forward-btn.png) no-repeat 100% 50% !important;
 }
 
 .forms-new a.button-large-blue span,
 #uiodoc-wrapper #uiodoc #main a.button-large-blue span {
-  background: url('../images/mobile/grey-arrow-forward.png') no-repeat 100% 50% !important;
+  background: url(../images/mobile/grey-arrow-forward.png) no-repeat 100% 50% !important;
 }
 
 /* ^ Forms responsive */

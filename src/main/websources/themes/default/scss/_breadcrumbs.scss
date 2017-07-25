@@ -21,7 +21,7 @@ $breadcrumbLeftRightAnimationSpeed: 300ms;
 }
 
 #app-head-wrapper #vrtx-breadcrumb-wrapper {
-  background: url('images/app-head-breadcrumb-bg.png') repeat-x left top;
+  background: url(images/app-head-breadcrumb-bg.png) repeat-x left top;
   overflow: hidden;
   position: relative;
   bottom: -1px;
@@ -40,11 +40,11 @@ $breadcrumbLeftRightAnimationSpeed: 300ms;
 
       &:focus,
       &:hover {
-        background: $breadcrumbTabHoverSystemTabMessageBackgroundColor url('images/app-head-breadcrumb-delimiter-rollover-left.png') no-repeat left bottom;
+        background: $breadcrumbTabHoverSystemTabMessageBackgroundColor url(images/app-head-breadcrumb-delimiter-rollover-left.png) no-repeat left bottom;
         margin-left: -10px;
 
         span.vrtx-breadcrumb-delimiter {
-          background: url('images/app-head-breadcrumb-delimiter-rollover-right.png') no-repeat right bottom;
+          background: url(images/app-head-breadcrumb-delimiter-rollover-right.png) no-repeat right bottom;
           height: 33px;
           margin-top: -1px;
         }
@@ -71,22 +71,22 @@ $breadcrumbLeftRightAnimationSpeed: 300ms;
         &:focus,
         &:hover {
           span.vrtx-breadcrumb-delimiter {
-            background-image: url('images/app-head-breadcrumb-delimiter-rollover-right-active.png');
+            background-image: url(images/app-head-breadcrumb-delimiter-rollover-right-active.png);
           }
         }
         span.vrtx-breadcrumb-delimiter {
-          background-image: url('images/app-head-breadcrumb-delimiter-active.png');
+          background-image: url(images/app-head-breadcrumb-delimiter-active.png);
         }
       }
       &.vrtx-breadcrumb-active {
         padding: 5px 21px 0 11px;
         height: 25px;
-        background: #d9d9d9 url('images/app-head-breadcrumb-active-bg.png') no-repeat right bottom;
+        background: #d9d9d9 url(images/app-head-breadcrumb-active-bg.png) no-repeat right bottom;
         margin: 1px 0 0 0;
 
         &:focus,
         &:hover {
-          background: #d9d9d9 url('images/app-head-breadcrumb-active-bg.png') no-repeat right bottom;
+          background: #d9d9d9 url(images/app-head-breadcrumb-active-bg.png) no-repeat right bottom;
           margin: 1px 0 0 0;
         }
         &.vrtx-breadcrumb-left {
@@ -113,7 +113,7 @@ $breadcrumbLeftRightAnimationSpeed: 300ms;
       }
     }
     span.vrtx-breadcrumb-delimiter {
-      background: url('images/app-head-breadcrumb-delimiter.png') no-repeat right bottom;
+      background: url(images/app-head-breadcrumb-delimiter.png) no-repeat right bottom;
       @include wh(10px, 30px);
       @include floatBlock;
       margin: 1px 0 0 0;
@@ -147,12 +147,12 @@ $breadcrumbLeftRightAnimationSpeed: 300ms;
   }
   #navigate-crumbs-left-coverup {
     display: block;
-    background: url('images/app-head-breadcrumb-bg.png') repeat-x left top;
+    background: url(images/app-head-breadcrumb-bg.png) repeat-x left top;
     @include posAbs(0, 39px);
     @include wh(11px, 34px);
   }
   .navigate-crumbs {
-    background: url('images/app-head-breadcrumb-bg.png') repeat-x left top;
+    background: url(images/app-head-breadcrumb-bg.png) repeat-x left top;
     position: absolute;
     top: 0px;
     display: block;
@@ -160,7 +160,7 @@ $breadcrumbLeftRightAnimationSpeed: 300ms;
 
     &:focus,
     &:hover {
-      background: $breadcrumbTabHoverSystemTabMessageBackgroundColor url('images/app-head-breadcrumb-delimiter-rollover-left.png') no-repeat -10px bottom;
+      background: $breadcrumbTabHoverSystemTabMessageBackgroundColor url(images/app-head-breadcrumb-delimiter-rollover-left.png) no-repeat -10px bottom;
       top: -1px;
       height: 34px;
       cursor: pointer;
@@ -183,15 +183,15 @@ $breadcrumbLeftRightAnimationSpeed: 300ms;
       &:focus,
       &:hover {
         span.navigate-crumbs-icon {
-          background-image: url('images/breadcrumbs-left-nav-rollover.png');
+          background-image: url(images/breadcrumbs-left-nav-rollover.png);
           top: 11px;
         }
       }
       span.navigate-crumbs-icon {
-        background: url('images/breadcrumbs-left-nav.png') no-repeat center center;
+        background: url(images/breadcrumbs-left-nav.png) no-repeat center center;
       }
       span.navigate-crumbs-dividor {
-        background: url('images/breadcrumbs-left-dividor.png') no-repeat center center;
+        background: url(images/breadcrumbs-left-dividor.png) no-repeat center center;
         right: -31px;
       }
     }
@@ -202,15 +202,15 @@ $breadcrumbLeftRightAnimationSpeed: 300ms;
       &:focus,
       &:hover {
         span.navigate-crumbs-icon {
-          background-image: url('images/breadcrumbs-right-nav-rollover.png');
+          background-image: url(images/breadcrumbs-right-nav-rollover.png);
           top: 11px;
         }
       }
       span.navigate-crumbs-icon {
-        background: url('images/breadcrumbs-right-nav.png') no-repeat center center;
+        background: url(images/breadcrumbs-right-nav.png) no-repeat center center;
       }
       span.navigate-crumbs-dividor {
-        background: url('images/breadcrumbs-right-dividor.png') no-repeat center center;
+        background: url(images/breadcrumbs-right-dividor.png) no-repeat center center;
         left: -31px;
       }
     }

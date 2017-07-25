@@ -1,6 +1,6 @@
 /* jQuery TreeView - USIT heavily modified */
 
-.treeview, .treeview ul {
+.treeview, .treeview ul { 
   padding: 0 !important;
   margin: 0 !important;
   list-style: none !important;
@@ -11,7 +11,7 @@
 }
 
 .treeview .hitarea {
-  background: url('images/treeview-default.gif') -64px -25px no-repeat;
+  background: url(images/treeview-default.gif) -64px -25px no-repeat;
   height: 16px;
   width: 20px;
   margin-left: -20px;
@@ -19,7 +19,7 @@
   cursor: pointer;
 }
 
-.treeview li {
+.treeview li { 
   margin: 0;
   padding: 3px 0pt 3px 20px;
 }
@@ -28,7 +28,7 @@
   background-color: #eee;
 }
 
-#treecontrol {
+#treecontrol { 
   margin: 1em 0; display: none;
 }
 
@@ -42,12 +42,12 @@
 }
 
 .treeview .expandable-hitarea {
-  background: url('../images/tree-expand.gif') no-repeat 0 0 !important;
+  background: url(../images/tree-expand.gif) no-repeat 0 0 !important;
   margin-top: 8px;
 }
 
 .treeview .collapsable-hitarea {
-  background: url('../images/tree-collapse.gif') no-repeat 0 0 !important;
+  background: url(../images/tree-collapse.gif) no-repeat 0 0 !important;
   margin-top: 9px;
 }
 
@@ -58,40 +58,40 @@
 
 .treeview span.file,
 .treeview span.folder {
-  background: url('../images/folder-small.gif') no-repeat 0 5px;
+  background: url(../images/folder-small.gif) no-repeat 0 5px;
   padding: 5px 0 5px 30px;
   cursor: pointer;
   display: block;
 }
 
 .treeview span.file {
-  background-image: url('../images/file-small.gif');
+  background-image: url(../images/file-small.gif);
 }
 
 .treeview li.not-inherited > span.file {
-  background-image: url('../images/file-small-own-permissions.gif');
+  background-image: url(../images/file-small-own-permissions.gif);
 }
 
 .treeview span.file.restricted  {
-  background-image: url('../images/file-small-restricted.gif');
+  background-image: url(../images/file-small-restricted.gif);
 }
 
 .treeview li.not-inherited > span.file.restricted {
-  background-image: url('../images/file-small-restricted-own-permissions.gif');
+  background-image: url(../images/file-small-restricted-own-permissions.gif);
 }
 
 .treeview li.not-inherited > span.folder {
-  background-image: url('../images/folder-small-own-permissions.gif');
+  background-image: url(../images/folder-small-own-permissions.gif);
 }
 
 .treeview span.folder.restricted {
-  background-image: url('../images/folder-small-restricted.gif');
+  background-image: url(../images/folder-small-restricted.gif);
 }
 
 .treeview li.not-inherited > span.folder.restricted {
-  background-image: url('../images/folder-small-restricted-own-permissions.gif');
+  background-image: url(../images/folder-small-restricted-own-permissions.gif);
 }
 
 .treeview span.folder.unpublished {
-  background-image: url('../images/folder-small-unpublished.png');
+  background-image: url(../images/folder-small-unpublished.png);
 }

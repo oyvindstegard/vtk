@@ -12,12 +12,12 @@
 /* Icons - TODO: should override with just background-image instead (FF can be uncooperative with this sometimes so later) */
 
 #resource-title {
-  background: transparent url('images/file.gif') no-repeat 0px 3px;
+  background: transparent url(images/file.gif) no-repeat 0px 3px;
   padding-top: 8px;
   position: relative;
 
   &.unpublished {
-    background: transparent url('images/file-unpublished.png') no-repeat 0px 3px;
+    background: transparent url(images/file-unpublished.png) no-repeat 0px 3px;
   }
   h1 {
     margin: 0 0 15px 32px;
@@ -76,7 +76,7 @@
 }
 
 #resourceMenuRight > li {
-  background: url('images/seperator-grey-gradient-big.png') no-repeat top right;
+  background: url(images/seperator-grey-gradient-big.png) no-repeat top right;
   float: left;
   margin: 0 25px 0 0;
   padding: 0 25px 0 0;
@@ -95,7 +95,7 @@
 }
 
 #resourceMenuRight .manage\.unlockFormService h3 {
-  background: url('images/lock.png') no-repeat 100% 1px;
+  background: url(images/lock.png) no-repeat 100% 1px;
   padding-right: 18px;
   display: inline-block;
   margin-bottom: 2px;
@@ -121,7 +121,7 @@
 
 #resourceMenuRight span.published,
 #publishing-status span.published {
-  background: url('images/menu-active-green.gif') no-repeat 100% 1px;
+  background: url(images/menu-active-green.gif) no-repeat 100% 1px;
   padding-right: 18px;
 }
 
@@ -149,7 +149,7 @@
   position: relative;
   top: -3.8em;
   color: #F8F8F8;
-  background: url('images/resource-menu-dialog-close.png') no-repeat center center;
+  background: url(images/resource-menu-dialog-close.png) no-repeat center center;
   border: none;
 
   &:hover {
@@ -161,7 +161,7 @@
 }
 
 #app-content .vrtx-show-processing {
-  background: url('images/spinner.gif') no-repeat center left;
+  background: url(images/spinner.gif) no-repeat center left;
   display: block;
   @include wh(16px, 16px);
 }

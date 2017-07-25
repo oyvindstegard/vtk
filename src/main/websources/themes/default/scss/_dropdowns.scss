@@ -45,7 +45,7 @@ ul.publishing-document {
 }
 
 #locale-selection {
-  background: url('images/globe.png') no-repeat 0px 1px;
+  background: url(images/globe.png) no-repeat 0px 1px;
   padding: 0 0 1px 23px;
   z-index: 100;
 }
@@ -102,13 +102,13 @@ ul.publishing-document {
 }
 
 .js #locale-selection ul.dropdown-shortcut-menu-container li.active span {
-  background: url('images/list-active.gif') no-repeat 10px 10px;
+  background: url(images/list-active.gif) no-repeat 10px 10px;
 }
 
 .js #locale-selection #locale-selection-header,
 .js #collection-more-menu #collection-more-menu-header,
 .js #editor-help-menu #editor-help-menu-header {
-  background: url('images/arrow-down.png') no-repeat 100% 8px;
+  background: url(images/arrow-down.png) no-repeat 100% 8px;
   padding-right: 12px;
   display: inline-block;
 }

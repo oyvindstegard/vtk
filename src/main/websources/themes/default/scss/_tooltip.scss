@@ -70,16 +70,16 @@
     padding-left: 30px;
   }
   &.allowed-for-all {
-    &.folder               { background-image: url('images/folder-small.gif');                            }
-    &.not-inherited.folder { background-image: url('images/folder-small-own-permissions.gif');            }
-    &.file                 { background-image: url('images/file-small.gif');                              }
-    &.not-inherited.file   { background-image: url('images/file-small-own-permissions.gif');              }
+    &.folder               { background-image: url(images/folder-small.gif);                            }
+    &.not-inherited.folder { background-image: url(images/folder-small-own-permissions.gif);            }
+    &.file                 { background-image: url(images/file-small.gif);                              }
+    &.not-inherited.file   { background-image: url(images/file-small-own-permissions.gif);              }
   }
   &.restricted {
-    &.folder                    { background-image: url('images/folder-small-restricted.gif');                 }
-    &.not-inherited.folder      { background-image: url('images/folder-small-restricted-own-permissions.gif'); }
-    &.file                      { background-image: url('images/file-small-restricted.gif');                   }
-    &.not-inherited.file        { background-image: url('images/file-small-restricted-own-permissions.gif');   }
+    &.folder                    { background-image: url(images/folder-small-restricted.gif);                 }
+    &.not-inherited.folder      { background-image: url(images/folder-small-restricted-own-permissions.gif); }
+    &.file                      { background-image: url(images/file-small-restricted.gif);                   }
+    &.not-inherited.file        { background-image: url(images/file-small-restricted-own-permissions.gif);   }
   }
   #title-wrapper {
     font-size: 1.154em;
@@ -87,7 +87,7 @@
     display: block;
     padding-bottom: 11px;
     margin-bottom: 10px;
-    background: url('images/line-dotted.gif') repeat-x bottom left;
+    background: url(images/line-dotted.gif) repeat-x bottom left;
 
     .vrtx-button-small {
       font-size: 0.867em;

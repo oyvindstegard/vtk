@@ -1,5 +1,5 @@
-/*
- * Mixins
+/* 
+ * Mixins 
  *
  * Commonly used patterns (DRY)
  *
@@ -21,7 +21,7 @@
 @mixin resetFont {
   font-family: inherit;
   font-size: 100%;
-  font-style: inherit;
+  font-style: inherit; 
   font-weight: inherit;
 }
 @mixin noMargPadd {
@@ -64,13 +64,13 @@
 }
 
 @mixin bg($url, $imp: false) {
-  @if $imp == false { background: transparent url("#{$url}") no-repeat 0 0; }
-  @else             { background: transparent url("#{$url}") no-repeat 0 0 !important; }
+  @if $imp == false { background: transparent url($url) no-repeat 0 0; }
+  @else             { background: transparent url($url) no-repeat 0 0 !important; }
 }
 @mixin borderRadius($radius) {
   -webkit-border-radius: $radius;
   -moz-border-radius: $radius;
-  border-radius: $radius;
+  border-radius: $radius; 
 }
 @mixin boxShadow($opts) {
   -moz-box-shadow: $opts;

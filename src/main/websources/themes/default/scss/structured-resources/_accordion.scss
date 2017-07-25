@@ -51,7 +51,7 @@
       }
 
       .ui-icon.ui-icon-triangle-1-s { /* Expanded */
-        background: url('../images/arrow-collapsed-big.gif') no-repeat top left;
+        background: url(../images/arrow-collapsed-big.gif) no-repeat top left;
 
         @include transforms(rotate(90deg));
         @include transitions(all 600ms ease-in-out);
@@ -61,7 +61,7 @@
       }
 
       .ui-icon.ui-icon-triangle-1-e { /* Collapsed */
-        background: url('../images/arrow-collapsed-big.gif') no-repeat top left;
+        background: url(../images/arrow-collapsed-big.gif) no-repeat top left;
         @include transitions(all 600ms ease-in-out);
       }
 
@@ -73,7 +73,7 @@
 
     .ui-accordion > div {
       .ui-accordion-header {
-        background: url('../images/line-dotted.gif') repeat-x top left;
+        background: url(../images/line-dotted.gif) repeat-x top left;
         padding-left: 30px;
         border-radius: 0px;
         margin: 0 0 -3px 20px;
@@ -82,7 +82,7 @@
       }
 
       .ui-accordion {
-        background: url('../images/line-dotted.gif') repeat-x bottom left;
+        background: url(../images/line-dotted.gif) repeat-x bottom left;
       }
 
       .header.ui-accordion-header .ui-icon {
@@ -138,7 +138,7 @@
     &.ui-corner-top,
     &.ui-state-hover.ui-corner-top,
     &.ui-state-focus.ui-corner-top {
-      background: url('../images/line-dotted.gif') repeat-x top left !important;
+      background: url(../images/line-dotted.gif) repeat-x top left !important;
     }
     &.ui-state-hover,
     &.ui-state-focus,
@@ -150,7 +150,7 @@
 }
 
 .ie8 .ui-accordion > div > .header.ui-accordion-header .ui-icon.ui-icon-triangle-1-s { /* Expanded */
-  background: url('../images/arrow-expanded-big.gif') no-repeat center left;
+  background: url(../images/arrow-expanded-big.gif) no-repeat center left;
 }
 
 .embedded .ui-accordion,

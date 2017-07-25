@@ -95,7 +95,7 @@
       &.name .unauthorizedListedResource-wrapper,
       &.name span.vrtx-trash-can-name-text,
       &.vrtx-report-name a {
-        background: url('images/file-small-unpublished.png') no-repeat center left;
+        background: url(images/file-small-unpublished.png) no-repeat center left;
       }
     }
     td {
@@ -124,12 +124,12 @@
       &.vrtx-report-name a {
         padding: 2px 0 2px 31px;
         display: block;
-        background: url('images/file-small.gif') no-repeat center left;
+        background: url(images/file-small.gif) no-repeat center left;
         overflow: hidden;
       }
     }
     th {
-      background: url('images/line-dotted.gif') repeat-x bottom left;
+      background: url(images/line-dotted.gif) repeat-x bottom left;
       padding: 0 0 8px 15px;
       text-align: left;
       white-space: nowrap;

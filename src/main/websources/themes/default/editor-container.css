@@ -72,7 +72,7 @@
 .vrtx-facts-container h4,
 .vrtx-facts-container h5,
 .vrtx-facts-container h6,
-.vrtx-facts-container p,
+.vrtx-facts-container p, 
 .vrtx-facts-container ul,
 .vrtx-facts-container ol,
 .vrtx-facts-container pre {
@@ -103,7 +103,7 @@
 }
 
 .vrtx-media-player {
-  background: #acacac url('icons/movieplayer-play.png') no-repeat center center;
+  background: #acacac url(icons/movieplayer-play.png) no-repeat center center;
   width: 256px; /* std article width */
   height: 192px;  /* 4:3 */
   text-indent: -9000px;
@@ -111,7 +111,7 @@
 }
 
 .vrtx-media-player-audio {
-  background: #acacac url('icons/audioplayer.png') no-repeat center center;
+  background: #acacac url(icons/audioplayer.png) no-repeat center center;
   width: 214px;
   height: 61px;
   text-indent: -9000px;
@@ -206,7 +206,7 @@ p.image-center {
 
 /* Study table */
 
-.vrtx-courseplan-table {
+.vrtx-courseplan-table { 
   width: 100%;
 }
 
@@ -215,7 +215,7 @@ p.image-center {
   width: 10%;
 }
 
-.vrtx-courseplan-table td.large {
+.vrtx-courseplan-table td.large {  
   width: 30%;
 }
 
