@@ -189,7 +189,7 @@
       display: none;
     }
     .ui-dialog-titlebar {
-      background: url(/vrtx/__vrtx/static-resources/themes/default/images/line-dotted.gif) repeat-x scroll left bottom transparent;
+      background: url('/vrtx/__vrtx/static-resources/themes/default/images/line-dotted.gif') repeat-x scroll left bottom transparent;
       border: none;
       padding: 0 0 15px 0;
 
@@ -212,7 +212,7 @@
         display: none;
       }
       .ui-icon {
-        background: url(/vrtx/__vrtx/static-resources/themes/default/images/thickbox-close.png) no-repeat center center;
+        background: url('/vrtx/__vrtx/static-resources/themes/default/images/thickbox-close.png') no-repeat center center;
         position: static;
       }
     }

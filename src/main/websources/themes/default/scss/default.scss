@@ -208,7 +208,7 @@ ol.vrtx-help-step-by-step {
       @include bg("images/report-filter-hover-left.png");
 
       span {
-        background: url(images/report-filter-hover-right.png) no-repeat top right;
+        background: url('images/report-filter-hover-right.png') no-repeat top right;
         display: inline-block;
       }
     }
@@ -222,7 +222,7 @@ body#vrtx-permissions li.groups ul,
 body#vrtx-permissions li.users ul,
 body#vrtx-preview-ssl-mixed-mode #contents ul {
   li {
-    background: url(images/list-bullet-dark-grey.png) no-repeat center left;
+    background: url('images/list-bullet-dark-grey.png') no-repeat center left;
     margin: 0 0 5px 5px;
     padding: 0 0 0 10px;
   }
@@ -377,7 +377,7 @@ body#vrtx-edit-plaintext .contextual-help {
 
     a {
       padding: 5px 15px;
-      background: url(images/report-tab-middle.png) repeat-x 0px 25px;
+      background: url('images/report-tab-middle.png') repeat-x 0px 25px;
       white-space: nowrap;
     }
     a,
@@ -394,14 +394,14 @@ body#vrtx-edit-plaintext .contextual-help {
 
       a,
       span {
-        background: url(images/report-tab-active-right.png) no-repeat top right !important;
+        background: url('images/report-tab-active-right.png') no-repeat top right !important;
       }
       &.active-first {
         @include bg("images/report-tab-active-left-first.png", true);
 
         a,
         span {
-          background: url(images/report-tab-active-right-first.png) no-repeat top right !important;
+          background: url('images/report-tab-active-right-first.png') no-repeat top right !important;
         }
       }
     }
@@ -419,14 +419,14 @@ body#vrtx-edit-plaintext .contextual-help {
 .vrtx-report-paging .next,
 #manually-approve-container .next {
   margin-left: 20px !important;
-  background: url(images/arrow-grey-next.gif) no-repeat center right;
+  background: url('images/arrow-grey-next.gif') no-repeat center right;
   padding: 0 12px 0 0;
 }
 
 .vrtx-course-schedule .prev,
 .vrtx-report-paging .prev,
 #manually-approve-container .prev {
-  background: url(images/arrow-grey-prev.gif) no-repeat center left;
+  background: url('images/arrow-grey-prev.gif') no-repeat center left;
   padding: 0 0 0 12px;
 }
 
@@ -571,7 +571,7 @@ tr.expandedForm td .vrtx-button-small {
 }
 
 .loading-tree-node {
-  background: transparent url(images/spinner.gif) no-repeat center left;
+  background: transparent url('images/spinner.gif') no-repeat center left;
   padding-left: 26px;
 }
 

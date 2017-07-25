@@ -16,7 +16,7 @@
 
   .system-message {
     @include appHeadLine;
-    background: $breadcrumbTabHoverSystemTabMessageBackgroundColor url(images/info-very-big.png) no-repeat 50px center;
+    background: $breadcrumbTabHoverSystemTabMessageBackgroundColor url('images/info-very-big.png') no-repeat 50px center;
     padding-top: 16px;
     padding-bottom: 16px;
     height: auto !important;
@@ -62,15 +62,15 @@ body > div.infomessage,
 #app-content > div.infomessage,
 body > div.infomessage,
 #app-content > noscript > div.infomessage {
-  background: $contentBackgroundColor url(images/info.png) no-repeat 14px 8px;
+  background: $contentBackgroundColor url('images/info.png') no-repeat 14px 8px;
 }
 
 #app-content > div.errormessage {
-  background: $contentBackgroundColor url(images/error.gif) no-repeat 14px 8px;
+  background: $contentBackgroundColor url('images/error.gif') no-repeat 14px 8px;
 }
 
 #vrtx-compat-icon {
-  background: url(images/compat-icon.png) no-repeat 0 0;
+  background: url('images/compat-icon.png') no-repeat 0 0;
   display: inline-block;
   width: 27px;
   height: 22px;
@@ -80,7 +80,7 @@ body > div.infomessage,
 /* Tab message */
 
 div.tabMessage {
-  background: url(images/info-small.gif) no-repeat 0 0;
+  background: url('images/info-small.gif') no-repeat 0 0;
   padding: 0 0 10px 25px;
 }
 
@@ -93,7 +93,7 @@ body#vrtx-preview div.tabMessage {
 /* Tab message big */
 
 .tabMessage-big {
-  background: $breadcrumbTabHoverSystemTabMessageBackgroundColor url(images/info-white-blue-bg.png) no-repeat 19px center;
+  background: $breadcrumbTabHoverSystemTabMessageBackgroundColor url('images/info-white-blue-bg.png') no-repeat 19px center;
   padding: 12px 0 12px 58px;
   color: #fff;
   margin: 6px -19px 2px;

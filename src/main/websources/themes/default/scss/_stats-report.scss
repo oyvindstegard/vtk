@@ -16,7 +16,7 @@ h3.resourceInfoHeader {
 #urchin-loading {
   display: block;
   @include wh(100%, 200px);
-  background: url(images/loadingAnimation.gif) no-repeat center center;
+  background: url('images/loadingAnimation.gif') no-repeat center center;
 }
 
 #vrtx-resource-visit,
@@ -26,7 +26,7 @@ h3.resourceInfoHeader {
 
 #vrtx-resource-visit-info {
   @include posAbsBottom(22px, 650px);
-  background: #f9f9f9 url(images/info-icon-grey-grey-bg.png) no-repeat 8px 7px;
+  background: #f9f9f9 url('images/info-icon-grey-grey-bg.png') no-repeat 8px 7px;
   border: 1px solid #d9d9d9;
   padding: 8px 13px 8px 30px;
   font-size: 0.85em;

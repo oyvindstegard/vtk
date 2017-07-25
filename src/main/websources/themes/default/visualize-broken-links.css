@@ -5,14 +5,14 @@
  */
 
 #vrtx-link-check-spinner {
-  background: #efefef url(images/spinner.gif) no-repeat 10px 50%;
+  background: #efefef url('images/spinner.gif') no-repeat 10px 50%;
   display: block;
   position: absolute;
   top: 0px;
   right: 0px;
   padding: 10px 10px 10px 34px;
   font-family: Arial, Helvetica, sans-serif;
-  font-size: 0.75em; 
+  font-size: 0.75em;
 }
 
 html#vrtx-preview-popup #vrtx-preview-popup-iframe-wrapper {
@@ -35,7 +35,7 @@ html#vrtx-preview-popup #vrtx-link-check-spinner {
   overflow: hidden !important;
 }
 
-#previewViewIframe.mobile::-webkit-scrollbar {  
+#previewViewIframe.mobile::-webkit-scrollbar {
   display: none !important;
 }
 

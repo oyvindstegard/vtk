@@ -24,7 +24,7 @@
 .vrtx-image-listing-include-title a:hover {
   color: #666;
 }
-	
+
 .vrtx-image-listing-include ul {
   margin: 0;
   padding: 0;
@@ -58,7 +58,7 @@
 }
 
 .vrtx-image-listing-include ul.vrtx-image-listing-include-thumbs li a span {
-  display: none;	
+  display: none;
 }
 
 .vrtx-image-listing-include.loading {
@@ -108,7 +108,7 @@
 }
 
 .vrtx-image-listing-include-container-nav-pure-css {
-  display: none;	
+  display: none;
 }
 
 .vrtx-image-listing-include-container-nav {
@@ -138,7 +138,7 @@
 .vrtx-image-listing-include .vrtx-image-listing-include-container-nav span.next-transparent-block {
    position: absolute;
    display: block;
-   width: 38px;	
+   width: 38px;
    background-color: #fff;
    top: 0px;
    cursor: pointer;
@@ -188,7 +188,7 @@
 a.toggle-fullscreen {
   display: inline-block;
   float: right;
-  background: url(images/preview-minimize.png) no-repeat 100% 3px;
+  background: url('images/preview-minimize.png') no-repeat 100% 3px;
   padding: 2px 24px 10px 10px;
   text-decoration: none !important;
 }
@@ -199,7 +199,7 @@ a.toggle-fullscreen:hover {
 
 a.toggle-fullscreen.minimized {
   padding: 2px 24px 0 10px;
-  background: url(images/preview-maximize.png) no-repeat 100% 2px;
+  background: url('images/preview-maximize.png') no-repeat 100% 2px;
 }
 
 .active-description,
