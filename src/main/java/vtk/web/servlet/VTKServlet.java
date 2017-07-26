@@ -377,19 +377,24 @@ public class VTKServlet extends DispatcherServlet {
         if (!this.requestLogger.isInfoEnabled()) {
             return;
         }
-        RequestContext requestContext = RequestContext.getRequestContext(req);
         String remoteHost = req.getRemoteHost();
         URL requestURL = URL.create(req);
 
         String request = req.getMethod() + " " + requestURL + " "
             + req.getProtocol() + " - status: " + resp.getStatus();
 
-        Principal principal = requestContext.getPrincipal();
-        String token = requestContext.getSecurityToken();
-
+        // Request context may not be available depending on when service handling returns, which
+        // can be before any contexts have been created
+        RequestContext requestContext = RequestContext.getRequestContext(req);
+        Principal principal = null;
+        String token = null;
         String service = null;
-        if (requestContext != null && requestContext.getService() != null) {
-            service = requestContext.getService().getName();
+        if (requestContext != null) {
+            principal = requestContext.getPrincipal();
+            token = requestContext.getSecurityToken();
+            if (requestContext.getService() != null) {
+                service = requestContext.getService().getName();
+            }
         }
 
         String userAgent = req.getHeader("User-Agent");
