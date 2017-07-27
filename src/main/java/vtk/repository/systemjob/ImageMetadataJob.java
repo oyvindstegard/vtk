@@ -192,7 +192,7 @@ public class ImageMetadataJob extends AbstractResourceJob {
                 return;
             }
             
-            ctx.getRepository().store(ctx.getToken(), resource, ctx.getSystemChangeContext());
+            ctx.getRepository().store(ctx.getToken(), null, resource, ctx.getSystemChangeContext());
             if (resource.getProperty(thumbnailPropDef) != null) {
                 logger.info("Created thumbnail for " + resource);
             }

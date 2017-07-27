@@ -224,7 +224,7 @@ public class ACLEditController extends SimpleFormController<ACLEditCommand>
                 bex.addAllErrors(errors);
                 return showForm(request, errors, getFormView(), errors.getModel());
             }
-            resource = repository.storeACL(token, resource.getURI(), acl);
+            resource = repository.storeACL(token, null, resource.getURI(), acl);
             return new ModelAndView(getSuccessView());
         }
 

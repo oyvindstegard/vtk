@@ -52,6 +52,7 @@ import org.springframework.web.servlet.ModelAndView;
 import org.springframework.web.servlet.View;
 import org.springframework.web.servlet.mvc.Controller;
 import org.springframework.web.servlet.support.RequestContextUtils;
+import vtk.repository.Lock;
 
 import vtk.repository.Path;
 import vtk.repository.Repository;
@@ -141,7 +142,8 @@ public class AjaxEditorController implements Controller {
                 p.getQualifiedName(),
                 Repository.Depth.ZERO,
                 600,
-                null
+                null,
+                Lock.Type.EXCLUSIVE
         );
         String type = resource.getResourceType();
         Locale locale = RequestContextUtils.getLocale(request);

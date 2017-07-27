@@ -84,7 +84,7 @@ public class DeleteCommentController extends AbstractController implements Initi
         Resource resource = repository.retrieve(token, uri, true);
 
         if (this.deleteAllComments) {
-            repository.deleteAllComments(token, resource);
+            repository.deleteAllComments(token, null, resource);
         } else {
             String id = request.getParameter("comment-id");
             if (id == null) throw new ResourceNotFoundException(uri);
@@ -93,7 +93,7 @@ public class DeleteCommentController extends AbstractController implements Initi
             if (comment == null) {
                 throw new ResourceNotFoundException(uri);
             }
-            repository.deleteComment(token, resource, comment);
+            repository.deleteComment(token, null, resource, comment);
         }
         
         Map<String, Object> model = new HashMap<String, Object>();

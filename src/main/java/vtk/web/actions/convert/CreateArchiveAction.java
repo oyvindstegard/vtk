@@ -72,7 +72,7 @@ public class CreateArchiveAction implements CopyAction {
         try {
             this.archiver.createArchive(token, resource, bo, properties);
             logger.info("Storing archive contents to '" + copyUri + "'");
-            Resource dest = this.repository.createDocument(token, copyUri, ContentInputSources.fromFile(outFile, true));
+            Resource dest = this.repository.createDocument(token, null, copyUri, ContentInputSources.fromFile(outFile, true));
             if (!dest.isReadRestricted()) {
                 logger.warn("The destination '" + copyUri + "' is open for access to all!");
             }

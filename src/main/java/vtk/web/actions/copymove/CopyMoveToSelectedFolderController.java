@@ -199,13 +199,13 @@ public class CopyMoveToSelectedFolderController implements Controller {
 	                        continue;
 	                    }
 	                    else { // Overwrite
-	                        repository.delete(token, newResourceUri, false);
+	                        repository.delete(token, null, newResourceUri, false);
 	                    }
 	                }
 	            }
 	            if (!gatherExistingFilenames || !shouldOverwriteExisting) {
 	                if (moveAction) {
-	                    repository.move(token, fileUri, newResourceUri, false);
+	                    repository.move(token, null, fileUri, newResourceUri, false);
 	                }
 	                else {
 	                    Path destUri = newResourceUri;

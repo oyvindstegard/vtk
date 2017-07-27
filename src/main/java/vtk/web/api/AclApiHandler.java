@@ -164,7 +164,7 @@ public class AclApiHandler implements HttpRequestHandler {
             return Result.attempt(() -> {
                 try {
                     return requestContext.getRepository()
-                            .storeACL(requestContext.getSecurityToken(), 
+                            .storeACL(requestContext.getSecurityToken(), null,
                                     requestContext.getResourceURI(), acl);
                 }
                 catch (InvalidPrincipalException e) {
@@ -198,7 +198,7 @@ public class AclApiHandler implements HttpRequestHandler {
             try {
                 RequestContext requestContext = RequestContext.getRequestContext(request);
                 return requestContext.getRepository()
-                        .deleteACL(requestContext.getSecurityToken(), resource.getURI());
+                        .deleteACL(requestContext.getSecurityToken(), null, resource.getURI());
             }
             catch (Exception e) {
                     throw new RuntimeException(e);

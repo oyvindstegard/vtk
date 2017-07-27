@@ -113,7 +113,7 @@ public class CopyController extends AbstractWebdavController {
                         + ", preserveACL = " + preserveACL
                         + ", existed = " + existed);
             }
-            repository.copy(token, uri, destURI, overwrite, preserveACL);
+            repository.copy(token, null, uri, destURI, overwrite, preserveACL);
             
             int status = existed ? HttpServletResponse.SC_NO_CONTENT : 
                 HttpServletResponse.SC_CREATED;

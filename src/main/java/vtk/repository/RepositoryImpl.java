@@ -111,7 +111,6 @@ import vtk.util.repository.MimeHelper;
  * checks/verifications and DAO operations should be done before any
  * content-store operation.
  * <p>
- * XXX implement locking of depth 'infinity' XXX: namespace locking/concurrency
  * XXX: Evaluate exception practice, handling and propagation 
  * XXX: make content store participate in transactions 
  * XXX: externalize caching 
@@ -470,7 +469,7 @@ public class RepositoryImpl implements Repository, ApplicationContextAware,
     @Transactional(readOnly=false)
     @OpLog(write = true)
     @Override
-    public Resource createCollection(@OpLogParam(name="token") String token, @OpLogParam Path uri) throws IllegalOperationException, AuthorizationException,
+    public Resource createCollection(@OpLogParam(name="token") String token, String lockToken, @OpLogParam Path uri) throws IllegalOperationException, AuthorizationException,
             AuthenticationException, ResourceLockedException, ReadOnlyException, IOException {
         Principal principal = getPrincipal(token);
         ResourceImpl resource = this.dao.load(uri);
@@ -482,7 +481,7 @@ public class RepositoryImpl implements Repository, ApplicationContextAware,
             throw new IllegalOperationException("Either parent doesn't exist or parent is document");
         }
 
-        checkLock(parent, principal);
+        checkLock(parent, principal, lockToken);
         // Allow if principal has at least CREATE_UNPUBLISHED on parent
         this.authorizationManager.authorizeCreateUnpublished(parent.getURI(), principal);
         
@@ -533,7 +532,7 @@ public class RepositoryImpl implements Repository, ApplicationContextAware,
     @Transactional(readOnly=false)
     @OpLog(write = true)
     @Override
-    public void copy(@OpLogParam(name = "token") String token, @OpLogParam Path srcUri, @OpLogParam Path destUri, boolean overwrite, boolean copyAcl)
+    public void copy(@OpLogParam(name = "token") String token, String lockToken, @OpLogParam Path srcUri, @OpLogParam Path destUri, boolean overwrite, boolean copyAcl)
             throws IllegalOperationException, AuthorizationException, AuthenticationException,
             FailedDependencyException, ResourceOverwriteException, ResourceLockedException, ResourceNotFoundException,
             ReadOnlyException, IOException {
@@ -561,9 +560,9 @@ public class RepositoryImpl implements Repository, ApplicationContextAware,
         }
 
         if (dest != null) {
-            checkLock(dest, principal);
+            checkLock(dest, principal, lockToken);
         }
-        checkLock(destParent, principal);
+        checkLock(destParent, principal, lockToken);
         this.authorizationManager.authorizeCopy(srcUri, destUri, principal, overwrite);
         checkMaxChildren(destParent);
 
@@ -628,7 +627,7 @@ public class RepositoryImpl implements Repository, ApplicationContextAware,
     @Transactional(readOnly=false)
     @OpLog(write = true)
     @Override
-    public void move(@OpLogParam(name = "token") String token, 
+    public void move(@OpLogParam(name = "token") String token, String lockToken,
             @OpLogParam Path srcUri, @OpLogParam Path destUri, boolean overwrite) throws IllegalOperationException,
             AuthorizationException, AuthenticationException, FailedDependencyException, ResourceOverwriteException,
             ResourceLockedException, ResourceNotFoundException, ReadOnlyException, IOException {
@@ -658,12 +657,12 @@ public class RepositoryImpl implements Repository, ApplicationContextAware,
             throw new IllegalOperationException("Invalid destination resource");
         }
 
-        checkLock(src, principal);
-        checkLock(srcParent, principal);
+        checkLock(src, principal, lockToken);
+        checkLock(srcParent, principal, lockToken);
         if (dest != null) {
-            checkLock(dest, principal);
+            checkLock(dest, principal, lockToken);
         }
-        checkLock(destParent, principal);
+        checkLock(destParent, principal, lockToken);
 
         this.authorizationManager.authorizeMove(srcUri, destUri, principal, overwrite);
         checkMaxChildren(destParent);
@@ -730,7 +729,7 @@ public class RepositoryImpl implements Repository, ApplicationContextAware,
     @Transactional(readOnly=false)
     @OpLog(write = true)
     @Override
-    public void delete(@OpLogParam(name = "token") String token, @OpLogParam Path uri, @OpLogParam boolean restorable) throws IllegalOperationException,
+    public void delete(@OpLogParam(name = "token") String token, String lockToken, @OpLogParam Path uri, @OpLogParam boolean restorable) throws IllegalOperationException,
             AuthorizationException, AuthenticationException, ResourceNotFoundException, ResourceLockedException,
             FailedDependencyException, ReadOnlyException, IOException {
 
@@ -755,8 +754,8 @@ public class RepositoryImpl implements Repository, ApplicationContextAware,
         } else {
             this.authorizationManager.authorizeDeleteUnpublished(uri, principal);
         }
-        checkLock(parentCollection, principal);
-        checkLock(resourceToDelete, principal);
+        checkLock(parentCollection, principal, lockToken);
+        checkLock(resourceToDelete, principal, lockToken);
         
         try {
 
@@ -823,7 +822,7 @@ public class RepositoryImpl implements Repository, ApplicationContextAware,
     @Transactional(readOnly=false)
     @OpLog(write = true)
     @Override
-    public void recover(@OpLogParam(name = "token") String token, @OpLogParam Path parentUri, @OpLogParam RecoverableResource recoverableResource)
+    public void recover(@OpLogParam(name = "token") String token, String lockToken, @OpLogParam Path parentUri, @OpLogParam RecoverableResource recoverableResource)
             throws ResourceNotFoundException, AuthorizationException, AuthenticationException, IOException {
 
         Principal principal = getPrincipal(token);
@@ -833,7 +832,7 @@ public class RepositoryImpl implements Repository, ApplicationContextAware,
             throw new ResourceNotFoundException(parentUri);
         }
 
-        checkLock(parent, principal);
+        checkLock(parent, principal, lockToken);
         this.authorizationManager.authorizeReadWrite(parentUri, principal);
 
         try {
@@ -857,7 +856,7 @@ public class RepositoryImpl implements Repository, ApplicationContextAware,
     @Transactional(readOnly=false)
     @OpLog(write = true)
     @Override
-    public void deleteRecoverable(@OpLogParam(name = "token") String token, @OpLogParam Path parentUri, @OpLogParam RecoverableResource recoverableResource)
+    public void deleteRecoverable(@OpLogParam(name = "token") String token, String lockToken, @OpLogParam Path parentUri, @OpLogParam RecoverableResource recoverableResource)
             throws IOException {
 
         ResourceImpl parent = this.dao.load(parentUri);
@@ -874,7 +873,7 @@ public class RepositoryImpl implements Repository, ApplicationContextAware,
     @OpLog(write = true)
     @Override
     public Resource lock(@OpLogParam(name = "token") String token, @OpLogParam Path uri, String ownerInfo, Repository.Depth depth, int requestedTimeoutSeconds,
-            String lockToken) throws ResourceNotFoundException, AuthorizationException, AuthenticationException,
+            String lockToken, Lock.Type lockType) throws ResourceNotFoundException, AuthorizationException, AuthenticationException,
             FailedDependencyException, ResourceLockedException, IllegalOperationException, ReadOnlyException,
             IOException {
 
@@ -898,7 +897,7 @@ public class RepositoryImpl implements Repository, ApplicationContextAware,
             }
         }
 
-        checkLock(r, principal);
+        checkLock(r, principal, lockToken);
 
         // Principal with at least privelege READ_WRITE_UNPUBLISHED required to lock resource:
         this.authorizationManager.authorizeReadWriteUnpublished(uri, principal);
@@ -918,11 +917,11 @@ public class RepositoryImpl implements Repository, ApplicationContextAware,
                 timeout = new Date(System.currentTimeMillis() + this.lockDefaultTimeout);
             }
 
-            Lock lock = new Lock(newLockToken, principal, ownerInfo, depth, timeout);
+            Lock lock = new Lock(newLockToken, principal, ownerInfo, depth, timeout, lockType);
             r.setLock(lock);
         } else {
             r.setLock(new Lock(r.getLock().getLockToken(), principal, ownerInfo, depth, new Date(System
-                    .currentTimeMillis() + (requestedTimeoutSeconds * 1000))));
+                    .currentTimeMillis() + (requestedTimeoutSeconds * 1000)), r.getLock().getType()));
         }
 
         ResourceImpl newResource = this.dao.storeLock(r);
@@ -933,7 +932,7 @@ public class RepositoryImpl implements Repository, ApplicationContextAware,
         }
     }
 
-    private void checkLock(Resource resource, Principal principal) throws ResourceLockedException, IOException,
+    private void checkLock(Resource resource, Principal principal, String lockToken) throws ResourceLockedException, IOException,
             AuthenticationException {
         Lock lock = resource.getLock();
         if (lock == null) {
@@ -942,10 +941,18 @@ public class RepositoryImpl implements Repository, ApplicationContextAware,
         if (principal == null) {
             throw new AuthenticationException();
         }
-        if (lock.getPrincipal().equals(principal)) {
-            return;
+        switch (lock.getType()) {
+            case EXCLUSIVE:
+                if (!lock.getPrincipal().equals(principal)) {
+                    throw new ResourceLockedException("Resource locked by " + lock.getPrincipal());
+                }
+                return;
+
+            case SHARED_ACL_WRITE:
+                if (!lock.getLockToken().equals(lockToken)) {
+                    throw new ResourceLockedException("Shared lock present, token mismatch");
+                }
         }
-        throw new ResourceLockedException();
     }
 
     @Transactional(readOnly=false)
@@ -959,7 +966,7 @@ public class RepositoryImpl implements Repository, ApplicationContextAware,
             throw new ResourceNotFoundException(uri);
         }
 
-        this.authorizationManager.authorizeUnlock(uri, principal);
+        this.authorizationManager.authorizeUnlock(uri, principal, lockToken);
 
         if (r.getLock() != null) {
             r.setLock(null);
@@ -970,15 +977,15 @@ public class RepositoryImpl implements Repository, ApplicationContextAware,
     @Transactional(readOnly=false)
     @OpLog(write = true)
     @Override
-    public Resource store(@OpLogParam(name = "token") String token, @OpLogParam Resource resource) throws ResourceNotFoundException, AuthorizationException,
+    public Resource store(@OpLogParam(name = "token") String token, String lockToken, @OpLogParam Resource resource) throws ResourceNotFoundException, AuthorizationException,
             ResourceLockedException, AuthenticationException, IllegalOperationException, ReadOnlyException, IOException {
-        return store(token, resource, null);
+        return store(token, lockToken, resource, null);
     }
 
     @Transactional(readOnly=false)
     @OpLog(write = true)
     @Override
-    public Resource store(@OpLogParam(name = "token") String token, @OpLogParam Resource resource, @OpLogParam StoreContext storeContext) throws ResourceNotFoundException,
+    public Resource store(@OpLogParam(name = "token") String token, String lockToken, @OpLogParam Resource resource, @OpLogParam StoreContext storeContext) throws ResourceNotFoundException,
             AuthorizationException, ResourceLockedException, AuthenticationException, IllegalOperationException,
             ReadOnlyException, IOException {
 
@@ -1002,12 +1009,12 @@ public class RepositoryImpl implements Repository, ApplicationContextAware,
         // System change
         if (storeContext != null) {
             if (storeContext instanceof SystemChangeContext) {
-                return storeSystemChange(uri, resource, original, principal, (SystemChangeContext) storeContext);
+                return storeSystemChange(uri, resource, original, principal, lockToken, (SystemChangeContext) storeContext);
             }
 
             // Inheritable props store
             if (storeContext instanceof InheritablePropertiesStoreContext) {
-                return storeInheritableProps(uri, resource, original, principal,
+                return storeInheritableProps(uri, resource, original, principal, lockToken,
                         (InheritablePropertiesStoreContext) storeContext);
             }
 
@@ -1015,7 +1022,7 @@ public class RepositoryImpl implements Repository, ApplicationContextAware,
         }
 
         // Regular store
-        checkLock(original, principal);
+        checkLock(original, principal, lockToken);
 
         if (original.hasPublishDate()) {
             this.authorizationManager.authorizeReadWrite(uri, principal);
@@ -1054,14 +1061,14 @@ public class RepositoryImpl implements Repository, ApplicationContextAware,
         }
     }
 
-    private Resource storeSystemChange(Path uri, Resource resource, ResourceImpl original, Principal principal,
+    private Resource storeSystemChange(Path uri, Resource resource, ResourceImpl original, Principal principal, String lockToken,
             SystemChangeContext context) throws IOException {
         // Require root role for system change
         this.authorizationManager.authorizeRootRoleAction(principal);
 
         // System change stores can choose to ignore resource locking
         if (!context.isIgnoreLocking()) {
-            checkLock(original, principal);
+            checkLock(original, principal, lockToken);
         }
 
         try {
@@ -1095,12 +1102,12 @@ public class RepositoryImpl implements Repository, ApplicationContextAware,
         }
     }
 
-    private Resource storeInheritableProps(Path uri, Resource resource, ResourceImpl original, Principal principal,
+    private Resource storeInheritableProps(Path uri, Resource resource, ResourceImpl original, Principal principal, String lockToken,
             InheritablePropertiesStoreContext context) throws IOException {
 
         // Lock checking is delegated to specialized store context handling methods
         // so make sure we check it first.
-        checkLock(original, principal);
+        checkLock(original, principal, lockToken);
         
         // Normal write privilege required
         if (original.hasPublishDate()) {
@@ -1144,7 +1151,7 @@ public class RepositoryImpl implements Repository, ApplicationContextAware,
     @Transactional(readOnly=false)
     @OpLog(write = true)
     @Override
-    public Resource createDocument(@OpLogParam(name = "token") String token, @OpLogParam Path uri, ContentInputSource inputContent) throws IllegalOperationException,
+    public Resource createDocument(@OpLogParam(name = "token") String token, String lockToken, @OpLogParam Path uri, ContentInputSource inputContent) throws IllegalOperationException,
             AuthorizationException, AuthenticationException, ResourceLockedException, ReadOnlyException, IOException {
 
         Principal principal = getPrincipal(token);
@@ -1156,7 +1163,7 @@ public class RepositoryImpl implements Repository, ApplicationContextAware,
             throw new IllegalOperationException("Either parent doesn't exist " + "or parent is document");
         }
 
-        checkLock(parent, principal);
+        checkLock(parent, principal, lockToken);
 
         // Allow if principal has at least privileges to create unpublished resource
         this.authorizationManager.authorizeCreateUnpublished(parent.getURI(), principal);
@@ -1220,7 +1227,7 @@ public class RepositoryImpl implements Repository, ApplicationContextAware,
     @Transactional(readOnly=false)
     @OpLog(write = true)
     @Override
-    public Resource storeContent(@OpLogParam(name = "token") String token, @OpLogParam Path uri, ContentInputSource contentInput) throws AuthorizationException,
+    public Resource storeContent(@OpLogParam(name = "token") String token, String lockToken, @OpLogParam Path uri, ContentInputSource contentInput) throws AuthorizationException,
             AuthenticationException, ResourceNotFoundException, ResourceLockedException, IllegalOperationException,
             ReadOnlyException, IOException {
 
@@ -1234,7 +1241,7 @@ public class RepositoryImpl implements Repository, ApplicationContextAware,
             throw new IllegalOperationException("resource is collection");
         }
 
-        checkLock(r, principal);
+        checkLock(r, principal, lockToken);
         if (r.hasPublishDate()) {
             this.authorizationManager.authorizeReadWrite(uri, principal);
         } else {
@@ -1277,7 +1284,7 @@ public class RepositoryImpl implements Repository, ApplicationContextAware,
     @Transactional(readOnly=false)
     @OpLog(write = true)
     @Override
-    public Resource storeContent(@OpLogParam(name = "token") String token, @OpLogParam Path uri, ContentInputSource contentInput, @OpLogParam Revision revision)
+    public Resource storeContent(@OpLogParam(name = "token") String token, String lockToken, @OpLogParam Path uri, ContentInputSource contentInput, @OpLogParam Revision revision)
             throws AuthorizationException, AuthenticationException, ResourceNotFoundException, ResourceLockedException,
             IllegalOperationException, ReadOnlyException, IOException {
 
@@ -1317,7 +1324,7 @@ public class RepositoryImpl implements Repository, ApplicationContextAware,
             throw new IllegalOperationException("Only revisions of type WORKING_COPY may be updated" + r);
         }
 
-        checkLock(r, principal);
+        checkLock(r, principal, lockToken);
         
         // READ_WRITE_UNPUBLISHED is sufficient for updating working copy, regardless of publication status:
         this.authorizationManager.authorizeReadWriteUnpublished(uri, principal);
@@ -1362,78 +1369,87 @@ public class RepositoryImpl implements Repository, ApplicationContextAware,
         }
     }
 
-    /**
-     * Delegate directly to
-     * {@link AuthorizationManager#authorize(vtk.security.Principal, vtk.repository.Acl, vtk.repository.Privilege)  }
-     */
     @Override
     public boolean authorize(Principal principal, Acl acl, Privilege privilege) {
         return this.authorizationManager.authorize(principal, acl, privilege);
     }
 
-    @Transactional(readOnly=true)
-    @Override
-    public boolean isAuthorized(Resource resource, RepositoryAction action, Principal principal, boolean considerLocks)
-            throws IOException {
-        if (resource == null) {
+    private boolean isAuthorizedInternal(Resource r, RepositoryAction a, Principal p, boolean considerLocks, String lockToken) throws IOException {
+
+        // TODO verify lockToken
+
+         if (r == null) {
             throw new IllegalArgumentException("Resource is NULL");
         }
-        if (action == null) {
+        if (a == null) {
             throw new IllegalArgumentException("Action is NULL");
         }
-        if (action == RepositoryAction.COPY || action == RepositoryAction.MOVE) {
-            throw new IllegalArgumentException("Cannot authorize action " + action + " on a single resource");
+        if (a == RepositoryAction.COPY || a == RepositoryAction.MOVE) {
+            throw new IllegalArgumentException("Cannot authorize action " + a + " on a single resource");
         }
         try {
             if (considerLocks) {
-                if (action == RepositoryAction.DELETE
-                     || action == RepositoryAction.DELETE_UNPUBLISHED) {
-                    if (resource.getURI().isRoot()) {
+                if (a == RepositoryAction.DELETE
+                     || a == RepositoryAction.DELETE_UNPUBLISHED) {
+                    if (r.getURI().isRoot()) {
                         return false;
                     }
-                    Resource parent = this.dao.load(resource.getURI().getParent());
-                    checkLock(parent, principal);
-                    checkLock(resource, principal);
+                    Resource parent = this.dao.load(r.getURI().getParent());
+                    checkLock(parent, p, lockToken);
+                    checkLock(r, p, lockToken);
 
-                // Else check lock if action can modify repo:  
-                } else if (action == RepositoryAction.ALL           
-                        || action == RepositoryAction.ADD_COMMENT
-                        || action == RepositoryAction.EDIT_COMMENT
-                        || action == RepositoryAction.REPOSITORY_ADMIN_ROLE_ACTION
-                        || action == RepositoryAction.REPOSITORY_ROOT_ROLE_ACTION
-                        || action == RepositoryAction.UNEDITABLE_ACTION
-                        || action == RepositoryAction.UNLOCK
-                        || action == RepositoryAction.CREATE
-                        || action == RepositoryAction.CREATE_UNPUBLISHED
-                        || action == RepositoryAction.WRITE
-                        || action == RepositoryAction.READ_WRITE
-                        || action == RepositoryAction.PUBLISH_UNPUBLISH
-                        || action == RepositoryAction.READ_WRITE_UNPUBLISHED
-                        || action == RepositoryAction.WRITE_ACL) {
-                    checkLock(resource, principal);
+                // Else check lock if action can modify repo:
+                } else if (a == RepositoryAction.ALL
+                        || a == RepositoryAction.ADD_COMMENT
+                        || a == RepositoryAction.EDIT_COMMENT
+                        || a == RepositoryAction.REPOSITORY_ADMIN_ROLE_ACTION
+                        || a == RepositoryAction.REPOSITORY_ROOT_ROLE_ACTION
+                        || a == RepositoryAction.UNEDITABLE_ACTION
+                        || a == RepositoryAction.UNLOCK
+                        || a == RepositoryAction.CREATE
+                        || a == RepositoryAction.CREATE_UNPUBLISHED
+                        || a == RepositoryAction.WRITE
+                        || a == RepositoryAction.READ_WRITE
+                        || a == RepositoryAction.PUBLISH_UNPUBLISH
+                        || a == RepositoryAction.READ_WRITE_UNPUBLISHED
+                        || a == RepositoryAction.WRITE_ACL) {
+                    checkLock(r, p, lockToken);
                 }
             }
-            this.authorizationManager.authorizeAction(resource.getURI(), action, principal);
+            this.authorizationManager.authorizeAction(r.getURI(), a, p);
             return true;
         } catch (AuthenticationException e) {
             return false;
         } catch (RepositoryException e) {
             return false;
         }
+
+    }
+
+    @Transactional(readOnly=true)
+    @Override
+    public boolean isAuthorized(Resource r, RepositoryAction a, Principal p, boolean considerLocks) throws IOException {
+        return isAuthorizedInternal(r, a, p, considerLocks, null);
+    }
+
+    @Transactional(readOnly=true)
+    @Override
+    public boolean isAuthorized(Resource r, RepositoryAction a, Principal p, String lockToken) throws IOException {
+        return isAuthorizedInternal(r, a, p, true, lockToken);
     }
 
     @Transactional(readOnly=false)
     @OpLog(write = true)
     @Override
-    public Resource storeACL(@OpLogParam(name = "token") String token, @OpLogParam Path uri, Acl acl) throws ResourceNotFoundException, AuthorizationException,
+    public Resource storeACL(@OpLogParam(name = "token") String token, String lockToken, @OpLogParam Path uri, Acl acl) throws ResourceNotFoundException, AuthorizationException,
             AuthenticationException, IllegalOperationException, ReadOnlyException, IOException {
-        return this.storeACL(token, uri, acl, true);
+        return this.storeACL(token, lockToken, uri, acl, true);
     }
 
     @Transactional(readOnly=false)
     @OpLog(write = true)
     @Override
-    public Resource storeACL(@OpLogParam(name = "token") String token, @OpLogParam Path uri, Acl acl, boolean validateACL) throws ResourceNotFoundException,
+    public Resource storeACL(@OpLogParam(name = "token") String token, String lockToken, @OpLogParam Path uri, Acl acl, boolean validateACL) throws ResourceNotFoundException,
             AuthorizationException, AuthenticationException, IllegalOperationException, ReadOnlyException, IOException {
 
         if (uri == null) {
@@ -1448,7 +1464,7 @@ public class RepositoryImpl implements Repository, ApplicationContextAware,
         if (r == null) {
             throw new ResourceNotFoundException(uri);
         }
-        checkLock(r, principal);
+        checkLock(r, principal, lockToken);
         if (!validateACL) {
             // Writing ACL without validation is a root role action
             this.authorizationManager.authorizeRootRoleAction(principal);
@@ -1485,7 +1501,7 @@ public class RepositoryImpl implements Repository, ApplicationContextAware,
     @Transactional(readOnly=false)
     @OpLog(write = true)
     @Override
-    public Resource deleteACL(@OpLogParam(name = "token") String token, @OpLogParam Path uri) throws ResourceNotFoundException, AuthorizationException,
+    public Resource deleteACL(@OpLogParam(name = "token") String token, String lockToken, @OpLogParam Path uri) throws ResourceNotFoundException, AuthorizationException,
             AuthenticationException, IllegalOperationException, ReadOnlyException, IOException {
         if (uri == null) {
             throw new IllegalArgumentException("URI is null");
@@ -1499,7 +1515,7 @@ public class RepositoryImpl implements Repository, ApplicationContextAware,
         if (r == null) {
             throw new ResourceNotFoundException(uri);
         }
-        checkLock(r, principal);
+        checkLock(r, principal, lockToken);
         this.authorizationManager.authorizeAll(r.getURI(), principal);
 
         if (r.isInheritedAcl()) {
@@ -1559,7 +1575,7 @@ public class RepositoryImpl implements Repository, ApplicationContextAware,
     @Transactional(readOnly=false)
     @OpLog(write = true)
     @Override
-    public Revision createRevision(@OpLogParam(name = "token") String token, @OpLogParam Path uri, @OpLogParam Revision.Type type) throws ReadOnlyException,
+    public Revision createRevision(@OpLogParam(name = "token") String token, String lockToken, @OpLogParam Path uri, @OpLogParam Revision.Type type) throws ReadOnlyException,
             AuthorizationException, ResourceNotFoundException, AuthenticationException, IOException {
         if (uri == null) {
             throw new IllegalArgumentException("URI is NULL");
@@ -1573,7 +1589,7 @@ public class RepositoryImpl implements Repository, ApplicationContextAware,
         }
         Principal principal = getPrincipal(token);
 
-        checkLock(resource, principal);
+        checkLock(resource, principal, lockToken);
         if (resource.hasPublishDate()) {
             if (type == Revision.Type.WORKING_COPY) {
                 // Allow for principal with only READ_WRITE_UNPUBLISHED for working copy
@@ -1653,7 +1669,7 @@ public class RepositoryImpl implements Repository, ApplicationContextAware,
     @Transactional(readOnly=false)
     @OpLog(write = true)
     @Override
-    public void deleteRevision(@OpLogParam(name = "token") String token, @OpLogParam Path uri, @OpLogParam Revision revision) throws ResourceNotFoundException,
+    public void deleteRevision(@OpLogParam(name = "token") String token, String lockToken, @OpLogParam Path uri, @OpLogParam Revision revision) throws ResourceNotFoundException,
             AuthorizationException, AuthenticationException, IOException {
 
         if (uri == null) {
@@ -1668,7 +1684,7 @@ public class RepositoryImpl implements Repository, ApplicationContextAware,
         }
         Principal principal = getPrincipal(token);
 
-        checkLock(resource, principal);
+        checkLock(resource, principal, lockToken);
         if (revision.getType() == Revision.Type.WORKING_COPY) {
             this.authorizationManager.authorizeReadWriteUnpublished(resource.getURI(), principal);
         } else {
@@ -1735,7 +1751,7 @@ public class RepositoryImpl implements Repository, ApplicationContextAware,
     @Transactional(readOnly=false)
     @OpLog(write = true)
     @Override
-    public Comment addComment(@OpLogParam(name="token") String token, @OpLogParam Resource resource, String title, String text) {
+    public Comment addComment(@OpLogParam(name="token") String token, String lockToken, @OpLogParam Resource resource, String title, String text) {
         Principal principal = getPrincipal(token);
 
         if (resource == null) {
@@ -1752,7 +1768,7 @@ public class RepositoryImpl implements Repository, ApplicationContextAware,
                 throw new ResourceNotFoundException(resource.getURI());
             }
 
-            checkLock(resource, principal);
+            checkLock(resource, principal, lockToken);
             this.authorizationManager.authorizeAddComment(resource.getURI(), principal);
 
             List<Comment> comments = this.commentDAO.listCommentsByResource(resource, false, this.maxComments);
@@ -1791,7 +1807,7 @@ public class RepositoryImpl implements Repository, ApplicationContextAware,
     @Transactional(readOnly=false)
     @OpLog
     @Override
-    public Comment addComment(@OpLogParam(name="token") String token, @OpLogParam Comment comment) {
+    public Comment addComment(@OpLogParam(name="token") String token, String lockToken, @OpLogParam Comment comment) {
 
         Principal principal = getPrincipal(token);
 
@@ -1804,7 +1820,7 @@ public class RepositoryImpl implements Repository, ApplicationContextAware,
     @Transactional(readOnly=false)
     @OpLog(write = true)
     @Override
-    public void deleteComment(@OpLogParam(name="token") String token, @OpLogParam Resource resource, Comment comment) {
+    public void deleteComment(@OpLogParam(name="token") String token, String lockToken, @OpLogParam Resource resource, Comment comment) {
         Principal principal = getPrincipal(token);
 
         if (resource == null) {
@@ -1821,7 +1837,7 @@ public class RepositoryImpl implements Repository, ApplicationContextAware,
                 throw new ResourceNotFoundException(resource.getURI());
             }
 
-            checkLock(resource, principal);
+            checkLock(resource, principal, lockToken);
             this.authorizationManager.authorizeEditComment(resource.getURI(), principal);
             this.commentDAO.deleteComment(comment);
 
@@ -1844,7 +1860,7 @@ public class RepositoryImpl implements Repository, ApplicationContextAware,
     @Transactional(readOnly=false)
     @OpLog(write = true)
     @Override
-    public void deleteAllComments(@OpLogParam(name="token") String token, @OpLogParam Resource resource) {
+    public void deleteAllComments(@OpLogParam(name="token") String token, String lockToken, @OpLogParam Resource resource) {
         Principal principal = getPrincipal(token);
 
         if (resource == null) {
@@ -1861,7 +1877,7 @@ public class RepositoryImpl implements Repository, ApplicationContextAware,
                 throw new ResourceNotFoundException(resource.getURI());
             }
 
-            checkLock(resource, principal);
+            checkLock(resource, principal, lockToken);
             this.authorizationManager.authorizeEditComment(resource.getURI(), principal);
             this.commentDAO.deleteAllComments(resource);
 
@@ -1884,7 +1900,7 @@ public class RepositoryImpl implements Repository, ApplicationContextAware,
     @Transactional(readOnly=false)
     @OpLog(write = true)
     @Override
-    public Comment updateComment(@OpLogParam(name="token") String token, @OpLogParam Resource resource, Comment comment) {
+    public Comment updateComment(@OpLogParam(name="token") String token, String lockToken, @OpLogParam Resource resource, Comment comment) {
         Principal principal = getPrincipal(token);
 
         if (resource == null) {
@@ -1913,7 +1929,7 @@ public class RepositoryImpl implements Repository, ApplicationContextAware,
                 throw new IllegalArgumentException("Trying to update a non-existing comment");
             }
 
-            checkLock(resource, principal);
+            checkLock(resource, principal, lockToken);
             this.authorizationManager.authorizeEditComment(resource.getURI(), principal);
             comment = this.commentDAO.updateComment(comment);
             return comment;

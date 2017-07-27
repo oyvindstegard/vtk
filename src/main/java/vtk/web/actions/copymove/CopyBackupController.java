@@ -50,7 +50,7 @@ public class CopyBackupController implements Controller {
         Path resourceCopyDestUri = null;
         try {
           resourceCopyDestUri = copyHelper.makeDestUri(resourceToCopySrcUri, repository, token, resource);
-          repository.copy(token, resourceToCopySrcUri, resourceCopyDestUri, false, true);
+          repository.copy(token, null, resourceToCopySrcUri, resourceCopyDestUri, false, true);
         } catch (ResourceLockedException rle) {
           response.setStatus(423);
           return null;

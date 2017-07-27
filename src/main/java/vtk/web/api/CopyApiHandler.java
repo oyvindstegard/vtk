@@ -108,7 +108,7 @@ public class CopyApiHandler implements HttpRequestHandler {
             try {
                 Repository repository = requestContext.getRepository();
                 String token = requestContext.getSecurityToken();
-                repository.copy(token, req.source, req.destination, false, false);
+                repository.copy(token, null, req.source, req.destination, false, false);
                 // XXX: begin temporary code:
                 if (req.title.isPresent()) {
                     Resource r = repository.retrieve(token, req.destination, true);
@@ -116,7 +116,7 @@ public class CopyApiHandler implements HttpRequestHandler {
                     Property title = typeInfo.createProperty(Namespace.DEFAULT_NAMESPACE, "userTitle");
                     title.setStringValue(req.title.get());
                     r.addProperty(title);
-                    repository.store(token, r);
+                    repository.store(token, null, r);
                 }
                 // XXX: end temporary code
                 return new ApiResponseBuilder(HttpServletResponse.SC_OK)

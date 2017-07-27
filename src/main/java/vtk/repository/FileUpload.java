@@ -113,10 +113,10 @@ public class FileUpload {
                 }
 
                 if (this.repository.exists(token, path)) {
-                    this.repository.delete(token, path, false);
+                    this.repository.delete(token, null, path, false);
                 }
                 this.repository.createDocument(
-                        token, path, ContentInputSources.fromFile(tempFile.file(), true)
+                        token, null, path, ContentInputSources.fromFile(tempFile.file(), true)
                 );
             }
         }

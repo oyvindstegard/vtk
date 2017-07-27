@@ -42,6 +42,7 @@ import org.springframework.beans.factory.annotation.Required;
 
 import vtk.repository.ContentInputSources;
 import vtk.repository.InheritablePropertiesStoreContext;
+import vtk.repository.Lock;
 import vtk.repository.Path;
 import vtk.repository.Repository;
 import vtk.repository.Repository.Depth;
@@ -165,15 +166,15 @@ public class ResourceWrapperManager {
                 }
 
                 if (!sc.getAffectedProperties().isEmpty()) {
-                    resource = repository.store(token, resource, sc);
+                    resource = repository.store(token, null, resource, sc);
                 }
                 else {
-                    resource = repository.store(token, resource);
+                    resource = repository.store(token, null, resource);
                 }
 
             }
             else {
-                resource = repository.store(token, resource);
+                resource = repository.store(token, null, resource);
             }
         }
 
@@ -185,17 +186,17 @@ public class ResourceWrapperManager {
                 // Store default encoding if unsupported encoding
                 if (Charset.isSupported(resource.getCharacterEncoding())) {
                     bytes = wrapper.getContent().getStringRepresentation().getBytes(resource.getCharacterEncoding());
-                    repository.storeContent(token, uri, ContentInputSources.fromBytes(bytes));
+                    repository.storeContent(token, null, uri, ContentInputSources.fromBytes(bytes));
 
                 }
                 else {
                     bytes = wrapper.getContent().getStringRepresentation().getBytes(defaultCharacterEncoding);
-                    repository.storeContent(token, uri, ContentInputSources.fromBytes(bytes));
+                    repository.storeContent(token, null, uri, ContentInputSources.fromBytes(bytes));
                 }
             }
             else {
                 bytes = wrapper.getContent().getStringRepresentation().getBytes(defaultCharacterEncoding);
-                repository.storeContent(token, uri, ContentInputSources.fromBytes(bytes));
+                repository.storeContent(token, null, uri, ContentInputSources.fromBytes(bytes));
             }
         }
         wrapper.setResource(resource);
@@ -227,7 +228,7 @@ public class ResourceWrapperManager {
         String token = requestContext.getSecurityToken();
         Path uri = requestContext.getResourceURI();
         Principal principal = requestContext.getPrincipal();
-        requestContext.getRepository().lock(token, uri, principal.getQualifiedName(), Depth.ZERO, 600, null);
+        requestContext.getRepository().lock(token, uri, principal.getQualifiedName(), Depth.ZERO, 600, null, Lock.Type.EXCLUSIVE);
     }
     
     public void setEditPropertyProvider(EditablePropertyProvider editPropertyProvider) {

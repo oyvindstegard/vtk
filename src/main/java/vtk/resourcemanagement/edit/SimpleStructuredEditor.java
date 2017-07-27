@@ -44,6 +44,7 @@ import org.springframework.web.servlet.ModelAndView;
 import org.springframework.web.servlet.mvc.Controller;
 
 import vtk.repository.ContentInputSources;
+import vtk.repository.Lock;
 import vtk.repository.Path;
 import vtk.repository.Property;
 import vtk.repository.Repository;
@@ -106,7 +107,7 @@ public class SimpleStructuredEditor implements Controller {
             else if (request.getParameter(ACTION_PARAMETER_VALUE_DELETE) != null) {
                 // This is going to be replaced later
                 repository.unlock(token, uri, null);
-                repository.delete(token, uri, true);
+                repository.delete(token, null, uri, true);
                 setRedirect(request, response, uri.getParent(), uri, ACTION_PARAMETER_VALUE_DELETE);
                 return null;
             }
@@ -127,7 +128,7 @@ public class SimpleStructuredEditor implements Controller {
         else if (resourceType.equals(currentResource.getResourceType())) {
             // Edit some document
             Principal principal = requestContext.getPrincipal();
-            repository.lock(token, uri, principal.getQualifiedName(), Depth.ZERO, 600, null);
+            repository.lock(token, uri, principal.getQualifiedName(), Depth.ZERO, 600, null, Lock.Type.EXCLUSIVE);
             InputStream stream = repository.getInputStream(token, uri, false);
             Json.MapContainer document = Json.parseToContainer(stream).asObject();
             model.put("properties", document.get("properties"));
@@ -168,7 +169,7 @@ public class SimpleStructuredEditor implements Controller {
         }
         document.put("properties", propertyValues);
         String str = JsonStreamer.toJson(document);
-        repository.storeContent(token, uri, ContentInputSources.fromBytes(str.getBytes("UTF-8")));
+        repository.storeContent(token, null, uri, ContentInputSources.fromBytes(str.getBytes("UTF-8")));
     }
 
     private Path createNewDocument(HttpServletRequest request, Repository repository, 
@@ -184,7 +185,7 @@ public class SimpleStructuredEditor implements Controller {
         String str = JsonStreamer.toJson(document);
         
         Path newUri = generateFilename(request, repository, token, uri);
-        Resource resource = repository.createDocument(token, newUri, ContentInputSources.fromBytes(str.getBytes("utf-8")));
+        Resource resource = repository.createDocument(token, null, newUri, ContentInputSources.fromBytes(str.getBytes("utf-8")));
         publishResource(resource, token, repository);
         return newUri;
     }
@@ -221,7 +222,7 @@ public class SimpleStructuredEditor implements Controller {
             resource.addProperty(publishDateProp);
         }
         publishDateProp.setDateValue(Calendar.getInstance().getTime());
-        repository.store(token, resource);
+        repository.store(token, null, resource);
     }
 
 }

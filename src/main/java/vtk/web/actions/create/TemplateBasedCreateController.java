@@ -346,7 +346,7 @@ public class TemplateBasedCreateController extends SimpleFormController<CreateDo
 
         Path destinationURI = uri.extend(name);
 
-        repository.copy(token, sourceURI, destinationURI, false, false);
+        repository.copy(token, null, sourceURI, destinationURI, false, false);
 
         // XXX encoding of content is not handled explicitly here, and it will be mangled
         // if not in platform default encoding.
@@ -366,7 +366,7 @@ public class TemplateBasedCreateController extends SimpleFormController<CreateDo
         title = Matcher.quoteReplacement(title);
 
         String contentToStore = newContent.replaceAll(titlePlaceholder, title);
-        Resource r = repository.storeContent(token, destinationURI,
+        Resource r = repository.storeContent(token, null, destinationURI,
                 ContentInputSources.fromString(contentToStore, System.getProperty("file.encoding")));
 
         if (removePropList != null) {
@@ -375,7 +375,7 @@ public class TemplateBasedCreateController extends SimpleFormController<CreateDo
             }
         }
 
-        model.put("resource", repository.store(token, r));
+        model.put("resource", repository.store(token, null, r));
 
         command.setDone(true);
 

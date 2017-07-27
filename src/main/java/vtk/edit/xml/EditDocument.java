@@ -55,6 +55,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import vtk.repository.ContentInputSources;
+import vtk.repository.Lock;
 import vtk.repository.Namespace;
 import vtk.repository.Path;
 import vtk.repository.Repository;
@@ -104,7 +105,7 @@ public class EditDocument extends Document {
         Path uri = requestContext.getResourceURI();
 
         repository.lock(token, uri, principal.getQualifiedName(), Depth.ZERO, lockTimeoutSeconds,
-                null);
+                null, Lock.Type.EXCLUSIVE);
 
         Resource resource = repository.retrieve(token, uri, false);
 
@@ -162,7 +163,7 @@ public class EditDocument extends Document {
         xmlOutputter.output(this, outputStream);
 
         InputStream stream = new ByteArrayInputStream(outputStream.toByteArray());
-        this.resource = repository.storeContent(token, uri, ContentInputSources.fromStream(stream));
+        this.resource = repository.storeContent(token, null, uri, ContentInputSources.fromStream(stream));
 
         // Remove user specified character encoding if it is something
         // other than UTF-8:
@@ -171,7 +172,7 @@ public class EditDocument extends Document {
             if (!"utf-8".equals(encoding)) {
                 this.resource.removeProperty(Namespace.DEFAULT_NAMESPACE, 
                         PropertyType.CHARACTERENCODING_USER_SPECIFIED_PROP_NAME);
-                this.resource = repository.store(token, this.resource);
+                this.resource = repository.store(token, null, this.resource);
             }
         }
 

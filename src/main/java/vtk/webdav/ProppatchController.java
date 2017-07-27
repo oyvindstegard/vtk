@@ -114,11 +114,11 @@ public class ProppatchController extends AbstractWebdavController  {
             }
             
             if (sc.getAffectedProperties().isEmpty()) {
-                resource = repository.store(token, resource);
+                resource = repository.store(token, null, resource);
             }
             else {
                 // One or more inheritable props are to be stored/removed
-                resource = repository.store(token, resource, sc);
+                resource = repository.store(token, null, resource, sc);
             }
 
             XMLOutputter xmlOutputter = new XMLOutputter(format);

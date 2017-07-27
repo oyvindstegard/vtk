@@ -210,7 +210,7 @@ public class PropertiesApiHandler implements HttpRequestHandler {
                 });
                 try {
                     return requestContext.getRepository()
-                            .store(requestContext.getSecurityToken(), resource);
+                            .store(requestContext.getSecurityToken(), null, resource);
                 }
                 catch (IOException e) {
                     throw new UncheckedIOException(e);

@@ -64,7 +64,7 @@ public class ActionsHelper {
     public static void deleteResource(Repository repository, String token, Path uri, boolean recoverable,
             Map<String, List<Path>> failures) {
         try {
-            repository.delete(token, uri, recoverable);
+            repository.delete(token, null, uri, recoverable);
         } catch (ResourceNotFoundException rnfe) {
             addToFailures(failures, uri, deleteMsgKey, "nonExisting");
         } catch (AuthorizationException ae) {
@@ -96,11 +96,11 @@ public class ActionsHelper {
                     storeContext = new InheritablePropertiesStoreContext();
                     storeContext.addAffectedProperty(unpublisedCollectionPropDef);
                     resource.removeProperty(unpublisedCollectionPropDef);
-                    repository.store(token, resource, storeContext);
+                    repository.store(token, null, resource, storeContext);
                 }
             }
 
-            repository.store(token, resource, storeContext);
+            repository.store(token, null, resource, storeContext);
 
         } catch (ResourceNotFoundException rnfe) {
             addToFailures(failures, uri, publishMsgKey, "nonExisting");
@@ -132,7 +132,7 @@ public class ActionsHelper {
                 resource.addProperty(unpublisedCollectionProp);
             }
 
-            repository.store(token, resource, storeContext);
+            repository.store(token, null, resource, storeContext);
 
         } catch (ResourceNotFoundException rnfe) {
             addToFailures(failures, uri, unpublishMsgKey, "nonExisting");

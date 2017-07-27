@@ -83,13 +83,13 @@ public class CreateCollectionWithProperties extends SimpleFormController<CreateO
         Repository repository = requestContext.getRepository();
         String token = requestContext.getSecurityToken();
         
-        Resource collection = repository.createCollection(token, operation.getUri());
+        Resource collection = repository.createCollection(token, null, operation.getUri());
         if (operation.getTypeProperty() != null) {
             TypeInfo typeInfo = repository.getTypeInfo(collection);
             Namespace ns = Namespace.DEFAULT_NAMESPACE;
             Property property = typeInfo.createProperty(ns, "collection-type", operation.getTypeProperty());
             collection.addProperty(property);
-            collection = repository.store(token, collection);
+            collection = repository.store(token, null, collection);
         }
 
         TypeInfo typeInfo = repository.getTypeInfo(collection);
@@ -115,7 +115,7 @@ public class CreateCollectionWithProperties extends SimpleFormController<CreateO
                     collection.addProperty(property);
                 }
             }
-            repository.store(token, collection);
+            repository.store(token, null, collection);
         }
         return new ModelAndView(getSuccessView(), new HashMap<String, Object>());
     }

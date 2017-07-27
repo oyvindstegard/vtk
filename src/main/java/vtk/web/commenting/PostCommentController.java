@@ -179,7 +179,7 @@ public class PostCommentController extends SimpleFormController<PostCommentComma
         }
         String title = commentCommand.getTitle();
         String text = commentCommand.getParsedText();
-        repository.addComment(token, resource, title, text);
+        repository.addComment(token, null, resource, title, text);
         return new ModelAndView(getSuccessView());
     }
     

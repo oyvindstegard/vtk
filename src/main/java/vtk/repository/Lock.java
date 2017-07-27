@@ -37,56 +37,93 @@ import vtk.security.Principal;
 /**
  * Represents repository resource locks.
  *
+ * <p>Lock concepts is based on WebDAV locking with some extensions.
+ *
  * <p>Instances of this class are immutable.
  */
 public class Lock implements java.io.Serializable {
 
     private static final long serialVersionUID = 3546639889186633783L;
 
+    /**
+     * Type of resource lock.
+     */
+    public enum Type {
+
+        /**
+         * Classic exclusive locking for a single principal.
+         *
+         * <p>Only the lock owner will have write access to resource while
+         * holding a valid exclusive lock.
+         */
+        EXCLUSIVE,
+
+        /**
+         * A "shared" lock for all principals with write access to the resource.
+         *
+         * <p>All principals which have write access to the resource through ACL will
+         * be able to do write-operations while a lock of this type is present,
+         * provided that a valid (shared) lock token is provided.
+         */
+        SHARED_ACL_WRITE;
+    }
+
     private final Principal principal;
     private final String ownerInfo;
     private final Repository.Depth depth;
+    private final Type type;
     private final Date timeout;
     private final String lockToken;
     
     public Lock(String lockToken, Principal principal, String ownerInfo, Repository.Depth depth,
-        Date timeout) {
+                Date timeout, Type lockType) {
         this.lockToken = lockToken;
         this.principal = principal;
         this.timeout = (Date)timeout.clone();
         this.ownerInfo = ownerInfo;
         this.depth = depth;
+        this.type = lockType;
+    }
+
+    public Lock(String lockToken, Principal principal, String ownerInfo, Repository.Depth depth,
+                Date timeout) {
+        this(lockToken, principal, ownerInfo, depth, timeout, Type.EXCLUSIVE);
     }
 
     public String getOwnerInfo() {
-        return this.ownerInfo;
+        return ownerInfo;
+    }
+
+    public Type getType() {
+        return type;
     }
 
     public Repository.Depth getDepth() {
-        return this.depth;
+        return depth;
     }
 
     public String getLockToken() {
-        return this.lockToken;
+        return lockToken;
     }
 
     public Date getTimeout() {
-        return (Date)this.timeout.clone();
+        return (Date)timeout.clone();
     }
 
     public Principal getPrincipal() {
-        return this.principal;
+        return principal;
     }
     
     @Override
     public String toString() {
-        StringBuilder sb = new StringBuilder(this.getClass().getSimpleName());
+        StringBuilder sb = new StringBuilder(getClass().getSimpleName());
         sb.append("{");
-        sb.append("depth =").append(this.depth);
-        sb.append(", principal = ").append(this.principal);
-        sb.append(", ownerInfo = ").append(this.ownerInfo);
-        sb.append(", timeout = ").append(this.timeout);
-        sb.append(", token = ").append(this.lockToken);
+        sb.append("depth = ").append(depth);
+        sb.append(", principal = ").append(principal);
+        sb.append(", ownerInfo = ").append(ownerInfo);
+        sb.append(", timeout = ").append(timeout);
+        sb.append(", token = ").append(lockToken);
+        sb.append(", type = ").append(type);
         sb.append("}");
         return sb.toString();
     }

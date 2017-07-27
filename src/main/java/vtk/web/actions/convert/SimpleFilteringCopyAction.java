@@ -56,7 +56,7 @@ public class SimpleFilteringCopyAction implements CopyAction, InitializingBean {
                 .getRequestContext(request);
         String token = requestContext.getSecurityToken();
 
-        this.repository.copy(token, originalUri, copyUri, false, true);
+        this.repository.copy(token, null, originalUri, copyUri, false, true);
 
         if (this.filter != null) {
             try {
@@ -64,12 +64,12 @@ public class SimpleFilteringCopyAction implements CopyAction, InitializingBean {
                 InputStream is = this.repository.getInputStream(token, originalUri, false);
                 is = this.filter.transform(is, resource);
 
-                this.repository.store(token, resource);
-                this.repository.storeContent(token, copyUri, ContentInputSources.fromStream(is));
+                this.repository.store(token, null, resource);
+                this.repository.storeContent(token, null, copyUri, ContentInputSources.fromStream(is));
             }
             catch (Exception e) {
                 try {
-                    this.repository.delete(token, copyUri, true);
+                    this.repository.delete(token, null, copyUri, true);
                 } catch (Exception ex) {
                     // XXX: should log
                     // Can't do much, hope it's okay

@@ -1,4 +1,4 @@
-/* Copyright (c) 2015, University of Oslo, Norway
+/* Copyright (c) 2017, University of Oslo, Norway
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -36,50 +36,48 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import org.apache.ibatis.type.BaseTypeHandler;
 import org.apache.ibatis.type.JdbcType;
-import org.springframework.beans.factory.annotation.Required;
-import vtk.security.Principal;
-import vtk.security.PrincipalFactory;
+import vtk.repository.Repository;
 
 /**
- * Temporary class for loading {@link Principal} instances at SQL mapper level.
- * This is the wrong thing to do !
- * 
- * <p>This class should be deleted or changed to "UidTypeHandlerCallback" when
- * refactoring principal handling in VTK.
+ *
  */
-public class UserPrincipalTypeHandlerCallback extends BaseTypeHandler<Principal>{
+public class DepthTypeHandlerCallback extends BaseTypeHandler<Repository.Depth> {
 
-    private PrincipalFactory pf;
-    
     @Override
-    public void setNonNullParameter(PreparedStatement ps, int i, Principal p, JdbcType jt) throws SQLException {
-        ps.setString(i, p.getQualifiedName());
+    public void setNonNullParameter(PreparedStatement ps, int i, Repository.Depth parameter, JdbcType jdbcType) throws SQLException {
+        ps.setString(i, parameter.toString());
     }
 
     @Override
-    public Principal getNullableResult(ResultSet rs, String column) throws SQLException {
-        String qualifiedName = rs.getString(column);
-        if (qualifiedName == null) return null;
-        return pf.getPrincipal(qualifiedName, Principal.Type.USER);
+    public Repository.Depth getNullableResult(ResultSet rs, String columnName) throws SQLException {
+        String d = rs.getString(columnName);
+        if (d != null) {
+            return Repository.Depth.fromString(d);
+        }
+
+        return null;
     }
 
     @Override
-    public Principal getNullableResult(ResultSet rs, int i) throws SQLException {
-        String qualifiedName = rs.getString(i);
-        if (qualifiedName == null) return null;
-        return pf.getPrincipal(qualifiedName, Principal.Type.USER);
+    public Repository.Depth getNullableResult(ResultSet rs, int columnIndex) throws SQLException {
+        String d = rs.getString(columnIndex);
+        if (d != null) {
+            return Repository.Depth.fromString(d);
+        }
 
+        return null;
     }
 
     @Override
-    public Principal getNullableResult(CallableStatement cs, int i) throws SQLException {
-        String qualifiedName = cs.getString(i);
-        if (qualifiedName == null) return null;
-        return pf.getPrincipal(qualifiedName, Principal.Type.USER);
+    public Repository.Depth getNullableResult(CallableStatement cs, int columnIndex) throws SQLException {
+        String d = cs.getString(columnIndex);
+        if (d != null) {
+            return Repository.Depth.fromString(d);
+        }
+
+        return null;
     }
 
-    @Required
-    public void setPrincipalFactory(PrincipalFactory pf) {
-        this.pf = pf;
-    }
+
+
 }

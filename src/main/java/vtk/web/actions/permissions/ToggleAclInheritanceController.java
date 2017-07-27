@@ -62,13 +62,13 @@ public class ToggleAclInheritanceController  implements Controller {
 
         Acl acl = resource.getAcl();
         if (resource.isCollection() && resource.isInheritedAcl()) {
-            resource = repository.storeACL(token, resource.getURI(), acl);
+            resource = repository.storeACL(token, null, resource.getURI(), acl);
 
         } else if (resource.isInheritedAcl()) {
-            resource = repository.storeACL(token, resource.getURI(), acl);
+            resource = repository.storeACL(token, null, resource.getURI(), acl);
 
         } else {
-            resource = repository.deleteACL(token, resource.getURI());
+            resource = repository.deleteACL(token, null, resource.getURI());
         }
         
         return new ModelAndView(this.viewName);

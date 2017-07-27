@@ -54,13 +54,13 @@ public class UnpublishAfterCopyAction implements CopyAction {
         RequestContext requestContext = RequestContext.getRequestContext(request);
         Repository repository = requestContext.getRepository();
         String token = requestContext.getSecurityToken();
-        repository.copy(token, originalUri, copyUri, false, false);
+        repository.copy(token, null, originalUri, copyUri, false, false);
         Resource result = repository.retrieve(token, copyUri, true);
 
         TypeInfo typeInfo = repository.getTypeInfo(result);
         if (typeInfo.isOfType("managed-json-resource")) {
             result.removeProperty(Namespace.DEFAULT_NAMESPACE, "publish-date");
-            repository.store(token, result);
+            repository.store(token, null, result);
         }
     }
 

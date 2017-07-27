@@ -227,7 +227,7 @@ public class FCKeditorConnector implements Controller {
             if (repository.exists(token, newFolderURI)) {
                 return 101;
             }
-            repository.createCollection(token, newFolderURI);
+            repository.createCollection(token, null, newFolderURI);
             return 0;
         } catch (AuthorizationException e) {
             return 103;
@@ -268,7 +268,7 @@ public class FCKeditorConnector implements Controller {
             }
 
             InputStream inStream = uploadItem.getInputStream();
-            repository.createDocument(token, uri, ContentInputSources.fromStream(inStream));
+            repository.createDocument(token, null, uri, ContentInputSources.fromStream(inStream));
 
             Resource newResource = repository.retrieve(token, uri, true);
             TypeInfo typeInfo = repository.getTypeInfo(newResource);
@@ -281,7 +281,7 @@ public class FCKeditorConnector implements Controller {
             Property prop = typeInfo.createProperty(Namespace.DEFAULT_NAMESPACE, PropertyType.CONTENTTYPE_PROP_NAME);
             prop.setStringValue(contentType);
             newResource.addProperty(prop);
-            repository.store(token, newResource);
+            repository.store(token, null, newResource);
 
             URL fileURL = viewService.urlConstructor(URL.create(request))
                     .withURI(uri)

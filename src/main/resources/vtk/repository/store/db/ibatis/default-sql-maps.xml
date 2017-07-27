@@ -103,7 +103,7 @@
     <result property="userOrGroupName" column="user_or_group_name" />
   </resultMap>
   
-  <resultMap id="Lock" type="java.util.HashMap">
+<!--  <resultMap id="Lock" type="java.util.HashMap">
     <result property="id" column="lock_id" javaType="int" />
     <result property="resourceId" column="resource_id" javaType="int" />
     <result property="uri" column="uri" />
@@ -112,6 +112,21 @@
     <result property="ownerInfo" column="lock_owner_info" />
     <result property="depth" column="depth" />
     <result property="timeout" column="timeout" javaType="date" />
+  </resultMap>-->
+  <resultMap id="Lock" type="vtk.repository.Lock">
+    <constructor>
+      <arg column="token" javaType="string"/>
+      <arg column="lock_owner" javaType="vtk.security.Principal"/>
+      <arg column="lock_owner_info" javaType="String"/>
+      <arg column="depth" javaType="vtk.repository.Repository$Depth" typeHandler="vtk.repository.store.db.ibatis.DepthTypeHandlerCallback"/>
+      <arg column="timeout" javaType="date"/>
+      <arg column="lock_type" javaType="vtk.repository.Lock$Type"/>
+    </constructor>
+  </resultMap>
+
+  <resultMap id="UriAndLock" type="java.util.HashMap">
+    <result property="uri" column="uri" typeHandler="vtk.repository.store.db.ibatis.PathTypeHandlerCallback" />
+    <association property="lock" javaType="vtk.repository.Lock" resultMap="Lock"/>
   </resultMap>
 
   <!-- Used solely by SqlMapIndexDao -->
@@ -667,9 +682,9 @@
     </foreach>
   </select>
 
+  <!-- Resource locks begin -->
 
-  <select id="loadLocksForChildren" parameterType="java.util.Map"
-          resultMap="Lock">
+  <select id="loadLocksForChildren" parameterType="java.util.Map" resultMap="UriAndLock">
     select
       r.uri as uri, l.*
     from vortex_resource r
@@ -678,9 +693,7 @@
         from vortex_resource where uri like #{uriWildcard} escape '@' and depth = #{depth})
   </select>
 
-
-  <select id="loadLocksByUris" parameterType="java.util.Map"
-          resultMap="Lock">
+  <select id="loadLocksByUris" parameterType="java.util.Map" resultMap="UriAndLock">
     select
       r.uri as uri, l.*
     from vortex_resource r
@@ -692,46 +705,25 @@
   </select>
 
 
-  <select id="loadLockByLockToken" parameterType="string" resultMap="Lock">
-    select
-      r.uri as uri, l.*
-    from vortex_resource r
-      inner join vortex_lock l on r.resource_id = l.resource_id
-      where l.token = #{value}
-  </select>
-
-
-  <insert id="insertLock" parameterType="java.util.Map">
+  <insert id="insertLock" parameterType="java.util.HashMap">
     insert into vortex_lock
-      (lock_id, token, resource_id, lock_owner,
+      (lock_id, lock_type, token, resource_id, lock_owner,
        lock_owner_info, depth, timeout)
      values (<include refid="nextLockId" />,
-            #{lockToken}, #{resourceId}, #{owner},
-            #{ownerInfo}, #{depth}, #{timeout})
+            #{lock.type}, #{lock.lockToken}, #{resourceId}, #{lock.principal,typeHandler=vtk.repository.store.db.ibatis.UserPrincipalTypeHandlerCallback},
+            #{lock.ownerInfo}, #{lock.depth,typeHandler=vtk.repository.store.db.ibatis.DepthTypeHandlerCallback}, #{lock.timeout})
   </insert>
-
-
-  <update id="updateLock" parameterType="java.util.Map">
-    update vortex_lock
-      set lock_owner = #{owner},
-          lock_owner_info = #{ownerInfo},
-          depth = #{depth},
-          timeout = #{timeout}
-      where token = #{lockToken}
-  </update>
 
 
   <delete id="deleteLockByResourceId" parameterType="int">
     delete from vortex_lock where resource_id = #{value}
   </delete>
 
-
   <delete id="deleteLocksByUri" parameterType="java.util.Map">
     delete from vortex_lock where resource_id in
       (select resource_id from vortex_resource
        where uri = #{uri} or uri like #{uriWildcard} escape '@')
   </delete>
-
 
   <delete id="deleteExpiredLocks">
     delete from vortex_lock where timeout &lt; #{value}
@@ -745,6 +737,8 @@
     where l.timeout &gt; #{timestamp} and r.uri like #{uriWildcard} escape '@'
   </select>
   
+  <!-- Resource locks end -->
+
   <select id="discoverGroups" resultMap="UserOrGroupName">
     select user_or_group_name from acl_entry where is_user = 'N'
     union

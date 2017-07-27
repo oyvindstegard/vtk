@@ -41,7 +41,7 @@ import org.apache.ibatis.type.TypeHandler;
 import vtk.repository.ChangeLogEntry.Operation;
 
 /**
- * Handle String<->Operation mapping for iBATIS.
+ * Handle String to/from Operation mapping for iBATIS.
  *
  */
 public class ChangeLogEntryOperationTypeHandlerCallback implements

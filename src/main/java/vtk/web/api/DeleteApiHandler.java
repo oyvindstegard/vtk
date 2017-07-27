@@ -84,6 +84,7 @@ public class DeleteApiHandler implements HttpRequestHandler {
             try {
                 requestContext.getRepository().delete(
                     requestContext.getSecurityToken(),
+                    null,
                     uri,
                     restorable
                 );
