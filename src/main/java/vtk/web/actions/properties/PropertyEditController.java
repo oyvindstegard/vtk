@@ -180,7 +180,7 @@ implements ReferenceDataProvider {
         Map<String, List<String>> urlParameters = new HashMap<>();
         String namespaceURI = definition.getNamespace().getUri();
         if (namespaceURI != null)
-            urlParameters.put("key", Collections.singletonList(namespaceURI));
+            urlParameters.put("namespace", Collections.singletonList(namespaceURI));
         urlParameters.put("name", Collections.singletonList(definition.getName()));
 
         List<String> formAllowedValues = null;
