@@ -33,6 +33,8 @@ const fileForTest = [
     'test/**/*_test.js'
 ];
 
+const SASS_OPTIONS = (config.production) ? {outputStyle: 'compressed'} : {};
+
 function errorHandler(e) {
     util.log(e);
     if (config.production) {
@@ -43,8 +45,7 @@ function errorHandler(e) {
 gulp.task('theme-compile-sass', function () {
     return gulp.src('themes/default/scss/*.scss')
         .pipe(gulpif(!config.production, sourceMaps.init()))
-        .pipe(sass().on('error', sass.logError))
-        //.pipe(gulpif(config.production, minifyCss()))
+        .pipe(sass(SASS_OPTIONS).on('error', sass.logError))
         .pipe(gulpif(!config.production, sourceMaps.write()))
         .pipe(gulp.dest(TARGET + '/themes/default'));
 });
@@ -52,15 +53,14 @@ gulp.task('theme-compile-sass', function () {
 gulp.task('theme-compile-editor-structured-resources-sass', function () {
     return gulp.src('themes/default/scss/structured-resources/*.scss')
         .pipe(gulpif(!config.production, sourceMaps.init()))
-        .pipe(sass().on('error', sass.logError))
-        //.pipe(gulpif(config.production, minifyCss()))
+        .pipe(sass(SASS_OPTIONS).on('error', sass.logError))
         .pipe(gulpif(!config.production, sourceMaps.write()))
         .pipe(gulp.dest(TARGET + '/themes/default/structured-resources'));
 });
 
 gulp.task('theme-copy-css', function () {
     return gulp.src(['themes/**/*.css'])
-        //.pipe(gulpif(config.production, minifyCss({inline: ['none']})))
+        .pipe(gulpif(config.production, minifyCss({inline: ['none'], rebase: false})))
         .pipe(gulp.dest(TARGET + '/themes'));
 });
 
