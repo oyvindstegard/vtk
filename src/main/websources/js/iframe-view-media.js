@@ -1,4 +1,4 @@
-/*  
+/*
  *  Iframe resizing for cross domain (view for media files)
  *
  *  Based loosely on code found on the web page "http://sonspring.com/journal/jquery-iframe-sizing" which
@@ -7,7 +7,7 @@
  *  - Should work as before with regard to previewIframe (served from the view domain)
  *  - Resizing the outer iframe (served from the admin domain) only works on browsers which support postMessage
  */
- 
+
 var crossDocComLink = new CrossDocComLink();
 
 // Mobile preview
@@ -26,9 +26,9 @@ crossDocComLink.setUpReceiveDataHandler(function(cmdParams, source) {
       }
       originalHeight = setHeight;
       break;
-      
+
     /* Mobile preview */
-     
+
     case "update-height-vertical":
       var computedHeight = document.body.offsetHeight;
       crossDocComLink.postCmdToParent("preview-height-update|" + computedHeight);
@@ -40,13 +40,13 @@ crossDocComLink.setUpReceiveDataHandler(function(cmdParams, source) {
     case "restore-height":
       crossDocComLink.postCmdToParent("preview-height-update|" + originalHeight);
       break;
-              
+
     /* Print preview */
-        
+
     case "print":
       window.focus();
-      window.print(); 
-      break;    
+      window.print();
+      break;
     default:
   }
 });
@@ -55,14 +55,14 @@ crossDocComLink.setUpReceiveDataHandler(function(cmdParams, source) {
   var waitMaxForPreviewLoaded = 10000, // 10s
       waitMaxForPreviewLoadedTimer,
       sentPreviewLoaded = false;
-  
+
   $(document).ready(function () {
     if (window != top) { // Obs IE bug: http://stackoverflow.com/questions/4850978/ie-bug-window-top-false
 	  waitMaxForPreviewLoadedTimer = setTimeout(function() {
-        sendPreviewLoaded(); 
+        sendPreviewLoaded();
       }, waitMaxForPreviewLoaded);
-      $(window).load(function (e) {
-        sendPreviewLoaded(); 
+      $(window).on("load", function (e) {
+        sendPreviewLoaded();
       });
     }
   });

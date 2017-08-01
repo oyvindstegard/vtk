@@ -332,8 +332,8 @@ resourcetype person {
     <html xmlns="http://www.w3.org/1999/xhtml">
         <head profile="http://microformats.org/profile/hcard">
         <title>[call "comp:title"]</title>
-         <link type="text/css" rel="stylesheet" media="all" href="/vrtx/__vrtx/static-resources/jquery/plugins/ui/jquery-ui-1.10.4.custom/css/smoothness/jquery-ui-1.10.4.custom.min.css" />
-         <script type="text/javascript" src="/vrtx/__vrtx/static-resources/jquery/plugins/ui/jquery-ui-1.10.4.custom/js/jquery-ui-1.10.4.custom.min.js"></script>
+         <link type="text/css" rel="stylesheet" media="all" href="/vrtx/__vrtx/static-resources/jquery/plugins/ui/jquery-ui-1.12.1.custom/jquery-ui.min.css" />
+         <script type="text/javascript" src="/vrtx/__vrtx/static-resources/jquery/plugins/ui/jquery-ui-1.12.1.custom/jquery-ui.min.js"></script>
       </head>
       <body id="vrtx-person">
       <div id="vrtx-content">

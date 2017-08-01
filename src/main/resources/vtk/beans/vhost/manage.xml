@@ -1257,7 +1257,7 @@
     <constructor-arg value="head" />
     <constructor-arg>
       <list>
-        <value>${jquery.baseURL}/plugins/ui/jquery-ui-${jquery.ui.version}.custom/css/smoothness/jquery-ui-${jquery.ui.version}.custom.min.css</value>
+        <value>${jquery.baseURL}/plugins/ui/jquery-ui-${jquery.ui.version}.custom/jquery-ui.min.css</value>
         <value>${themeBaseURL}/default.css</value>
       </list>
     </constructor-arg>

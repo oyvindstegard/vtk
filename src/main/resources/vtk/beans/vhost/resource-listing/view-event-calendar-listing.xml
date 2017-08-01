@@ -187,7 +187,7 @@
       <map>
         <entry key="cssURLs">
           <list>
-            <value>${webResources.baseURL}/jquery/plugins/ui/jquery-ui-${jquery.ui.version}.custom/css/smoothness/jquery-ui-${jquery.ui.version}.custom.min.css
+            <value>${webResources.baseURL}/jquery/plugins/ui/jquery-ui-${jquery.ui.version}.custom/jquery-ui.min.css
             </value>
             <value>${themeBaseURL}/view-collectionlisting.css</value>
             <value>${themeBaseURL}/view-event-calendar-listing.css</value>
@@ -196,11 +196,11 @@
         <entry key="jsURLs">
           <list>
             <value>${webResources.baseURL}/jquery/include-jquery.js</value>
-            <value>${webResources.baseURL}/jquery/plugins/ui/jquery-ui-${jquery.ui.version}.custom/js/jquery-ui-${jquery.ui.version}.custom.min.js
+            <value>${webResources.baseURL}/jquery/plugins/ui/jquery-ui-${jquery.ui.version}.custom/jquery-ui.min.js
             </value>
-            <value>${webResources.baseURL}/jquery/plugins/ui/jquery-ui-${jquery.ui.version}.custom/js/jquery.ui.datepicker-no.js
+            <value>${webResources.baseURL}/jquery/plugins/ui/jquery-ui-${jquery.ui.version}.custom/jquery.ui.datepicker-no.js
             </value>
-            <value>${webResources.baseURL}/jquery/plugins/ui/jquery-ui-${jquery.ui.version}.custom/js/jquery.ui.datepicker-nn.js
+            <value>${webResources.baseURL}/jquery/plugins/ui/jquery-ui-${jquery.ui.version}.custom/jquery.ui.datepicker-nn.js
             </value>
             <value>${webResources.baseURL}/js/datepicker/datepicker-event-listing.js</value>
             <value>${webResources.baseURL}/js/view-dropdown.js</value>

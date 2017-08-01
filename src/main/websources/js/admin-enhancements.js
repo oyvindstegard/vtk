@@ -213,89 +213,6 @@ var isEmbedded = window.location.href.indexOf("&embed") !== -1;
 var isEmbedded2 = false;
 var onlySessionId = gup("sessionid", window.location.href);
 
-vrtxAdmin._$(document).ready(function () {
-  var startReadyTime = getNowTime(), vrtxAdm = vrtxAdmin, _$ = vrtxAdm._$;
-
-  if(typeof datePickerLang === "string") {
-    vrtxAdm.lang = datePickerLang;
-  }
-  vrtxAdm.cacheDOMNodesForReuse();
-
-  isEmbedded2 = vrtxAdm.cachedBody.hasClass("embedded2");
-  if(isEmbedded2) {
-    $("html").addClass("embedded2");
-  }
-  var isNotEmbedded = !isEmbedded && !isEmbedded2;
-
-  vrtxAdm.bodyId = vrtxAdm.cachedBody.attr("id") || "";
-  vrtxAdm.cachedBody.addClass("js");
-  if(vrtxAdm.isIE8) {
-    vrtxAdm.cachedBody.addClass("ie8");
-  }
-  vrtxAdm.embeddedView();
-
-  // Show message in IE6=>IE8 and IETrident in compability mode
-  if ((vrtxAdm.isIE8 || vrtxAdm.isIETridentInComp) && typeof outdatedBrowserText === "string") {
-    var message = vrtxAdm.cachedAppContent.find(" > .message");
-    if (message.length) {
-      message.html(outdatedBrowserText);
-    } else {
-      var messageHtml = "<div class='infomessage'>" + outdatedBrowserText + "</div>";
-      if(vrtxAdm.bodyId === "vrtx-simple-editor" || isEmbedded) {
-        vrtxAdm.cachedBody.prepend(messageHtml);
-      } else {
-        vrtxAdm.cachedAppContent.prepend(messageHtml);
-      }
-    }
-  }
-   // Return if should not run all of ready() code
-  if (vrtxAdm.runReadyLoad === false) return;
-
-  // Load required init components (animations and trees)
-  vrtxAdm.loadScripts(["/js/vrtx-animation.js", "/js/vrtx-tree.js"], vrtxAdm.requiredScriptsLoaded);
-  vrtxAdm.clientLastModified = $("#resource-last-modified").text().split(",");
-
-  /* Delay some stuff and only run some stuff if not embedded */
-  if(isNotEmbedded) {
-    vrtxAdm.initDropdowns();
-    vrtxAdm.initScrollBreadcrumbs();
-  }
-  vrtxAdm.domainsInstantIsReady.resolve();
-
-  if(isNotEmbedded) {
-    vrtxAdm.initMiscAdjustments();
-  }
-
-  var waitALittle = setTimeout(function() {
-    vrtxAdm.initTooltips();
-    if(isNotEmbedded) {
-      vrtxAdm.initGlobalDialogs();
-    }
-  }, 15);
-
-  var waitALittleMore = setTimeout(function() {
-    if(isNotEmbedded) {
-      vrtxAdm.initResourceMenus();
-    }
-    vrtxAdm.initDomains();
-    vrtxAdm.domainsIsReady.resolve();
-  }, 25);
-
-  vrtxAdm.log({ msg: "Document.ready() in " + (getNowTime() - startReadyTime) + "ms." });
-});
-
-
-/*-------------------------------------------------------------------*\
-    3. DOM is fully loaded
-\*-------------------------------------------------------------------*/
-
-vrtxAdmin._$(window).load(function () {
-  var vrtxAdm = vrtxAdmin;
-  if (vrtxAdm.runReadyLoad === false) return; // Return if should not run load() code
-
-  vrtxAdm.log({ msg: "Window.load() in " + (getNowTime() - startLoadTime) + "ms." });
-});
-
 
 /*-------------------------------------------------------------------*\
     4. General / setup interactions
@@ -2984,5 +2901,90 @@ function repositionDialogsTouchDevices() {
    };
  });
 })();
+
+
+
+$(document).ready(function () {
+  var startReadyTime = getNowTime(), vrtxAdm = vrtxAdmin, _$ = vrtxAdm._$;
+
+  if(typeof datePickerLang === "string") {
+    vrtxAdm.lang = datePickerLang;
+  }
+  vrtxAdm.cacheDOMNodesForReuse();
+
+  isEmbedded2 = vrtxAdm.cachedBody.hasClass("embedded2");
+  if(isEmbedded2) {
+    $("html").addClass("embedded2");
+  }
+  var isNotEmbedded = !isEmbedded && !isEmbedded2;
+
+  vrtxAdm.bodyId = vrtxAdm.cachedBody.attr("id") || "";
+  vrtxAdm.cachedBody.addClass("js");
+  if(vrtxAdm.isIE8) {
+    vrtxAdm.cachedBody.addClass("ie8");
+  }
+  vrtxAdm.embeddedView();
+
+  // Show message in IE6=>IE8 and IETrident in compability mode
+  if ((vrtxAdm.isIE8 || vrtxAdm.isIETridentInComp) && typeof outdatedBrowserText === "string") {
+    var message = vrtxAdm.cachedAppContent.find(" > .message");
+    if (message.length) {
+      message.html(outdatedBrowserText);
+    } else {
+      var messageHtml = "<div class='infomessage'>" + outdatedBrowserText + "</div>";
+      if(vrtxAdm.bodyId === "vrtx-simple-editor" || isEmbedded) {
+        vrtxAdm.cachedBody.prepend(messageHtml);
+      } else {
+        vrtxAdm.cachedAppContent.prepend(messageHtml);
+      }
+    }
+  }
+   // Return if should not run all of ready() code
+  if (vrtxAdm.runReadyLoad === false) return;
+
+  // Load required init components (animations and trees)
+  vrtxAdm.loadScripts(["/js/vrtx-animation.js", "/js/vrtx-tree.js"], vrtxAdm.requiredScriptsLoaded);
+  vrtxAdm.clientLastModified = $("#resource-last-modified").text().split(",");
+
+  /* Delay some stuff and only run some stuff if not embedded */
+  if(isNotEmbedded) {
+    vrtxAdm.initDropdowns();
+    vrtxAdm.initScrollBreadcrumbs();
+  }
+  vrtxAdm.domainsInstantIsReady.resolve();
+
+  if(isNotEmbedded) {
+    vrtxAdm.initMiscAdjustments();
+  }
+
+  var waitALittle = setTimeout(function() {
+    vrtxAdm.initTooltips();
+    if(isNotEmbedded) {
+      vrtxAdm.initGlobalDialogs();
+    }
+  }, 15);
+
+  var waitALittleMore = setTimeout(function() {
+    if(isNotEmbedded) {
+      vrtxAdm.initResourceMenus();
+    }
+    vrtxAdm.initDomains();
+    vrtxAdm.domainsIsReady.resolve();
+  }, 25);
+
+  vrtxAdm.log({ msg: "Document.ready() in " + (getNowTime() - startReadyTime) + "ms." });
+});
+
+
+/*-------------------------------------------------------------------*\
+    3. DOM is fully loaded
+\*-------------------------------------------------------------------*/
+
+$(window).on("load", function () {
+  var vrtxAdm = vrtxAdmin;
+  if (vrtxAdm.runReadyLoad === false) return; // Return if should not run load() code
+
+  vrtxAdm.log({ msg: "Window.load() in " + (getNowTime() - startLoadTime) + "ms." });
+});
 
 /* ^ Vortex Admin enhancements */

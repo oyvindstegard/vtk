@@ -12,7 +12,7 @@
     $(document).ready(function() {
       $("#vrtx-image-listing-include-${unique}").addClass("loading");
     });
-    $(window).load(function() {	
+    $(window).on("load", function() {	
 	  var container = ".vrtx-image-listing-include-container";	  
 	  $("#vrtx-image-listing-include-${unique}" + " li a").vrtxSGallery("#vrtx-image-listing-include-${unique}", container, "${unique}", {
 	    fadeInOutTime : ${fadeEffect},

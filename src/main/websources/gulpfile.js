@@ -17,7 +17,7 @@ const config = {
     target: "../../../target/classes/web",
     testTarget: "../../../target/test-classes/web",
     ckeditor_version: "4.6.0",
-    production: !!util.env.production
+    production: false
 };
 
 const TARGET = config.target;

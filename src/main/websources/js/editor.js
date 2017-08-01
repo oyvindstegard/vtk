@@ -130,7 +130,7 @@ $(document).ready(function () {
       3. DOM is fully loaded
   \*-------------------------------------------------------------------*/
 
-  $(window).load(function () {
+  $(window).on("load", function () {
     if (!vrtxEditor.isInAdmin) return; /* Exit if not is in admin */
     var vrtxAdm = vrtxAdmin,
       _$ = vrtxAdm._$;
@@ -322,7 +322,7 @@ VrtxEditor.prototype.richtextEditorFacade = {
     config.disableObjectResizing = true;
     config.disableNativeSpellChecker = false;
     config.pasteFromWordRemoveFontStyles = true;
-    
+
     config.allowedContent = true;
 
     /* Enable ACF - with all elements
@@ -1342,7 +1342,7 @@ VrtxEditor.prototype.initEnhancements = function initEnhancements() {
 
   // Show / hide mappings for selects
   vrtxEdit.setShowHideSelectNewEditor();
-    
+
   // Documenttype domains
   if(vrtxEdit.editorForm.hasClass("vrtx-course-schedule")) {
     editorCourseSchedule = new courseSchedule();

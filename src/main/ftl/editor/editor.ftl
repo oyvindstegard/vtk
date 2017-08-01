@@ -179,7 +179,7 @@
         var cropText = '<@vrtx.msg code="editor.image.crop" default="Crop" />';
         var widthText = '<@vrtx.msg code="imageListing.width" default="Width" />';
         var heightText = '<@vrtx.msg code="imageListing.height" default="Height" />';
-        $(window).load(function() {
+        $(window).on("load", function() {
           var imageEditorElm = $("#vrtx-image-editor-wrapper");
           if(imageEditorElm.length) {
             vrtxImageEditor.init("${imageURL}", "${supportedImageEditor?string}");

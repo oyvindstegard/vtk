@@ -44,7 +44,7 @@ var VrtxDatepicker = dejavu.Class.declare({
 
     // TODO: VrtxComponents should be a super class with these checks
     var rootUrl = "/vrtx/__vrtx/static-resources";
-    var jQueryUiVersion = "1.10.4";
+    var jQueryUiVersion = "1.12.1";
 
     var getScriptFn = (typeof $.cachedScript === "function") ? $.cachedScript : $.getScript;
 
@@ -56,7 +56,7 @@ var VrtxDatepicker = dejavu.Class.declare({
     if (typeof $.ui === "undefined") {
       if(!vrtxComponents.futureUiIsLoading) {
         vrtxComponents.futureUiIsLoading = true;
-        getScriptFn(rootUrl + "/jquery/plugins/ui/jquery-ui-" + jQueryUiVersion + ".custom/js/jquery-ui-" + jQueryUiVersion + ".custom.min.js").done(function () {
+        getScriptFn(rootUrl + "/jquery/plugins/ui/jquery-ui-" + jQueryUiVersion + ".custom/jquery-ui.min.js").done(function () {
           vrtxComponents.futureUiIsLoading = false;
           vrtxComponents.futureUi.resolve();
         });
@@ -68,7 +68,7 @@ var VrtxDatepicker = dejavu.Class.declare({
     $.when(vrtxComponents.futureUi).done(function() {
       var futureDatepickerLang = $.Deferred();
       if (opts.language != "" && opts.language != "en" && !$.datepicker.regional[opts.language]) {
-        getScriptFn(rootUrl + "/jquery/plugins/ui/jquery-ui-" + jQueryUiVersion + ".custom/js/jquery.ui.datepicker-" + opts.language + ".js").done(function() {
+        getScriptFn(rootUrl + "/jquery/plugins/ui/jquery-ui-" + jQueryUiVersion + ".custom/jquery.ui.datepicker-" + opts.language + ".js").done(function() {
           futureDatepickerLang.resolve();
           $.datepicker.setDefaults($.datepicker.regional[opts.language]);
         });
