@@ -33,6 +33,7 @@ void execute(context, args, out) {
         return;
     }
 
+    stream = null;
     try {
         stream = new java.io.FileInputStream(file);
     } catch (e) {
