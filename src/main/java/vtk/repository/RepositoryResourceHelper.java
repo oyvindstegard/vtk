@@ -292,7 +292,7 @@ public class RepositoryResourceHelper {
                 continue;
             }
 
-            evaluateManagedProperty(ctx, def);            
+            evaluateManagedProperty(ctx, def);
         }
 
         // For all prop defs in mixin types, also do evaluation
@@ -388,9 +388,11 @@ public class RepositoryResourceHelper {
         if (ctx.getEvaluationType() == Type.PropertiesChange ||
             ctx.getEvaluationType() == Type.SystemPropertiesChange ||
             ctx.getEvaluationType() == Type.InheritablePropertiesChange) {
-            // Check for user change or addition
+            // Authorize property change, addition or deletion by user
             Property property = checkForUserAdditionOrChange(ctx, propDef);
-            if (property != null) {
+            final boolean deletedByUser = checkForUserDeletion(ctx, propDef);
+
+            if (property != null || deletedByUser) {
                 if (propDef.getProtectionLevel() != null) {
                     try {
                         if (propDef.getProtectionLevel() == RepositoryAction.READ_WRITE
@@ -406,25 +408,24 @@ public class RepositoryResourceHelper {
                         }
                     } catch (AuthorizationException e) {
                         throw new AuthorizationException("Principal " + ctx.getPrincipal()
-                                + " not authorized to set property " + property + " (protectionLevel="
+                                + " not authorized to " + (deletedByUser?"delete":"set") + " property " + property + " (protectionLevel="
                                 + propDef.getProtectionLevel() + ") on resource " + ctx.getNewResource(), e);
                     }
                 }
-                if (logger.isDebugEnabled()) {
-                    logger.debug("Property user-modified or added: " + property + " for resource "
-                            + ctx.getNewResource() + ", type " + ctx.getNewResource().getResourceType());
-                }
 
-                return property;
-            }
-            // Check for user deletion
-            if (checkForUserDeletion(ctx, propDef)) {
-                if (logger.isDebugEnabled()) {
-                    logger.debug("Property user-deleted: " + propDef + " for resource " + ctx.getNewResource()
+                if (deletedByUser) {
+                    if (logger.isDebugEnabled()) {
+                        logger.debug("Property deleted by user: " + propDef + " for resource " + ctx.getNewResource()
                             + ", type " + ctx.getNewResource().getResourceType());
+                    }
+                    return null;
+                } else {
+                    if (logger.isDebugEnabled()) {
+                        logger.debug("Property user-modified or added: " + property + " for resource "
+                            + ctx.getNewResource() + ", type " + ctx.getNewResource().getResourceType());
+                    }
+                    return property;
                 }
-
-                return null;
             }
         }
 
@@ -433,10 +434,8 @@ public class RepositoryResourceHelper {
         PropertyEvaluator evaluator = propDef.getPropertyEvaluator();
         Property property = ctx.getOriginalResource().getProperty(propDef);
 
-        /**
-         * The evaluator will be given a clone of the original property as input
-         * if it previously existed, or an uninitialized property otherwise.
-         */
+        // The evaluator will be given a clone of the original property as input
+        // if it previously existed, or an uninitialized property otherwise.
         if (property != null) {
             try {
                 property = (Property) property.clone();
@@ -482,16 +481,11 @@ public class RepositoryResourceHelper {
         return property;
     }
 
-    private boolean checkForUserDeletion(PropertyEvaluationContext ctx, PropertyTypeDefinition propDef)
-            throws ConstraintViolationException {
+    private boolean checkForUserDeletion(PropertyEvaluationContext ctx, PropertyTypeDefinition propDef) {
         Property originalProp = ctx.getOriginalResource().getProperty(propDef);
         Property suppliedProp = ctx.getSuppliedResource().getProperty(propDef);
 
-        if (originalProp != null && suppliedProp == null) {
-            return true;
-        }
-
-        return false;
+        return originalProp != null && suppliedProp == null;
     }
 
     private Property checkForUserAdditionOrChange(PropertyEvaluationContext ctx, PropertyTypeDefinition propDef) {
