@@ -46,7 +46,7 @@
 	  }
 	
 	  $(document).ready(function() {
-	     $('iframe').load(function() {
+	     $('iframe').on("load", function() {
 	        $(this).contents().find("a").attr("target", "_top");
 	        
 	        <#if visualizeBrokenLinks?exists && visualizeBrokenLinks = 'true'> 

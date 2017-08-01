@@ -80,7 +80,7 @@
   }
 
   $(document).ready(function() {
-     $('iframe').load(function() {
+     $('iframe').on("load", function() {
         $(this).contents().find("a, form").attr("target", "vrtx-preview-window");
 
         <#if visualizeBrokenLinks?has_content && visualizeBrokenLinks = 'true'> 

@@ -174,7 +174,7 @@ if (window != top) { // Obs IE bug: http://stackoverflow.com/questions/4850978/i
         previewViewIframeElm.src = '';
         previewViewIframeElm.src = iSource;
       }
-      previewViewIframe.load(function () {
+      previewViewIframe.on("load", function () {
         sendPreviewLoaded();
       });
     } else {
