@@ -23,13 +23,11 @@ $.when(vrtxAdmin.domainsIsReady).done(function() {
         displaySystemGoingDownMessage();
 
         // Dropdowns
-        if(!isEmbedded) {
-          vrtxAdm.dropdownPlain("#editor-help-menu");
-          vrtxAdm.dropdown({
-            selector: "ul#editor-menu",
-            title: vrtxAdm.messages.dropdowns.editorTitle
-          });
-        }
+        vrtxAdm.dropdownPlain("#editor-help-menu");
+        vrtxAdm.dropdown({
+          selector: "ul#editor-menu",
+          title: vrtxAdm.messages.dropdowns.editorTitle
+        });
 
         // Save shortcut and AJAX
         vrtxAdm.cachedDoc.bind('keydown', 'ctrl+s meta+s', $.debounce(150, true, function (e) {
@@ -41,9 +39,8 @@ $.when(vrtxAdmin.domainsIsReady).done(function() {
           var link = _$(ref);
           vrtxAdm.editorSaveButtonName = link.attr("name");
           vrtxAdm.editorSaveButton = link;
-          // ! Edit single course schedule session
           vrtxAdm.editorSaveIsRedirectPreview = (ref.id === "saveAndViewButton" || ref.id === "saveViewAction")
-                                             && (typeof vrtxEditor === "undefined" || !(vrtxEditor.editorForm.hasClass("vrtx-course-schedule") && onlySessionId.length));
+                                             && (typeof vrtxEditor === "undefined" || !onlySessionId.length);
           ajaxSave();
           _$.when(vrtxAdm.asyncEditorSavedDeferred).done(function () {
             vrtxAdm.removeMsg("error");
@@ -284,17 +281,6 @@ function ajaxSave() {
 
   var lastModifiedFuture = isServerLastModifiedOlderThanClientLastModified(loadingDialog);
   $.when(lastModifiedFuture).done(function () {
-    var extraData = {};
-    var skipForm = false;
-    if(typeof vrtxEditor !== "undefined" && vrtxEditor.editorForm.hasClass("vrtx-course-schedule")) {
-      editorCourseSchedule.saveLastSession();
-      extraData = { "csrf-prevention-token": vrtxEditor.editorForm.find("input[name='csrf-prevention-token']").val(),
-                    "schedule-content": JSON.stringify(editorCourseSchedule.retrievedScheduleData)
-                  };
-      skipForm = true;
-    }
-
-
     var futureFormAjax = $.Deferred();
     if (typeof $.fn.ajaxSubmit !== "function") {
       var getScriptFn = (typeof $.cachedScript === "function") ? $.cachedScript : $.getScript;
@@ -309,8 +295,6 @@ function ajaxSave() {
     }
     $.when(futureFormAjax).done(function() {
       _$("#editor").ajaxSubmit({
-        data: extraData,
-        skipForm: skipForm,
         success: function(results, status, xhr) {
           vrtxAdmin.clientLastModified = $($.parseHTML(results)).find("#resource-last-modified").text().split(",");
           var endTime = new Date() - startTime;
@@ -323,9 +307,6 @@ function ajaxSave() {
               loadingDialog.close();
               vrtxAdmin.asyncEditorSavedDeferred.resolve();
             }, Math.round(waitMinMs - endTime));
-          }
-          if(typeof vrtxEditor !== "undefined" && vrtxEditor.editorForm.hasClass("vrtx-course-schedule")) {
-            editorCourseSchedule.saved(vrtxAdm.editorSaveButtonName === "updateViewAction");
           }
         },
         error: function (xhr, textStatus, errMsg) {

@@ -92,8 +92,7 @@ $.fn.ajaxSubmit = function(options) {
 		traditional = $.ajaxSettings.traditional;
 	}
 
-	// USIT added: possible to skip form serializing and use extraData onlyy
-	var qx,n,v,a = (!options.skipForm ? this.formToArray(options.semantic) : []);
+	var qx,n,v,a = this.formToArray(options.semantic);
 	if (options.data) {
 		options.extraData = options.data;
 		qx = $.param(options.data, traditional);

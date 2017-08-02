@@ -153,20 +153,11 @@
   background: url(../images/arrow-expanded-big.gif) no-repeat center left;
 }
 
-.embedded .ui-accordion,
-.session .ui-accordion {
-  margin-top: 5px;
-  margin-bottom: 0px;
-  background: transparent !important;
-}
-
-.embedded .ui-accordion .ui-accordion-content,
 .accordion-wrapper > div .ui-accordion > div .ui-accordion-content {
   padding-left: 50px !important;
   border: none !important;
 }
 
-.embedded .ui-accordion .ui-accordion-content,
 .accordion-wrapper.skip-tier > .ui-accordion-content,
 .accordion-wrapper > div .ui-accordion > div .ui-accordion-content {
   padding-top: 10px !important;

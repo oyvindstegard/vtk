@@ -9,9 +9,6 @@
    NOTE: upgrading to newest jquery.form.js will break IE8 saving
 
    ------------------------------------------------------------------------------------
-   // USIT added: possible to skip form serializing and use extraData onlyy
-   var qx,n,v,a = (!options.skipForm ? this.formToArray(options.semantic) : []);
-   
    // USIT added: name of clicked button
    if(typeof vrtxAdmin !== "undefined" && vrtxAdmin.editorSaveButtonName != "") {
      options.data += "&" + vrtxAdmin.editorSaveButtonName;

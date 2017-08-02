@@ -14,12 +14,6 @@
   
   <#assign language = vrtx.getMsg("eventListing.calendar.lang", "en") />
   
-  <#assign isCourseSchedule = form.getResource().getType().getName()?exists && form.getResource().getType().getName() == "course-schedule" />
-  
-  <#if isCourseSchedule>
-    <script type="text/javascript" src="/vrtx/__vrtx/static-resources/js/schedule/i18n/${language}.js"></script>
-    <script type="text/javascript" src="/vrtx/__vrtx/static-resources/js/schedule/schedule-editor.js"></script>
-  </#if>
   <@editor.addCkScripts />
   <@vrtxJSONJavascript.script />
   
@@ -66,11 +60,10 @@
     window.onbeforeunload = unsavedChangesInEditorMessage;
 
     function performValidation() {
-      return vrtxEditor.editorForm.hasClass("vrtx-course-schedule") ? true : validTextLengthsInEditor(false);
+      return validTextLengthsInEditor(false);
     }
 
     function performSave() {
-      /* Ignore special JSON binary editor for course-schedule document */
       datepickerEditor.prepareForSave(); // js/datepicker/datepicker-admin.js
       saveMultipleInputFields();
       
@@ -233,13 +226,8 @@
 
     <div class="submit submitButtons">
     <#if !form.hasPublishDate && !form.workingCopy>
-      <#if isCourseSchedule>
-        <button class="vrtx-button vrtx-save-button" id="saveAndViewButton" name="updateViewAction">${vrtx.getMsg('editor.saveAndView')}</button>
-        <button class="vrtx-focus-button vrtx-save-button" id="updateAction" name="updateAction">${vrtx.getMsg('editor.save')}</button>
-      <#else>
-        <input class="vrtx-button vrtx-save-button" type="submit" id="saveAndViewButton" name="updateViewAction"  value="${vrtx.getMsg('editor.saveAndView')}" />
-        <input class="vrtx-focus-button vrtx-save-button" type="submit" id="updateAction" name="updateAction" value="${vrtx.getMsg('editor.save')}" />
-      </#if>
+      <input class="vrtx-button vrtx-save-button" type="submit" id="saveAndViewButton" name="updateViewAction"  value="${vrtx.getMsg('editor.saveAndView')}" />
+      <input class="vrtx-focus-button vrtx-save-button" type="submit" id="updateAction" name="updateAction" value="${vrtx.getMsg('editor.save')}" />
       
       <input class="vrtx-button" type="submit" id="cancelAction" name="cancelAction" value="${vrtx.getMsg('editor.cancel')}" />
       <#if form.onlyWriteUnpublished>
@@ -261,13 +249,8 @@
       <input class="vrtx-button" type="submit" id="deleteWorkingCopyAction" name="deleteWorkingCopyAction" value="${vrtx.getMsg('editor.deleteWorkingCopy')}" />
     <#else>
       <#if !form.onlyWriteUnpublished>
-        <#if isCourseSchedule>
-          <button class="vrtx-button vrtx-save-button" id="saveAndViewButton" name="updateViewAction">${vrtx.getMsg('editor.saveAndView')}</button>
-          <button class="vrtx-focus-button vrtx-save-button" id="updateAction" name="updateAction">${vrtx.getMsg('editor.save')}</button>
-        <#else>
-          <input class="vrtx-button vrtx-save-button" type="submit" id="saveAndViewButton" name="updateViewAction"  value="${vrtx.getMsg('editor.saveAndView')}" />
-          <input class="vrtx-focus-button vrtx-save-button" type="submit" id="updateAction" name="updateAction" value="${vrtx.getMsg('editor.save')}" />
-        </#if>
+        <input class="vrtx-button vrtx-save-button" type="submit" id="saveAndViewButton" name="updateViewAction"  value="${vrtx.getMsg('editor.saveAndView')}" />
+        <input class="vrtx-focus-button vrtx-save-button" type="submit" id="updateAction" name="updateAction" value="${vrtx.getMsg('editor.save')}" />
         
         <input class="vrtx-button" type="submit" id="cancelAction" name="cancelAction" value="${vrtx.getMsg('editor.cancel')}" />
         <span id="buttons-or-text"><@vrtx.msg code="editor.orText" default="or" /></span>
