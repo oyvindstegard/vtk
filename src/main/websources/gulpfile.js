@@ -20,8 +20,6 @@ const config = {
     production: !!util.env.production
 };
 
-const TARGET = config.target;
-
 const fileForTest = [
     config.testTarget + '/jquery/jquery.min.js',
     config.testTarget + '/jquery/plugins/jquery.form.js',
@@ -34,6 +32,8 @@ const fileForTest = [
 ];
 
 const SASS_OPTIONS = (config.production) ? {outputStyle: 'compressed'} : {};
+
+let TARGET = config.target;
 
 function errorHandler(e) {
     util.log(e);
