@@ -182,12 +182,6 @@
              script-interfaces="vtk.shell.vshell.VCommand">
    </lang:bsh>
 
-   <lang:bsh id="vshell.servlet.auth"
-             refresh-check-delay="1000"
-             script-source="${vshell.commandsLocation}/servlet/auth.bsh"
-             script-interfaces="vtk.shell.vshell.VCommand">
-   </lang:bsh>
-
    <lang:bsh id="vshell.servlet.status"
              refresh-check-delay="1000"
              script-source="${vshell.commandsLocation}/servlet/status.bsh"
