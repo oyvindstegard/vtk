@@ -4,23 +4,23 @@
        xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-3.1.xsd 
                            http://www.springframework.org/schema/lang http://www.springframework.org/schema/lang/spring-lang-3.1.xsd">
 
-   <lang:bsh id="metrics.consoleReporter">
-     <lang:inline-script>
-       import com.codahale.metrics.*;
-       import java.util.concurrent.TimeUnit;
+   <lang:groovy id="metrics.consoleReporter">
+     <lang:inline-script><![CDATA[
+       import com.codahale.metrics.*
+       import java.util.concurrent.TimeUnit
 
-       public class BshConsoleReporter {
-
-           public void setRegistry(MetricRegistry registry) {
+       class GroovyConsoleReporter {
+           void setRegistry(MetricRegistry registry) {
                ConsoleReporter reporter = ConsoleReporter.forRegistry(registry)
                       .convertRatesTo(TimeUnit.SECONDS)
                       .convertDurationsTo(TimeUnit.MILLISECONDS)
-                      .build();
-               reporter.start(10, TimeUnit.SECONDS);
-           }
+                      .build()
 
+               reporter.start(10, TimeUnit.SECONDS)
+           }
        }
-     </lang:inline-script>
+     ]]></lang:inline-script>
      <lang:property name="registry" ref="metrics.registry" />
-   </lang:bsh>
+   </lang:groovy>
+
 </beans>
