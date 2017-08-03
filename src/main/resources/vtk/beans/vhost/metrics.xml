@@ -50,41 +50,43 @@
     </property>
   </bean>
 
+   <!-- Register new metric gauges as named Groovy expressions.
+        Groovy expressions may reference the variable "context" to access
+        Spring application context.  -->
+   <lang:groovy id="metrics.dynamicRegistration">
+     <lang:inline-script><![CDATA[
+       import com.codahale.metrics.*
+       import org.springframework.context.*
+       import groovy.lang.*
 
-   <lang:bsh id="metrics.dynamicRegistration">
-     <lang:inline-script>
-       import com.codahale.metrics.*;
-       import org.springframework.context.*;
+       class MetricsExpressionRegistrator implements ApplicationContextAware {
+           private MetricRegistry registry
+           private ApplicationContext context
 
-       public class BshVariousMetrics implements ApplicationContextAware {
-           private MetricRegistry registry;
-           private ApplicationContext context;
-
-           public void setRegistry(MetricRegistry registry) {
-               this.registry = registry;
+           void setRegistry(MetricRegistry registry) {
+               this.registry = registry
            }
 
-           public void setApplicationContext(ApplicationContext context) {
-               this.context = context;
+           void setApplicationContext(ApplicationContext context) {
+               this.context = context
            }
 
-           public void gauge(String name, String expr) {
-               Gauge gauge = new Gauge() {
-                    public Integer getValue() {
-                         return eval(expr);
-                    }
-               };
-               registry.register(name, gauge);
+           void registerGaugeExpression(String name, String expr) {
+               def binding = new Binding()
+               binding.setVariable("context", context)
+               def compiledExpression = new GroovyShell(binding).parse(expr)
+               def gaugeInstance = { compiledExpression.run() } as Gauge
+               registry.register(name, gaugeInstance)
            }
        }
-     </lang:inline-script>
+     ]]></lang:inline-script>
      <lang:property name="registry" ref="metrics.registry" />
-   </lang:bsh>
+   </lang:groovy>
 
   <bean id="metrics.gaugeRegistration" abstract="true"
         class="org.springframework.beans.factory.config.MethodInvokingBean">
     <property name="targetObject" ref="metrics.dynamicRegistration" />
-    <property name="targetMethod" value="gauge" />
+    <property name="targetMethod" value="registerGaugeExpression" />
   </bean>
 
 </beans>
