@@ -37,6 +37,7 @@ import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Required;
 
+import vtk.repository.store.PrincipalMetadata;
 import vtk.security.Principal;
 import vtk.security.Principal.Type;
 
@@ -68,6 +69,20 @@ public class PrincipalAutoCompleteController extends AutoCompleteController {
                     .map(metadata -> metadata.getValues(USER_SCOPED_AFFILIATION_ATTRIBUTE))
                     .orElse(Collections.emptyList());
             
+            PrincipalMetadata userMetadata = principal.getMetadata();
+            String surname = "";
+            String firstName = "";
+            if (userMetadata != null) {
+                Object fn = userMetadata.getValue("firstName");
+                Object sn = userMetadata.getValue("surname");
+                if(fn != null) {
+                    firstName = (String) fn;
+                }
+                if(sn != null) {
+                    surname = (String) sn;
+                }
+            }
+            
             // XXX: Special treatment for webid-groups and users
             if (principal.getQualifiedName().contains("webid.uio.no")) {
                 if (principal.getType() == Type.GROUP || principal.getType() == Type.PSEUDO) {
@@ -76,6 +91,8 @@ public class PrincipalAutoCompleteController extends AutoCompleteController {
                     suggestion.setField(2, principal.getURL());
                     suggestion.setField(3, areaCodes(values, 0));
                     suggestion.setField(4, areaCodes(values, 1));
+                    suggestion.setField(5, surname);
+                    suggestion.setField(6, firstName);
                 } else {
                     continue;
                 }
@@ -85,6 +102,8 @@ public class PrincipalAutoCompleteController extends AutoCompleteController {
                 suggestion.setField(2, principal.getURL());
                 suggestion.setField(3, areaCodes(values, 0));
                 suggestion.setField(4, areaCodes(values, 1));
+                suggestion.setField(5, surname);
+                suggestion.setField(6, firstName);
             }
 
             suggestions.add(suggestion);
