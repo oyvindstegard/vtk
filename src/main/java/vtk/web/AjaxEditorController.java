@@ -56,6 +56,7 @@ import org.springframework.web.servlet.support.RequestContextUtils;
 import vtk.repository.Path;
 import vtk.repository.Repository;
 import vtk.repository.Resource;
+import vtk.repository.store.PrincipalMetadata;
 import vtk.resourcemanagement.StaticResourceResolver;
 import vtk.security.Principal;
 import vtk.text.tl.Context;
@@ -134,6 +135,7 @@ public class AjaxEditorController implements Controller {
         Repository repository = rc.getRepository();
         String token = rc.getSecurityToken();
         Principal p = rc.getPrincipal();
+        PrincipalMetadata pm = p.getMetadata();
 
         Resource resource = repository.lock(
                 token,
@@ -157,6 +159,8 @@ public class AjaxEditorController implements Controller {
         ).perform());
         model.put("resourceURI", resource.getURI());
         model.put("userName", p.getName());
+        model.put("userSurName", (String) pm.getValue("surname"));
+        model.put("userFullName", (String) pm.getValue("fullName"));
         model.put("userDescription", p.getDescription());
         model.put("userUrl", p.getURL());
         model.put("locale", LocaleHelper.getPreferredLang(locale));
