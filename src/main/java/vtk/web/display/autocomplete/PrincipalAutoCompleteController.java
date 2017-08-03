@@ -73,13 +73,13 @@ public class PrincipalAutoCompleteController extends AutoCompleteController {
             String surname = "";
             String firstName = "";
             if (userMetadata != null) {
-                Object fn = userMetadata.getValue("firstName");
                 Object sn = userMetadata.getValue("surname");
-                if(fn != null) {
-                    firstName = (String) fn;
-                }
+                Object fn = userMetadata.getValue("firstName");
                 if(sn != null) {
                     surname = (String) sn;
+                }
+                if(fn != null) {
+                    firstName = (String) fn;
                 }
             }
             
