@@ -46,8 +46,11 @@ import org.slf4j.LoggerFactory;
 /**
  * Manager for locks on cache items (URIs) with support for shared or exclusive
  * access to paths (read and write locking).
+ *
+ * <p>The primary purpose is to synchronize concurrent access into the URI namespace
+ * with regard to consistency of reads vs writes.
  * 
- * There are two main "synchronization domains" in this code.
+ * <p>There are two main "synchronization domains" in this code.
  * 1. Synchronization on individual lock objects, over which multiple threads
  *    contend for shared or exclusive access to paths.
 
@@ -70,7 +73,7 @@ public class PathLockManager {
     // All access to this map must be synchronized on the map object itself
     // There is room for improvement on how we handle lock disposal and synchronized access to this map, because
     // ReentrantReadWriteLock can be queried about queue size and hold count natively.
-    private final Map<Path, PathLock> locks = new HashMap<Path, PathLock>();
+    private final Map<Path, PathLock> locks = new HashMap<>();
 
     private final Logger logger = LoggerFactory.getLogger(getClass());
 
@@ -129,7 +132,7 @@ public class PathLockManager {
         // Always try to lock a set of URIs in the same order to reduce chance of deadlocking.
         Arrays.sort(uris);
         
-        final List<Path> claimedLocks = new ArrayList<Path>(uris.length);
+        final List<Path> claimedLocks = new ArrayList<>(uris.length);
 
         for (Path uri : uris) {
             final PathLock lock = getLock(uri);   // Request lock object for path
@@ -191,13 +194,9 @@ public class PathLockManager {
      * @return the lock object corresponding to the URI
      */
     private PathLock getLock(Path uri) {
-        PathLock lock = null;
+        PathLock lock;
         synchronized(this.locks) {
-            lock = this.locks.get(uri);
-            if (lock == null) {
-                lock = new PathLock(uri);
-                this.locks.put(uri, lock);
-            }
+            lock = this.locks.computeIfAbsent(uri, p -> new PathLock(p));
             ++lock.useCount;
         }
 
