@@ -4,15 +4,15 @@
        xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-3.1.xsd 
                            http://www.springframework.org/schema/lang http://www.springframework.org/schema/lang/spring-lang-3.1.xsd">
 
-   <lang:bsh id="metrics.statsdReporter">
-     <lang:inline-script>
-       import com.codahale.metrics.*;
-       import com.basistech.metrics.reporting.*;
-       import java.util.concurrent.TimeUnit;
+   <lang:groovy id="metrics.statsdReporter">
+     <lang:inline-script><![CDATA[
+       import com.codahale.metrics.*
+       import com.basistech.metrics.reporting.*
+       import java.util.concurrent.TimeUnit
 
-       public class BshStatsdReporter {
+       class GroovyStatsdReporter {
 
-           public void setRegistry(MetricRegistry registry) {
+           void setRegistry(MetricRegistry registry) {
 
                Statsd statsd = new Statsd("${metrics.statsd.host}", ${metrics.statsd.port});
 
@@ -21,13 +21,14 @@
                      .convertDurationsTo(TimeUnit.MILLISECONDS)
                      .convertRatesTo(TimeUnit.SECONDS)
                      .filter(MetricFilter.ALL)
-                     .build(statsd);
-               reporter.start(10, TimeUnit.SECONDS);
+                     .build(statsd)
+
+               reporter.start(10, TimeUnit.SECONDS)
            }
 
        }
-     </lang:inline-script>
+     ]]></lang:inline-script>
      <lang:property name="registry" ref="metrics.registry" />
-   </lang:bsh>
+   </lang:groovy>
 
 </beans>
