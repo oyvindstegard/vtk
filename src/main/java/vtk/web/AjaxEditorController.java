@@ -135,7 +135,10 @@ public class AjaxEditorController implements Controller {
         Repository repository = rc.getRepository();
         String token = rc.getSecurityToken();
         Principal p = rc.getPrincipal();
+        
         PrincipalMetadata pm = p.getMetadata();
+        Object sn = pm.getValue("surname");
+        Object fn = pm.getValue("firstName");
 
         Resource resource = repository.lock(
                 token,
@@ -159,8 +162,8 @@ public class AjaxEditorController implements Controller {
         ).perform());
         model.put("resourceURI", resource.getURI());
         model.put("userName", p.getName());
-        model.put("userSurName", (String) pm.getValue("surname"));
-        model.put("userFirstName", (String) pm.getValue("firstName"));
+        model.put("userSurName", (sn != null ? (String) sn : ""));
+        model.put("userFirstName", (fn != null ? (String) fn : ""));
         model.put("userDescription", p.getDescription());
         model.put("userUrl", p.getURL());
         model.put("locale", LocaleHelper.getPreferredLang(locale));
