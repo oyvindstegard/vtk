@@ -174,7 +174,7 @@
       animationOff = true;
     }
 
-    isPreviewMode = $("#vrtx-preview").length && !isEmbedded; // When schedule is locked and goes to preview
+    isPreviewMode = $("#vrtx-preview").length;
     if(isPreviewMode) {
 
       htmlTag = $("html");

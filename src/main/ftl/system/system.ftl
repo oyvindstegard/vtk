@@ -50,10 +50,6 @@
       unpublishDateBefore: '${vrtx.getMsg("publishing.edit.invalid.unpublishDateBefore")}',
       unpublishDateNonExisting: '${vrtx.getMsg("publishing.edit.invalid.unpublishDateNonExisting")}'
     },
-    courseSchedule: {
-      updated: '${vrtx.getMsg("course-schedule.edit.updated")}',
-      updatedTitle: '${vrtx.getMsg("course-schedule.edit.updated.title")}'
-    },
     dropdowns: {
       createTitle: '${vrtx.getMsg("dropdowns.create.title")}',
       resourceTitle: '${vrtx.getMsg("dropdowns.resource.title")}',
