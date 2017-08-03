@@ -160,7 +160,7 @@ public class AjaxEditorController implements Controller {
         model.put("resourceURI", resource.getURI());
         model.put("userName", p.getName());
         model.put("userSurName", (String) pm.getValue("surname"));
-        model.put("userFullName", (String) pm.getValue("fullName"));
+        model.put("userFirstName", (String) pm.getValue("firstName"));
         model.put("userDescription", p.getDescription());
         model.put("userUrl", p.getURL());
         model.put("locale", LocaleHelper.getPreferredLang(locale));
