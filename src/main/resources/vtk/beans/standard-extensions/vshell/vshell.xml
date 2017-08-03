@@ -60,12 +60,9 @@
      <property name="runEvalLoop" value="false" />
    </bean>
 
-
-   <lang:bsh id="vshell.repo.id"
-             refresh-check-delay="1000"
-             script-source="${vshell.commandsLocation}/repo/id.bsh"
-             script-interfaces="vtk.shell.vshell.VCommand">
-   </lang:bsh>
+   <lang:groovy id="vshell.repo.id"
+           refresh-check-delay="1000"
+           script-source="${vshell.commandsLocation}/repo/id.groovy" />
 
    <lang:bsh id="vshell.repo.cat"
              refresh-check-delay="1000"
