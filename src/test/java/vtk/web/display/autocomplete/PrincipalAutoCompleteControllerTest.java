@@ -98,8 +98,8 @@ public class PrincipalAutoCompleteControllerTest {
         controller.setDataProvider(dataProvider);
         List<Suggestion> suggestions = controller.getAutoCompleteSuggestions("foo", context);
         assertEquals("size", 2, suggestions.size());
-        assertEquals("foo", "Foo User;foo;http://www.uio.no?vrtx=person-view&uid=foo;120000,900000;140000,900000", suggestions.get(0).toString());
-        assertEquals("bar", "Bar User;bar;http://www.uio.no?vrtx=person-view&uid=bar;;", suggestions.get(1).toString());
+        assertEquals("foo", "Foo User;foo;http://www.uio.no?vrtx=person-view&uid=foo;120000,900000;140000,900000;;", suggestions.get(0).toString());
+        assertEquals("bar", "Bar User;bar;http://www.uio.no?vrtx=person-view&uid=bar;;;;", suggestions.get(1).toString());
     }
 
     private PrincipalImpl getTestPrincipal(PrincipalMetadataImpl meta) {

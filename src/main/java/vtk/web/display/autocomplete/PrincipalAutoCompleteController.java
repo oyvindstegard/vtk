@@ -56,7 +56,7 @@ public class PrincipalAutoCompleteController extends AutoCompleteController {
 
         List<Suggestion> suggestions = new ArrayList<>(completions.size());
         for (Principal principal : completions) {
-            Suggestion suggestion = new Suggestion(5);
+            Suggestion suggestion = new Suggestion(7);
 
             // XXX: Only list uio.no and pseudo users
             if (principal.isUser()) {
