@@ -100,11 +100,9 @@
              script-interfaces="vtk.shell.vshell.VCommand">
    </lang:bsh>
 
-   <lang:bsh id="vshell.repo.move"
+   <lang:groovy id="vshell.repo.move"
              refresh-check-delay="1000"
-             script-source="${vshell.commandsLocation}/repo/move.bsh"
-             script-interfaces="vtk.shell.vshell.VCommand">
-   </lang:bsh>
+             script-source="${vshell.commandsLocation}/repo/move.groovy"/>
 
    <lang:bsh id="vshell.repo.acl-discover"
              refresh-check-delay="1000"
