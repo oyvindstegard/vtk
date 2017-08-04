@@ -162,23 +162,17 @@
              script-interfaces="vtk.shell.vshell.VCommand">
    </lang:bsh>
 
-   <lang:bsh id="vshell.servlet.status"
+   <lang:groovy id="vshell.servlet.status"
              refresh-check-delay="1000"
-             script-source="${vshell.commandsLocation}/servlet/status.bsh"
-             script-interfaces="vtk.shell.vshell.VCommand">
-   </lang:bsh>
+             script-source="${vshell.commandsLocation}/servlet/status.groovy"/>
 
-   <lang:bsh id="vshell.servlet.services"
+   <lang:groovy id="vshell.servlet.services"
              refresh-check-delay="1000"
-             script-source="${vshell.commandsLocation}/servlet/services.bsh"
-             script-interfaces="vtk.shell.vshell.VCommand">
-   </lang:bsh>
+             script-source="${vshell.commandsLocation}/servlet/services.groovy"/>
 
-   <lang:bsh id="vshell.servlet.service"
+   <lang:groovy id="vshell.servlet.service"
              refresh-check-delay="1000"
-             script-source="${vshell.commandsLocation}/servlet/service.bsh"
-             script-interfaces="vtk.shell.vshell.VCommand">
-   </lang:bsh>
+             script-source="${vshell.commandsLocation}/servlet/service.groovy"/>
 
    <lang:bsh id="vshell.bsh.eval"
              refresh-check-delay="1000"
