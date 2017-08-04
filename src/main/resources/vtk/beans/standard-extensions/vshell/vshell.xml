@@ -80,17 +80,13 @@
              refresh-check-delay="1000"
              script-source="${vshell.commandsLocation}/repo/revisions.groovy"/>
 
-   <lang:bsh id="vshell.repo.ls"
+   <lang:groovy id="vshell.repo.ls"
              refresh-check-delay="1000"
-             script-source="${vshell.commandsLocation}/repo/ls.bsh"
-             script-interfaces="vtk.shell.vshell.VCommand">
-   </lang:bsh>
+             script-source="${vshell.commandsLocation}/repo/ls.groovy" />
 
-   <lang:bsh id="vshell.repo.search"
+   <lang:groovy id="vshell.repo.search"
              refresh-check-delay="1000"
-             script-source="${vshell.commandsLocation}/repo/search.bsh"
-             script-interfaces="vtk.shell.vshell.VCommand">
-   </lang:bsh>
+             script-source="${vshell.commandsLocation}/repo/search.groovy"/>
 
    <lang:bsh id="vshell.repo.acl-update"
              refresh-check-delay="1000"
