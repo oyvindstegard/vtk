@@ -76,11 +76,9 @@
              refresh-check-delay="1000"
              script-source="${vshell.commandsLocation}/repo/info.groovy" />
 
-   <lang:bsh id="vshell.repo.revisions"
+   <lang:groovy id="vshell.repo.revisions"
              refresh-check-delay="1000"
-             script-source="${vshell.commandsLocation}/repo/revisions.bsh"
-             script-interfaces="vtk.shell.vshell.VCommand">
-   </lang:bsh>
+             script-source="${vshell.commandsLocation}/repo/revisions.groovy"/>
 
    <lang:bsh id="vshell.repo.ls"
              refresh-check-delay="1000"
