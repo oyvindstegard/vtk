@@ -1,6 +1,6 @@
 package vtk.shell.vshell
 
-class RepoResourcetypesCommand implements VCommand {
+class RepoAclDeleteCommand implements VCommand {
 
     String getDescription() {
         'Deletes the ACL on a resource'

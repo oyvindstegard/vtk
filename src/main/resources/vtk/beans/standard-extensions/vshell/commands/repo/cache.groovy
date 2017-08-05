@@ -1,6 +1,6 @@
 package vtk.shell.vshell
 
-class CacheCommand implements VCommand {
+class RepoCacheCommand implements VCommand {
     String getDescription() {
         "Operate on the resource cache"
     }

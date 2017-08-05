@@ -1,6 +1,6 @@
 package vtk.shell.vshell
 
-class IdCommand implements VCommand {
+class RepoIdCommand implements VCommand {
     String getDescription() { "Displays repository ID" }
 
     String getUsage() { "repo id" }

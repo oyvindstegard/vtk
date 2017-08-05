@@ -94,11 +94,9 @@
              script-interfaces="vtk.shell.vshell.VCommand">
    </lang:bsh>
 
-   <lang:bsh id="vshell.repo.acl-delete"
+   <lang:groovy id="vshell.repo.acl-delete"
              refresh-check-delay="1000"
-             script-source="${vshell.commandsLocation}/repo/acl-delete.bsh"
-             script-interfaces="vtk.shell.vshell.VCommand">
-   </lang:bsh>
+             script-source="${vshell.commandsLocation}/repo/acl-delete.groovy" />
 
    <lang:groovy id="vshell.repo.move"
              refresh-check-delay="1000"
