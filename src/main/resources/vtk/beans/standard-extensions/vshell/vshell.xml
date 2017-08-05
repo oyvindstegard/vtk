@@ -126,11 +126,9 @@
              script-interfaces="vtk.shell.vshell.VCommand">
    </lang:bsh>
 
-   <lang:bsh id="vshell.repo.index"
+   <lang:groovy id="vshell.repo.index"
              refresh-check-delay="1000"
-             script-source="${vshell.commandsLocation}/repo/index.bsh"
-             script-interfaces="vtk.shell.vshell.VCommand">
-   </lang:bsh>
+             script-source="${vshell.commandsLocation}/repo/index.groovy" />
 
    <lang:groovy id="vshell.repo.resourcetypes"
              refresh-check-delay="1000"
