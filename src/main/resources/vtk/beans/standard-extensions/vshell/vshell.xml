@@ -108,11 +108,9 @@
              refresh-check-delay="1000"
              script-source="${vshell.commandsLocation}/repo/acl-discover.groovy" />
 
-   <lang:bsh id="vshell.repo.delete"
+   <lang:groovy id="vshell.repo.delete"
              refresh-check-delay="1000"
-             script-source="${vshell.commandsLocation}/repo/delete.bsh"
-             script-interfaces="vtk.shell.vshell.VCommand">
-   </lang:bsh>
+             script-source="${vshell.commandsLocation}/repo/delete.groovy" />
 
    <lang:groovy id="vshell.repo.cache"
              refresh-check-delay="1000"
