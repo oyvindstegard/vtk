@@ -291,13 +291,14 @@ public class VShellSession extends ShellSession {
     }
 
     private Object getTypedArg(String val, String type) {
-        if ("path".equals(type)) {
-            return Path.fromString(val);
+        switch (type) {
+            case "path":
+                return Path.fromStringWithTrailingSlash(val);
+            case "number":
+                return Integer.parseInt(val);
+
+            default: return val;
         }
-        if ("number".equals(type)) {
-            return Integer.parseInt(val);
-        }
-        return val;
     }
 
     private int findCommand(List<PathNode> result, Set<PathNode> nodes, List<String> tokens, int idx) {
