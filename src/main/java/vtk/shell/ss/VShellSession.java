@@ -169,8 +169,6 @@ public class VShellSession extends ShellSession {
         ctx.add(cmd);
     }
 
-
-
     private ParamNode parseParamNode(String str) {
         boolean optional = false;
         boolean named = false;
@@ -181,8 +179,8 @@ public class VShellSession extends ShellSession {
             named = true;
 
         } else if (str.startsWith("[") && str.endsWith("]")) {
-                optional = true;
-                str = str.substring(1, str.length() - 1);
+            optional = true;
+            str = str.substring(1, str.length() - 1);
 
         } else if (str.startsWith("<") && str.endsWith(">")) {
             str = str.substring(1, str.length() - 1);
@@ -191,7 +189,9 @@ public class VShellSession extends ShellSession {
             throw new IllegalArgumentException("Invalid parameter: " + str);
         }
         int colIdx = str.indexOf(':');
-        if (colIdx == -1) throw new RuntimeException("Missing ':' separator");
+        if (colIdx == -1) {
+            throw new RuntimeException("Missing ':' separator between parameter name and type");
+        }
         String name = str.substring(0, colIdx);
         String type = str.substring(colIdx + 1, str.length());
         boolean rest = false;
