@@ -88,11 +88,9 @@
              refresh-check-delay="1000"
              script-source="${vshell.commandsLocation}/repo/search.groovy"/>
 
-   <lang:bsh id="vshell.repo.acl-update"
+   <lang:groovy id="vshell.repo.acl-update"
              refresh-check-delay="1000"
-             script-source="${vshell.commandsLocation}/repo/acl-update.bsh"
-             script-interfaces="vtk.shell.vshell.VCommand">
-   </lang:bsh>
+             script-source="${vshell.commandsLocation}/repo/acl-update.groovy"/>
 
    <lang:groovy id="vshell.repo.acl-delete"
              refresh-check-delay="1000"
