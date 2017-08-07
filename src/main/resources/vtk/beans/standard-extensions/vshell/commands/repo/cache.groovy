@@ -15,6 +15,7 @@ class RepoCacheCommand implements VCommand {
         switch (args.command) {
           case "clear":
             cache.clear()
+            out.println 'Repository cache cleared'
             break
           case "size":
             out.println(cache.size())
@@ -23,7 +24,7 @@ class RepoCacheCommand implements VCommand {
             cache.dump(out)
             break
           default:
-            out.println("Unknown cache command: ${args.command}, available commands: clear, size, dump")
+            out.println "Unknown cache command: ${args.command}, available commands: clear, size, dump"
         }
     }
 }

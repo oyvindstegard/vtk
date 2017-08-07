@@ -116,11 +116,9 @@
              refresh-check-delay="1000"
              script-source="${vshell.commandsLocation}/repo/readonly.groovy" />
 
-   <lang:bsh id="vshell.repo.evaluate"
+   <lang:groovy id="vshell.repo.evaluate"
              refresh-check-delay="1000"
-             script-source="${vshell.commandsLocation}/repo/evaluate.bsh"
-             script-interfaces="vtk.shell.vshell.VCommand">
-   </lang:bsh>
+             script-source="${vshell.commandsLocation}/repo/evaluate.groovy" />
 
    <lang:groovy id="vshell.repo.index"
              refresh-check-delay="1000"
