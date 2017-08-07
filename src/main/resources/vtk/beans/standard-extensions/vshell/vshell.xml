@@ -163,11 +163,8 @@
    </lang:bsh>
 
    <!-- For testing inheritable props -->
-   <lang:bsh id="vshell.repo.ipropstore"
+   <lang:groovy id="vshell.repo.iprop"
              refresh-check-delay="1000"
-             script-source="${vshell.commandsLocation}/repo/ipropstore.bsh"
-             script-interfaces="vtk.shell.vshell.VCommand">
-   </lang:bsh>
-
+             script-source="${vshell.commandsLocation}/repo/iprop.groovy" />
 
 </beans>
