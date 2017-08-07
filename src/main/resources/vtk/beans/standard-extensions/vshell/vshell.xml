@@ -127,17 +127,13 @@
              refresh-check-delay="1000"
              script-source="${vshell.commandsLocation}/repo/prop.groovy" />
 
-   <lang:bsh id="vshell.archive.create"
+   <lang:groovy id="vshell.archive.create"
              refresh-check-delay="1000"
-             script-source="${vshell.commandsLocation}/archive/create.bsh"
-             script-interfaces="vtk.shell.vshell.VCommand">
-   </lang:bsh>
+             script-source="${vshell.commandsLocation}/archive/create.groovy" />
 
-   <lang:bsh id="vshell.archive.expand"
+   <lang:groovy id="vshell.archive.expand"
              refresh-check-delay="1000"
-             script-source="${vshell.commandsLocation}/archive/expand.bsh"
-             script-interfaces="vtk.shell.vshell.VCommand">
-   </lang:bsh>
+             script-source="${vshell.commandsLocation}/archive/expand.groovy"/>
 
    <lang:groovy id="vshell.servlet.status"
              refresh-check-delay="1000"
