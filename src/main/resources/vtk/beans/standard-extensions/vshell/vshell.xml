@@ -128,11 +128,9 @@
              refresh-check-delay="1000"
              script-source="${vshell.commandsLocation}/repo/resourcetypes.groovy"/>
 
-   <lang:bsh id="vshell.repo.prop"
+   <lang:groovy id="vshell.repo.prop"
              refresh-check-delay="1000"
-             script-source="${vshell.commandsLocation}/repo/prop.bsh"
-             script-interfaces="vtk.shell.vshell.VCommand">
-   </lang:bsh>
+             script-source="${vshell.commandsLocation}/repo/prop.groovy" />
 
    <lang:bsh id="vshell.archive.create"
              refresh-check-delay="1000"
