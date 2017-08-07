@@ -4,9 +4,7 @@
        xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-3.1.xsd 
                            http://www.springframework.org/schema/lang http://www.springframework.org/schema/lang/spring-lang-3.1.xsd">
 
-   <lang:bsh id="structuredResources.recompileScript"
-             script-source="${structuredResources.recompileScriptLocation}"
-             script-interfaces="org.springframework.context.ApplicationContextAware">
-   </lang:bsh>
-</beans>
+   <lang:groovy id="structuredResources.recompileScript"
+                script-source="${structuredResources.recompileScriptLocation}" />
 
+</beans>
