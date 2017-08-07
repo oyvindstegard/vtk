@@ -55,11 +55,6 @@
      <property name="principal" ref="rootPrincipal" />
    </bean>
 
-   <!-- used by command vshell.bsh.eval: -->
-   <bean id="vshell.bsh.console" class="vtk.shell.BeanShellConsole">
-     <property name="runEvalLoop" value="false" />
-   </bean>
-
    <lang:groovy id="vshell.repo.id"
            refresh-check-delay="1000"
            script-source="${vshell.commandsLocation}/repo/id.groovy" />
@@ -156,11 +151,9 @@
              refresh-check-delay="1000"
              script-source="${vshell.commandsLocation}/servlet/service.groovy"/>
 
-   <lang:bsh id="vshell.bsh.eval"
+   <lang:groovy id="vshell.groovy.eval"
              refresh-check-delay="1000"
-             script-source="${vshell.commandsLocation}/bsh/eval.bsh"
-             script-interfaces="vtk.shell.vshell.VCommand">
-   </lang:bsh>
+             script-source="${vshell.commandsLocation}/groovy/eval.groovy"/>
 
    <!-- For testing inheritable props -->
    <lang:groovy id="vshell.repo.iprop"
