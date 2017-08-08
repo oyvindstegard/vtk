@@ -28,7 +28,7 @@
  * NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package vtk.shell.ss;
+package vtk.shell.vshell;
 
 import java.io.BufferedReader;
 import java.io.PrintStream;
@@ -40,7 +40,8 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.BeanFactoryUtils;
 import org.springframework.beans.factory.InitializingBean;
 import vtk.security.SecurityContext;
-import vtk.shell.vshell.VCommand;
+import vtk.shell.ss.ShellSession;
+import vtk.shell.ss.ShellSessionFactorySupport;
 
 /**
  *
@@ -67,6 +68,5 @@ public class VShellSessionFactory extends ShellSessionFactorySupport implements 
                     applicationContext, VCommand.class, false, true);
         this.commands = new ArrayList<>(m.values());
     }
-
 
 }

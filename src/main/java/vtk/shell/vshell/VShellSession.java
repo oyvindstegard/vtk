@@ -28,7 +28,7 @@
  * NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package vtk.shell.ss;
+package vtk.shell.vshell;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -44,8 +44,7 @@ import java.util.Set;
 import vtk.context.BaseContext;
 import vtk.repository.Path;
 import vtk.security.SecurityContext;
-import vtk.shell.vshell.VCommand;
-import vtk.shell.vshell.VShellContext;
+import vtk.shell.ss.ShellSession;
 
 /**
  *
