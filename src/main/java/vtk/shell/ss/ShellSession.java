@@ -50,6 +50,9 @@ import org.slf4j.LoggerFactory;
  * to the provided output stream, while this class takes care of input and prompting.
  *
  * <p>Optionally runs continuous REPL evaluation in a thread as a {@code Runnable}.
+ *
+ * <p>Thread safety of a single session instance will depend on implementation, but
+ * usually the answer is <em>not thread safe</em>.
  */
 public abstract class ShellSession implements Runnable {
 
@@ -78,7 +81,8 @@ public abstract class ShellSession implements Runnable {
      *
      * <p>To be used when running shell session in a dedicated thread.
      *
-     * <p>This method will do nothing if I/O channels {@link #close() have been terminated}.
+     * <p>This method will do nothing if I/O channels {@link #close() have been terminated} or input
+     * channel signals EOF.
      */
     @Override
     public void run() {
@@ -155,12 +159,11 @@ public abstract class ShellSession implements Runnable {
         output.close();
     }
 
+    /**
+     * @return {@code true} if input/output channels have been closed
+     */
     public boolean isTerminated() {
         return terminated;
-    }
-
-    protected void println(Object obj) {
-        output.println(obj);
     }
 
     public void setClientId(String id) {
@@ -181,32 +184,67 @@ public abstract class ShellSession implements Runnable {
 
     /**
      * Bind a named object into the shell session interpreter context.
-     * @param name
-     * @param value
+     * @param name the variable name
+     * @param value the value
      */
     public abstract void bind(String name, Object value);
 
     /**
-     * Evaluate an expression.
-     *
-     * <p>Optionally print results to output (implementation dependent).
-     * @param line
-     * @return possibly an object result from evaluating an expression (not textual interpreter output), may be <code>null</code>
+     * Evaluate an expression and write output to the provided {@©ode PrintStream}.
+     * 
+     * <p>Any evaluation output is written to the provided {@code PrintStream}.
+     * 
+     * <p>This is minimally what subclasses need to implement, as the other evaluation
+     * variants all delegate in some way to this method.
+     * 
+     * @param line the expression to evaluate
+     * @param output the output stream
+     * @return possibly an object result from evaluating an expression (not textual interpreter output), may be {@code null}
      */
-    public abstract Object evaluate(String line);
+    public abstract Object evaluate(String line, PrintStream output);
 
     /**
-     * Evaluate a stream of source code, e.g. a script or similar.
+     * Evaluate an expression and write output to the session default output stream.
+     *
+     * <p>This implementation delegates directly to {@link #evaluate(java.lang.String, java.io.PrintStream) }
+     * with the shell session default output stream.
+     *
+     * @param line the expression to evaluate
+     * @return possibly an object result from evaluating an expression (not textual interpreter output), may be <code>null</code>
+     */
+    public Object evaluate(String line)  {
+        return evaluate(line, output);
+    }
+
+    /**
+     * Evaluate a stream of source code, e.g. a script or similar, write output
+     * to the session default output stream.
+     *
+     * <p>This default implementation delegates directly to
+     * {@link #evaluate(java.io.Reader, java.io.PrintStream) with the provided reader
+     * and shell session default output stream as argument.
+     *
+     * @param source a reader for the script or expression source
+     * @return possibly an object as result from evaluating a script source (not textual interpreter output), may be <code>null</code>
+     */
+    public Object evaluate(Reader source) {
+        return evaluate(source, output);
+    }
+
+    /**
+     * Evaluate a stream of source code, e.g. a script or similar, write output
+     * to the provided {@code PrintStream}.
      *
      * <p>This default implementation just reads source line by line and delegates evaluation
      * to {@link #evaluate(java.lang.String) } until input has been depleted or an unhandled evaluation exception occurs.
      * The result of the last evaluated line from the source will be returned, unless an error
      * occured, then {@code null} will be returned.
      *
-     * @param source a reader for the script source
+     * @param source a reader for the script or expression source
+     * @param output the output stream to be used during evaluation
      * @return possibly an object as result from evaluating a script source (not textual interpreter output), may be <code>null</code>
      */
-    public Object evaluate(Reader source) {
+    public Object evaluate(Reader source, PrintStream output) {
         Object returnValue = null;
         try {
             String command;

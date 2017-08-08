@@ -28,9 +28,10 @@ class GroovyEvalCommand implements VCommand {
                 applicationContext = vshContext.get('context')
                 resourceLoader = vshContext.get('resourceLoader')
                 prompt = ""
+                printWelcomeMessage = false
             }
 
-            shellSession = factory.newSession(new BufferedReader(new StringReader('')), out)
+            shellSession = factory.newSession(out)
             vshContext.set('groovyShell', shellSession)
         }
         return shellSession

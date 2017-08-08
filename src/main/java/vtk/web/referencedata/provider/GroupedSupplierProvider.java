@@ -1,21 +1,21 @@
-/* Copyright (c) 2006, University of Oslo, Norway
+/* Copyright (c) 2017, University of Oslo, Norway
  * All rights reserved.
- * 
+ *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are
  * met:
- * 
+ *
  *  * Redistributions of source code must retain the above copyright
  *    notice, this list of conditions and the following disclaimer.
- * 
+ *
  *  * Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 
+ *
  *  * Neither the name of the University of Oslo nor the names of its
  *    contributors may be used to endorse or promote products derived from
  *    this software without specific prior written permission.
- *      
+ *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS
  * IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED
  * TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A
@@ -30,46 +30,29 @@
  */
 package vtk.web.referencedata.provider;
 
-
-
-import java.io.ByteArrayOutputStream;
-import java.io.PrintStream;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
-
+import java.util.function.Supplier;
 import javax.servlet.http.HttpServletRequest;
-
 import org.springframework.beans.factory.annotation.Required;
-
-import vtk.shell.AbstractConsole;
 import vtk.web.referencedata.ReferenceDataProvider;
 
 /**
+ * Provides model data structured as named groups containing named suppliers
+ * with current value for each supplier.
+ *
+ * <p>Map data structure: Group-name -&gt; Supplier-name -&gt; Supplier-value
+ *
+ * <p>Agnostic with regard to to type of supplier values.
+ *
+ * <p>If an unchecked exception is thrown by a supplier, then its value is
+ * replaced by the exception message.
  */
-public class ShellExecutionResultProvider implements ReferenceDataProvider {
+public class GroupedSupplierProvider implements ReferenceDataProvider {
 
     private String modelName;
-    private AbstractConsole shell;
-    private Map<String, Map<String, String>> groups;
-    
-
-    @Required
-    public void setModelName(String modelName) {
-        this.modelName = modelName;
-    }
-
-
-    @Required
-    public void setShell(AbstractConsole shell) {
-        this.shell = shell;
-    }
-
-    @Required
-    public void setGroups(Map<String, Map<String, String>> groups) {
-        this.groups = groups;
-    }
-    
+    private Map<String, Map<String, Supplier<?>>> groups;
 
     @Override
     public void referenceData(Map<String, Object> model, HttpServletRequest request) {
@@ -78,22 +61,18 @@ public class ShellExecutionResultProvider implements ReferenceDataProvider {
 
         for (Iterator<String> groupIter = this.groups.keySet().iterator(); groupIter.hasNext();) {
             String groupName = groupIter.next();
-            Map<String, String> group = this.groups.get(groupName);
-            
-            Map<String, String> resultGroupMap = new HashMap<>();
+            Map<String, Supplier<?>> group = this.groups.get(groupName);
+
+            Map<String, Object> resultGroupMap = new HashMap<>();
 
             for (Iterator<String> itemIter = group.keySet().iterator(); itemIter.hasNext();) {
                 String itemName = itemIter.next();
-                String expression = group.get(itemName);
-                String result = null;
-
+                Supplier<?> supplier = group.get(itemName);
+                Object result = null;
                 try {
-                    ByteArrayOutputStream bufferStream = new ByteArrayOutputStream();
-                    PrintStream resultStream = new PrintStream(bufferStream);
-                    this.shell.eval(expression, resultStream);
-                    result = new String(bufferStream.toByteArray());
+                    result = supplier.get();
                 } catch (Throwable t) {
-                    result = "Error: " + t.getMessage();
+                    result = "Supplier error: " + t.getMessage();
                 }
                 resultGroupMap.put(itemName, result);
             }
@@ -102,4 +81,15 @@ public class ShellExecutionResultProvider implements ReferenceDataProvider {
 
         model.put(this.modelName, subModel);
     }
+
+    @Required
+    public void setModelName(String modelName) {
+        this.modelName = modelName;
+    }
+
+    @Required
+    public void setGroups(Map<String, Map<String, Supplier<?>>> groups) {
+        this.groups = groups;
+    }
+
 }

@@ -307,7 +307,7 @@
           <dependency>
             <groupId>org.codehaus.groovy</groupId>
             <artifactId>groovy-all</artifactId>
-            <version>2.4.11</version>
+            <version>2.4.12</version>
             <scope>runtime</scope>
           </dependency>
         </dependencies>
@@ -762,14 +762,9 @@
       <version>2.3.26-incubating</version>
     </dependency>
     <dependency>
-      <groupId>org.apache-extras.beanshell</groupId>
-      <artifactId>bsh</artifactId>
-      <version>2.0b6</version>
-    </dependency>
-    <dependency>
       <groupId>org.codehaus.groovy</groupId>
       <artifactId>groovy-all</artifactId>
-      <version>2.4.11</version>
+      <version>2.4.12</version>
     </dependency>
     <dependency>
       <groupId>rome</groupId>

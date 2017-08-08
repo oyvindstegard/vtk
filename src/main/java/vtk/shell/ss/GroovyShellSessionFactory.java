@@ -47,12 +47,16 @@ import org.codehaus.groovy.control.customizers.ImportCustomizer;
 import org.slf4j.LoggerFactory;
 
 /**
+ * Creates instances of {@link GroovyShellSession}.
+ *
+ * <p>{@code ShellSession} instances returned from this factory are <em>not thread safe</em>.
  */
 public class GroovyShellSessionFactory extends ShellSessionFactorySupport {
 
     private String prompt = "groovy> ";
     private boolean wrapResultInBrackets = true;
     private int clearClassCacheInterval = 100;
+    private boolean printWelcomeMessage = true;
 
     @Override
     public ShellSession newSession(BufferedReader input, PrintStream output) throws Exception {
@@ -79,7 +83,9 @@ public class GroovyShellSessionFactory extends ShellSessionFactorySupport {
             // Magic property which overrides GroovyShells' use of System.out for "println" and friends:
             this.interpreter.setProperty("out", output);
 
-            super.println("Groovy on, use \":help\" for meta command listing");
+            if (printWelcomeMessage) {
+                output.println("Groovy on, use \":help\" for meta command listing");
+            }
         }
 
         @Override
@@ -88,21 +94,21 @@ public class GroovyShellSessionFactory extends ShellSessionFactorySupport {
         }
 
         @Override
-        public Object evaluate(String line) {
+        public Object evaluate(String line, PrintStream out) {
             if (line.isEmpty()) {
                 return null;
             }
             if (line.startsWith(":")) {
-                return metaCommandEvaluate(line);
+                return metaCommandEvaluate(line, out);
             }
 
-            return evaluate(new StringReader(line));
+            return evaluate(new StringReader(line), out);
         }
 
         private final String[] GROOVES = {"Psyche!", "Far Out!", "Dream On", "Catch you on the Flip-side",
         "Boogie", "Right On!", "Can you dig it?", "Cool Beans", "Do Me a Solid", "Groovy.", "What a Fry", "Funkin Donuts"};
 
-        private Object metaCommandEvaluate(String line) {
+        private Object metaCommandEvaluate(String line, PrintStream out) {
             Matcher m = Pattern.compile("^:([a-z?]+)(\\s+(.*))?").matcher(line);
             if (m.matches()) {
                 String metaCommand = m.group(1);
@@ -110,7 +116,7 @@ public class GroovyShellSessionFactory extends ShellSessionFactorySupport {
                     case "load":
                         String path = m.group(3);
                         if (path == null) {
-                            println("Error: empty path");
+                            out.println("Error: empty path");
                             return null;
                         }
                         path = path.trim();
@@ -123,14 +129,14 @@ public class GroovyShellSessionFactory extends ShellSessionFactorySupport {
                         try (Reader reader = new InputStreamReader(resourceLoader.getResource(path).getInputStream(), StandardCharsets.UTF_8)) {
                             return evaluate(reader);
                         } catch (IOException io) {
-                            println("Error: failed to load Groovy script: " + io.getMessage());
+                            out.println("Error: failed to load Groovy script: " + io.getMessage());
                             return null;
                         }
 
                     case "import":
                         String className = m.group(3);
                         if (className == null) {
-                            println("Error: empty import");
+                            out.println("Error: empty import");
                             return null;
                         }
                         if (className.endsWith(";")) {
@@ -145,7 +151,7 @@ public class GroovyShellSessionFactory extends ShellSessionFactorySupport {
                         try {
                             clazz = Class.forName(className);
                         } catch (ClassNotFoundException cnf) {
-                            println("Error: Class not found: " + className);
+                            out.println("Error: Class not found: " + className);
                             return null;
                         }
 
@@ -154,39 +160,47 @@ public class GroovyShellSessionFactory extends ShellSessionFactorySupport {
 
                     case "quit":
                     case "q":
-                        println(GROOVES[(int)(Math.random()*GROOVES.length)]);
+                        out.println(GROOVES[(int)(Math.random()*GROOVES.length)]);
                         close();
                         return null;
 
                     case "?":
                     case "h":
                     case "help":
-                        println("Available meta commands:");
-                        println(":load <file or resource URL>  (evaluate a Groovy script)");
-                        println(":import <class or package.*>  (import classes to session globally)");
-                        println(":quit, :q                     (quit shell)");
-                        println(":help, :h, :?                 (show this help)");
+                        out.println("Available meta commands:");
+                        out.println(":load <file or resource URL>  (evaluate a Groovy script)");
+                        out.println(":import <class or package.*>  (import classes to session globally)");
+                        out.println(":quit, :q                     (quit shell)");
+                        out.println(":help, :h, :?                 (show this help)");
                         return null;
 
                     default:
-                        println("Unknown meta command: " + metaCommand);
+                        out.println("Unknown meta command: " + metaCommand);
                         return null;
                 }
             } else {
-                println("Bad meta command syntax: " + line);
+                out.println("Bad meta command syntax: " + line);
                 return null;
             }
         }
 
+        /**
+         * See documentation for {@link ShellSession#evaluate(java.io.Reader, java.io.PrintStream) overriden method}.
+         *
+         * @param source
+         * @param out
+         * @return
+         */
         @Override
-        public Object evaluate(Reader source) {
+        public Object evaluate(Reader source, PrintStream out) {
             Object result = null;
             try {
+                this.interpreter.setProperty("out", out); // OK, since instances of this class are declared as not thread safe
                 result = interpreter.evaluate(source);
                 if (wrapResultInBrackets) {
-                    output.println("[" + result + "]");
+                    out.println("[" + result + "]");
                 } else {
-                    output.println(result);
+                    out.println(result);
                 }
                 bind("_", result);
 
@@ -196,9 +210,9 @@ public class GroovyShellSessionFactory extends ShellSessionFactorySupport {
                     interpreter.resetLoadedClasses();
                 }
             } catch (GroovyRuntimeException ge) {
-                output.println("Evaluation error: " + ge.getMessage());
+                out.println("Evaluation error: " + ge.getMessage());
             } catch (Exception e) {
-                output.println("Error: " + e.getClass().getSimpleName() + ": " + e.getMessage());
+                out.println("Error: " + e.getClass().getSimpleName() + ": " + e.getMessage());
             }
 
             return result;
@@ -222,6 +236,18 @@ public class GroovyShellSessionFactory extends ShellSessionFactorySupport {
             throw new IllegalArgumentException("Interval must be > 0");
         }
         this.clearClassCacheInterval = interval;
+    }
+
+    /**
+     * Set whether to print an initial shell message to output when session
+     * is started.
+     *
+     * <p>Default is {@code true}
+     *
+     * @param print {@code true} to print a message indicating help options
+     */
+    public void setPrintWelcomeMessage(boolean print) {
+        this.printWelcomeMessage = print;
     }
 
 }

@@ -80,7 +80,7 @@ public class VShellSession extends ShellSession {
     }
 
     @Override
-    public Object evaluate(String line) {
+    public Object evaluate(String line, PrintStream out) {
         if ("".equals(line.trim())) {
             return null;
         }
@@ -90,14 +90,14 @@ public class VShellSession extends ShellSession {
         List<PathNode> result = new ArrayList<>();
         int n = findCommand(result, ctx, tokens, 0);
         if (n == -1) {
-            incompleteCommand(result, output);
+            incompleteCommand(result, out);
             return null;
         }
 
         CommandNode commandNode = (CommandNode) result.get(result.size() - 1);
-        Map<String, Object> args = populateArgs(commandNode, tokens.subList(result.size(), tokens.size()), output);
+        Map<String, Object> args = populateArgs(commandNode, tokens.subList(result.size(), tokens.size()), out);
         if (args == null) {
-            output.println("Usage: " + commandNode.getCommand().getUsage());
+            out.println("Usage: " + commandNode.getCommand().getUsage());
             return null;
         }
         try {
@@ -105,10 +105,10 @@ public class VShellSession extends ShellSession {
                 BaseContext.pushContext();
                 SecurityContext.setSecurityContext(securityContext);
             }
-            commandNode.getCommand().execute(context, args, output);
+            commandNode.getCommand().execute(context, args, out);
         } catch (Throwable t) {
-          output.println("Evaluation error: " + t.getMessage());
-          t.printStackTrace(output);
+          out.println("Evaluation error: " + t.getMessage());
+          t.printStackTrace(out);
 
         } finally {
             if (this.securityContext != null) {

@@ -35,6 +35,7 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.PrintStream;
+import java.io.StringReader;
 import java.nio.charset.StandardCharsets;
 
 /**
@@ -43,11 +44,47 @@ import java.nio.charset.StandardCharsets;
 public interface ShellSessionFactory {
 
     /**
-     * XXX consider optional I/O bindings, since interpreters may only be needed
-     * for expression evaluation and result object.
+     * Create a new Shell session with an empty input channel. May be used
+     * purely for
+     * {@link ShellSession#evaluate(java.io.Reader) evaluate} {@link ShellSession#evaluate(java.lang.String) calls}.,
+     * with no running input loop.
+       *
+     * <p>
+     * By default, calling the {@link ShellSession#run() } method of such sessions will
+     * result in the session marking itself as terminated, as no data is
+     * available from input channel, and the output will also be closed.
+       *
+     * @param output output stream which is used for evaluation output (UTF-8 coding)
+     * @return a new shell session with no input channel
+     * @throws Exception 
+     */
+    default ShellSession newSession(OutputStream output) throws Exception {
+        return newSession(new PrintStream(output, true, "UTF-8"));
+    }
+
+    /**
+     * Create a new Shell session with an empty input channel. May be used
+     * purely for
+     * {@link ShellSession#evaluate(java.io.Reader) evaluate} {@link ShellSession#evaluate(java.lang.String) calls}.,
+     * with no running input loop.
      *
-     * XXX consider providing a map of default variable bindings here
-     * 
+     * <p>
+     * By default, calling the {@link ShellSession#run() } method of such sessions will
+     * result in the session marking itself as terminated, as no data is
+     * available from input channel, and the output will also be closed.
+       *
+     * @param output print stream which is used for evaluation output
+     * @return a new shell session with no input channel
+     * @throws Exception
+     */
+    default ShellSession newSession(PrintStream output) throws Exception {
+        BufferedReader br = new BufferedReader(new StringReader(""));
+        return newSession(br, output);
+    }
+
+    /**
+     * Create a new shell sesion with provided I/O channels.
+     *
      * @param input
      * @param output
      * @return
@@ -60,10 +97,7 @@ public interface ShellSessionFactory {
     }
 
     /**
-     * XXX consider optional I/O bindings, since interpreters may only be needed
-     * for expression evaluation and result object.
-     *
-     * XXX consider providing a map of default variable bindings here
+     * Create a new shell sesion with provided I/O channels.
      *
      * @param input
      * @param output
