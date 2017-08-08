@@ -83,6 +83,8 @@ import vtk.web.service.URL;
  * <ul>
  * <li>{@code q} - the query string, which is parsed using 
  *      {@link vtk.web.search.SearchParser}
+ * <li>{@code fq} - Additional filter string, which is appended to the template search
+ * 		filter
  * <li>{@code properties} or {@code fields} - a comma-separated list of property 
  *      names to include in the result set. If the string {@code *} appears in the list, 
  *      all properties are included. In addition, the special 
@@ -194,7 +196,6 @@ public final class QueryHandler implements HttpRequestHandler {
         format = format.recover(err -> badRequest(err));
         return format;
     }
-
     
     private Result<SimpleSearcher.Query> buildQuery(HttpServletRequest request) {
 
@@ -228,9 +229,13 @@ public final class QueryHandler implements HttpRequestHandler {
                     query = query.replaceAll("\\{q\\}", q);
                     q = query;
                 }
-            }
-            return builder.query(q);
+			}
+			if (request.getParameter("fq") != null) {
+				q += " " + request.getParameter("fq");
+			}
+			return builder.query(q);
         }));
+
 
         qry = qry.flatMap(builder -> Result.attempt(() -> {
             if (request.getParameter("limit") != null) {
