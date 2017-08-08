@@ -81,7 +81,7 @@ drop table vortex_lock CASCADE;
 create table vortex_lock
 (
     lock_id int not null,
-    lock_type varchar(64) not null,
+    lock_type varchar(64) not null default 'EXCLUSIVE',
     resource_id int not null,
     token varchar (128) not null,
     lock_owner varchar (128) not null,
