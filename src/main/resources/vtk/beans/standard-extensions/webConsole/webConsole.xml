@@ -59,7 +59,7 @@
   <bean id="webConsoleHandler"
         class="vtk.web.display.shell.CommandExecutorController">
     <constructor-arg>
-      <bean class="vtk.shell.ss.GroovyShellSessionFactory">
+      <bean class="vtk.shell.groovy.GroovyShellSessionFactory">
         <property name="clearClassCacheInterval" value="10" />
         <property name="printWelcomeMessage" value="false"/>
       </bean>

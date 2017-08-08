@@ -28,7 +28,7 @@
  * NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package vtk.shell.ss;
+package vtk.shell.groovy;
 
 import groovy.lang.Binding;
 import groovy.lang.GroovyRuntimeException;
@@ -45,6 +45,8 @@ import java.util.regex.Pattern;
 import org.codehaus.groovy.control.CompilerConfiguration;
 import org.codehaus.groovy.control.customizers.ImportCustomizer;
 import org.slf4j.LoggerFactory;
+import vtk.shell.ss.ShellSession;
+import vtk.shell.ss.ShellSessionFactorySupport;
 
 /**
  * Creates instances of {@link GroovyShellSession}.

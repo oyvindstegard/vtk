@@ -9,7 +9,7 @@
       <property name="listenAddress" value="${groovyShell.listenAddress}" />
       <property name="port" value="${groovyShell.listenPort}" />
       <property name="shellSessionFactory">
-        <bean class="vtk.shell.ss.GroovyShellSessionFactory">
+        <bean class="vtk.shell.groovy.GroovyShellSessionFactory">
           <property name="initFiles" value="#{'${groovyShell.initFiles}'.split('\\s*,\\s*')}"/>
         </bean>
       </property>

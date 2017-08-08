@@ -1,6 +1,7 @@
 package vtk.shell.vshell
 
-import vtk.shell.ss.*
+import vtk.shell.ss.ShellSession
+import vtk.shell.groovy.GroovyShellSessionFactory
 
 class GroovyEvalCommand implements VCommand {
 
