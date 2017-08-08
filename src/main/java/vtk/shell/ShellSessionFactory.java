@@ -28,7 +28,7 @@
  * NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package vtk.shell.ss;
+package vtk.shell;
 
 import java.io.BufferedReader;
 import java.io.InputStream;
@@ -48,7 +48,7 @@ public interface ShellSessionFactory {
      * purely for
      * {@link ShellSession#evaluate(java.io.Reader) evaluate} {@link ShellSession#evaluate(java.lang.String) calls}.,
      * with no running input loop.
-       *
+     *
      * <p>
      * By default, calling the {@link ShellSession#run() } method of such sessions will
      * result in the session marking itself as terminated, as no data is
@@ -72,7 +72,7 @@ public interface ShellSessionFactory {
      * By default, calling the {@link ShellSession#run() } method of such sessions will
      * result in the session marking itself as terminated, as no data is
      * available from input channel, and the output will also be closed.
-       *
+     *
      * @param output print stream which is used for evaluation output
      * @return a new shell session with no input channel
      * @throws Exception

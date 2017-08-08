@@ -45,8 +45,8 @@ import java.util.regex.Pattern;
 import org.codehaus.groovy.control.CompilerConfiguration;
 import org.codehaus.groovy.control.customizers.ImportCustomizer;
 import org.slf4j.LoggerFactory;
-import vtk.shell.ss.ShellSession;
-import vtk.shell.ss.ShellSessionFactorySupport;
+import vtk.shell.ShellSession;
+import vtk.shell.ShellSessionFactorySupport;
 
 /**
  * Creates instances of {@link GroovyShellSession}.

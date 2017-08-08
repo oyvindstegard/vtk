@@ -28,7 +28,7 @@
  * NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package vtk.shell.ss;
+package vtk.shell;
 
 
 import java.io.IOException;
@@ -48,7 +48,10 @@ import org.springframework.core.io.Resource;
 import org.springframework.core.io.ResourceLoader;
 
 /**
+ * Basic support for shell session factories.
  *
+ * <p>Provides code to handle session initialization with default variable
+ * bindings and configurable set of initialization files.
  */
 public abstract class ShellSessionFactorySupport implements ShellSessionFactory,
         ApplicationContextAware, ResourceLoaderAware {

@@ -17,7 +17,7 @@
 
   <!-- New vshell impl based on ShellSocketConnector.
        This should replace old one.  -->
-  <bean id="vshell.socket" class="vtk.shell.ss.ShellSocketConnector">
+  <bean id="vshell.socket" class="vtk.shell.ShellSocketConnector">
     <description>
       Management socket with VShell interpreter.
     </description>

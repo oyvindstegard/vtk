@@ -44,7 +44,7 @@ import java.util.Set;
 import vtk.context.BaseContext;
 import vtk.repository.Path;
 import vtk.security.SecurityContext;
-import vtk.shell.ss.ShellSession;
+import vtk.shell.ShellSession;
 
 /**
  *

@@ -40,8 +40,8 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.BeanFactoryUtils;
 import org.springframework.beans.factory.InitializingBean;
 import vtk.security.SecurityContext;
-import vtk.shell.ss.ShellSession;
-import vtk.shell.ss.ShellSessionFactorySupport;
+import vtk.shell.ShellSession;
+import vtk.shell.ShellSessionFactorySupport;
 
 /**
  *

@@ -28,7 +28,7 @@
  * NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package vtk.shell.ss;
+package vtk.shell;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -53,7 +53,6 @@ import org.springframework.beans.factory.DisposableBean;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Required;
 import org.springframework.scheduling.concurrent.CustomizableThreadFactory;
-import vtk.shell.SessionAuthenticator;
 
 /**
  * Manages one or more socket based shell sessions.

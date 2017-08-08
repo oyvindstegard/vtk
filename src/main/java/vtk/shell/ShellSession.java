@@ -28,7 +28,7 @@
  * NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package vtk.shell.ss;
+package vtk.shell;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -49,7 +49,7 @@ import org.slf4j.LoggerFactory;
  * <p>Conrete implementations are responsible for any printing of evaluation results and errors
  * to the provided output stream, while this class takes care of input and prompting.
  *
- * <p>Optionally runs continuous REPL evaluation in a thread as a {@code Runnable}.
+ * <p>Optionally runs continuous REPL-style evaluation in a thread as a {@code Runnable}.
  *
  * <p>Thread safety of a single session instance will depend on implementation, but
  * usually the answer is <em>not thread safe</em>.

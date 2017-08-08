@@ -42,8 +42,8 @@ import org.springframework.web.servlet.ModelAndView;
 
 import vtk.repository.Repository;
 import vtk.repository.Resource;
-import vtk.shell.ss.ShellSession;
-import vtk.shell.ss.ShellSessionFactory;
+import vtk.shell.ShellSession;
+import vtk.shell.ShellSessionFactory;
 import vtk.util.io.NullOutputStream;
 import vtk.web.RequestContext;
 import vtk.web.SimpleFormController;
