@@ -33,6 +33,7 @@ package vtk.webdav;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.UnsupportedEncodingException;
+import java.nio.charset.StandardCharsets;
 import java.text.ParseException;
 import java.util.Iterator;
 import java.util.List;
@@ -83,6 +84,7 @@ public class ProppatchController extends AbstractWebdavController  {
     private Service webdavService;
     
     @SuppressWarnings("deprecation")
+    @Override
     public void handleRequest(HttpServletRequest request,
             HttpServletResponse response) throws IOException {
          
@@ -121,14 +123,7 @@ public class ProppatchController extends AbstractWebdavController  {
 
             XMLOutputter xmlOutputter = new XMLOutputter(format);
             String xml = xmlOutputter.outputString(doc);
-            byte[] buffer = null;
-            try {
-                buffer = xml.getBytes("utf-8");
-            }
-            catch (UnsupportedEncodingException ex) {
-                logger.warn("Warning: UTF-8 encoding not supported", ex);
-                throw new RuntimeException("UTF-8 encoding not supported");
-            }
+            byte[] buffer = xml.getBytes(StandardCharsets.UTF_8);
             
             response.setHeader("Content-Type", "text/xml;charset=utf-8");
             response.setContentLength(buffer.length);
