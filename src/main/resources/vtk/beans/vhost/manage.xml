@@ -625,7 +625,7 @@
 
 
   <!-- Auto-complete service -->
-  <bean id="adminSok.autoCompleteService" class="vtk.web.service.ServiceImpl" parent="autoCompleteService">
+  <bean id="manage.autoCompleteService" class="vtk.web.service.ServiceImpl" parent="autoCompleteService">
     <property name="assertions">
       <list>
         <bean class="vtk.web.service.RequestParameterAssertion">
@@ -634,10 +634,10 @@
         </bean>
       </list>
     </property>
-    <property name="handler" ref="adminSok.autoCompleteHandler" />
+    <property name="handler" ref="manage.autoCompleteHandler" />
   </bean>
 
-  <bean id="adminSok.autoCompleteHandler" class="vtk.web.search.QueryHandler">
+  <bean id="manage.autoCompleteHandler" class="vtk.web.search.QueryHandler">
     <constructor-arg name="searcher" ref="propertySearch.searcher" />
     <constructor-arg name="formats">
       <map>
