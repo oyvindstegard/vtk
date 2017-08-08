@@ -15,7 +15,7 @@ class GroovyEvalCommand implements VCommand {
     void execute(VShellContext context, Map args, PrintStream out) {
 
         def shell = getShellSession(context, out)
-        shell.evaluate((String)args.expression)
+        shell.evaluate((String)args.expression, out)
 
     }
 
