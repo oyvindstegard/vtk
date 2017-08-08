@@ -306,7 +306,13 @@
         <dependencies>
           <dependency>
             <groupId>org.codehaus.groovy</groupId>
-            <artifactId>groovy-all</artifactId>
+            <artifactId>groovy</artifactId>
+            <version>2.4.12</version>
+            <scope>runtime</scope>
+          </dependency>
+          <dependency>
+            <groupId>org.codehaus.groovy</groupId>
+            <artifactId>groovy-ant</artifactId>
             <version>2.4.12</version>
             <scope>runtime</scope>
           </dependency>
@@ -763,7 +769,7 @@
     </dependency>
     <dependency>
       <groupId>org.codehaus.groovy</groupId>
-      <artifactId>groovy-all</artifactId>
+      <artifactId>groovy</artifactId>
       <version>2.4.12</version>
     </dependency>
     <dependency>
