@@ -34,7 +34,6 @@ import java.util.Set;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.apache.lucene.index.IndexReader;
 import org.apache.lucene.search.Filter;
 import org.apache.lucene.search.IndexSearcher;
 import org.springframework.beans.factory.annotation.Required;
@@ -46,8 +45,6 @@ import vtk.security.token.TokenManager;
 /**
  * Does role-based checks and has methods for resolving <code>Principal</code>
  * from token.
- * 
- *
  */
 public abstract class AbstractQueryAuthorizationFilterFactory implements 
                                                 QueryAuthorizationFilterFactory {

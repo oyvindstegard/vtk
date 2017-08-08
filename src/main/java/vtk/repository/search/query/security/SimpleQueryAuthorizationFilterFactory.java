@@ -87,7 +87,7 @@ public class SimpleQueryAuthorizationFilterFactory extends
     
     private Filter buildACLReadFilter(Principal principal, Set<Principal> memberGroups) {
     
-        List<BytesRef> termValues = new ArrayList<BytesRef>(memberGroups.size()+2);
+        List<BytesRef> termValues = new ArrayList<>(memberGroups.size()+2);
         for (Principal group: memberGroups) {
             termValues.add(new BytesRef(group.getQualifiedName()));
         }

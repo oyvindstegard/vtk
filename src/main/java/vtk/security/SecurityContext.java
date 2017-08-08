@@ -58,6 +58,12 @@ public class SecurityContext {
         request.setAttribute(REQUEST_ATTRIBUTE, securityContext);
     }
 
+    /**
+     * Obtain security context bound to request.
+     *
+     * @param request
+     * @return a security context or <code>null</code> if no security context is bound to the request
+     */
     public static SecurityContext getSecurityContext(HttpServletRequest request) {
         return (SecurityContext) request.getAttribute(REQUEST_ATTRIBUTE);
     }

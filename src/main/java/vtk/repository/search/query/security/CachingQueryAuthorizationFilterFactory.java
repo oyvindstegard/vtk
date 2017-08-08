@@ -30,72 +30,110 @@
  */
 package vtk.repository.search.query.security;
 
-import org.apache.lucene.search.CachingWrapperFilter;
+import java.lang.ref.SoftReference;
+import java.time.Instant;
+import java.util.Map;
+import java.util.concurrent.atomic.AtomicInteger;
 import org.apache.lucene.search.Filter;
 import org.apache.lucene.search.IndexSearcher;
 
 import vtk.repository.search.query.filter.FilterFactory;
+import vtk.security.Principal;
+import vtk.util.cache.LruCache;
 
 /**
- * A filter-factory which does caching of filters.
- * 
- * Currently, global caching is only done for ACL read for all filter.
- * Per principal ACL filters are cached only through-out a single request thread.
+ * An authorization filter factory which does caching of filters.
  *
- * The cached filter bits are keyed on IndexReader instance, so old bitsets are automatically
- * discarded when a new index reader instance is used. This is
- * done in {@link CachingWrapperFilter}. A <code>Map</code> with weak keys
- * is used internally, so it does not leak old <code>IndexReader</code> references.
- *
+ * <p>A small LRU cache is used internally, which caches per principal
+ * authorization filters. The intention is not to cache a large amount of data
+ * or cache items very long. So items have a short expiry, cache size is limited
+ * and {@link SoftReference soft references} are employed around the filter values (for memory friendlyness).
  */
 public class CachingQueryAuthorizationFilterFactory extends SimpleQueryAuthorizationFilterFactory {
 
-    private static final String CACHED_FILTER_THREADLOCAL_ATTRIBUTE_NAME =
-            CachingQueryAuthorizationFilterFactory.class.getName() + ".CACHED_ACL_FILTER";
-
     private final Filter cachingAclReadForAllFilter = 
             FilterFactory.cacheWrapper(SimpleQueryAuthorizationFilterFactory.ACL_READ_FOR_ALL_FILTER);
-            
+
+    private final AtomicInteger hits = new AtomicInteger();
+    private final AtomicInteger misses = new AtomicInteger();
+
+    private static class FilterCacheItem {
+        final Instant expiry;
+        final SoftReference<Filter> filter;
+
+        FilterCacheItem(Filter f) {
+            this.filter = f == null ? null : new SoftReference(f);
+            this.expiry = Instant.now().plusSeconds(60); // Same amount of time that group store caches group memberships
+        }
+
+        boolean isExpired() {
+            return expiry.isBefore(Instant.now());
+        }
+    }
+
+    private final Map<String,FilterCacheItem> cache = new LruCache<>(100);
+
     @Override
     public Filter authorizationQueryFilter(String token, IndexSearcher searcher) {
 
-        if (token == null) {
-            return this.cachingAclReadForAllFilter;
-        } else {
-            // XXX: BaseContext no longer exists, so cached filter must be
-            // placed in some other contextual object (one solution may be to 
-            // change factory methods of {@link QueryAuthorizationFilterFactory} to
-            // take an extra optional contextual parameter which could be used for caching)
-            return super.authorizationQueryFilter(token, searcher);
-//            // Check if any thread-local filter has been cached
-//            if (! BaseContext.exists()) {
-//                // Don't try this if there is no base context setup for current thread.
-//                // (And we don't bother setting up our own thread local storage,
-//                // since this caching mostly helps for web request threads.)
-//                return super.authorizationQueryFilter(token, searcher);
-//            }
-//
-//            BaseContext baseContext = BaseContext.getContext();
-//
-//            Filter aclFilter = (Filter) baseContext.getAttribute(CACHED_FILTER_THREADLOCAL_ATTRIBUTE_NAME);
-//            if (aclFilter != null) {
-//                return aclFilter;
-//            }
-//
-//            // Need to build ACL filter, it will be null for principals with read-all role
-//            aclFilter = super.authorizationQueryFilter(token, searcher);
-//
-//            if (aclFilter != null) {
-//                // CachingWrapperFilter necessary here, because we might get a
-//                // new index reader instance during execution of thread (for
-//                // different queries) and the CachingWrapperFilter will automatically
-//                // refresh the filter from the source if that happens.
-//                aclFilter = FilterFactory.cacheWrapper(aclFilter);
-//                baseContext.setAttribute(CACHED_FILTER_THREADLOCAL_ATTRIBUTE_NAME, aclFilter);
-//            }
-//
-//            return aclFilter;
+        Principal principal = getPrincipal(token);
+        if (principal == null) {
+            return cachingAclReadForAllFilter;
         }
+
+        final String cacheKey = principal.getQualifiedName();
+
+        FilterCacheItem item;
+        synchronized(cache) {
+            item = cache.get(cacheKey);
+        }
+
+        if (item != null && !item.isExpired()) {
+            if (item.filter == null) {
+                // Cached null-filter means no filter for root roles
+                return null;
+            }
+
+            Filter cachedAuthorizationFilter = item.filter.get();
+            if (cachedAuthorizationFilter != null) {
+                incrementHits();
+                return cachedAuthorizationFilter;
+            } // else filter has been garbage collected and a new one needs to be created
+        }
+
+        incrementMisses();
+
+        Filter authorizationFilter = super.authorizationQueryFilter(token, searcher);
+        if (authorizationFilter != null) {
+            authorizationFilter = FilterFactory.cacheWrapper(authorizationFilter);
+        }
+        synchronized (cache) {
+            cache.put(cacheKey, new FilterCacheItem(authorizationFilter));
+        }
+
+        return authorizationFilter;
+    }
+
+    private void incrementHits() {
+        if (hits.incrementAndGet() < 0) {
+            hits.set(0);
+            misses.set(0);
+        }
+    }
+
+    private void incrementMisses() {
+        if (misses.incrementAndGet() < 0) {
+            hits.set(0);
+            misses.set(0);
+        }
+    }
+
+    public float hitRatio() {
+        int hitCount = hits.get();
+        int missCount = misses.get();
+        int total = hitCount + missCount;
+        if (total == 0) return 0f;
+        return hitCount / (float)total;
     }
 
     @Override
