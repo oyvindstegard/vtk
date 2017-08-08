@@ -40,7 +40,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Required;
 
 import vtk.repository.PropertyEvaluationContext.Type;
-import vtk.repository.resourcetype.ConstraintViolationException;
 import vtk.repository.resourcetype.Content;
 import vtk.repository.resourcetype.LatePropertyEvaluator;
 import vtk.repository.resourcetype.MixinResourceTypeDefinition;
