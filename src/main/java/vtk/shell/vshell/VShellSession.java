@@ -42,8 +42,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import org.springframework.beans.factory.BeanFactoryUtils;
-
 import vtk.repository.Path;
 import vtk.security.SecurityContext;
 import vtk.shell.ShellSession;
@@ -53,7 +51,7 @@ import vtk.shell.ShellSession;
  */
 public class VShellSession extends ShellSession {
 
-    private final VShellContext context = new VShellContext();
+    private final VShellContext context;
     private final Set<PathNode> toplevelNodes = new HashSet<>();
     private final SecurityContext securityContext;
 
@@ -65,7 +63,7 @@ public class VShellSession extends ShellSession {
     public VShellSession(BufferedReader input, PrintStream output,
             List<VCommand> commands, SecurityContext securityContext, String prompt) {
         super(input, output, prompt);
-
+        this.context = new VShellContext(securityContext);
         this.securityContext = securityContext;
 
         addCommand(new HelpCommand());
@@ -102,20 +100,11 @@ public class VShellSession extends ShellSession {
             return null;
         }
         try {
-            if (securityContext != null) {
-                BaseContext.pushContext();
-                SecurityContext.setSecurityContext(securityContext);
-            }
             commandNode.getCommand().execute(context, args, out);
         } catch (Throwable t) {
           out.println("Evaluation error: " + t.getMessage());
           t.printStackTrace(out);
 
-        } finally {
-            if (this.securityContext != null) {
-                SecurityContext.setSecurityContext(null);
-                BaseContext.popContext();
-            }
         }
         return null;
     }
