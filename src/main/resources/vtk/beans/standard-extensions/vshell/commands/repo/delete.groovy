@@ -21,7 +21,7 @@ class RepoDeleteCommand implements VCommand {
         }
 
         try {
-            repo.delete(token, args.uri, true)
+            repo.delete(token, null, args.uri, true)
         } catch (e) {
             out.println "Unable to delete ${args.uri}: ${e.message}"
         }
