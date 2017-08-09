@@ -1,41 +1,16 @@
 <?xml version="1.0" encoding="utf-8"?>
 <beans xmlns="http://www.springframework.org/schema/beans" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
        xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-3.1.xsd">
-  
 
-  <bean id="webConsoleService" class="vtk.web.service.ServiceImpl">
+  <!-- VShell web console integrating into root admin service -->
+  <bean id="vshell.webConsoleService" class="vtk.web.service.ServiceImpl">
     <property name="order" value="-300"/>
     <property name="parent" ref="repositoryManageService"/>
     <property name="attributes">
       <map>
-        <entry key="tabOrder"><value type="java.lang.Integer">100</value></entry>
-      </map>
-    </property>
-    <property name="assertions">
-      <list>
-        <bean class="vtk.web.service.PrincipalQualifiedNameAssertion">
-          <property name="username" value="root@localhost"/>
-        </bean>
-        <bean class="vtk.web.service.RequestParameterAssertion">
-          <property name="parameterName" value="mode"/>
-          <property name="parameterValue" value="webconsole"/>
-        </bean>
-      </list>
-    </property>
-    <property name="handler" ref="webConsoleHandler"/>
-  </bean>
-
-  <bean parent="rootManage.tabsBuilder">
-    <property name="arguments" ref="webConsoleService" />
-  </bean>
-
-
-  <bean id="vshellConsoleService" class="vtk.web.service.ServiceImpl">
-    <property name="order" value="-300"/>
-    <property name="parent" ref="repositoryManageService"/>
-    <property name="attributes">
-      <map>
-        <entry key="tabOrder"><value type="java.lang.Integer">110</value></entry>
+        <entry key="tabOrder">
+          <value type="java.lang.Integer">110</value>
+        </entry>
       </map>
     </property>
     <property name="assertions">
@@ -49,44 +24,23 @@
         </bean>
       </list>
     </property>
-    <property name="handler" ref="vshellConsoleHandler"/>
+    <property name="handler" ref="vshell.webConsoleHandler"/>
   </bean>
 
   <bean parent="rootManage.tabsBuilder">
-    <property name="arguments" ref="vshellConsoleService" />
+    <property name="arguments" ref="vshell.webConsoleService" />
   </bean>
 
-  <bean id="webConsoleHandler"
-        class="vtk.web.display.shell.CommandExecutorController">
-    <constructor-arg>
-      <bean class="vtk.shell.groovy.GroovyShellSessionFactory">
-        <property name="clearClassCacheInterval" value="10" />
-        <property name="printWelcomeMessage" value="false"/>
-      </bean>
-    </constructor-arg>
-    <property name="formView" value="webConsoleView" />
-    <property name="successView" value="webConsoleView" />
-    <property name="commandName" value="commandForm" />
-  </bean>
-
-  <bean id="vshellConsoleHandler"
-        class="vtk.web.display.shell.CommandExecutorController">
+  <bean id="vshell.webConsoleHandler"
+         class="vtk.web.display.shell.CommandExecutorController">
     <constructor-arg ref="vshell.sessionFactory" />
-    <property name="formView" value="webConsoleView" />
-    <property name="successView" value="webConsoleView" />
+    <property name="formView" value="vshell.webConsoleView" />
+    <property name="successView" value="vshell.webConsoleView" />
     <property name="commandName" value="commandForm" />
   </bean>
 
-  <bean id="webConsoleView" parent="freemarkerView">
+  <bean id="vshell.webConsoleView" parent="freemarkerView">
     <property name="url" value="pages/root/webconsole.ftl" />
   </bean>
-
-  <!-- <bean id="webConsoleViewResolver" class="vtk.web.decorating.MappingViewResolver"> -->
-  <!--   <constructor-arg name="views"> -->
-  <!--     <map> -->
-  <!--       <entry key="webConsole" value-ref="webConsoleView" /> -->
-  <!--     </map> -->
-  <!--   </constructor-arg> -->
-  <!-- </bean> -->
 
 </beans>
