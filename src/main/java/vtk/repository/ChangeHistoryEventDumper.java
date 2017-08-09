@@ -35,7 +35,6 @@ import java.util.Date;
 import org.springframework.beans.factory.annotation.Required;
 
 import vtk.security.Principal;
-import vtk.security.SecurityContext;
 
 /**
  * This class logs change history changes, currently to a log file.
@@ -54,39 +53,39 @@ public class ChangeHistoryEventDumper extends AbstractDBEventDumper {
     }
 
     @Override
-    public void created(Resource resource) {
+    public void created(Resource resource, Principal principal) {
         if (reportAll) {
-            Principal changer = SecurityContext.getSecurityContext().getPrincipal();
+            Principal changer = principal;
             logVersioningEvent("CREATED", false, resource.getURI(), 
                     "", resource.isCollection(), changer);
         }
     }
     
     @Override
-    public void deleted(Resource resource) {
+    public void deleted(Resource resource, Principal principal) {
         if (reportAll) {
-            Principal changer = SecurityContext.getSecurityContext().getPrincipal();
+            Principal changer = principal;
             logVersioningEvent("DELETED", false, resource.getURI(), 
                     "", resource.isCollection(), changer);
         }
     }
 
     @Override
-    public void moved(Resource resource, Resource from) {
-        created(resource);
-        deleted(from);
+    public void moved(Resource resource, Resource from, Principal principal) {
+        created(resource, principal);
+        deleted(from, principal);
     }
 
     @Override
-    public void modifiedInheritableProperties(Resource resource, Resource originalResource) {
+    public void modifiedInheritableProperties(Resource resource, Resource originalResource, Principal principal) {
         // XXX should probably flag modification of inheritable properties in log, but
         //     for now, just delegate to regular modified(Resource,Resource)
-        modified(resource, originalResource);
+        modified(resource, originalResource, principal);
     }
     
     @Override
-    public void modified(Resource resource, Resource originalResource) {
-        Principal changer = SecurityContext.getSecurityContext().getPrincipal();
+    public void modified(Resource resource, Resource originalResource, Principal principal) {
+        Principal changer = principal;
         boolean security = false;
         StringBuilder desc = new StringBuilder();
         if (!resource.getOwner().equals(originalResource.getOwner())) {
@@ -137,17 +136,17 @@ public class ChangeHistoryEventDumper extends AbstractDBEventDumper {
     }
 
     @Override
-    public void contentModified(Resource resource, Resource original) {
+    public void contentModified(Resource resource, Resource original, Principal principal) {
         if (reportAll) {
-            Principal changer = SecurityContext.getSecurityContext().getPrincipal();
+            Principal changer = principal;
             logVersioningEvent("MODIFIED_CONTENT", false, resource.getURI(),
                     "", resource.isCollection(), changer);
         }
     }
 
     @Override
-    public void aclModified(Resource resource, Resource originalResource) {
-        Principal changer = SecurityContext.getSecurityContext().getPrincipal();
+    public void aclModified(Resource resource, Resource originalResource, Principal principal) {
+        Principal changer = principal;
         String description = "ACL before " 
                 + (originalResource.isInheritedAcl() ? "(inherited): " : "(not inherited): ") 
                 + originalResource.getAcl() + ", ACL after " 

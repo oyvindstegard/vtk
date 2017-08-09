@@ -429,7 +429,7 @@ public class CSRFPreventionHandler extends AbstractServletFilter implements Html
             this.tempFile = IO.tempFile(request.getInputStream(), this.tempDir)
                                 .limit(this.maxMultipartSize)
                                  // Potentially long running upload, make sure security token does not expire
-                                .progress(p -> SecurityContext.getSecurityContext().resetTokenExpiry())
+                                .progress(p -> SecurityContext.getSecurityContext(request).resetTokenExpiry())
                                 .progressInterval(128*1024*1024)
                                 .perform();
             if (this.tempFile.isTruncatedToSizeLimit()) {

@@ -43,7 +43,6 @@ import javax.servlet.http.HttpServletRequest;
 import org.junit.Test;
 import org.springframework.mock.web.MockHttpServletRequest;
 
-import vtk.context.BaseContext;
 import vtk.repository.Path;
 import vtk.repository.store.DefaultPrincipalMetadataDAO;
 import vtk.security.Principal.Type;
@@ -145,11 +144,10 @@ public class MyDocumentsReporterTest {
         }
         String userToken = "userToken";
         PrincipalImpl user = new PrincipalImpl("user", Type.USER);
-        BaseContext.pushContext();
         SecurityContext securityContext = new SecurityContext(userToken, user);
-        SecurityContext.setSecurityContext(securityContext);
 
         MockHttpServletRequest request = new MockHttpServletRequest("GET", url);
+        SecurityContext.setSecurityContext(securityContext, request);
         RequestContext requestContext = new RequestContext(request, securityContext,
                 null, null, null, Path.ROOT, null, false,
                 false, true, null, new DefaultPrincipalMetadataDAO());

@@ -34,7 +34,8 @@ import java.util.EnumMap;
 import java.util.HashMap;
 import java.util.Map;
 
-import vtk.context.BaseContext;
+import javax.servlet.http.HttpServletRequest;
+
 import vtk.repository.Path;
 import vtk.repository.Resource;
 import vtk.repository.TypeInfo;
@@ -43,8 +44,10 @@ import vtk.repository.TypeInfo;
  * For corner cases, some form of cache limiting should probably be done..
  */
 public class RepositoryContext {
-
-    private final Map<String,ObjectStore> tokenMap = new HashMap<String,ObjectStore>();
+    private static final String REQUEST_ATTRIBUTE = 
+            RepositoryContext.class.getName() + ".requestAttribute";
+    
+    private final Map<String,ObjectStore> tokenMap = new HashMap<>();
     
     private static enum Category {
         FOR_PROCESSING_HIT,
@@ -62,12 +65,12 @@ public class RepositoryContext {
 
         public void put(Category category, Path path, Object value) {
             if (this.store == null) {
-                this.store = new EnumMap<Category, Map<Path, Object>>(Category.class);
+                this.store = new EnumMap<>(Category.class);
             }
             
             Map<Path, Object> categoryMap = this.store.get(category);
             if (categoryMap == null) {
-                categoryMap = new HashMap<Path, Object>();
+                categoryMap = new HashMap<>();
                 this.store.put(category, categoryMap);
             }
             categoryMap.put(path, value);
@@ -122,18 +125,13 @@ public class RepositoryContext {
         this.tokenMap.clear();
     }
     
-    public static void setRepositoryContext(RepositoryContext repositoryContext) {
-        BaseContext ctx = BaseContext.getContext();
-        ctx.setAttribute(RepositoryContext.class.getName(), repositoryContext);
+    public static void setRepositoryContext(RepositoryContext repositoryContext, HttpServletRequest request) {
+        request.setAttribute(REQUEST_ATTRIBUTE, repositoryContext);
     }
 
-    public static RepositoryContext getRepositoryContext() {
-        if (!BaseContext.exists()) {
-            return null;
-        }
-        BaseContext ctx = BaseContext.getContext();
+    public static RepositoryContext getRepositoryContext(HttpServletRequest request) {
         RepositoryContext repositoryContext = (RepositoryContext)
-            ctx.getAttribute(RepositoryContext.class.getName());
+            request.getAttribute(REQUEST_ATTRIBUTE);
         return repositoryContext;
     }
 

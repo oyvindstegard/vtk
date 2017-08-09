@@ -54,7 +54,6 @@ import vtk.repository.search.SortingParserFactory;
 import vtk.repository.search.preprocessor.QueryStringPreProcessor;
 import vtk.repository.search.preprocessor.QueryStringPreProcessor.ProcessorContext;
 import vtk.repository.search.query.Query;
-import vtk.security.SecurityContext;
 
 /**
  *
@@ -80,7 +79,7 @@ public class IndexQueryPathSelector implements PathSelector {
     public void selectWithCallback(Repository repository, SystemChangeContext context,
                 PathSelectCallback callback) throws Exception {
 
-        final String token = SecurityContext.exists() ? SecurityContext.getSecurityContext().getToken() : null;
+        final String token = context.getSecurityContext().getToken();
                 
         Query query = getQuery(context);
         Sorting sort = getSorting(context);

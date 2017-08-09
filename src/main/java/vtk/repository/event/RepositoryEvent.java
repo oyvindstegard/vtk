@@ -31,19 +31,27 @@
 package vtk.repository.event;
 
 import org.springframework.context.ApplicationEvent;
+
 import vtk.repository.Path;
 import vtk.repository.Repository;
+import vtk.security.Principal;
 
 
 public abstract class RepositoryEvent extends ApplicationEvent {
     private static final long serialVersionUID = 6309396942806333296L;
-
-    public RepositoryEvent(Repository source) {
+    private Principal principal;
+    
+    public RepositoryEvent(Repository source, Principal principal) {
         super(source);
+        this.principal = principal;
     }
 
     public Repository getRepository() {
         return (Repository) getSource();
+    }
+    
+    public Principal getPrincipal() {
+        return principal;
     }
 
     public abstract Path getURI();

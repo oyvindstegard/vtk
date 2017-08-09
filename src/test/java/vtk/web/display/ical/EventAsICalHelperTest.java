@@ -9,7 +9,6 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 import org.springframework.mock.web.MockHttpServletRequest;
 
-import vtk.context.BaseContext;
 import vtk.repository.Namespace;
 import vtk.repository.Path;
 import vtk.repository.Property;
@@ -59,10 +58,9 @@ public class EventAsICalHelperTest {
 
         RepositoryImpl repository = new RepositoryImpl();
         repository.setId("www.testhost.uio.no");
-        BaseContext.pushContext();
         SecurityContext securityContext = new SecurityContext(null, null);
-        SecurityContext.setSecurityContext(securityContext);
         MockHttpServletRequest mockRequest = new MockHttpServletRequest();
+        SecurityContext.setSecurityContext(securityContext, mockRequest);
         RequestContext requestContext = new RequestContext(mockRequest, securityContext,
                 null, null, null, Path.ROOT, null, false,
                 false, true, repository, new DefaultPrincipalMetadataDAO());

@@ -30,18 +30,12 @@
  */
 package vtk.web;
 
-import java.io.IOException;
-
-import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
-
-
 /**
  */
 public interface ContextInitializer {
 
-    public void createContext(HttpServletRequest req)
-        throws IOException, ServletException;
+    public void createContext(HttpServletRequest req);        
     
-    public void destroyContext();
+    public void destroyContext(HttpServletRequest req);
 }

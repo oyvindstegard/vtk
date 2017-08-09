@@ -89,7 +89,8 @@ public class SharedTextResolver {
     private ResourceAwareLocaleResolver localeResolver;
 
     @SuppressWarnings("unchecked")
-    public Map<String, Json.MapContainer> getSharedTextValues(String docType, PropertyTypeDefinition propDef, boolean view) {
+    public Map<String, Json.MapContainer> getSharedTextValues(SecurityContext securityContext, 
+            String docType, PropertyTypeDefinition propDef, boolean view) {
 
         // No propdef to work on
         if (propDef == null) {
@@ -132,13 +133,15 @@ public class SharedTextResolver {
             }
         }
 
-        return getSharedTextValuesMap(sharedTextPath, sharedTextFileName);
+        return getSharedTextValuesMap(securityContext, sharedTextPath, sharedTextFileName);
     }
 
     public Map<String, Map<String, Json.MapContainer>> 
         resolveSharedTexts(HttpServletRequest request) throws Exception {
 
         RequestContext requestContext = RequestContext.getRequestContext(request);
+        SecurityContext securityContext = SecurityContext.getSecurityContext(request);
+        
         String token = requestContext.getSecurityToken();
         Path currentResource = requestContext.getResourceURI();
         Resource resource = repository.retrieve(token, currentResource, false);
@@ -151,7 +154,8 @@ public class SharedTextResolver {
             Map<String, Map<String, Json.MapContainer>> sharedTextPropsMap = new HashMap<>();
 
             for (PropertyTypeDefinition propDef : propTypeDefs) {
-                Map<String, Json.MapContainer> sharedTexts = getSharedTextValues(resource.getResourceType(), propDef, false);
+                Map<String, Json.MapContainer> sharedTexts = getSharedTextValues(securityContext, 
+                        resource.getResourceType(), propDef, false);
                 if (sharedTexts != null) {
                     sharedTextPropsMap.put(propDef.getName(), sharedTexts);
                 }
@@ -165,15 +169,17 @@ public class SharedTextResolver {
         return null;
     }
 
-    public String resolveSharedText(Resource resource, Property prop) {
-        Map<String, Json.MapContainer> resolvedsharedTexts = getSharedTextValues(resource.getResourceType(),
-                prop.getDefinition(), true);
+    public String resolveSharedText(SecurityContext securityContext, Resource resource, Property prop) {
+        Map<String, Json.MapContainer> resolvedsharedTexts = getSharedTextValues(securityContext,
+                resource.getResourceType(), prop.getDefinition(), true);
 
         return resolveSharedText(resource, prop.getStringValue(), resolvedsharedTexts);
     }
 
-    public String resolveSharedText(Resource resource, String sharedTextPath, String sharedTextFileName, String key) {
-        return resolveSharedText(resource, key, getSharedTextValuesMap(sharedTextPath, sharedTextFileName));
+    public String resolveSharedText(SecurityContext securityContext, 
+            Resource resource, String sharedTextPath, String sharedTextFileName, String key) {
+        return resolveSharedText(resource, key, getSharedTextValuesMap(securityContext, 
+                sharedTextPath, sharedTextFileName));
     }
 
     private String resolveSharedText(Resource resource, String key, Map<String, Json.MapContainer> resolvedSharedTexts) {
@@ -206,7 +212,8 @@ public class SharedTextResolver {
         return sharedText;
     }
 
-    public Map<String, String> getLocalizedSharedTextValues(Locale locale, String docType, String propertyName) {
+    public Map<String, String> getLocalizedSharedTextValues(SecurityContext securityContext,
+            Locale locale, String docType, String propertyName) {
 
         Map<String, String> sharedTextMap = new HashMap<>();
 
@@ -216,7 +223,8 @@ public class SharedTextResolver {
         }
 
         String sharedTextPath = SHARED_TEXT_DEFAULT_PATH.concat("/").concat(docType);
-        Map<String, Json.MapContainer> sharedTextValuesMap = getSharedTextValuesMap(sharedTextPath, propertyName);
+        Map<String, Json.MapContainer> sharedTextValuesMap = getSharedTextValuesMap(
+                securityContext, sharedTextPath, propertyName);
 
         if (sharedTextValuesMap == null || sharedTextValuesMap.isEmpty()) {
             return sharedTextMap;
@@ -242,7 +250,8 @@ public class SharedTextResolver {
         return sharedTextMap;
     }
 
-    private Map<String, Json.MapContainer> getSharedTextValuesMap(String sharedTextPath, String sharedTextFileName) {
+    private Map<String, Json.MapContainer> getSharedTextValuesMap(SecurityContext securityContext,
+            String sharedTextPath, String sharedTextFileName) {
 
         // The resulting return object
         Map<String, Json.MapContainer> sharedTextValuesMap = new LinkedHashMap<>();
@@ -253,10 +262,7 @@ public class SharedTextResolver {
             return sharedTextValuesMap;
         }
 
-        String token = null;
-        if (SecurityContext.getSecurityContext() != null) {
-            token = SecurityContext.getSecurityContext().getToken();
-        }
+        String token = securityContext.getToken();
 
         try {
 

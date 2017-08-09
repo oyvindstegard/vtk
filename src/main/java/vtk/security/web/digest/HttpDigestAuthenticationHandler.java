@@ -100,7 +100,7 @@ public class HttpDigestAuthenticationHandler
     private String nonceKey = NetUtils.guessHostName() + "." + System.currentTimeMillis();
     private MD5PasswordStore principalStore = null;
     private Set<String> recognizedDomains = null;
-    private Set<String> excludedPrincipals = new HashSet<String>();
+    private Set<String> excludedPrincipals = new HashSet<>();
     private boolean maintainState = false;
     private SimpleCache<String, StateEntry> stateMap;
     private int order = Integer.MAX_VALUE;
@@ -261,14 +261,14 @@ public class HttpDigestAuthenticationHandler
             return false;
         }
 
-        Principal principal = SecurityContext.getSecurityContext().getPrincipal();
+        Principal principal = SecurityContext.getSecurityContext(req).getPrincipal();
         if (principal == null) {
             return false;
         }
 
         if (this.maintainState) {
 
-            StateEntry entry = (StateEntry) this.stateMap.remove(nonce + ":" + opaque);
+            StateEntry entry = this.stateMap.remove(nonce + ":" + opaque);
             if (entry == null) {
                 return false;
             }
@@ -302,7 +302,7 @@ public class HttpDigestAuthenticationHandler
                 String nonce = HttpUtil.extractHeaderField(headerFields, "nonce");
                 String opaque = HttpUtil.extractHeaderField(headerFields, "opaque");
                 if (nonce != null && opaque != null) {
-                    StateEntry entry = (StateEntry) this.stateMap.remove(nonce + ":" + opaque);
+                    StateEntry entry = this.stateMap.remove(nonce + ":" + opaque);
                     if (entry != null) {
                         stale = entry.isStale();
                     }
@@ -520,6 +520,7 @@ public class HttpDigestAuthenticationHandler
         
         
 
+        @Override
         public String toString() {
             StringBuffer sb = new StringBuffer();
             sb.append(this.getClass().getName()).append(": [");

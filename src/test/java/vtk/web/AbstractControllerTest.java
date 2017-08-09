@@ -7,7 +7,6 @@ import org.jmock.Expectations;
 import org.jmock.Mockery;
 import org.jmock.integration.junit4.JUnit4Mockery;
 
-import vtk.context.BaseContext;
 import vtk.repository.Path;
 import vtk.repository.Repository;
 import vtk.repository.store.PrincipalMetadataDAO;
@@ -29,9 +28,13 @@ public abstract class AbstractControllerTest {
     protected final PrincipalMetadataDAO mockPrincipalMetadataDao = context.mock(PrincipalMetadataDAO.class);
 
     public void setUp() throws Exception {
-        BaseContext.pushContext();
         SecurityContext securityContext = new SecurityContext(null, null);
-        SecurityContext.setSecurityContext(securityContext);
+        context.checking(new Expectations() {{ 
+            allowing(mockRequest).setAttribute("vtk.security.SecurityContext.requestAttribute", securityContext);
+            allowing(mockRequest).getAttribute("vtk.security.SecurityContext.requestAttribute");
+            will(returnValue(securityContext));
+        }});
+        SecurityContext.setSecurityContext(securityContext, mockRequest);
         context.checking(new Expectations() {{ 
             allowing(mockRequest).getRequestURL(); 
             will(returnValue(new StringBuffer("http://localhost/" + getRequestPath())));
@@ -49,9 +52,7 @@ public abstract class AbstractControllerTest {
             
             allowing(mockRequest).setAttribute(with(equal("vtk.web.RequestContext.requestAttribute")), 
                     with(any(RequestContext.class)));
-            
-
-            allowing(mockService).getName();
+               allowing(mockService).getName();
             
         }});
         RequestContext requestContext = new RequestContext(mockRequest, securityContext, mockService, null,

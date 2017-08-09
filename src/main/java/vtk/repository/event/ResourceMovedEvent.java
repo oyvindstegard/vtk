@@ -33,6 +33,7 @@ package vtk.repository.event;
 import vtk.repository.Path;
 import vtk.repository.Repository;
 import vtk.repository.Resource;
+import vtk.security.Principal;
 
 
 public class ResourceMovedEvent extends RepositoryEvent {
@@ -41,8 +42,9 @@ public class ResourceMovedEvent extends RepositoryEvent {
     private Resource destination = null;
     private Resource from = null;
 
-    public ResourceMovedEvent(Repository source, Resource destination, Resource from) {
-        super(source);
+    public ResourceMovedEvent(Repository source, Principal principal, 
+            Resource destination, Resource from) {
+        super(source, principal);
         this.destination = destination;
         this.from = from;
     }
