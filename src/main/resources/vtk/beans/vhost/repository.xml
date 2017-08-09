@@ -55,7 +55,7 @@
     <property name="arguments">
       <list>
         <value>repository.nslocks.size</value>
-        <value>context.getBean("repository.lockingCacheControlWrapper").lockManager.locks.size()</value>
+        <value>context.getBean("repository").lockManager.locks.size()</value>
       </list>
     </property>
   </bean>
