@@ -58,27 +58,23 @@
 
   <bean id="webConsoleHandler"
         class="vtk.web.display.shell.CommandExecutorController">
+    <constructor-arg>
+      <bean class="vtk.shell.groovy.GroovyShellSessionFactory">
+        <property name="clearClassCacheInterval" value="10" />
+        <property name="printWelcomeMessage" value="false"/>
+      </bean>
+    </constructor-arg>
     <property name="formView" value="webConsoleView" />
     <property name="successView" value="webConsoleView" />
     <property name="commandName" value="commandForm" />
-    <property name="console" ref="beanShellWebConsole" />
-  </bean>
-
-  <bean id="beanShellWebConsole" class="vtk.shell.BeanShellConsole">
-      <property name="runEvalLoop" value="false" />
   </bean>
 
   <bean id="vshellConsoleHandler"
         class="vtk.web.display.shell.CommandExecutorController">
-
+    <constructor-arg ref="vshell.sessionFactory" />
     <property name="formView" value="webConsoleView" />
     <property name="successView" value="webConsoleView" />
     <property name="commandName" value="commandForm" />
-    <property name="console" ref="vshellWebConsole" />
-  </bean>
-
-  <bean id="vshellWebConsole" class="vtk.shell.vshell.VShell">
-      <property name="runEvalLoop" value="false" />
   </bean>
 
   <bean id="webConsoleView" parent="freemarkerView">

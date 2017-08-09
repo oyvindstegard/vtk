@@ -62,10 +62,10 @@ import vtk.util.cache.SimpleCacheImpl;
  */
 public class TokenManagerImpl implements TokenManager {
 
-    private PrincipalFactory principalFactory;
-    private SimpleCache<String, PrincipalItem> cache;
-    private SimpleCache<String, Principal> lookupCache;
-    private Map<String, Principal> registeredPrincipals = new HashMap<>();
+    private final PrincipalFactory principalFactory;
+    private final SimpleCache<String, PrincipalItem> cache;
+    private final SimpleCache<String, Principal> lookupCache;
+    private final Map<String, Principal> registeredPrincipals = new HashMap<>();
     
     public TokenManagerImpl(PrincipalFactory principalFactory,
             List<String> systemPrincipals,

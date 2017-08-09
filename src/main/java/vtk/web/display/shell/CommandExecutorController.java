@@ -42,20 +42,29 @@ import org.springframework.web.servlet.ModelAndView;
 
 import vtk.repository.Repository;
 import vtk.repository.Resource;
-import vtk.shell.AbstractConsole;
+import vtk.shell.ShellSession;
+import vtk.shell.ShellSessionFactory;
+import vtk.util.io.NullOutputStream;
 import vtk.web.RequestContext;
 import vtk.web.SimpleFormController;
 import vtk.web.service.Service;
 import vtk.web.service.URL;
 
-
+/**
+ * Maintains a single {@link ShellSession} created at construction time and
+ * allows evaluation of commands through web layer.
+ *
+ * <p>Evaluation is single threaded and synchronized, so this controller does
+ * not scale to high concurrency. Shell variable bindings created during evaluations
+ * are generally preserved indefinitely, so it also has potential to create
+ * memory leaks. Use with caution.
+ */
 public class CommandExecutorController extends SimpleFormController<ExecutorCommand> {
 
-    private AbstractConsole console;
-    
-    
-    public void setConsole(AbstractConsole console) {
-        this.console = console;
+    private final ShellSession shell;
+
+    public CommandExecutorController(ShellSessionFactory shellSessionFactory) throws Exception {
+        this.shell = shellSessionFactory.newSession(NullOutputStream.INSTANCE);
     }
 
     @Override
@@ -87,7 +96,9 @@ public class CommandExecutorController extends SimpleFormController<ExecutorComm
         if ("true".equals(request.getParameter("pipe-output"))) {
             PrintStream out = new PrintStream(response.getOutputStream());
             response.setContentType("text/plain;charset=utf-8");
-            console.eval(command.getCommand(), out);
+            synchronized(shell) {
+                shell.evaluate(command.getCommand(), out);
+            }
             out.flush();
             out.close();
             return null;
@@ -96,7 +107,9 @@ public class CommandExecutorController extends SimpleFormController<ExecutorComm
         Map<String, Object> model = errors.getModel();
         ByteArrayOutputStream bufferStream = new ByteArrayOutputStream();
         PrintStream resultStream = new PrintStream(bufferStream);
-        console.eval(command.getCommand(), resultStream);
+        synchronized (shell) {
+            shell.evaluate(command.getCommand(), resultStream);
+        }
         command.setResult(new String(bufferStream.toByteArray()));
         return new ModelAndView(getFormView(), model);
     }

@@ -41,6 +41,7 @@ import vtk.repository.resourcetype.PropertyEvaluator;
  */
 public class ContentLengthEvaluator implements PropertyEvaluator {
 
+    @Override
     public boolean evaluate(Property property, PropertyEvaluationContext ctx) throws PropertyEvaluationException {
         if (ctx.isCollection()) {
             return false;

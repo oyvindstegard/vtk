@@ -4,23 +4,28 @@
        xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-3.1.xsd 
                            http://www.springframework.org/schema/lang http://www.springframework.org/schema/lang/spring-lang-3.1.xsd">
 
-   <bean id="vshell.console" class="vtk.shell.vshell.VShell">
-      <property name="initFilesCSV" value="${vshell.initFiles}" />
-      <property name="runEvalLoop" value="${vshell.runEvalLoop}" />
-      <property name="consoleHandler">
-        <bean class="vtk.shell.SocketHandlerThread">
-          <property name="port" value="${vshell.listenPort}" />
-          <property name="listenAddress" value="${vshell.listenAddress}" />
-          <property name="sessionAuthenticator" ref="${vshell.sessionAuthenticator}" />
-     </bean>
-      </property>
-      <property name="securityContext">
-        <bean class="vtk.security.SecurityContext">
-          <constructor-arg ref="writeAllToken" />
-          <constructor-arg ref="rootPrincipal" />
-        </bean>
-      </property>
-   </bean>
+  <!-- Default factory for creating new VSHell sessions -->
+  <bean id="vshell.sessionFactory" class="vtk.shell.vshell.VShellSessionFactory">
+    <property name="securityContext">
+      <bean class="vtk.security.SecurityContext">
+        <constructor-arg ref="writeAllToken" />
+        <constructor-arg ref="rootPrincipal" />
+      </bean>
+    </property>
+    <property name="initFiles" value="#{'${vshell.initFiles}'.split('\\s*,\\s*')}" />
+  </bean>
+
+  <!-- New vshell impl based on ShellSocketConnector.
+       This should replace old one.  -->
+  <bean id="vshell.socket" class="vtk.shell.ShellSocketConnector">
+    <description>
+      Management socket with VShell interpreter.
+    </description>
+    <property name="listenAddress" value="${vshell.listenAddress}" />
+    <property name="port" value="${vshell.listenPort}" />
+    <property name="sessionAuthenticator" ref="${vshell.sessionAuthenticator}" />
+    <property name="shellSessionFactory" ref="vshell.sessionFactory"/>
+  </bean>
 
    <bean id="vshell.nullSessionAuthenticator" class="vtk.shell.NullSessionAuthenticator" />
    
@@ -30,169 +35,105 @@
      <property name="principal" ref="rootPrincipal" />
    </bean>
 
-   <!-- used by command vshell.bsh.eval: -->
-   <bean id="vshell.bsh.console" class="vtk.shell.BeanShellConsole">
-     <property name="runEvalLoop" value="false" />
-   </bean>
+   <lang:groovy id="vshell.repo.id"
+           refresh-check-delay="1000"
+           script-source="${vshell.commandsLocation}/repo/id.groovy" />
 
-
-   <lang:bsh id="vshell.repo.id"
+   <lang:groovy id="vshell.repo.cat"
              refresh-check-delay="1000"
-             script-source="${vshell.commandsLocation}/repo/id.bsh"
-             script-interfaces="vtk.shell.vshell.VCommand">
-   </lang:bsh>
-
-   <lang:bsh id="vshell.repo.cat"
+             script-source="${vshell.commandsLocation}/repo/cat.groovy" />
+             
+   <lang:groovy id="vshell.repo.find"
              refresh-check-delay="1000"
-             script-source="${vshell.commandsLocation}/repo/cat.bsh"
-             script-interfaces="vtk.shell.vshell.VCommand">
-     <!--lang:property name="message" value="" /-->
-   </lang:bsh>
+             script-source="${vshell.commandsLocation}/repo/find.groovy" />
 
-   <lang:bsh id="vshell.repo.find"
+   <lang:groovy id="vshell.repo.info"
              refresh-check-delay="1000"
-             script-source="${vshell.commandsLocation}/repo/find.bsh"
-             script-interfaces="vtk.shell.vshell.VCommand">
-   </lang:bsh>
+             script-source="${vshell.commandsLocation}/repo/info.groovy" />
 
-   <lang:bsh id="vshell.repo.info"
+   <lang:groovy id="vshell.repo.revisions"
              refresh-check-delay="1000"
-             script-source="${vshell.commandsLocation}/repo/info.bsh"
-             script-interfaces="vtk.shell.vshell.VCommand">
-   </lang:bsh>
+             script-source="${vshell.commandsLocation}/repo/revisions.groovy"/>
 
-   <lang:bsh id="vshell.repo.revisions"
+   <lang:groovy id="vshell.repo.ls"
              refresh-check-delay="1000"
-             script-source="${vshell.commandsLocation}/repo/revisions.bsh"
-             script-interfaces="vtk.shell.vshell.VCommand">
-   </lang:bsh>
+             script-source="${vshell.commandsLocation}/repo/ls.groovy" />
 
-   <lang:bsh id="vshell.repo.ls"
+   <lang:groovy id="vshell.repo.search"
              refresh-check-delay="1000"
-             script-source="${vshell.commandsLocation}/repo/ls.bsh"
-             script-interfaces="vtk.shell.vshell.VCommand">
-   </lang:bsh>
+             script-source="${vshell.commandsLocation}/repo/search.groovy"/>
 
-   <lang:bsh id="vshell.repo.search"
+   <lang:groovy id="vshell.repo.acl-update"
              refresh-check-delay="1000"
-             script-source="${vshell.commandsLocation}/repo/search.bsh"
-             script-interfaces="vtk.shell.vshell.VCommand">
-   </lang:bsh>
+             script-source="${vshell.commandsLocation}/repo/acl-update.groovy"/>
 
-   <lang:bsh id="vshell.repo.acl-update"
+   <lang:groovy id="vshell.repo.acl-delete"
              refresh-check-delay="1000"
-             script-source="${vshell.commandsLocation}/repo/acl-update.bsh"
-             script-interfaces="vtk.shell.vshell.VCommand">
-   </lang:bsh>
+             script-source="${vshell.commandsLocation}/repo/acl-delete.groovy" />
 
-   <lang:bsh id="vshell.repo.acl-delete"
+   <lang:groovy id="vshell.repo.move"
              refresh-check-delay="1000"
-             script-source="${vshell.commandsLocation}/repo/acl-delete.bsh"
-             script-interfaces="vtk.shell.vshell.VCommand">
-   </lang:bsh>
+             script-source="${vshell.commandsLocation}/repo/move.groovy"/>
 
-   <lang:bsh id="vshell.repo.move"
+   <lang:groovy id="vshell.repo.acl-discover"
              refresh-check-delay="1000"
-             script-source="${vshell.commandsLocation}/repo/move.bsh"
-             script-interfaces="vtk.shell.vshell.VCommand">
-   </lang:bsh>
+             script-source="${vshell.commandsLocation}/repo/acl-discover.groovy" />
 
-   <lang:bsh id="vshell.repo.acl-discover"
+   <lang:groovy id="vshell.repo.delete"
              refresh-check-delay="1000"
-             script-source="${vshell.commandsLocation}/repo/acl-discover.bsh"
-             script-interfaces="vtk.shell.vshell.VCommand">
-   </lang:bsh>
+             script-source="${vshell.commandsLocation}/repo/delete.groovy" />
 
-   <lang:bsh id="vshell.repo.delete"
+   <lang:groovy id="vshell.repo.cache"
              refresh-check-delay="1000"
-             script-source="${vshell.commandsLocation}/repo/delete.bsh"
-             script-interfaces="vtk.shell.vshell.VCommand">
-   </lang:bsh>
+             script-source="${vshell.commandsLocation}/repo/cache.groovy" />
 
-   <lang:bsh id="vshell.repo.cache"
+   <lang:groovy id="vshell.repo.readonly"
              refresh-check-delay="1000"
-             script-source="${vshell.commandsLocation}/repo/cache.bsh"
-             script-interfaces="vtk.shell.vshell.VCommand">
-   </lang:bsh>
+             script-source="${vshell.commandsLocation}/repo/readonly.groovy" />
 
-   <lang:bsh id="vshell.repo.readonly"
+   <lang:groovy id="vshell.repo.evaluate"
              refresh-check-delay="1000"
-             script-source="${vshell.commandsLocation}/repo/readonly.bsh"
-             script-interfaces="vtk.shell.vshell.VCommand">
-   </lang:bsh>
+             script-source="${vshell.commandsLocation}/repo/evaluate.groovy" />
 
-   <lang:bsh id="vshell.repo.evaluate"
+   <lang:groovy id="vshell.repo.index"
              refresh-check-delay="1000"
-             script-source="${vshell.commandsLocation}/repo/evaluate.bsh"
-             script-interfaces="vtk.shell.vshell.VCommand">
-   </lang:bsh>
+             script-source="${vshell.commandsLocation}/repo/index.groovy" />
 
-   <lang:bsh id="vshell.repo.index"
+   <lang:groovy id="vshell.repo.resourcetypes"
              refresh-check-delay="1000"
-             script-source="${vshell.commandsLocation}/repo/index.bsh"
-             script-interfaces="vtk.shell.vshell.VCommand">
-   </lang:bsh>
+             script-source="${vshell.commandsLocation}/repo/resourcetypes.groovy"/>
 
-   <lang:bsh id="vshell.repo.resourcetypes"
+   <lang:groovy id="vshell.repo.prop"
              refresh-check-delay="1000"
-             script-source="${vshell.commandsLocation}/repo/resourcetypes.bsh"
-             script-interfaces="vtk.shell.vshell.VCommand">
-   </lang:bsh>
+             script-source="${vshell.commandsLocation}/repo/prop.groovy" />
 
-   <lang:bsh id="vshell.repo.prop"
+   <lang:groovy id="vshell.archive.create"
              refresh-check-delay="1000"
-             script-source="${vshell.commandsLocation}/repo/prop.bsh"
-             script-interfaces="vtk.shell.vshell.VCommand">
-   </lang:bsh>
+             script-source="${vshell.commandsLocation}/archive/create.groovy" />
 
-   <lang:bsh id="vshell.archive.create"
+   <lang:groovy id="vshell.archive.expand"
              refresh-check-delay="1000"
-             script-source="${vshell.commandsLocation}/archive/create.bsh"
-             script-interfaces="vtk.shell.vshell.VCommand">
-   </lang:bsh>
+             script-source="${vshell.commandsLocation}/archive/expand.groovy"/>
 
-   <lang:bsh id="vshell.archive.expand"
+   <lang:groovy id="vshell.servlet.status"
              refresh-check-delay="1000"
-             script-source="${vshell.commandsLocation}/archive/expand.bsh"
-             script-interfaces="vtk.shell.vshell.VCommand">
-   </lang:bsh>
+             script-source="${vshell.commandsLocation}/servlet/status.groovy"/>
 
-   <lang:bsh id="vshell.servlet.auth"
+   <lang:groovy id="vshell.servlet.services"
              refresh-check-delay="1000"
-             script-source="${vshell.commandsLocation}/servlet/auth.bsh"
-             script-interfaces="vtk.shell.vshell.VCommand">
-   </lang:bsh>
+             script-source="${vshell.commandsLocation}/servlet/services.groovy"/>
 
-   <lang:bsh id="vshell.servlet.status"
+   <lang:groovy id="vshell.servlet.service"
              refresh-check-delay="1000"
-             script-source="${vshell.commandsLocation}/servlet/status.bsh"
-             script-interfaces="vtk.shell.vshell.VCommand">
-   </lang:bsh>
+             script-source="${vshell.commandsLocation}/servlet/service.groovy"/>
 
-   <lang:bsh id="vshell.servlet.services"
+   <lang:groovy id="vshell.groovy.eval"
              refresh-check-delay="1000"
-             script-source="${vshell.commandsLocation}/servlet/services.bsh"
-             script-interfaces="vtk.shell.vshell.VCommand">
-   </lang:bsh>
-
-   <lang:bsh id="vshell.servlet.service"
-             refresh-check-delay="1000"
-             script-source="${vshell.commandsLocation}/servlet/service.bsh"
-             script-interfaces="vtk.shell.vshell.VCommand">
-   </lang:bsh>
-
-   <lang:bsh id="vshell.bsh.eval"
-             refresh-check-delay="1000"
-             script-source="${vshell.commandsLocation}/bsh/eval.bsh"
-             script-interfaces="vtk.shell.vshell.VCommand">
-   </lang:bsh>
+             script-source="${vshell.commandsLocation}/groovy/eval.groovy"/>
 
    <!-- For testing inheritable props -->
-   <lang:bsh id="vshell.repo.ipropstore"
+   <lang:groovy id="vshell.repo.iprop"
              refresh-check-delay="1000"
-             script-source="${vshell.commandsLocation}/repo/ipropstore.bsh"
-             script-interfaces="vtk.shell.vshell.VCommand">
-   </lang:bsh>
-
+             script-source="${vshell.commandsLocation}/repo/iprop.groovy" />
 
 </beans>

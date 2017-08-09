@@ -209,8 +209,6 @@ var VrtxAnimation = function(opts) {
     2. DOM is ready
 \*-------------------------------------------------------------------*/
 
-var isEmbedded = window.location.href.indexOf("&embed") !== -1;
-var isEmbedded2 = false;
 var onlySessionId = gup("sessionid", window.location.href);
 
 vrtxAdmin._$(document).ready(function () {
@@ -221,18 +219,11 @@ vrtxAdmin._$(document).ready(function () {
   }
   vrtxAdm.cacheDOMNodesForReuse();
 
-  isEmbedded2 = vrtxAdm.cachedBody.hasClass("embedded2");
-  if(isEmbedded2) {
-    $("html").addClass("embedded2");
-  }
-  var isNotEmbedded = !isEmbedded && !isEmbedded2;
-
   vrtxAdm.bodyId = vrtxAdm.cachedBody.attr("id") || "";
   vrtxAdm.cachedBody.addClass("js");
   if(vrtxAdm.isIE8) {
     vrtxAdm.cachedBody.addClass("ie8");
   }
-  vrtxAdm.embeddedView();
 
   // Show message in IE6=>IE8 and IETrident in compability mode
   if ((vrtxAdm.isIE8 || vrtxAdm.isIETridentInComp) && typeof outdatedBrowserText === "string") {
@@ -241,7 +232,7 @@ vrtxAdmin._$(document).ready(function () {
       message.html(outdatedBrowserText);
     } else {
       var messageHtml = "<div class='infomessage'>" + outdatedBrowserText + "</div>";
-      if(vrtxAdm.bodyId === "vrtx-simple-editor" || isEmbedded) {
+      if(vrtxAdm.bodyId === "vrtx-simple-editor") {
         vrtxAdm.cachedBody.prepend(messageHtml);
       } else {
         vrtxAdm.cachedAppContent.prepend(messageHtml);
@@ -255,28 +246,18 @@ vrtxAdmin._$(document).ready(function () {
   vrtxAdm.loadScripts(["/js/vrtx-animation.js", "/js/vrtx-tree.js"], vrtxAdm.requiredScriptsLoaded);
   vrtxAdm.clientLastModified = $("#resource-last-modified").text().split(",");
 
-  /* Delay some stuff and only run some stuff if not embedded */
-  if(isNotEmbedded) {
-    vrtxAdm.initDropdowns();
-    vrtxAdm.initScrollBreadcrumbs();
-  }
+  vrtxAdm.initDropdowns();
+  vrtxAdm.initScrollBreadcrumbs();
   vrtxAdm.domainsInstantIsReady.resolve();
-
-  if(isNotEmbedded) {
-    vrtxAdm.initMiscAdjustments();
-  }
+  vrtxAdm.initMiscAdjustments();
 
   var waitALittle = setTimeout(function() {
     vrtxAdm.initTooltips();
-    if(isNotEmbedded) {
-      vrtxAdm.initGlobalDialogs();
-    }
+    vrtxAdm.initGlobalDialogs();
   }, 15);
 
   var waitALittleMore = setTimeout(function() {
-    if(isNotEmbedded) {
-      vrtxAdm.initResourceMenus();
-    }
+    vrtxAdm.initResourceMenus();
     vrtxAdm.initDomains();
     vrtxAdm.domainsIsReady.resolve();
   }, 25);
@@ -657,55 +638,6 @@ VrtxAdmin.prototype.globalAsyncComplete = function globalAsyncComplete() {
   vrtxAdm.adjustResourceTitle();
   if(typeof vrtxAdm.updateCollectionListingInteraction === "function") {
     vrtxAdm.updateCollectionListingInteraction();
-  }
-};
-
-/**
- * Embedded view (editor)
- *
- * @this {VrtxAdmin}
- */
-VrtxAdmin.prototype.embeddedView = function embeddedView() {
-  if(!isEmbedded) return;
-
-  $("html").addClass("embedded embedded-loading");
-
-  if(onlySessionId) { // Also handles when locked or no write permissions (goes to preview)
-    var canEdit = $("#resource-can-edit").text() === "true";
-    var lockedByOtherElm = $("#resource-locked-by-other");
-    var lockedByOther = (lockedByOtherElm.length && lockedByOtherElm.text() === "true") ? $("#resource-locked-by").html() : "";
-
-    // Choose proper fail message (we know these sends you to preview)
-    var vrtxAdm = vrtxAdmin;
-    if(!canEdit || lockedByOther.length) {
-
-      // Title and fail message.
-      var csTitle = vrtxAdm.lang === "en" ? "Edit activity"
-                                          : "Rediger aktivitet";
-      if(!canEdit) {
-        var csFail = vrtxAdm.lang === "en" ? "You don't have write permissions to edit the course schedule."
-                                           : "Du har ikke skriverettigheter til å redigere denne timeplanen.";
-      } else {
-        var csFail = vrtxAdm.lang === "en" ? "The course schedule is locked by other user: " + lockedByOther
-                                           : "Timeplanen er låst av en annen bruker: " + lockedByOther;
-      }
-
-      var failHtml = "<p id='editor-fail'>" + csFail + "</p>";
-
-      this.cachedBody.addClass("embedded-editor-fail");
-
-      // Add embedded editor fail HTML
-      var titleHtml = '<div id="vrtx-editor-title-submit-buttons"><div id="vrtx-editor-title-submit-buttons-inner-wrapper"><h2>' + csTitle + '<a href="javascript:void(0)" class="vrtx-close-dialog-editor"></a></h2></div></div>';
-      var buttonsHtml = '<div class="submit submitButtons"><input class="vrtx-focus-button vrtx-embedded-button" id="vrtx-embedded-cancel-button" type="submit" value="Ok" /></div>';
-      this.cachedContent.html(titleHtml + failHtml + buttonsHtml);
-
-      // Ok / 'X' goes back to view
-      eventListen(vrtxAdm.cachedDoc, "click", "#vrtx-embedded-cancel-button, .vrtx-close-dialog-editor", function (ref) {
-        location.href = $("#global-menu-leave-admin a").attr("href");
-      });
-    } else {
-      $("#editor").height($(window).height() - $("body").height());
-    }
   }
 };
 
@@ -1348,7 +1280,6 @@ VrtxAdmin.prototype.getFormAsync = function getFormAsync(opts) {
     var link = _$(opts.selector),
         url = link.attr("href") || link.closest("form").attr("action"),
         modeUrl = window.location.href,
-        isActionsListing = modeUrl.indexOf("&mode=actions-listing") !== -1,
         fromModeToNotMode = false,
         existExpandedFormIsReplaced = false,
         expandedForm = $(".expandedForm"),
@@ -1358,7 +1289,7 @@ VrtxAdmin.prototype.getFormAsync = function getFormAsync(opts) {
     // -- only if a expandedForm exists and is of the replaced kind..
     //
     if (existExpandedForm && expandedForm.hasClass("expandedFormIsReplaced")) {
-      if ((url.indexOf("&mode=") === -1 && modeUrl.indexOf("&mode=") !== -1) || isActionsListing) {
+      if ((url.indexOf("&mode=") === -1 && modeUrl.indexOf("&mode=") !== -1)) {
         fromModeToNotMode = true;
       }
       existExpandedFormIsReplaced = true;
@@ -1388,24 +1319,15 @@ VrtxAdmin.prototype.getFormAsync = function getFormAsync(opts) {
         if (existExpandedForm) {
           var resultSelectorClasses = expandedForm.attr("class").split(" ");
           var resultSelectorClass = "";
-          if(isActionsListing) {
-            for (var i = resultSelectorClasses.length; i--;) {
-              var resultSelectorClass = resultSelectorClasses[i];
-              if(/^vrtx-/.test(resultSelectorClass)) {
-                resultSelectorClass = "." + resultSelectorClass;
-                break;
-              }
-            }
-          } else {
-            var ignoreClasses = { "even": "", "odd": "", "first": "", "last": "" };
-            for (var i = resultSelectorClasses.length; i--;) {
-              var resultSelectorClass = resultSelectorClasses[i];
-              if (resultSelectorClass && resultSelectorClass !== "" && !(resultSelectorClass in ignoreClasses)) {
-                resultSelectorClass = "." + resultSelectorClass;
-                break;
-              }
+          var ignoreClasses = { "even": "", "odd": "", "first": "", "last": "" };
+          for (var i = resultSelectorClasses.length; i--;) {
+            var resultSelectorClass = resultSelectorClasses[i];
+            if (resultSelectorClass && resultSelectorClass !== "" && !(resultSelectorClass in ignoreClasses)) {
+              resultSelectorClass = "." + resultSelectorClass;
+              break;
             }
           }
+
           var succeededAddedOriginalMarkup = false;
           var animation = new VrtxAnimation({
             elem: expandedForm,
@@ -1676,7 +1598,6 @@ VrtxAdmin.prototype.completeFormAsyncPost = function completeFormAsyncPost(opts)
        _$ = vrtxAdm._$,
       url = opts.form.attr("action"),
       modeUrl = window.location.href,
-      isActionsListing = modeUrl.indexOf("&mode=actions-listing") !== -1,
       dataString = opts.form.serialize() + "&" + opts.link.attr("name");
 
   var postIt = function(results, status, resp) {
@@ -1754,14 +1675,10 @@ VrtxAdmin.prototype.completeFormAsyncPost = function completeFormAsyncPost(opts)
     }
   }
 
-  // Avoid POST if cancel in actionslisting
-  if(opts.isCancelAction && isActionsListing) {
-    postIt(null, null, null);
-  } else {
-    vrtxAdmin.serverFacade.postHtml(url, dataString, {
-      success: postIt
-    });
-  }
+  vrtxAdmin.serverFacade.postHtml(url, dataString, {
+    success: postIt
+  });
+
 };
 
 /**
@@ -2478,19 +2395,6 @@ function openGeneral(url, width, height, winTitle, sOptions) { // title must be 
   return oWindow;
 }
 
-// Show message on admin popup close in admin
-$(window).on("message", function(e) {
-  window.focus();
-  var data = e.originalEvent.data;
-  if(typeof data === "string" && data === "displaymsg") {
-    var d = new VrtxMsgDialog({
-      msg: vrtxAdmin.messages.courseSchedule.updated,
-      title: vrtxAdmin.messages.courseSchedule.updatedTitle,
-      width: 400
-    });
-    d.open();
-  }
-});
 function refreshParent() {
   window.opener.postMessage("displaymsg", "*");
 }

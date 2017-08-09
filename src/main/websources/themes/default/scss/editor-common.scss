@@ -252,6 +252,26 @@ h2 {
   background: #fff;
 }
 
+#vrtx-editor-title-submit-buttons h2 {
+  margin: 0;
+  background: none;
+}
+
+#editor-fail {
+  background: transparent url("images/line-dotted.gif") repeat-x left top;
+  padding-top: 15px;
+  margin-top: 0;
+  display: block;
+}
+
+.vrtx-close-dialog-editor {
+  background: url("/vrtx/__vrtx/static-resources/themes/default/images/thickbox-close.png") no-repeat scroll center center transparent;
+  display: block;
+  @include wh(20px, 20px);
+  float: right;
+  margin-top: 2px;
+}
+
 #app-content {
   #main {
     padding-top: 9px;
@@ -304,10 +324,6 @@ h2 {
   background: transparent;
 }
 
-html.embedded #editor-loading {
-  height: 100%;
-}
-
 #editor-loading-inner {
   background: transparent url("#{$imgBase}images/ajax-loader.gif") no-repeat center left;
   display: block;
@@ -317,31 +333,6 @@ html.embedded #editor-loading {
   position: relative;
   @include posAbs(38%, 38%);
 }
-
-html.embedded {
-  #vrtx-editor #app-content #editor {
-    padding-top: 15px;
-  }
-
-  #vrtx-editor-title-submit-buttons-inner-wrapper {
-    padding-top: 0;
-  }
-
-  #vrtx-editor-title-submit-buttons .submitButtons,
-  .submitButtons > * {
-    display: none;
-  }
-
-  .submitButtons .vrtx-embedded-button {
-    display: inline-block;
-  }
-}
-
-html.embedded-loading #vrtx-editor #app-content #editor {
-  padding-top: 0px;
-  background: none;
-}
-
 
 /*-----------------------------------------*\
 	2. Dimensions and explicit settings

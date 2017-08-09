@@ -19,8 +19,6 @@
     var JSON_ELEMENTS_INITIALIZED = $.Deferred();
     
     $(document).ready(function() {
-      if($("form.vrtx-course-schedule").length) return;
-
       // Retrieve HTML templates
       getMultipleFieldsBoxesTemplates();
       

@@ -128,9 +128,7 @@
       }
 
       function performSave() {
-        if(!vrtxEditor.editorForm.hasClass("vrtx-course-schedule")) {
           saveMultipleInputFields();
-        }
       }
 
       // Async. save i18n

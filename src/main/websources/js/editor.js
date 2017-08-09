@@ -71,8 +71,6 @@ function VrtxEditor() {
 var vrtxEditor = new VrtxEditor();
 var UNSAVED_CHANGES_CONFIRMATION;
 
-var editorCourseSchedule = "";
-
  // Accordion JSON and grouped
 var accordionJson = null;
 var accordionGrouped = null;
@@ -109,18 +107,16 @@ $(document).ready(function () {
     autocompleteTags(".vrtx-autocomplete-tag");
     vrtxEdit.initSendToApproval();
 
-    if(!vrtxEdit.isInAdmin || (vrtxEdit.isInAdmin && !isEmbedded)) {
-      var getScriptFn = (typeof $.cachedScript === "function") ? $.cachedScript : $.getScript;
-      var futureStickyBar = (typeof VrtxStickyBar === "undefined") ? getScriptFn("/vrtx/__vrtx/static-resources/js/vrtx-sticky-bar.js") : $.Deferred().resolve();
-      $.when(futureStickyBar).done(function() {
-        var editorStickyBar = new VrtxStickyBar({
-          wrapperId: "#vrtx-editor-title-submit-buttons",
-          stickyClass: "vrtx-sticky-editor-title-submit-buttons",
-          contentsId: "#contents",
-          outerContentsId: "#main"
-        });
+    var getScriptFn = (typeof $.cachedScript === "function") ? $.cachedScript : $.getScript;
+    var futureStickyBar = (typeof VrtxStickyBar === "undefined") ? getScriptFn("/vrtx/__vrtx/static-resources/js/vrtx-sticky-bar.js") : $.Deferred().resolve();
+    $.when(futureStickyBar).done(function() {
+      var editorStickyBar = new VrtxStickyBar({
+        wrapperId: "#vrtx-editor-title-submit-buttons",
+        stickyClass: "vrtx-sticky-editor-title-submit-buttons",
+        contentsId: "#contents",
+        outerContentsId: "#main"
       });
-    }
+    });
   }, 15);
 
   vrtxEdit.initEnhancements();
@@ -338,11 +334,6 @@ VrtxEditor.prototype.richtextEditorFacade = {
       }
     };
     */
-
-    // Enable ACF
-    if (vrtxEditor.editorForm.hasClass("vrtx-course-schedule")) {
-      config.allowedContent = null;
-    }
 
     config.linkShowTargetTab = false;
 
@@ -607,7 +598,7 @@ VrtxEditor.prototype.setupEditorHeight = function setupEditorHeight(c, opts) {
   return opts.isCompleteEditor ? ((c.isContent || c.isCourseGroup) ? 400 : (c.isSupervisorBox ? 130 : (c.isCourseDescriptionB ? 200 : 220)))
                                : (c.isMessage ? 250
                                               : (c.isCaption ? 55
-                                                             : ((c.isStudyField || c.isScheduleComment || c.isAdditionalContent) ? 150
+                                                             : ((c.isStudyField || c.isAdditionalContent) ? 150
                                                                                                                                  : (c.isIntro ? 100
                                                                                                                                               : 90))));
 };
@@ -624,12 +615,12 @@ VrtxEditor.prototype.setupEditorToolbar = function setupEditorToolbar(c, opts) {
                                : (c.isMessage ? tb.messageToolbar
                                               : (c.isResourcesText ? tb.resourcesTextToolbar
                                                                    : (c.isStudyField ? tb.studyToolbar
-                                                                                     : ((c.isIntro || c.isCaption || c.isScheduleComment) ? tb.inlineToolbar
+                                                                                     : ((c.isIntro || c.isCaption) ? tb.inlineToolbar
                                                                                                                                             : tb.withoutSubSuperToolbar))));
 };
 
 VrtxEditor.prototype.setupEditorResizable = function setupEditorResizable(c, opts) {
-  return classification.isMain || !(c.isCourseDescriptionA || c.isIntro || c.isCaption || c.isMessage || c.isStudyField || c.isScheduleComment);
+  return classification.isMain || !(c.isCourseDescriptionA || c.isIntro || c.isCaption || c.isMessage || c.isStudyField);
 };
 
 /**
@@ -687,7 +678,6 @@ VrtxEditor.prototype.classifyEditorInstance = function classifyEditorInstance(op
                                 vrtxEdit.contains(name, "description-en") ||
                                 vrtxEdit.contains(name, "description-nn") ||
                                 vrtxEdit.contains(name, "description-no");
-  classification.isScheduleComment = vrtxEdit.contains(name, "comment") && vrtxEdit.editorForm.hasClass("vrtx-schedule");
   classification.isCourseDescriptionA = name === "teachingsemester-other" ||
                                         name === "examsemester-other" ||
                                         name === "teaching-language-text-field" ||
@@ -900,8 +890,6 @@ function migrateOldDivContainersToNewImagePlugin(instance) {
 \*-------------------------------------------------------------------*/
 
 function storeInitPropValues(contents) {
-  if (!contents.length || (vrtxEditor.editorForm && vrtxEditor.editorForm.hasClass("vrtx-course-schedule"))) return;
-
   var vrtxEdit = vrtxEditor;
 
   var inputFields = contents.find("input").not("[type=submit]").not("[type=button]")
@@ -931,10 +919,6 @@ function unsavedChangesInEditor() {
   }
 
   var vrtxEdit = vrtxEditor;
-
-  if(typeof editorCourseSchedule === "object") {
-    return editorCourseSchedule.checkUnsavedChanges();
-  }
 
   var contents = $("#app-content > form, #contents");
 
@@ -975,44 +959,6 @@ function unsavedChangesInEditorMessage() {
   if (unsavedChangesInEditor()) {
     return UNSAVED_CHANGES_CONFIRMATION;
   }
-}
-
-/* Detect changes between JSON-objects (Only working for Schedule per. 15.08.2014) */
-function editorDetectChange(sessionId, o1, o2, isCK) {
-  if(typeof o1 === "object" && typeof o2 === "object") {
-    if(o1.length) { // Array
-      if(o1.length !== o2.length) return true;
-      for(var i = 0, len = o1.length; i < len; i++) {
-        if(editorDetectChange(sessionId, o1[i], o2[i])) return true;
-      }
-    } else {
-      var propCount2 = 0;
-      for(prop2 in o2) {
-        propCount2++;
-      }
-      var propCount1 = 0;
-      for(prop1 in o1) {
-        if(editorDetectChange(sessionId, o1[prop1], o2[prop1], prop1 === "vrtxResourcesText")) return true;
-        propCount1++;
-      }
-      if(propCount1 !== propCount2) return true;
-    }
-  } else if(typeof o1 === "string" && typeof o2 === "string") {
-    if(typeof isCK === "boolean" && isCK) { // TODO: use description to check for CK (if textarea)
-      var rteFacade = vrtxEditor.richtextEditorFacade;
-      var ckInstance = rteFacade.getInstance("vrtxResourcesText-" + sessionId);
-      if (ckInstance && rteFacade.isChanged(ckInstance) && rteFacade.getValue(ckInstance) !== "") {
-        return true;
-      }
-    } else {
-      if(o1 !== o2) return true;
-    }
-  } else if(typeof o1 === "number" && typeof o2 === "number") {
-    if(o1 !== o2) return true;
-  } else if(typeof o1 !== typeof o2) {
-    return true;
-  }
-  return false;
 }
 
 /* Validate length for 2048 bytes fields */
@@ -1344,9 +1290,7 @@ VrtxEditor.prototype.initEnhancements = function initEnhancements() {
   vrtxEdit.setShowHideSelectNewEditor();
     
   // Documenttype domains
-  if(vrtxEdit.editorForm.hasClass("vrtx-course-schedule")) {
-    editorCourseSchedule = new courseSchedule();
-  } else if (vrtxEdit.editorForm.hasClass("vrtx-hvordan-soke")) {
+  if (vrtxEdit.editorForm.hasClass("vrtx-hvordan-soke")) {
     vrtxEdit.accordionGroupedInit();
   } else if (vrtxEdit.editorForm.hasClass("vrtx-course-description")) {
     setShowHideBooleanNewEditor("course-fee", "div.course-fee-amount", false);
@@ -1486,7 +1430,7 @@ VrtxEditor.prototype.showHideSelect = function showHideSelect(select, init) {
 /*
  * A. Multiple inputfields (vrtx-multiple-inputfield)
  *
- * 1. (NORMAL - HTML)
+ * 1. HTML
  * --------------------
  *
  *    Multiple data comes separated by comma in a textfield.
@@ -1494,7 +1438,7 @@ VrtxEditor.prototype.showHideSelect = function showHideSelect(select, init) {
  *    Is enhanced into addable, removable, browsable and movable fields
  *    based on classname and parameters
  *
- * 2. (SCHEDULE - JSON)
+ * 2. JSON
  * --------------------
  *
  *    Multiple JSON data is added to a textfield separated by $$$.
@@ -2124,235 +2068,6 @@ function scrollToElm(movedElm) {
  * @namespace
  */
 VrtxEditor.prototype.htmlFacade = {
-  /*
-   * Turn a block of JSON into HTML (only working for Schedule)
-   */
-  jsonToHtml: function(isMedisin, id, sessionId, idForLookup, session, fixedResourcesUrl, fixedResources, descs, i18n, embeddedAdminService) {
-    var html = "";
-    var multiples = [];
-    var rtEditors = [];
-    var vrtxEdit = vrtxEditor;
-    var sep = userEnrichmentSeperators;
-
-    for(var name in descs) {
-      var desc = descs[name];
-      if((desc.notMedisin && isMedisin) || (desc.onlyMedisin && !isMedisin)) {
-        continue;
-      }
-      var descProps = jQuery.extend(true, [], desc.props),
-          val = session[name] != undefined ? session[name] : fixedResources[name],
-          origVal = "",
-          propsVal = "",
-          readOnly = session.vrtxOrphan,
-          browsable = false,
-          hasOrig = false;
-
-      var origName = name.split("vrtx")[1];
-      if(origName) {
-        var origVal = session[origName.toLowerCase()];
-        if(origVal && origVal != "") {
-          if(val == undefined) {
-            val = origVal;
-          }
-          hasOrig = true;
-        }
-      }
-      switch(desc.type) {
-        case "json":
-          for(var i = 0, descPropsLen = descProps.length; i < descPropsLen; i++) {
-            descProps[i].title = i18n[name + "-" + descProps[i].name]; // Placeholder
-            if(desc.multiple && desc.props[i].type === "resource_ref" && !isMedisin) {
-              browsable = true;
-            }
-          }
-          if(val && val.length) {
-            for(var j = 0, propsLen = val.length; j < propsLen; j++) {
-              for(i = 0; i < descPropsLen; i++) {
-                if(desc.props[i].type === "enrichedUrl") {
-                  propsVal += (val[j][descProps[i].name] || "") + sep.url;
-                } else if(desc.props[i].type === "enrichedText") {
-                  propsVal += (val[j][descProps[i].name] || "") + sep.text;
-                } else {
-                  propsVal += (val[j][descProps[i].name] || "") + "###";
-                }
-              }
-              if(j < (propsLen - 1)) propsVal += "$$$";
-            }
-          }
-        case "string":
-          val = (propsVal !== "") ? propsVal : val;
-          val = (desc.multiple && typeof val === "object" && val.length != undefined) ? val.join(",") : val;
-          if(desc.multiple) {
-            multiples.push({
-              name: name,
-              json: descProps ? descProps : null,
-              movable: desc.multiple.movable,
-              resettable: desc.multiple.resettable,
-              browsable: browsable,
-              readOnly: readOnly
-            });
-          }
-          var nameI18n = isMedisin && name === "vrtxResources" ? name + "NotFixed" : name;
-
-          html += vrtxEdit.htmlFacade.getStringField({ title: i18n[nameI18n],
-                                                       name: (desc.autocomplete ? "vrtx-autocomplete-" + desc.autocomplete + " " : "") + name + " " + name + "-" + sessionId,
-                                                       id: name + "-" + sessionId,
-                                                       val: val,
-                                                       size: desc.size,
-                                                       divide: desc.divide,
-                                                       readOnly: readOnly
-                                                     }, name);
-          break;
-        case "json-fixed":
-          if(fixedResourcesUrl && val.length) {
-            for(i = 0, len = val.length; i < len; i++) {
-              var fr = val[i];
-              var folderUrl = fr.folderUrl;
-              var folderType = fr.folderType;
-              var folderName = fr.folderName;
-              var folderRoot = fr.folderRoot;
-              html += "<div class='vrtx-simple-html vrtx-fixed-resources vrtx-fixed-resources-" + folderType + (i == 0 && desc.divide ? " divide-" + desc.divide : "") + "'>" +
-                      "<label>" + i18n[name + "-" + folderType] +
-                        (i18n[name + "-" + folderType + "-info"] ? "<abbr tabindex='0' class='tooltips label-tooltips' title='" + i18n[name + "-" + folderType + "-info"] + "'></abbr>" : "") +
-                      "</label>";
-              if(folderUrl && folderUrl.length) {
-                /* Iframe placeholder */
-                html += "<div class='admin-fixed-resources-iframe' data-src='" + folderUrl + embeddedAdminService + "'></div>";
-              } else {
-                html += "<a class='vrtx-button create-fixed-resources-folder' id='create-fixed-resources-folder-" + idForLookup +
-                        "SID" + sessionId +
-                        "SUBF" + folderName +
-                        ((folderRoot && folderRoot != "") ? ("PARENTR" + encodeURIComponent(folderRoot)) : "") +
-                        "' href='javascript:void(0);'>" + i18n[name + "CreateFolder"] + "</a>" + "<p class='fixed-resources-permissions-info'>" + i18n.vrtxResourcesFixedInfo + "</p>";
-              }
-              html += "</div>";
-            }
-          }
-          break;
-        case "html":
-          html += vrtxEdit.htmlFacade.getSimpleHtmlField({ title: i18n[name],
-                                                           name: name + "-" + sessionId,
-                                                           id: name + "-" + sessionId,
-                                                           divide: desc.divide,
-                                                           val: val
-                                                         }, name + "-" + sessionId);
-          rtEditors.push({ name: name + "-" + sessionId, readOnly: readOnly });
-          break;
-        case "checkbox":
-          if(!session.vrtxOrphan) {
-            if(!origVal || origVal !== desc.checkedVal) {
-              html += vrtxEdit.htmlFacade.getCheckboxField({ title: i18n[name],
-                                                             name: name + "-" + sessionId,
-                                                             id: name + "-" + sessionId,
-                                                             checked: (val === desc.checkedVal ? val : null),
-                                                             divide: desc.divide,
-                                                             tooltip: i18n.cancelledVortexTooltip
-                                                           }, name);
-            } else {
-              html += "<abbr tabindex='0' class='tooltips cancelled-tp' title='" + i18n.cancelledTPTooltip + "'></abbr>";
-            }
-          }
-          break;
-        default:
-          break;
-      }
-    }
-    return { html: html, multiples: multiples, rtEditors: rtEditors };
-  },
- /*
-  * Turn a block of HTML/DOM into JSON (only working for Schedule)
-  */
-  htmlToJson: function (isMedisin, sessionElms, sessionId, descs, rawOrig, rawOrigTP, rawPtr) {
-    var vrtxEdit = vrtxEditor;
-    var hasChanges = false;
-    var editorDetectChangeFunc = editorDetectChange;
-
-    for(var name in descs) {
-      var desc = descs[name],
-          val = "";
-      // Skip fixed resources and branch: Medisin | Not Medisin
-      if(desc.type === "json-fixed" || (desc.notMedisin && isMedisin)
-                                    || (desc.onlyMedisin && !isMedisin)) {
-        continue;
-      } else if(desc.type === "html") {
-        // XXX: support multiple CK-fields starting with same name
-        var elm = sessionElms.find("textarea[name^='" + name + "']");
-      } else {
-        var elm = sessionElms.find("input[name='" + name + "']");
-      }
-      if(!elm.length) continue;
-
-      if(desc.type === "checkbox") {
-        if(elm[0].checked) {
-          val = desc.checkedVal;
-        }
-      } else if(desc.type === "html") {
-        val = vrtxEdit.richtextEditorFacade.getInstanceValue(elm.attr("name"));
-      } else {
-        // Reconstruct data from flattened string to objects
-        val = elm.val(); // To string (string)
-        if(desc.multiple && val.length) { // To array (multiple)
-          val = val.split("$$$");
-        }
-        if(desc.type === "json" && val.length) { // Object props into array (JSON multiple)
-          var arrProps = [];
-          for(var i = 0, arrLen = val.length; i < arrLen; i++) {
-            var newProp = null;
-            var prop = val[i].split("###");
-            for(var j = 0, descPropsLen = desc.props.length; j < descPropsLen; j++) { // Definition
-              if(desc.props[j].type == "enrichedUrl"
-              || desc.props[j].type == "enrichedText") continue;
-
-              if(prop[j] !== "") {
-                if(!newProp) {
-                  newProp = {};
-                }
-                newProp[desc.props[j].name] = prop[j];
-              }
-            }
-            if(newProp) {
-              arrProps.push(newProp);
-            }
-          }
-          val = arrProps;
-        }
-      }
-
-      // Has content
-      if(val && val.length) {
-        if(editorDetectChangeFunc(sessionId, val, rawOrig[name], name === "vrtxResourcesText")) { // Has changed
-          var isChangedFromTP = editorDetectChangeFunc(sessionId, val, rawOrigTP[name.split("vrtx")[1].toLowerCase()], name === "vrtxResourcesText");
-          if(isChangedFromTP) { // Differs from TP
-            vrtxAdmin.log({msg: "ADD / CHANGE " + name + (typeof val === "string" ? " " + val : "")});
-            rawPtr[name] = val;
-            hasChanges = true;
-          } else { // Otherwise Delete
-            if(rawOrig[name] != undefined) { // If exists
-              vrtxAdmin.log({msg: "DEL " + name + (typeof val === "string" ? " " + val : "")});
-              delete rawPtr[name];
-              hasChanges = true;
-            }
-          }
-        }
-      } else { // Empty
-        // Is "vrtxStaff" and has "staff" set to []
-        if(name === "vrtxStaff" && rawOrigTP[name.split("vrtx")[1].toLowerCase()]) {
-	  if(rawPtr[name] == undefined || rawPtr[name].length > 0) {
-            vrtxAdmin.log({msg: "DEL EMPTY " + name});
-            rawPtr[name] = [];
-            hasChanges = true;
-	  }
-        } else { // Otherwise Delete
-	  if(rawOrig[name] != undefined) { // If exists
-            vrtxAdmin.log({msg: "DEL " + name});
-            delete rawPtr[name];
-            hasChanges = true;
-	  }
-	}
-      }
-    }
-    return hasChanges;
-  },
   /*
    * Interaction
    */

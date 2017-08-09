@@ -72,8 +72,7 @@
     <property name="url" value="pages/root/root1.ftl" />
     <property name="referenceDataProviders">
       <list>
-        <bean class="vtk.web.referencedata.provider.ShellExecutionResultProvider">
-          <property name="shell" ref="beanShellEvaluator" />
+        <bean class="vtk.web.referencedata.provider.GroupedSupplierProvider">
           <property name="modelName" value="managementStats" />
           <property name="groups" ref="managementStatsGroups" />
         </bean>
@@ -131,11 +130,37 @@
     </constructor-arg>
   </bean>
 
+  <!-- Factory bean which can generate instances of java.util.function.Supplier<?> from
+       Groovy expressions through method 'toSupplier(String)'.
+       Expressions may use variable 'context' to access Spring application context.
+  -->
+  <lang:groovy id="groovyExpressionValueSupplierFactory">
+    <lang:inline-script><![CDATA[
+      import org.springframework.context.*
+      class GroovyExpressionValueSupplierFactory implements ApplicationContextAware {
+          private ApplicationContext context;
+          void setApplicationContext(ApplicationContext context) {
+              this.context = context;
+          }
+          java.util.function.Supplier<?> toSupplier(String expr) {
+              def binding = new Binding()
+              binding.setVariable("context", context)
+              def compiledExpression = new GroovyShell(binding).parse(expr)
+              return { compiledExpression.run() } as java.util.function.Supplier<?>
+          }
+      }
+    ]]></lang:inline-script>
+  </lang:groovy>
+
   <bean id="repositoryStatsGroup" class="java.util.HashMap">
     <constructor-arg>
       <map>
         <entry key="Cache size">
-          <value>context.getBean("repository.cache").size()</value>
+          <bean factory-bean="groovyExpressionValueSupplierFactory" factory-method="toSupplier">
+            <constructor-arg>
+              <value>context.getBean('repository.cache').size()</value>
+            </constructor-arg>
+          </bean>
         </entry>
       </map>
     </constructor-arg>
@@ -145,16 +170,14 @@
     <constructor-arg>
       <map>
         <entry key="Resource type tree">
-          <value>"\n" + context.getBean("resourceTypeTree").getResourceTypeTreeAsString()</value>
+          <bean factory-bean="groovyExpressionValueSupplierFactory" factory-method="toSupplier">
+            <constructor-arg>
+              <value>'\n' + context.getBean('resourceTypeTree').getResourceTypeTreeAsString()</value>
+            </constructor-arg>
+          </bean>
         </entry>
       </map>
     </constructor-arg>
-  </bean>
-  
-  
-  <bean id="beanShellEvaluator" class="vtk.shell.BeanShellConsole">
-    <property name="runEvalLoop" value="false" />
-    <property name="wrapOutputInBrackets" value="false" />
   </bean>
 
   <!-- Service tree -->
@@ -195,8 +218,7 @@
     <property name="url" value="pages/root/root1.ftl" />
     <property name="referenceDataProviders">
       <list>
-        <bean class="vtk.web.referencedata.provider.ShellExecutionResultProvider">
-          <property name="shell" ref="beanShellEvaluator" />
+        <bean class="vtk.web.referencedata.provider.GroupedSupplierProvider">
           <property name="modelName" value="managementStats" />
           <property name="groups" ref="serviceTreeGroups" />
         </bean>
@@ -216,7 +238,11 @@
     <constructor-arg>
       <map>
         <entry key="Service tree">
-          <value>"\n" + context.getBean("requestContextInitializer").printServiceTree(true)</value>
+          <bean factory-bean="groovyExpressionValueSupplierFactory" factory-method="toSupplier">
+            <constructor-arg>
+              <value>'\n' + context.getBean('requestContextInitializer').printServiceTree(true)</value>
+            </constructor-arg>
+          </bean>
         </entry>
       </map>
     </constructor-arg>

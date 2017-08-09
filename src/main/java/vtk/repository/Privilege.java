@@ -53,7 +53,7 @@ public enum Privilege {
         this.action = action;
         this.name = action.getName();
     }
-    private static final Map<String, Privilege> NAME_MAP = new HashMap<String, Privilege>();
+    private static final Map<String, Privilege> NAME_MAP = new HashMap<>();
 
     static {
         for (Privilege p : values()) {

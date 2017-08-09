@@ -53,8 +53,9 @@ import vtk.repository.ResourceNotFoundException;
 import vtk.repository.resourcetype.PropertyTypeDefinition;
 import vtk.web.PreviousLocationsResolver.RelocatedResource;
 import vtk.web.referencedata.ReferenceDataProvider;
-import vtk.web.service.WebAssertion;
 import vtk.web.service.Service;
+import vtk.web.service.URL;
+import vtk.web.service.WebAssertion;
 
 public class ResourceNotFoundErrorHandler implements ErrorHandler {
     private static Logger logger = 
@@ -145,7 +146,8 @@ public class ResourceNotFoundErrorHandler implements ErrorHandler {
             return defaultView;
         }
         PropertySet propSet = locations.get(0).resource;
-        return new RedirectView(propSet.getURI().toString());
+        String location = URL.create(request).setPath(propSet.getURI()).toString();
+        return new RedirectView(location);
     }
 
     @Override
