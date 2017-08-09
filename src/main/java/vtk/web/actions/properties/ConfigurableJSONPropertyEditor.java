@@ -312,7 +312,7 @@ public class ConfigurableJSONPropertyEditor extends SimpleFormController<Form> {
         }
         property.setJSONValue(propertyValue);
         
-        repository.store(token, resource);
+        repository.store(token, null, resource);
 
         Map<String, Object> model = new HashMap<>();
         model.put("form", form);

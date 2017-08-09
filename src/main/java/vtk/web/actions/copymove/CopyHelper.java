@@ -59,7 +59,7 @@ public class CopyHelper {
             this.storeAfterCopyAction.process(request, destUri, src, is);
         }
         else {
-            repository.copy(token, uri, destUri, false, false);
+            repository.copy(token, null, uri, destUri, false, false);
         }
         return destUri;
     }

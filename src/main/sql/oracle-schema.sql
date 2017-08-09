@@ -82,6 +82,7 @@ drop table vortex_lock cascade constraints;
 create table vortex_lock
 (
     lock_id number not null,
+    lock_type varchar2 (64) default 'EXCLUSIVE' not null,
     resource_id number not null,
     token varchar2 (128) not null,
     lock_owner varchar2 (128) not null,

@@ -75,7 +75,7 @@ public class LockRefreshController implements Controller {
                 if (lock.getTimeout().getTime() < now + this.timeoutSeconds * 1000) {
                     // Refresh lock:
                     resource = repository.lock(token, resource.getURI(), lock.getOwnerInfo(),
-                            lock.getDepth(), this.timeoutSeconds, lock.getLockToken());
+                            lock.getDepth(), this.timeoutSeconds, lock.getLockToken(), Lock.Type.EXCLUSIVE);
                 }
             }
         }

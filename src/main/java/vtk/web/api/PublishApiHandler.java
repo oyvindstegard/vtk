@@ -146,7 +146,7 @@ public class PublishApiHandler implements HttpRequestHandler {
                 publishDate.setDateValue(new Date());
                 resource.addProperty(publishDate);
                 return requestContext.getRepository()
-                        .store(requestContext.getSecurityToken(), resource);
+                        .store(requestContext.getSecurityToken(), null, resource);
             }
             catch (Exception e) {
                 throw new RuntimeException(e);
@@ -169,7 +169,7 @@ public class PublishApiHandler implements HttpRequestHandler {
                 resource.removeProperty(publishDatePropDef);
 
                 return requestContext.getRepository()
-                        .store(requestContext.getSecurityToken(), resource);
+                        .store(requestContext.getSecurityToken(), null, resource);
             }
             catch (Exception e) {
                 throw new RuntimeException(e);

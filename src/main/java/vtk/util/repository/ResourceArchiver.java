@@ -245,7 +245,7 @@ public class ResourceArchiver {
         // wrong here
         for (Comment comment : comments) {
             try {
-                this.repository.addComment(token, comment);
+                this.repository.addComment(token, null, comment);
             }
             catch (Throwable t) {
                 logger.error("Could not add comment to resource '" + comment.getURI() + "': " + t.getMessage());
@@ -617,10 +617,10 @@ public class ResourceArchiver {
         try {
             if (propsModified) {
                 if (!sc.getAffectedProperties().isEmpty()) {
-                    this.repository.store(token, resource, sc);
+                    this.repository.store(token, null, resource, sc);
                 }
                 else {
-                    this.repository.store(token, resource);
+                    this.repository.store(token, null, resource);
                 }
             }
         }
@@ -631,7 +631,7 @@ public class ResourceArchiver {
             return;
         }
 
-        resource = this.repository.storeACL(token, resource.getURI(), acl, false);
+        resource = this.repository.storeACL(token, null, resource.getURI(), acl, false);
     }
 
     private boolean setProperty(Resource resource, String name, Attributes attributes, boolean decode,
@@ -804,7 +804,7 @@ public class ResourceArchiver {
 
     private boolean writeFile(String token, Path uri, ZipInputStream is) {
         try {
-            this.repository.createDocument(token, uri, ContentInputSources.fromStream(
+            this.repository.createDocument(token, null, uri, ContentInputSources.fromStream(
                     new AbstractInputStreamWrapper(is) {
                 @Override
                 public void close() throws IOException {
@@ -831,7 +831,7 @@ public class ResourceArchiver {
         List<Path> path = dir.getPaths();
         for (Path p : path) {
             if (!dirCache.contains(p)) {
-                this.repository.createCollection(token, p);
+                this.repository.createCollection(token, null, p);
                 dirCache.add(p);
             }
         }

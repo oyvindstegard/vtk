@@ -79,7 +79,7 @@ public class DeleteController extends AbstractWebdavController {
             //            }
 
             // Delete the document or collection:
-            repository.delete(token, uri, recoverable);
+            repository.delete(token, null, uri, recoverable);
 
             responseBuilder(HttpServletResponse.SC_OK)
                 .header("Content-Type", "text/plain;charset=utf-8")

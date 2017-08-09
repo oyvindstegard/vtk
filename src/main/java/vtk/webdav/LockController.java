@@ -153,7 +153,7 @@ public class LockController extends AbstractWebdavController {
                 if (this.logger.isDebugEnabled()) {
                     this.logger.debug("Creating null resource");
                 }
-                repository.createDocument(token, uri, ContentInputSources.empty());
+                repository.createDocument(token, null, uri, ContentInputSources.empty());
                 
                 // Should get real lockOwnerInfo, even if resource don't exist when locked
                 if (request.getContentLength() > 0) {
@@ -174,7 +174,7 @@ public class LockController extends AbstractWebdavController {
                 this.logger.debug(msg);
             }
 
-            resource = repository.lock(token, uri, ownerInfo, depth, timeout, lockToken);
+            resource = repository.lock(token, uri, ownerInfo, depth, timeout, lockToken, Lock.Type.EXCLUSIVE);
 
             if (this.logger.isDebugEnabled()) {
                 this.logger.debug("Locking " + uri + " succeeded");
@@ -205,8 +205,7 @@ public class LockController extends AbstractWebdavController {
                 this.logger.debug("Got ResourceLockedException for URI " + uri, e);
             }
             model.put(WebdavConstants.WEBDAVMODEL_ERROR, e);
-            model
-                    .put(WebdavConstants.WEBDAVMODEL_HTTP_STATUS_CODE, new Integer(
+            model.put(WebdavConstants.WEBDAVMODEL_HTTP_STATUS_CODE, new Integer(
                             HttpUtil.SC_LOCKED));
 
         }

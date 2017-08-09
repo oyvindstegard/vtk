@@ -163,7 +163,7 @@ public class TemplateBasedCreateCollectionController
         Path destinationURI = uri.extend(name);
 
         // Copy folder-template to destination (implicit rename)
-        repository.copy(token, sourceURI, destinationURI, false, true);
+        repository.copy(token, null, sourceURI, destinationURI, false, true);
         Resource dest = repository.retrieve(token, destinationURI, false);
 
         dest.removeProperty(userTitlePropDef);
@@ -199,7 +199,7 @@ public class TemplateBasedCreateCollectionController
         titleProp.setStringValue(title);
         dest.addProperty(titleProp);
 
-        model.put("resource", repository.store(token, dest, sc));
+        model.put("resource", repository.store(token, null, dest, sc));
 
         if (!command.getPublish()) {
             ActionsHelper.unpublishResource(publishDatePropDef, unpublishedCollectionPropDef, repository, token,
@@ -219,7 +219,7 @@ public class TemplateBasedCreateCollectionController
         Path newURI = uri.extend(name);
         Repository repository = requestContext.getRepository();
         String token = requestContext.getSecurityToken();
-        Resource collection = repository.createCollection(token, newURI);
+        Resource collection = repository.createCollection(token, null, newURI);
 
         if (title == null || "".equals(title))
             title = name.substring(0, 1).toUpperCase() + name.substring(1);
@@ -235,7 +235,7 @@ public class TemplateBasedCreateCollectionController
                 collection.addProperty(prop);
             }
         }        
-        Resource r = repository.store(token, collection);
+        Resource r = repository.store(token, null, collection);
 
         if (!createCollectionCommand.getPublish()) {
             ActionsHelper.unpublishResource(publishDatePropDef, 

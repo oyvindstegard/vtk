@@ -71,6 +71,10 @@
              refresh-check-delay="1000"
              script-source="${vshell.commandsLocation}/repo/acl-delete.groovy" />
 
+   <lang:groovy id="vshell.repo.discoverlocks"
+             refresh-check-delay="1000"
+             script-source="${vshell.commandsLocation}/repo/discoverlocks.groovy" />
+
    <lang:groovy id="vshell.repo.move"
              refresh-check-delay="1000"
              script-source="${vshell.commandsLocation}/repo/move.groovy"/>

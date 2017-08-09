@@ -85,7 +85,7 @@ public class MkColController extends AbstractWebdavController {
                     .message("Rejected: " + uri)
                     .writeTo(response);
             }
-            repository.createCollection(token, uri);
+            repository.createCollection(token, null, uri);
             
             responseBuilder(HttpServletResponse.SC_CREATED)
                 .header("Content-Type", "text/plain;charset=utf-8")

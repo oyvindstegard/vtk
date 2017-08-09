@@ -384,10 +384,10 @@ implements ReferenceDataProvider {
                     if (def.isInheritable() && (created || removed || modified)) {
                         InheritablePropertiesStoreContext sc = new InheritablePropertiesStoreContext();
                         sc.addAffectedProperty(def);
-                        repository.store(token, resource, sc);
+                        repository.store(token, null, resource, sc);
                     }
                     else {
-                        repository.store(token, resource);
+                        repository.store(token, null, resource);
                     }
 
                 }

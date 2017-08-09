@@ -22,7 +22,7 @@ class RepoAclDeleteCommand implements VCommand {
         }
 
         try {
-            repo.deleteACL(token, args.uri)
+            repo.deleteACL(token, null, args.uri)
             out.println 'ACL deleted'
         } catch (e) {
             out.println "Error: ${e.message}"

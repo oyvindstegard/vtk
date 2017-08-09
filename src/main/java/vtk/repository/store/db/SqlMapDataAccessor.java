@@ -43,6 +43,9 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.function.BinaryOperator;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 import org.apache.ibatis.session.SqlSession;
 import org.slf4j.Logger;
@@ -186,7 +189,6 @@ public class SqlMapDataAccessor extends AbstractSqlMapDataAccessor implements Da
 
     @Override
     public ResourceImpl storeLock(ResourceImpl r) {
-
         // Delete any old persistent locks
         String sqlMap = getSqlMap("deleteLockByResourceId");
         SqlSession sqlSession = getSqlSession();
@@ -195,17 +197,25 @@ public class SqlMapDataAccessor extends AbstractSqlMapDataAccessor implements Da
         Lock lock = r.getLock();
 
         if (lock != null) {
-            Map<String, Object> parameters = new HashMap<>(7, 1f);
-            parameters.put("lockToken", lock.getLockToken());
-            parameters.put("timeout", lock.getTimeout());
-            parameters.put("owner", lock.getPrincipal().getQualifiedName());
-            parameters.put("ownerInfo", lock.getOwnerInfo());
-            parameters.put("depth", lock.getDepth().toString());
-            parameters.put("resourceId", r.getID());
-
+            Map<String,Object> params = new HashMap<>(3, 1f);
+            params.put("lock", lock);
+            params.put("resourceId", r.getID());
             sqlMap = getSqlMap("insertLock");
-            sqlSession.update(sqlMap, parameters);
+            sqlSession.update(sqlMap, params);
+
+//            Map<String, Object> parameters = new HashMap<>(8, 1f);
+//            parameters.put("lockToken", lock.getLockToken());
+//            parameters.put("timeout", lock.getTimeout());
+//            parameters.put("owner", lock.getPrincipal().getQualifiedName());
+//            parameters.put("ownerInfo", lock.getOwnerInfo());
+//            parameters.put("depth", lock.getDepth().toString());
+//            parameters.put("resourceId", r.getID());
+//            parameters.put("type", lock.getType().toString());
+//
+//            sqlMap = getSqlMap("insertLock");
+//            sqlSession.update(sqlMap, parameters);
         }
+
         return load(r.getURI(), sqlSession);
     }
 
@@ -706,27 +716,34 @@ public class SqlMapDataAccessor extends AbstractSqlMapDataAccessor implements Da
 
     private Map<Path, Lock> loadLocks(Path[] uris, SqlSession sqlSession) {
         if (uris.length == 0)
-            return new HashMap<Path, Lock>();
-        Map<String, Object> parameters = new HashMap<String, Object>();
-        List<String> uriList = new ArrayList<String>();
+            return Collections.emptyMap();
+
+        List<String> uriList = new ArrayList<>();
         for (Path p : uris)
             uriList.add(p.toString());
+
+        Map<String, Object> parameters = new HashMap<>();
         parameters.put("uris", uriList);
         parameters.put("timestamp", new Date());
         String sqlMap = getSqlMap("loadLocksByUris");
 
         List<Map<String, Object>> locks = sqlSession.selectList(sqlMap, parameters);
 
-        Map<Path, Lock> result = new HashMap<Path, Lock>();
+        return locks.stream().collect(Collectors.toMap(m -> (Path)m.get("uri"), m -> (Lock)m.get("lock"),
+               BinaryOperator.maxBy((l1,l2) -> l1.getTimeout().compareTo(l2.getTimeout()))));
+               // ^^^ Just in case there exists multiple locks per URI,
+               // which normally should not be the case, but db schema allows it
 
-        for (Map<String, Object> map : locks) {
-            Lock lock = new Lock((String) map.get("token"), principalFactory.getPrincipal((String) map
-                    .get("owner"), Principal.Type.USER), (String) map.get("ownerInfo"), Depth.fromString((String) map
-                    .get("depth")), (Date) map.get("timeout"));
-
-            result.put(Path.fromString((String) map.get("uri")), lock);
-        }
-        return result;
+//        Map<Path, Lock> result = new HashMap<Path, Lock>();
+//
+//        for (Map<String, Object> map : locks) {
+//            Lock lock = new Lock((String) map.get("token"), principalFactory.getPrincipal((String) map
+//                    .get("owner"), Principal.Type.USER), (String) map.get("ownerInfo"), Depth.fromString((String) map
+//                    .get("depth")), (Date) map.get("timeout"));
+//
+//            result.put(Path.fromString((String) map.get("uri")), lock);
+//        }
+//        return result;
     }
 
     private Map<Path, Lock> loadLocksForChildren(ResourceImpl parent, SqlSession sqlSession) {
@@ -740,17 +757,22 @@ public class SqlMapDataAccessor extends AbstractSqlMapDataAccessor implements Da
 
         List<Map<String, Object>> locks = sqlSession.selectList(sqlMap, parameters);
 
-        Map<Path, Lock> result = new HashMap<Path, Lock>();
+        return locks.stream().collect(Collectors.toMap(m -> (Path)m.get("uri"), m -> (Lock)m.get("lock"),
+               BinaryOperator.maxBy((l1,l2) -> l1.getTimeout().compareTo(l2.getTimeout()))));
+               // ^^^ Just in case there exists multiple locks per URI,
+               // which normally should not be the case, but db schema allows it
 
-        for (Iterator<Map<String, Object>> i = locks.iterator(); i.hasNext();) {
-            Map<String, Object> map = i.next();
-            Lock lock = new Lock((String) map.get("token"), principalFactory.getPrincipal((String) map
-                    .get("owner"), Principal.Type.USER), (String) map.get("ownerInfo"), Depth.fromString((String) map
-                    .get("depth")), (Date) map.get("timeout"));
-
-            result.put(Path.fromString((String) map.get("uri")), lock);
-        }
-        return result;
+//        Map<Path, Lock> result = new HashMap<Path, Lock>();
+//
+//        for (Iterator<Map<String, Object>> i = locks.iterator(); i.hasNext();) {
+//            Map<String, Object> map = i.next();
+//            Lock lock = new Lock((String) map.get("token"), principalFactory.getPrincipal((String) map
+//                    .get("owner"), Principal.Type.USER), (String) map.get("ownerInfo"), Depth.fromString((String) map
+//                    .get("depth")), (Date) map.get("timeout"));
+//
+//            result.put(Path.fromString((String) map.get("uri")), lock);
+//        }
+//        return result;
     }
 
     private void insertAcl(final ResourceImpl r, SqlSession sqlSession) {

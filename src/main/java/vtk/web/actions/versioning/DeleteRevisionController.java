@@ -91,7 +91,7 @@ public class DeleteRevisionController implements Controller {
         }
 
         try {
-            requestContext.getRepository().deleteRevision(token, uri, revision);
+            requestContext.getRepository().deleteRevision(token, null, uri, revision);
         }
         catch (Throwable t) {
             logger.warn("Failed to delete revision on " + uri + ": " + revision, t);

@@ -44,14 +44,19 @@ import vtk.util.io.InputStreamWithLength;
 
 /**
  * Resource repository.
+ *
+ * XXX Should all authorization details like token and lock token be wrapped in
+ * a dedicated container type "Authorization", like "Authorization.fromTokens("foo", null)" ?
  */
 public interface Repository {
     
     /**
      * Hierarchical depth of an operation, for instance with regard to locking.
+     *
+     * TODO move this enum into Lock, since repository only uses depth concept for locking.
      */
     public static enum Depth {
-        ZERO("0"), ONE("1"), INF("infinity");
+        ZERO("0"), ONE("1"), INF("i");
 
         private String val;
 
@@ -69,7 +74,7 @@ public interface Repository {
                 return ZERO;
             } else if ("1".equals(s)) {
                 return ONE;
-            } else if ("infinity".equals(s)) {
+            } else if ("i".equals(s)) {
                 return INF;
             } else {
                 throw new IllegalArgumentException("Unknown value: " + s);
@@ -111,6 +116,20 @@ public interface Repository {
     public void setReadOnly(String token, boolean readOnly) throws AuthorizationException, IOException;
 
     /**
+     * Gets type information for a given resource
+     * @param resource resource to obtain type information about
+     * @return
+     */
+    public TypeInfo getTypeInfo(Resource resource);
+
+    /**
+     * Gets type information for a given resource type
+     * @param name the name of the resource type to obtain information about
+     * @return
+     */
+    public TypeInfo getTypeInfo(String name);
+
+    /**
      * Retrieve a resource at a specified URI authenticated with the session
      * identified by token.
      * 
@@ -140,19 +159,6 @@ public interface Repository {
     public Resource retrieve(String token, Path uri, boolean forProcessing, Revision revision) throws ResourceNotFoundException,
             AuthorizationException, AuthenticationException, IOException;
 
-    /**
-     * Gets type information for a given resource
-     */
-    public TypeInfo getTypeInfo(Resource resource);
-
-    /**
-     * Gets type information for a given resource type
-     * @param name the name of the resource type
-     */
-    public TypeInfo getTypeInfo(String name);
-
-
-    
     /**
      * Returns a listing of the immediate children of a resource.
      * 
@@ -192,10 +198,19 @@ public interface Repository {
      * Store resource properties (metadata) at a specified URI authenticated
      * with the session identified by token.
      * 
-     * @param token
-     *            identifies the client's authenticated session
+     * @param token identifies the client's authenticated session, may be {@code null} which
+     * means anonymous or no specific user. Typically, this will fail for all repository
+     * calls storing resources.
+     *
+     * @param lockToken optionally provide a lock token to be used as  part
+     * of authorization when storing a locked resource. This is only relevant
+     * for locks of type {@link Lock.Type#SHARED_ACL_WRITE shared-acl-write}, where
+     * multiple users may share a resource lock and the lock token must be validated for
+     * each call to write to the resource.
+     *
      * @param resource the resource to store
      * @return a refreshed instance of the newly stored resource
+     * 
      * @throws ResourceNotFoundException
      *                if the URI does not identify an existing resource
      * @throws AuthorizationException
@@ -210,7 +225,7 @@ public interface Repository {
      * @throws IOException
      *                if an I/O error occurs
      */
-    public Resource store(String token, Resource resource) throws ResourceNotFoundException, AuthorizationException,
+    public Resource store(String token, String lockToken, Resource resource) throws ResourceNotFoundException, AuthorizationException,
             AuthenticationException, ResourceLockedException, IllegalOperationException, ReadOnlyException, IOException;
     
     /**
@@ -219,10 +234,19 @@ public interface Repository {
      * 
      * @param token
      *            identifies the client's authenticated session
+     *
+     * @param lockToken a lock token, or {@code null} for no particular value. A
+     * lock token to be used as part of authorization when writing to a locked
+     * resource. This is only relevant for locks of type
+     * {@link Lock.Type#SHARED_ACL_WRITE shared-acl-write}, where multiple users
+     * may share a resource lock and a provided lock token must be validated for
+     * each call to write to the resource.
+     *
      * @param resource
      *            modified resource to store
      * @param storeContext
-     *            specialized store context (store mode)
+     *            specialized store context (store mode), type of store context
+     * determines repository behaviour.
      * @return the stored resource
      * @exception ResourceNotFoundException
      *                if the URI does not identify an existing resource
@@ -238,7 +262,7 @@ public interface Repository {
      * @exception IOException
      *                if an I/O error occurs
      */
-    public Resource store(String token, Resource resource, StoreContext storeContext) throws ResourceNotFoundException, AuthorizationException,
+    public Resource store(String token, String lockToken, Resource resource, StoreContext storeContext) throws ResourceNotFoundException, AuthorizationException,
             AuthenticationException, ResourceLockedException, IllegalOperationException, ReadOnlyException, IOException;
     
     /**
@@ -247,6 +271,14 @@ public interface Repository {
      *
      * @param token
      *            identifies the client's authenticated session
+     *
+     * @param lockToken a lock token, or {@code null} for no particular value. A
+     * lock token to be used as part of authorization when writing to a locked
+     * resource. This is only relevant for locks of type
+     * {@link Lock.Type#SHARED_ACL_WRITE shared-acl-write}, where multiple users
+     * may share a resource lock and a provided lock token must be validated for
+     * each call to write to the resource.
+     *
      * @param uri
      *            the resource identifier
      * @param content
@@ -266,11 +298,11 @@ public interface Repository {
      * @exception IOException
      *                if an I/O error occurs
      */
-    public Resource storeContent(String token, Path uri, ContentInputSource content) throws AuthorizationException,
+    public Resource storeContent(String token, String lockToken, Path uri, ContentInputSource content) throws AuthorizationException,
             AuthenticationException, ResourceNotFoundException, ResourceLockedException, IllegalOperationException,
             ReadOnlyException, IOException;
     
-    public Resource storeContent(String token, Path uri, ContentInputSource content, Revision revision) throws AuthorizationException,
+    public Resource storeContent(String token, String lockToken, Path uri, ContentInputSource content, Revision revision) throws AuthorizationException,
         AuthenticationException, ResourceNotFoundException, ResourceLockedException, IllegalOperationException,
         ReadOnlyException, IOException;
 
@@ -342,6 +374,14 @@ public interface Repository {
      *
      * @param token
      *            identifies the client's authenticated session
+     *
+     * @param lockToken a lock token, or {@code null} for no particular value. A
+     * lock token to be used as part of authorization when writing to a locked
+     * resource. This is only relevant for locks of type
+     * {@link Lock.Type#SHARED_ACL_WRITE shared-acl-write}, where multiple users
+     * may share a resource lock and a provided lock token must be validated for
+     * each call to write to the resource.
+     *
      * @param uri
      *            the resource identifier to be created
      * @param content
@@ -365,7 +405,7 @@ public interface Repository {
      * @exception IOException
      *                if an I/O error occurs
      */
-    public Resource createDocument(String token, Path uri, ContentInputSource content) throws IllegalOperationException,
+    public Resource createDocument(String token, String lockToken, Path uri, ContentInputSource content) throws IllegalOperationException,
             AuthorizationException, AuthenticationException, ResourceLockedException, ReadOnlyException, IOException;
     
     /**
@@ -373,6 +413,14 @@ public interface Repository {
      * 
      * @param token
      *            identifies the client's authenticated session
+     *
+     * @param lockToken a lock token, or {@code null} for no particular value. A
+     * lock token to be used as part of authorization when writing to a locked
+     * resource. This is only relevant for locks of type
+     * {@link Lock.Type#SHARED_ACL_WRITE shared-acl-write}, where multiple users
+     * may share a resource lock and a provided lock token must be validated for
+     * each call to write to the resource.
+     *
      * @param uri
      *            the resource identifier to be created
      * @return a <code>Resource</code> representing metadata about the newly
@@ -394,7 +442,7 @@ public interface Repository {
      * @exception IOException
      *                if an I/O error occurs
      */
-    public Resource createCollection(String token, Path uri) throws AuthorizationException, AuthenticationException,
+    public Resource createCollection(String token, String lockToken, Path uri) throws AuthorizationException, AuthenticationException,
             IllegalOperationException, ResourceLockedException, ReadOnlyException, IOException;
 
 
@@ -423,6 +471,14 @@ public interface Repository {
      * 
      * @param token
      *            identifies the client's authenticated session
+     *
+     * @param lockToken a lock token, or {@code null} for no particular value. A
+     * lock token to be used as part of authorization when writing to a locked
+     * resource. This is only relevant for locks of type
+     * {@link Lock.Type#SHARED_ACL_WRITE shared-acl-write}, where multiple users
+     * may share a resource lock and a provided lock token must be validated for
+     * each call to write to the resource.
+     *
      * @param srcUri
      *            identifies the resource to copy from
      * @param destUri
@@ -430,6 +486,9 @@ public interface Repository {
      * @param overwrite
      *            determines if the operation should overwrite existing
      *            resources
+     * @param preserveACL
+     *            whether destination resource should inherit ACL from its parent resource
+     *            or preserve the existing ACL on the source
      * @exception IllegalOperationException
      *                if the resource identified by the destination URI can not
      *                be created due to namespace inconsistency
@@ -458,7 +517,7 @@ public interface Repository {
      * @exception IOException
      *                if an I/O error occurs
      */
-    public void copy(String token, Path srcUri, Path destUri, boolean overwrite, boolean preserveACL)
+    public void copy(String token, String lockToken, Path srcUri, Path destUri, boolean overwrite, boolean preserveACL)
             throws IllegalOperationException, AuthorizationException, AuthenticationException,
             FailedDependencyException, ResourceOverwriteException, ResourceLockedException, ResourceNotFoundException,
             ReadOnlyException, IOException;
@@ -468,6 +527,14 @@ public interface Repository {
      * 
      * @param token
      *            identifies the client's authenticated session
+     *
+     * @param lockToken a lock token, or {@code null} for no particular value. A
+     * lock token to be used as part of authorization when writing to a locked
+     * resource. This is only relevant for locks of type
+     * {@link Lock.Type#SHARED_ACL_WRITE shared-acl-write}, where multiple users
+     * may share a resource lock and a provided lock token must be validated for
+     * each call to write to the resource.
+     *
      * @param srcUri
      *            identifies the resource to move from
      * @param destUri
@@ -502,7 +569,7 @@ public interface Repository {
      * @exception IOException
      *                if an I/O error occurs
      */
-    public void move(String token, Path srcUri, Path destUri, boolean overwrite) throws IllegalOperationException,
+    public void move(String token, String lockToken, Path srcUri, Path destUri, boolean overwrite) throws IllegalOperationException,
             AuthorizationException, AuthenticationException, FailedDependencyException, ResourceOverwriteException,
             ResourceLockedException, ResourceNotFoundException, ReadOnlyException, IOException;
 
@@ -512,11 +579,19 @@ public interface Repository {
      * 
      * @param token
      *            identifies the client's authenticated session
+     *
+     * @param lockToken a lock token, or {@code null} for no particular value. A
+     * lock token to be used as part of authorization when writing to a locked
+     * resource. This is only relevant for locks of type
+     * {@link Lock.Type#SHARED_ACL_WRITE shared-acl-write}, where multiple users
+     * may share a resource lock and a provided lock token must be validated for
+     * each call to write to the resource.
+     *
      * @param uri
      *            identifies the resource to delete
      * @param restoreable
-     *            whether or not resource is to be permanently deleted or just
-     *            moved to trash can
+     *            whether resource is to be permanently deleted or just
+     *            marked as deleted, in which case it will be restorable
      * 
      * @exception IllegalOperationException
      *                if the resource identified by the destination URI can not
@@ -544,7 +619,7 @@ public interface Repository {
      * @exception IOException
      *                if an I/O error occurs
      */
-    public void delete(String token, Path uri, boolean restoreable) throws IllegalOperationException,
+    public void delete(String token, String lockToken, Path uri, boolean restoreable) throws IllegalOperationException,
             AuthorizationException, AuthenticationException, ResourceNotFoundException, ResourceLockedException,
             FailedDependencyException, ReadOnlyException, IOException;
 
@@ -562,13 +637,21 @@ public interface Repository {
     /**
      * @param token
      *            Security token
+     *
+     * @param lockToken a lock token, or {@code null} for no particular value. A
+     * lock token to be used as part of authorization when writing to a locked
+     * resource. This is only relevant for locks of type
+     * {@link Lock.Type#SHARED_ACL_WRITE shared-acl-write}, where multiple users
+     * may share a resource lock and a provided lock token must be validated for
+     * each call to write to the resource.
+     *
      * @param parentUri
      *            Collection containing recoverable resources
      * 
      * @param recoverableResource
      *            The recoverable resource to recover
      */
-    public void recover(String token, Path parentUri, RecoverableResource recoverableResource)
+    public void recover(String token, String lockToken, Path parentUri, RecoverableResource recoverableResource)
             throws ResourceNotFoundException, AuthorizationException, AuthenticationException, IOException;
 
     /**
@@ -576,13 +659,21 @@ public interface Repository {
      * 
      * @param token
      *            client's authenticated session
+     *
+     * @param lockToken a lock token, or {@code null} for no particular value. A
+     * lock token to be used as part of authorization when writing to a locked
+     * resource. This is only relevant for locks of type
+     * {@link Lock.Type#SHARED_ACL_WRITE shared-acl-write}, where multiple users
+     * may share a resource lock and a provided lock token must be validated for
+     * each call to write to the resource.
+     *
      * @param parentUri
      *            path of resource containing the recoverable resource
      * @param recoverableResource
      *            the recoverable resource to delete permanently
      * @throws IOException
      */
-    public void deleteRecoverable(String token, Path parentUri, RecoverableResource recoverableResource)
+    public void deleteRecoverable(String token, String lockToken, Path parentUri, RecoverableResource recoverableResource)
             throws IOException;
 
 
@@ -621,16 +712,27 @@ public interface Repository {
      *            specifies whether all internal members of a resource should be
      *            locked or not. Legal values are <code>0</code> or
      *            <code>infinity</code>
+     *
      * @param requestedTimoutSeconds
      *            the timeout period wanted (in seconds)
+     *
      * @param lockToken
-     *            - if <code>null</code>, the a new lock is obtained, otherwise
-     *            it is interpreted as a lock refresh request (the resource must
-     *            be locked by the same principal and the lock token must match
+     *            if <code>null</code>, an attempt is made to lock the resource, otherwise
+     *            it is interpreted as a lock refresh request.
+     *            If lock refresh and lock is if type {@link Lock.Type#EXCLUSIVE}, then
+     *            the resource must be locked by the same principal and the lock token must match
      *            the existing one).
-     * 
-     *            XXX: This return value description is wrong:
-     * @return a string representing the lock token obtained
+     *            If lock refresh and lock is if type {@link Lock.Type#SHARED_ACL_WRITE}, then
+     *            the principal must have write access to the resource and the lock token must match
+     *            the existing one.
+     *
+     *
+     * @param lockType the {@link Lock.Type type of lock}. The normal type is
+     *            {@link Lock.Type#EXCLUSIVE}, which means exclusive per principal. The
+     *            {@link Lock.Type#SHARED_ACL_WRITE other type} is used when multiple users
+     *            should be able to share the same lock.
+       *
+     * @return the resource on which a lock was created
      * 
      * @exception ResourceNotFoundException
      *                if the resource identified by <code>uri</code> does not
@@ -656,7 +758,7 @@ public interface Repository {
      *                if an I/O error occurs
      */
     public Resource lock(String token, Path uri, String ownerInfo, Depth depth, int requestedTimoutSeconds,
-            String lockToken) throws ResourceNotFoundException, AuthorizationException, AuthenticationException,
+            String lockToken, Lock.Type lockType) throws ResourceNotFoundException, AuthorizationException, AuthenticationException,
             FailedDependencyException, ResourceLockedException, IllegalOperationException, ReadOnlyException, IOException;
 
     /**
@@ -666,6 +768,14 @@ public interface Repository {
      *            identifies the client's authenticated session
      * @param uri
      *            identifies the resource to unlock
+     *
+     * @param lockToken a lock token, or {@code null} for no particular value. A
+     * lock token to be used as part of authorization when unlocking a
+     * resource. This is only relevant for locks of type
+     * {@link Lock.Type#SHARED_ACL_WRITE shared-acl-write}, where multiple users
+     * may share a resource lock and a provided lock token must be validated for
+     * each call to write to the resource.
+     *
      * @exception ResourceNotFoundException
      *                if the resource identified by <code>uri</code> does not
      *                exists
@@ -691,6 +801,14 @@ public interface Repository {
      * 
      * @param token
      *            identifies the client's authenticated session
+     *
+     * @param lockToken a lock token, or {@code null} for no particular value. A
+     * lock token to be used as part of authorization when writing to a
+     * resource. This is only relevant for locks of type
+     * {@link Lock.Type#SHARED_ACL_WRITE shared-acl-write}, where multiple users
+     * may share a resource lock and a provided lock token must be validated for
+     * each call to write to the resource.
+     *
      * @param uri
      *            identifies the resource for which to store the ACL.
      * @exception ResourceNotFoundException
@@ -709,27 +827,47 @@ public interface Repository {
      * @exception IOException
      *                if an I/O error occurs
      */
-    public Resource storeACL(String token, Path uri, Acl acl) throws ResourceNotFoundException, AuthorizationException,
+    public Resource storeACL(String token, String lockToken, Path uri, Acl acl) throws ResourceNotFoundException, AuthorizationException,
             AuthenticationException, IllegalOperationException, ReadOnlyException, IOException;
 
     /**
      * Store ACL, like {@link #storeACL(java.lang.String, vtk.repository.Path, vtk.repository.Acl) }, but
      * with optionally disabling ACL validation.
      * 
+     * @param token user token
+     * @param lockToken a lock token, or {@code null} for no particular value. A
+     * lock token to be used as part of authorization when writing to a
+     * resource. This is only relevant for locks of type
+     * {@link Lock.Type#SHARED_ACL_WRITE shared-acl-write}, where multiple users
+     * may share a resource lock and a provided lock token must be validated for
+     * each call to write to the resource.
+     *
      * Used by resource archiver expansion and from WebADV special propset APIs.
+     * @param uri the path of the resource where ACL should be stored
+     * @param acl the ACL to store
+     *
+     * @return the resource on which ACL was stored
      * @see #storeACL(java.lang.String, vtk.repository.Path, vtk.repository.Acl) 
      * @param validateAcl whether to validate ACL before store or not
      */
-    public Resource storeACL(String token, Path uri, Acl acl, boolean validateAcl) throws ResourceNotFoundException,
+    public Resource storeACL(String token, String lockToken, Path uri, Acl acl, boolean validateAcl) throws ResourceNotFoundException,
             AuthorizationException, AuthenticationException, IllegalOperationException, ReadOnlyException, IOException;
 
     /**
      * Delete ACL at the given path (turn <strong>on</strong> inheritance from
      * nearest ancestor node).
      *
-     * @param token
+     * @param token user token
+     * @param lockToken a lock token, or {@code null} for no particular value. A
+     * lock token to be used as part of authorization when writing to a
+     * resource. This is only relevant for locks of type
+     * {@link Lock.Type#SHARED_ACL_WRITE shared-acl-write}, where multiple users
+     * may share a resource lock and a provided lock token must be validated for
+     * each call to write to the resource.
      * @param uri
+     *
      * @return
+     *
      * @throws ResourceNotFoundException
      * @throws AuthorizationException
      * @throws AuthenticationException
@@ -737,7 +875,7 @@ public interface Repository {
      * @throws ReadOnlyException
      * @throws IOException
      */
-    public Resource deleteACL(String token, Path uri) throws ResourceNotFoundException, AuthorizationException,
+    public Resource deleteACL(String token, String lockToken, Path uri) throws ResourceNotFoundException, AuthorizationException,
             AuthenticationException, IllegalOperationException, ReadOnlyException, IOException;
 
     public boolean isValidAclEntry(Privilege privilege, Principal principal); 
@@ -757,7 +895,16 @@ public interface Repository {
      * @param principal
      *            the principal in question
      * @param considerLocks
-     *            whether or not to take resource locks into account
+     *            whether or not to take resource locks into account.
+     * If {@code true} and the resource is locked with a lock of type
+     * {@link Lock.Type#EXCLUSIVE}, then only the principal which is the owner
+     * of the lock will be authorized to do operations that modify the resource.
+     * If the lock is of type {@link Lock.Type#SHARED_ACL_WRITE}, then this
+     * method will always return {@code false}, since it provides no way to
+     * verify a lock token. In such cases, use
+     * {@link #isAuthorized(vtk.repository.Resource, vtk.repository.RepositoryAction, vtk.security.Principal, java.lang.String) this method}
+     * instead.
+     *
      * @return <code>true</code> if the principal is allowed to perform the
      *         operation, <code>false</code> otherwise
      * @throws IOException
@@ -765,14 +912,31 @@ public interface Repository {
      */
     public boolean isAuthorized(Resource resource, RepositoryAction action, Principal principal, boolean considerLocks)
             throws IOException;
-    
+
+    /**
+     * Checks whether a principal is allowed to perform an operation on a resource.
+     *
+     * <p>This method always considers resource locks and can verify a lock token
+     * for locks of type {@link Lock.Type#SHARED_ACL_WRITE}.
+     *
+     * @param resource
+     * @param action
+     * @param principal
+     * @param lockToken
+     * @return
+     * @throws IOException
+     */
+    public boolean isAuthorized(Resource resource, RepositoryAction action, Principal principal, String lockToken)
+            throws IOException;
+
+
+    // TODO missing documentation for the following methods:
     
     public List<Revision> getRevisions(String token, Path uri) throws AuthorizationException, ResourceNotFoundException, AuthenticationException, IOException;
     
-    public Revision createRevision(String token, Path uri, Revision.Type type) throws AuthorizationException, ResourceNotFoundException, AuthenticationException, IOException;
-
+    public Revision createRevision(String token, String lockToken, Path uri, Revision.Type type) throws AuthorizationException, ResourceNotFoundException, AuthenticationException, IOException;
     
-    public void deleteRevision(String token, Path uri, Revision revision) throws ResourceNotFoundException,
+    public void deleteRevision(String token, String lockToken, Path uri, Revision revision) throws ResourceNotFoundException,
             AuthorizationException, AuthenticationException, IOException;
     
     /**
@@ -822,6 +986,12 @@ public interface Repository {
      * 
      * @param token
      *            the security token of the current principal
+     * @param lockToken a lock token, or {@code null} for no particular value. A
+     * lock token to be used as part of authorization when writing to a
+     * resource. This is only relevant for locks of type
+     * {@link Lock.Type#SHARED_ACL_WRITE shared-acl-write}, where multiple users
+     * may share a resource lock and a provided lock token must be validated for
+     * each call to write to the resource.
      * @param resource
      *            the resource
      * @param title
@@ -834,7 +1004,7 @@ public interface Repository {
      * @exception AuthenticationException
      *                if an error occurs
      */
-    public Comment addComment(String token, Resource resource, String title, String text) throws RepositoryException,
+    public Comment addComment(String token, String lockToken, Resource resource, String title, String text) throws RepositoryException,
             AuthenticationException;
 
     /**
@@ -847,13 +1017,19 @@ public interface Repository {
      *            The comment to store
      * @return The stored comment
      */
-    public Comment addComment(String token, Comment comment) throws AuthenticationException;
+    public Comment addComment(String token, String lockToken, Comment comment) throws AuthenticationException;
 
     /**
      * Deletes a comment on a resource
      * 
      * @param token
      *            the security token of the current principal
+     * @param lockToken a lock token, or {@code null} for no particular value. A
+     * lock token to be used as part of authorization when writing to a
+     * resource. This is only relevant for locks of type
+     * {@link Lock.Type#SHARED_ACL_WRITE shared-acl-write}, where multiple users
+     * may share a resource lock and a provided lock token must be validated for
+     * each call to write to the resource.
      * @param resource
      *            the resource
      * @param comment
@@ -863,7 +1039,7 @@ public interface Repository {
      * @exception AuthenticationException
      *                if an error occurs
      */
-    public void deleteComment(String token, Resource resource, Comment comment) throws RepositoryException,
+    public void deleteComment(String token, String lockToken, Resource resource, Comment comment) throws RepositoryException,
             AuthenticationException;
 
     /**
@@ -871,6 +1047,12 @@ public interface Repository {
      * 
      * @param token
      *            the security token of the current principal
+     * @param lockToken a lock token, or {@code null} for no particular value. A
+     * lock token to be used as part of authorization when writing to a
+     * resource. This is only relevant for locks of type
+     * {@link Lock.Type#SHARED_ACL_WRITE shared-acl-write}, where multiple users
+     * may share a resource lock and a provided lock token must be validated for
+     * each call to write to the resource.
      * @param resource
      *            the resource
      * @exception RepositoryException
@@ -878,13 +1060,19 @@ public interface Repository {
      * @exception AuthenticationException
      *                if an error occurs
      */
-    public void deleteAllComments(String token, Resource resource) throws RepositoryException, AuthenticationException;
+    public void deleteAllComments(String token, String lockToken, Resource resource) throws RepositoryException, AuthenticationException;
 
     /**
      * Updates a comment on a resource.
      * 
      * @param token
      *            the security token of the current principal
+     * @param lockToken a lock token, or {@code null} for no particular value. A
+     * lock token to be used as part of authorization when writing to a
+     * resource. This is only relevant for locks of type
+     * {@link Lock.Type#SHARED_ACL_WRITE shared-acl-write}, where multiple users
+     * may share a resource lock and a provided lock token must be validated for
+     * each call to write to the resource.
      * @param resource
      *            the resource
      * @exception RepositoryException
@@ -892,7 +1080,7 @@ public interface Repository {
      * @exception AuthenticationException
      *                if an error occurs
      */
-    public Comment updateComment(String token, Resource resource, Comment comment) throws RepositoryException,
+    public Comment updateComment(String token, String lockToken, Resource resource, Comment comment) throws RepositoryException,
             AuthenticationException;
 
     /**

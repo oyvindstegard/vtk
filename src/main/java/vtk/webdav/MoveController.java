@@ -93,7 +93,7 @@ public class MoveController extends AbstractWebdavController {
             if (existed) {
                 Resource destination = repository.retrieve(token, destURI, false);
             }
-            repository.move(token, uri, destURI, overwrite);
+            repository.move(token, null, uri, destURI, overwrite);
 
             int status = existed ? HttpServletResponse.SC_NO_CONTENT 
                     : HttpServletResponse.SC_CREATED;

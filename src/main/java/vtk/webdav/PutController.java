@@ -113,7 +113,7 @@ public class PutController extends AbstractWebdavController {
                         "Trying to PUT to collection resource '" + uri + "'");
                 }
                 InputStream inStream = request.getInputStream();
-                repository.storeContent(token, resource.getURI(), ContentInputSources.fromStream(inStream));
+                repository.storeContent(token, null, resource.getURI(), ContentInputSources.fromStream(inStream));
             }
             else {
 
@@ -139,7 +139,7 @@ public class PutController extends AbstractWebdavController {
                     this.logger.debug("Resource does not exist (creating)");
                 }
                 InputStream inStream = request.getInputStream();
-                resource = repository.createDocument(token, uri, ContentInputSources.fromStream(inStream));
+                resource = repository.createDocument(token, null, uri, ContentInputSources.fromStream(inStream));
             }
 
             resource = repository.retrieve(token, resource.getURI(), false);
@@ -170,7 +170,7 @@ public class PutController extends AbstractWebdavController {
             }
 
             if (store) {
-                resource = repository.store(token, resource);
+                resource = repository.store(token, null, resource);
             }
 
             int status = exists ? HttpServletResponse.SC_OK : HttpServletResponse.SC_CREATED;

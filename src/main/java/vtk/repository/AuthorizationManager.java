@@ -205,7 +205,7 @@ public final class AuthorizationManager implements ClusterAware {
             authorizeAll(uri, principal);
             break;
         case UNLOCK:
-            authorizeUnlock(uri, principal);
+            authorizeUnlock(uri, principal, null);
             break;
         case DELETE:
             authorizeDelete(uri, principal);
@@ -447,13 +447,18 @@ public final class AuthorizationManager implements ClusterAware {
     }
     
     /**
+     * Authorized if either of the following conditions apply:
+     *
      * <ul>
-     *   <li>Principal owns lock
-     *   <li>Privilege ALL in Acl 
-     *   <li>Role ROOT
+     *   <li>There is no lock on resource
+     *   <li>Principal owns lock and lock is of type EXCLUSIVE
+     *   <li>Principal has privilege ALL in Acl and lock is of type EXCLUSIVE
+     *   <li>Principal has privilege READ_WRITE on a published resource, the lock token is valid and lock is of type SHARED_ACL_WRITE
+     *   <li>Principal has privilege READ_WRITE_UNPUBLISHED on an unpublished resource, the lock token is valid and lock is of type SHARED_ACL_WRITE
+     *   <li>Principal has role ROOT
      * </ul>
      */
-    public void authorizeUnlock(Path uri, Principal principal) 
+    public void authorizeUnlock(Path uri, Principal principal, String lockToken)
         throws AuthenticationException, AuthorizationException, ReadOnlyException,
         IOException, ResourceNotFoundException {
 
@@ -469,14 +474,32 @@ public final class AuthorizationManager implements ClusterAware {
         if (lock == null) {
             return;
         }
+
         if (principal == null) {
             throw new AuthenticationException();
         }
-        if (lock.getPrincipal().equals(principal)) {
-            return;
-        }
 
-        aclAuthorize(resource, principal, Privilege.ALL);
+        switch (lock.getType()) {
+            case EXCLUSIVE:
+                if (lock.getPrincipal().equals(principal)) {
+                    return;
+                }
+
+                aclAuthorize(resource, principal, Privilege.ALL);
+                break;
+
+            case SHARED_ACL_WRITE:
+                // Check write access
+                if (resource.hasPublishDate()) {
+                    aclAuthorize(resource, principal, PRIVILEGE_HIERARCHY.get(Privilege.READ_WRITE));
+                } else {
+                    aclAuthorize(resource, principal, PRIVILEGE_HIERARCHY.get(Privilege.READ_WRITE_UNPUBLISHED));
+                }
+
+                if (!lock.getLockToken().equals(lockToken)) {
+                    throw new AuthorizationException("Invalid lock token for unlock of SHARED_ACL_WRITE lock");
+                }
+        }
     }
 
 

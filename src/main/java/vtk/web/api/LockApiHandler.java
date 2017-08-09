@@ -179,7 +179,7 @@ public class LockApiHandler implements HttpRequestHandler {
             String ownerInfo = requestContext.getPrincipal().toString();
             try {
                 requestContext.getRepository().lock(
-                        token, uri, ownerInfo, Repository.Depth.ZERO, request.timeout, lockToken
+                        token, uri, ownerInfo, Repository.Depth.ZERO, request.timeout, lockToken, Lock.Type.EXCLUSIVE
                 );
             } catch (Exception e) {
                 throw new RuntimeException(e);
@@ -236,7 +236,8 @@ public class LockApiHandler implements HttpRequestHandler {
                                 lock.getOwnerInfo(),
                                 lock.getDepth(),
                                 request.timeout,
-                                lock.getLockToken()
+                                lock.getLockToken(),
+                                Lock.Type.EXCLUSIVE
                         );
                     } catch (Exception ex) {
                         throw new RuntimeException(ex);

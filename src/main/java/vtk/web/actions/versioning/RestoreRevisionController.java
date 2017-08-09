@@ -92,14 +92,14 @@ public class RestoreRevisionController implements Controller {
 
         Repository repository = requestContext.getRepository();
         try {
-            repository.createRevision(token, uri, Revision.Type.REGULAR);
+            repository.createRevision(token, null, uri, Revision.Type.REGULAR);
             
-            repository.storeContent(token, uri, 
+            repository.storeContent(token, null, uri,
                     ContentInputSources.fromStream(repository.getInputStream(token, uri, false, revision)));
 
             if (this.deleteWorkingCopy && 
                     revision.getType() == Revision.Type.WORKING_COPY) {
-                repository.deleteRevision(token, uri, revision);
+                repository.deleteRevision(token, null, uri, revision);
             }
             
         } catch (Throwable t) {

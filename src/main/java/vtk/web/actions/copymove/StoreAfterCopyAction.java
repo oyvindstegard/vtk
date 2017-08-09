@@ -59,7 +59,7 @@ public class StoreAfterCopyAction {
         String token = requestContext.getSecurityToken();
 
         // Copy resource
-        repository.copy(token, src.getURI(), copyUri, false, true);
+        repository.copy(token, null, src.getURI(), copyUri, false, true);
 
         // Store updated preserved properties
         Resource newRsrc = repository.retrieve(token, copyUri, true);
@@ -69,11 +69,11 @@ public class StoreAfterCopyAction {
                 newRsrc.addProperty(prop);
             }
         }
-        repository.store(token, newRsrc);
+        repository.store(token, null, newRsrc);
 
         // Store updated content if changed
         if (stream != null) {
-            repository.storeContent(token, copyUri, ContentInputSources.fromStream(stream));
+            repository.storeContent(token, null, copyUri, ContentInputSources.fromStream(stream));
         }
     }
 

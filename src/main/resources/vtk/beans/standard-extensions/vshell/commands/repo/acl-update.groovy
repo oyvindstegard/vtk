@@ -56,7 +56,7 @@ class RepoAclUpdateCommand implements VCommand {
                 }
             }
 
-            r = repo.storeACL(token, r.URI, acl)
+            r = repo.storeACL(token, null, r.URI, acl)
             out.println "Stored ACL on ${r.URI}: ${r.acl}"
         } catch (e) {
             out.println "Error: ${e.message}"

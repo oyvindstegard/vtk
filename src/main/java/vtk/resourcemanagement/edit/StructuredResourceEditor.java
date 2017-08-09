@@ -55,6 +55,7 @@ import org.springframework.web.bind.ServletRequestDataBinder;
 import org.springframework.web.servlet.ModelAndView;
 
 import vtk.repository.ContentInputSources;
+import vtk.repository.Lock;
 import vtk.repository.Path;
 import vtk.repository.Privilege;
 import vtk.repository.Repository;
@@ -146,7 +147,7 @@ public class StructuredResourceEditor extends SimpleFormController<FormSubmitCom
         }
 
         if (deleteWorkingCopy && workingCopy != null) {
-            repository.deleteRevision(token, uri, workingCopy);
+            repository.deleteRevision(token, null, uri, workingCopy);
             model.put("form", formBackingObject(request));
             return new ModelAndView(getFormView(), model);
         }
@@ -154,20 +155,20 @@ public class StructuredResourceEditor extends SimpleFormController<FormSubmitCom
         final byte[] buffer = JsonStreamer.toJson(form.getResource().toJSON(), 3, false).getBytes("utf-8");
 
         if (saveWorkingCopy && workingCopy == null) {
-            workingCopy = repository.createRevision(token, uri, Revision.Type.WORKING_COPY);
+            workingCopy = repository.createRevision(token, null, uri, Revision.Type.WORKING_COPY);
         }
 
         if (makePublicVersion && workingCopy != null) {
-            repository.createRevision(token, uri, Revision.Type.REGULAR);
+            repository.createRevision(token, null, uri, Revision.Type.REGULAR);
 
-            repository.storeContent(token, uri, ContentInputSources.fromBytes(buffer), workingCopy);
-            repository.storeContent(token, uri, ContentInputSources.fromStream(repository.getInputStream(token, uri, false, workingCopy)));
-            repository.deleteRevision(token, uri, workingCopy);
+            repository.storeContent(token, null, uri, ContentInputSources.fromBytes(buffer), workingCopy);
+            repository.storeContent(token, null, uri, ContentInputSources.fromStream(repository.getInputStream(token, uri, false, workingCopy)));
+            repository.deleteRevision(token, null, uri, workingCopy);
             form.setWorkingCopy(false);
 
         }
         else if (saveWorkingCopy) {
-            repository.storeContent(token, uri, ContentInputSources.fromBytes(buffer), workingCopy);
+            repository.storeContent(token, null, uri, ContentInputSources.fromBytes(buffer), workingCopy);
             form.setWorkingCopy(true);
 
         }
@@ -178,9 +179,9 @@ public class StructuredResourceEditor extends SimpleFormController<FormSubmitCom
 
             if (prev == null || !checksum.equals(prev.getChecksum())) {
                 // Take snapshot of previous version:
-                repository.createRevision(token, uri, Revision.Type.REGULAR);
+                repository.createRevision(token, null, uri, Revision.Type.REGULAR);
             }
-            repository.storeContent(token, uri, ContentInputSources.fromBytes(buffer));
+            repository.storeContent(token, null, uri, ContentInputSources.fromBytes(buffer));
             form.setWorkingCopy(false);
         }
 
@@ -422,7 +423,7 @@ public class StructuredResourceEditor extends SimpleFormController<FormSubmitCom
         Path uri = requestContext.getResourceURI();
         Principal principal = requestContext.getPrincipal();
         requestContext.getRepository().lock(token, uri, principal.getQualifiedName(), 
-                Depth.ZERO, 600, null);
+                Depth.ZERO, 600, null, Lock.Type.EXCLUSIVE);
     }
 
     public void setResourceManager(StructuredResourceManager resourceManager) {

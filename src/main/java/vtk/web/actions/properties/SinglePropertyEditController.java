@@ -130,7 +130,7 @@ public class SinglePropertyEditController implements Controller {
 
         RequestContext requestContext = request.requestContext;
         requestContext.getRepository()
-            .store(requestContext.getSecurityToken(), resource);
+            .store(requestContext.getSecurityToken(), null, resource);
 
         response.sendRedirect(request.redirectURL.toString());
         return null;

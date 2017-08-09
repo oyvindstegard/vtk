@@ -121,9 +121,9 @@ public class ImageEditController extends ResourceEditController {
             return new ModelAndView(new RedirectView(url.toString()));
         }
 
-        repository.store(token, resource);
+        repository.store(token, null, resource);
         if (is != null) {
-            repository.storeContent(token, wrapper.getURI(), ContentInputSources.fromStream(is));
+            repository.storeContent(token, null, wrapper.getURI(), ContentInputSources.fromStream(is));
         }
 
         if (!wrapper.isView()) {

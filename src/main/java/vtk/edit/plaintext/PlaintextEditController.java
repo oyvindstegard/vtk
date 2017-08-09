@@ -47,6 +47,7 @@ import org.springframework.validation.BindException;
 import org.springframework.web.servlet.ModelAndView;
 
 import vtk.repository.ContentInputSources;
+import vtk.repository.Lock;
 import vtk.repository.Namespace;
 import vtk.repository.Path;
 import vtk.repository.Property;
@@ -141,8 +142,8 @@ public class PlaintextEditController extends SimpleFormController<PlaintextEditC
         Principal principal = requestContext.getPrincipal();
         Repository repository = requestContext.getRepository();
         
-        repository.lock(token, uri, principal.getQualifiedName(), 
-                Depth.ZERO, this.lockTimeoutSeconds, null);
+        repository.lock(token, uri, principal.getQualifiedName(),
+                Depth.ZERO, this.lockTimeoutSeconds, null, Lock.Type.EXCLUSIVE);
 
         Resource resource = repository.retrieve(token, uri, false);
         URL url = service.urlConstructor(URL.create(request))
@@ -239,7 +240,7 @@ public class PlaintextEditController extends SimpleFormController<PlaintextEditC
                     PropertyType.CHARACTERENCODING_USER_SPECIFIED_PROP_NAME);
             prop.setStringValue(characterEncoding);
             resource.addProperty(prop);
-            repository.store(token, resource);
+            repository.store(token, null, resource);
         }
 
         String content = plaintextEditCommand.getContent();
@@ -247,7 +248,7 @@ public class PlaintextEditController extends SimpleFormController<PlaintextEditC
         if (this.logger.isDebugEnabled()) {
             this.logger.debug("Decoding posted string using encoding: " + characterEncoding);
         }
-        repository.storeContent(token, uri, ContentInputSources.fromString(content, characterEncoding));
+        repository.storeContent(token, null, uri, ContentInputSources.fromString(content, characterEncoding));
 
     }
     

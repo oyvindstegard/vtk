@@ -105,13 +105,13 @@ public class PutController implements Controller {
                     String checksum = Revisions.checksum(buffer);
                     if (prev == null || !checksum.equals(prev.getChecksum())) {
                         // Take snapshot of previous version:
-                        repository.createRevision(token, uri, Revision.Type.REGULAR);
+                        repository.createRevision(token, null, uri, Revision.Type.REGULAR);
                     }
                     source = ContentInputSources.fromBytes(buffer);
                 } else {
                     source = ContentInputSources.fromStream(inStream);
                 }
-                repository.storeContent(token, uri, source);
+                repository.storeContent(token, null, uri, source);
 
             } else {
                 this.logger.debug("Resource does not exist (creating)");
@@ -120,7 +120,7 @@ public class PutController implements Controller {
                 repository.retrieve(token, parentURI, false);
 
                 InputStream inStream = request.getInputStream();
-                resource = repository.createDocument(token, uri, ContentInputSources.fromStream(inStream));
+                resource = repository.createDocument(token, null, uri, ContentInputSources.fromStream(inStream));
             }
 
             if (exists) {

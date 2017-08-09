@@ -51,6 +51,7 @@ import vtk.repository.Comment;
 import vtk.repository.ContentInputSource;
 import vtk.repository.FailedDependencyException;
 import vtk.repository.IllegalOperationException;
+import vtk.repository.Lock;
 import vtk.repository.Path;
 import vtk.repository.ReadOnlyException;
 import vtk.repository.RecoverableResource;
@@ -404,7 +405,7 @@ public class RequestContext {
         }
         
         @Override
-        public Resource store(String token, Resource resource)
+        public Resource store(String token, String lockToken, Resource resource)
                 throws ResourceNotFoundException, AuthorizationException,
                 AuthenticationException, ResourceLockedException,
                 IllegalOperationException, ReadOnlyException, IOException {
@@ -412,7 +413,7 @@ public class RequestContext {
         }
 
         @Override
-        public Resource store(String token, Resource resource,
+        public Resource store(String token, String lockToken, Resource resource,
                 StoreContext storeContext) throws ResourceNotFoundException,
                 AuthorizationException, AuthenticationException,
                 ResourceLockedException, IllegalOperationException,
@@ -421,7 +422,7 @@ public class RequestContext {
         }
 
         @Override
-        public Resource storeContent(String token, Path uri, ContentInputSource content)
+        public Resource storeContent(String token, String lockToken, Path uri, ContentInputSource content)
                 throws AuthorizationException, AuthenticationException,
                 ResourceNotFoundException, ResourceLockedException,
                 IllegalOperationException, ReadOnlyException, IOException {
@@ -429,7 +430,7 @@ public class RequestContext {
         }
 
         @Override
-        public Resource storeContent(String token, Path uri,
+        public Resource storeContent(String token, String lockToken, Path uri,
                 ContentInputSource content, Revision revision)
                 throws AuthorizationException, AuthenticationException,
                 ResourceNotFoundException, ResourceLockedException,
@@ -438,7 +439,7 @@ public class RequestContext {
         }
 
         @Override
-        public Resource createDocument(String token, Path uri,
+        public Resource createDocument(String token, String lockToken, Path uri,
                 ContentInputSource content) throws IllegalOperationException,
                 AuthorizationException, AuthenticationException,
                 ResourceLockedException, ReadOnlyException, IOException {
@@ -446,7 +447,7 @@ public class RequestContext {
         }
 
         @Override
-        public Resource createCollection(String token, Path uri)
+        public Resource createCollection(String token, String lockToken, Path uri)
                 throws AuthorizationException, AuthenticationException,
                 IllegalOperationException, ResourceLockedException,
                 ReadOnlyException, IOException {
@@ -454,7 +455,7 @@ public class RequestContext {
         }
 
         @Override
-        public void copy(String token, Path srcUri, Path destUri,
+        public void copy(String token, String lockToken, Path srcUri, Path destUri,
                 boolean overwrite, boolean preserveACL)
                 throws IllegalOperationException, AuthorizationException,
                 AuthenticationException, FailedDependencyException,
@@ -464,7 +465,7 @@ public class RequestContext {
         }
 
         @Override
-        public void move(String token, Path srcUri, Path destUri,
+        public void move(String token, String lockToken, Path srcUri, Path destUri,
                 boolean overwrite) throws IllegalOperationException,
                 AuthorizationException, AuthenticationException,
                 FailedDependencyException, ResourceOverwriteException,
@@ -474,7 +475,7 @@ public class RequestContext {
         }
 
         @Override
-        public void delete(String token, Path uri, boolean restoreable)
+        public void delete(String token, String lockToken, Path uri, boolean restoreable)
                 throws IllegalOperationException, AuthorizationException,
                 AuthenticationException, ResourceNotFoundException,
                 ResourceLockedException, FailedDependencyException,
@@ -483,7 +484,7 @@ public class RequestContext {
         }
 
         @Override
-        public void recover(String token, Path parentUri,
+        public void recover(String token, String lockToken, Path parentUri,
                 RecoverableResource recoverableResource)
                 throws ResourceNotFoundException, AuthorizationException,
                 AuthenticationException, IOException {
@@ -491,14 +492,14 @@ public class RequestContext {
         }
 
         @Override
-        public void deleteRecoverable(String token, Path parentUri,
+        public void deleteRecoverable(String token, String lockToken, Path parentUri,
                 RecoverableResource recoverableResource) throws IOException {
             throw new UnsupportedOperationException("Not supported");
         }
 
         @Override
         public Resource lock(String token, Path uri, String ownerInfo,
-                Depth depth, int requestedTimoutSeconds, String lockToken)
+                Depth depth, int requestedTimoutSeconds, String lockToken, Lock.Type lockType)
                 throws ResourceNotFoundException, AuthorizationException,
                 AuthenticationException, FailedDependencyException,
                 ResourceLockedException, IllegalOperationException,
@@ -515,7 +516,7 @@ public class RequestContext {
         }
 
         @Override
-        public Resource storeACL(String token, Path uri, Acl acl)
+        public Resource storeACL(String token, String lockToken, Path uri, Acl acl)
                 throws ResourceNotFoundException, AuthorizationException,
                 AuthenticationException, IllegalOperationException,
                 ReadOnlyException, IOException {
@@ -523,7 +524,7 @@ public class RequestContext {
         }
 
         @Override
-        public Resource storeACL(String token, Path uri, Acl acl,
+        public Resource storeACL(String token, String lockToken, Path uri, Acl acl,
                 boolean validateAcl) throws ResourceNotFoundException,
                 AuthorizationException, AuthenticationException,
                 IllegalOperationException, ReadOnlyException, IOException {
@@ -531,7 +532,7 @@ public class RequestContext {
         }
 
         @Override
-        public Resource deleteACL(String token, Path uri)
+        public Resource deleteACL(String token, String lockToken, Path uri)
                 throws ResourceNotFoundException, AuthorizationException,
                 AuthenticationException, IllegalOperationException,
                 ReadOnlyException, IOException {
@@ -539,47 +540,47 @@ public class RequestContext {
         }
 
         @Override
-        public Revision createRevision(String token, Path uri, Type type)
+        public Revision createRevision(String token, String lockToken, Path uri, Type type)
                 throws AuthorizationException, ResourceNotFoundException,
                 AuthenticationException, IOException {
             throw new UnsupportedOperationException("Not supported");
         }
 
         @Override
-        public void deleteRevision(String token, Path uri, Revision revision)
+        public void deleteRevision(String token, String lockToken, Path uri, Revision revision)
                 throws ResourceNotFoundException, AuthorizationException,
                 AuthenticationException, IOException {
             throw new UnsupportedOperationException("Not supported");
         }
 
         @Override
-        public Comment addComment(String token, Resource resource,
+        public Comment addComment(String token, String lockToken, Resource resource,
                 String title, String text) throws RepositoryException,
                 AuthenticationException {
             throw new UnsupportedOperationException("Not supported");
         }
 
         @Override
-        public Comment addComment(String token, Comment comment)
+        public Comment addComment(String token, String lockToken, Comment comment)
                 throws AuthenticationException {
             throw new UnsupportedOperationException("Not supported");
         }
 
         @Override
-        public void deleteComment(String token, Resource resource,
+        public void deleteComment(String token, String lockToken, Resource resource,
                 Comment comment) throws RepositoryException,
                 AuthenticationException {
             throw new UnsupportedOperationException("Not supported");
         }
 
         @Override
-        public void deleteAllComments(String token, Resource resource)
+        public void deleteAllComments(String token, String lockToken, Resource resource)
                 throws RepositoryException, AuthenticationException {
             throw new UnsupportedOperationException("Not supported");
         }
 
         @Override
-        public Comment updateComment(String token, Resource resource,
+        public Comment updateComment(String token, String lockToken, Resource resource,
                 Comment comment) throws RepositoryException,
                 AuthenticationException {
             throw new UnsupportedOperationException("Not supported");

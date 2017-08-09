@@ -125,7 +125,7 @@ public class AdvancedPublishDialogController extends SimpleFormController<EditPu
         Resource resource = repository.retrieve(token, uri, true);
         if (resource.getProperty(propDef) != null) {
             resource.removeProperty(propDef);
-            repository.store(token, resource);
+            repository.store(token, null, resource);
         }
     }
 
@@ -141,7 +141,7 @@ public class AdvancedPublishDialogController extends SimpleFormController<EditPu
             resource.addProperty(dateProp);
         }
         dateProp.setDateValue(date);
-        repository.store(token, resource);
+        repository.store(token, null, resource);
     }
 
     public void setPublishDatePropDef(PropertyTypeDefinition publishDatePropDef) {

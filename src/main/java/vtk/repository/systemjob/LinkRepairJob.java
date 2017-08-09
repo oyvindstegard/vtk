@@ -116,7 +116,7 @@ public class LinkRepairJob extends AbstractResourceJob {
             @Override
             public void storeProperties() {
                 try {
-                    ctx.getRepository().store(ctx.getToken(), resource, 
+                    ctx.getRepository().store(ctx.getToken(), null, resource,
                             ctx.getSystemChangeContext());
                 }
                 catch (Exception e) {
@@ -139,11 +139,11 @@ public class LinkRepairJob extends AbstractResourceJob {
             public void writeContent(InputStream content) {
                 try {
                     Resource updated = ctx.getRepository().storeContent(
-                            ctx.getToken(), resource.getURI(), 
+                            ctx.getToken(), null, resource.getURI(),
                             ContentInputSources.fromStream(content));
                     
                     // Update system job status:
-                    ctx.getRepository().store(ctx.getToken(), updated, 
+                    ctx.getRepository().store(ctx.getToken(), null, updated,
                             ctx.getSystemChangeContext());
 
                     
@@ -161,15 +161,15 @@ public class LinkRepairJob extends AbstractResourceJob {
                     final byte[] buffer = JsonStreamer.toJson(
                             res.toJSON(), 3, false).getBytes("utf-8");
 
-                    ctx.getRepository().createRevision(ctx.getToken(), 
+                    ctx.getRepository().createRevision(ctx.getToken(), null,
                             resource.getURI(), Type.REGULAR);
                     
                     Resource stored = ctx.getRepository()
-                            .storeContent(ctx.getToken(), resource.getURI(), 
+                            .storeContent(ctx.getToken(), null, resource.getURI(),
                                     ContentInputSources.fromBytes(buffer));
                     
                     // Update system job status:
-                    ctx.getRepository().store(ctx.getToken(), stored, 
+                    ctx.getRepository().store(ctx.getToken(), null, stored,
                             ctx.getSystemChangeContext());
                 }
                 catch (Exception e) {

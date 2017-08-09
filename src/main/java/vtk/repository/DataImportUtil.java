@@ -71,7 +71,7 @@ public class DataImportUtil implements InitializingBean {
                         + uri + "'");
             } else {
                 logger.info("Importing directory '" + file + "' to URI '" + uri + "'");
-                this.repository.createCollection(token, uri);
+                this.repository.createCollection(token, null, uri);
             }
 
             // Recursively process children of directory
@@ -89,7 +89,7 @@ public class DataImportUtil implements InitializingBean {
             }
             
             logger.info("Importing file '" + file + "' to URI '" + uri + "'");
-            this.repository.createDocument(token, uri, ContentInputSources.fromFile(file));
+            this.repository.createDocument(token, null, uri, ContentInputSources.fromFile(file));
         }
         
     }

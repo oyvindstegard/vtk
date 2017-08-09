@@ -653,7 +653,7 @@ public class LinkCheckJob extends AbstractResourceJob {
                     // repo as an attempt to modify). Still, it should be harmless, 
                     // since it will only be an ephemeral problem for props marked as affected
                     // in system change context.
-                    r = repository.store(token, r, context);
+                    r = repository.store(token, null, r, context);
                 }
                 catch (ResourceLockedException e) {
                     logger.warn("Resource " + r.getURI() + " was locked by another user, skipping");
@@ -674,7 +674,7 @@ public class LinkCheckJob extends AbstractResourceJob {
                 Lock lock = null;
                 try {
                     Resource resource = repository.lock(token, r.getURI(), 
-                            context.getJobName(), Depth.ZERO, 60, null);
+                            context.getJobName(), Depth.ZERO, 60, null, Lock.Type.EXCLUSIVE);
                     lock = resource.getLock();
                     
                     if (!resource.getLastModified().equals(r.getLastModified())) {
@@ -684,7 +684,7 @@ public class LinkCheckJob extends AbstractResourceJob {
                     }
                     // Risk AuthorizationException here if resource is stored somewhere else
                     // WITHOUT locking (like resource evaluation does).
-                    repository.store(token, r, context);
+                    repository.store(token, null, r, context);
                 }
                 catch (ResourceLockedException e) {
                     logger.warn("Resource " + r.getURI() 
