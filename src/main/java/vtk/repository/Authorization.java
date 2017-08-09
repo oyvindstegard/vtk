@@ -37,6 +37,8 @@ import java.util.Optional;
 /**
  * Encapsulates authorization details for {@link Repository} operations.
  *
+ * <p>Instances of this class are immutable.
+ *
  * XXX Currently not in use and only a proposition.
  */
 public class Authorization implements Serializable {
@@ -46,34 +48,47 @@ public class Authorization implements Serializable {
     private final Optional<String> token;
     private final Optional<String> lockToken;
 
+    /**
+     * The canonical empty Authorization instance, which has neither a user token
+     * nor lock token present.
+     */
+    public static final Authorization EMPTY = new Authorization(null, null);
+
     private Authorization(String token, String lockToken) {
         this.token = Optional.ofNullable(token);
         this.lockToken = Optional.ofNullable(lockToken);
     }
 
     /**
+     * Obtain the {@link #EMPTY empty instace}.
      *
      * @return an empty Authorization with no associated principal token or lock.
      */
     public static Authorization empty() {
-        return new Authorization(null, null);
+        return EMPTY;
     }
 
     /**
-     * @param token a unique token identifying a single principal/user
+     * @param userToken a unique token identifying a single principal/user
      * @return an Authorization with a principal token
      */
-    public static Authorization fromToken(String token) {
-        return new Authorization(token, null);
+    public static Authorization withToken(String userToken) {
+        if (userToken == null) {
+            return EMPTY;
+        }
+        return new Authorization(userToken, null);
     }
 
     /**
-     * @param token a unique token identifying a single principal/user, or {@code null} for no particular token
+     * @param userToken a unique token identifying a single principal/user, or {@code null} for no particular token
      * @param lockToken a token identifying a resource lock, or {@code null} for no particular token
      * @return an Authorization with a principal token and a lock token
      */
-    public static Authorization fromTokens(String token, String lockToken) {
-        return new Authorization(token, lockToken);
+    public static Authorization withTokens(String userToken, String lockToken) {
+        if (userToken == null && lockToken == null) {
+            return EMPTY;
+        }
+        return new Authorization(userToken, lockToken);
     }
 
     /**
@@ -89,6 +104,16 @@ public class Authorization implements Serializable {
      */
     public Optional<String> lockToken() {
         return lockToken;
+    }
+
+    /**
+     * Check whether this Authorization instance is empty, which means that
+     * neither user token nor lock token is present.
+     *
+     * @return {@code true} if this Authorization instance is empty
+     */
+    public boolean isEmpty() {
+        return this == EMPTY;
     }
 
     @Override
@@ -122,7 +147,10 @@ public class Authorization implements Serializable {
 
     @Override
     public String toString() {
-        return "Authorization{" + "token=" + token.orElse(null) + ", lockToken=" + lockToken.orElse(null) + '}';
+        if (this == EMPTY) {
+            return "Authorization{EMPTY}";
+        }
+        return "Authorization{" + "token=" + token.orElse("null") + ", lockToken=" + lockToken.orElse("null") + '}';
     }
 
 }
