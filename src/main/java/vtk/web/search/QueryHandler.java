@@ -231,7 +231,7 @@ public final class QueryHandler implements HttpRequestHandler {
                 }
 			}
 			if (request.getParameter("fq") != null) {
-				q += " " + request.getParameter("fq");
+				q += " AND " + request.getParameter("fq");
 			}
 			return builder.query(q);
         }));
