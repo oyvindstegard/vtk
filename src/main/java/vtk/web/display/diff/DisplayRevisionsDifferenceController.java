@@ -116,7 +116,7 @@ public class DisplayRevisionsDifferenceController extends ParameterizableViewCon
         
         String content = diffRevisions(revisionNameA, revisionNameB, request);
 
-        Map<String, Object> model = new HashMap<String, Object>();
+        Map<String, Object> model = new HashMap<>();
         model.put("revisionA", revisionNameA);
         model.put("revisionB", revisionNameB);
         model.put("content", content);
@@ -190,7 +190,7 @@ public class DisplayRevisionsDifferenceController extends ParameterizableViewCon
             throw new RuntimeException("No request dispatcher for name '" + servletName + "' available");
         }
 
-        BufferedResponse bufferedResponse = new BufferedResponse();
+        BufferedResponse bufferedResponse = new BufferedResponse(200);
         rd.include(requestWrapper, bufferedResponse);
         int status = bufferedResponse.getStatus();
         if (status < 200 || status > 299) {
@@ -215,11 +215,11 @@ public class DisplayRevisionsDifferenceController extends ParameterizableViewCon
         
         List<Revision> revisions = repository.getRevisions(token, uri);
 
-        List<Object> allRevisions = new ArrayList<Object>();
+        List<Object> allRevisions = new ArrayList<>();
         String revisionBNext = null;
         boolean haveRecentlySeenRevisionA = false;
         for (Revision revision: revisions) {
-            Map<String, Object> rev = new HashMap<String, Object>();
+            Map<String, Object> rev = new HashMap<>();
             rev.put("id", revision.getID());
             rev.put("name", revision.getName());
             rev.put("timestamp", revision.getTimestamp());

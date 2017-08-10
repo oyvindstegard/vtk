@@ -169,7 +169,7 @@ implements ServletContextAware {
                 try {
                     URL url = URL.create(request.getServletRequest());
                     url = url.relativeURL(esi);
-                    Map<String, String[]> query = new LinkedHashMap<String, String[]>();
+                    Map<String, String[]> query = new LinkedHashMap<>();
                     for (String p: url.getParameterNames()) {
                         query.put(p, new String[] {url.getParameter(p)});
                     }
@@ -294,7 +294,7 @@ implements ServletContextAware {
             DecoratorResponse response) throws Exception {
         String decodedURI = uri;
 
-        Map<String, String[]> queryMap = new HashMap<String, String[]>();
+        Map<String, String[]> queryMap = new HashMap<>();
         String queryString = null;
 
         if (uri.indexOf("?") != -1) {
@@ -337,7 +337,7 @@ implements ServletContextAware {
         
         requestWrapper.setHeader("If-Modified-Since", null);
 
-        BufferedResponse servletResponse = new BufferedResponse();
+        BufferedResponse servletResponse = new BufferedResponse(200);
 
         try {
             requestWrapper.setAttribute(INCLUDE_ATTRIBUTE_NAME, new Object());
@@ -421,12 +421,14 @@ implements ServletContextAware {
 
 
 
+    @Override
     protected String getDescriptionInternal() {
         return "Includes the contents of another document in the page";
     }
 
+    @Override
     protected Map<String, String> getParameterDescriptionsInternal() {
-        Map<String, String> map = new HashMap<String, String>();
+        Map<String, String> map = new HashMap<>();
         map.put(PARAMETER_FILE, PARAMETER_FILE_DESC);
         map.put(PARAMETER_VIRTUAL, PARAMETER_VIRTUAL_DESC);
         map.put(PARAMETER_AS_CURRENT_USER, PARAMETER_AS_CURRENT_USER_DESC);

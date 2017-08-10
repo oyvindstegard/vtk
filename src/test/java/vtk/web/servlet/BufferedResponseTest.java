@@ -30,7 +30,9 @@
  */
 package vtk.web.servlet;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+
 import org.junit.Test;
 
 /**
@@ -40,13 +42,13 @@ public class BufferedResponseTest {
 
     @Test
     public void addContentTypeHeader() {
-        BufferedResponse resp = new BufferedResponse();
+        BufferedResponse resp = new BufferedResponse(200);
         resp.addHeader("Content-Type", "text/html");
         String contentType = resp.getContentType();
         assertNotNull(contentType);
         assertEquals("text/html", contentType);
 
-        resp = new BufferedResponse();
+        resp = new BufferedResponse(200);
         resp.addHeader("Content-type", "text/html");
         contentType = resp.getContentType();
         assertNotNull(contentType);

@@ -41,6 +41,7 @@ import javax.servlet.http.HttpServletRequest;
 
 import org.springframework.beans.factory.annotation.Required;
 import org.springframework.web.servlet.View;
+
 import vtk.web.decorating.DecoratorRequest;
 import vtk.web.decorating.DecoratorResponse;
 import vtk.web.referencedata.ReferenceDataProvider;
@@ -50,7 +51,7 @@ import vtk.web.servlet.BufferedResponse;
 public class ViewRenderingDecoratorComponent extends AbstractDecoratorComponent {
 
     private View view;
-    private Set<String> exposedParameters = new HashSet<String>();
+    private Set<String> exposedParameters = new HashSet<>();
     private boolean exposeMvcModel = false;
 
     @Required
@@ -68,7 +69,7 @@ public class ViewRenderingDecoratorComponent extends AbstractDecoratorComponent 
 
     @Override
     public final void render(DecoratorRequest request, DecoratorResponse response) throws Exception {
-        Map<String, Object> model = new HashMap<String, Object>();
+        Map<String, Object> model = new HashMap<>();
         if (this.exposeMvcModel) {
             model.putAll(request.getMvcModel());
         }
@@ -121,7 +122,7 @@ public class ViewRenderingDecoratorComponent extends AbstractDecoratorComponent 
     @SuppressWarnings("rawtypes")
     private void renderView(Map model, DecoratorRequest request, DecoratorResponse response) throws Exception {
         HttpServletRequest servletRequest = request.getServletRequest();
-        BufferedResponse bufferedResponse = new BufferedResponse();
+        BufferedResponse bufferedResponse = new BufferedResponse(200);
         this.view.render(model, servletRequest, bufferedResponse);
         response.setCharacterEncoding(bufferedResponse.getCharacterEncoding());
         OutputStream out = response.getOutputStream();

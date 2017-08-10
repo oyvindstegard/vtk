@@ -40,6 +40,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.BeanInitializationException;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.web.servlet.View;
+
 import vtk.web.servlet.BufferedResponse;
 import vtk.web.servlet.ConfigurableRequestWrapper;
 
@@ -126,7 +127,7 @@ public abstract class AbstractViewProcessingDecorator
 
         ConfigurableRequestWrapper requestWrapper = new ConfigurableRequestWrapper(request);
         requestWrapper.setMethod("GET");
-        BufferedResponse tmpResponse = new BufferedResponse();
+        BufferedResponse tmpResponse = new BufferedResponse(200);
 
         this.view.render(model, requestWrapper, tmpResponse);
 
@@ -140,6 +141,7 @@ public abstract class AbstractViewProcessingDecorator
         return new String(tmpResponse.getContentBuffer(), tmpResponse.getCharacterEncoding());
     }
 
+    @Override
     public String toString() {
         StringBuffer sb = new StringBuffer();
         sb.append(this.getClass().getName()).append(": [");

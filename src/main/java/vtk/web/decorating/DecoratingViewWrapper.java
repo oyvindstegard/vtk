@@ -44,6 +44,7 @@ import javax.servlet.http.HttpServletResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.web.servlet.View;
+
 import vtk.repository.Resource;
 import vtk.util.io.SizeLimitException;
 import vtk.util.repository.ContentTypeHelper;
@@ -167,7 +168,7 @@ public class DecoratingViewWrapper implements ViewWrapper, ReferenceDataProvidin
                 return;
             }
         }
-        List<Decorator> decoratorList = new ArrayList<Decorator>();
+        List<Decorator> decoratorList = new ArrayList<>();
         if (this.decorators != null) {
             for (int i = 0; i < this.decorators.length; i++) {
                 if (this.decorators[i].match(request, response)) {
@@ -184,7 +185,7 @@ public class DecoratingViewWrapper implements ViewWrapper, ReferenceDataProvidin
         ConfigurableRequestWrapper requestWrapper = new ConfigurableRequestWrapper(request);
         requestWrapper.setMethod("GET");
         
-        BufferedResponse bufferedResponse = new BufferedResponse(this.maxDocumentSize);
+        BufferedResponse bufferedResponse = new BufferedResponse(response.getStatus(), this.maxDocumentSize);
 
         int status = HttpServletResponse.SC_OK;
         if (response instanceof StatusAwareResponseWrapper) {
@@ -365,6 +366,7 @@ public class DecoratingViewWrapper implements ViewWrapper, ReferenceDataProvidin
         return decorate;
     }
     
+    @Override
     public String toString() {
         StringBuffer sb = new StringBuffer();
         sb.append(this.getClass().getName()).append(":");

@@ -37,6 +37,7 @@ import javax.servlet.http.HttpServletRequest;
 
 import org.springframework.beans.factory.annotation.Required;
 import org.springframework.web.servlet.View;
+
 import vtk.web.RequestContext;
 import vtk.web.referencedata.provider.ResourceDetailProvider;
 import vtk.web.servlet.BufferedResponse;
@@ -63,7 +64,7 @@ public class MailTemplateProvider {
         model.put("uri", url);
         model.put("replyTo", replyTo);
 
-        BufferedResponse response = new BufferedResponse();
+        BufferedResponse response = new BufferedResponse(200);
 
         RequestContext ctx = RequestContext.getRequestContext();
         HttpServletRequest request = ctx.getServletRequest();
