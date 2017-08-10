@@ -262,6 +262,17 @@
               <arguments>${frontend.build.args}</arguments>
             </configuration>
           </execution>
+          <execution>
+            <id>gulp test</id>
+            <goals>
+              <goal>gulp</goal>
+            </goals>
+            <phase>test</phase>
+            <configuration>
+              <srcdir>${basedir}/src/main/websources</srcdir>
+              <arguments>test</arguments>
+            </configuration>
+          </execution>
         </executions>
       </plugin>
 
