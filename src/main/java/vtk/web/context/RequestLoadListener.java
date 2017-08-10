@@ -31,11 +31,6 @@
 package vtk.web.context;
 
 import java.io.IOException;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Optional;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 
 import javax.servlet.FilterChain;
 import javax.servlet.ServletException;
@@ -54,15 +49,17 @@ import vtk.web.servlet.AbstractServletFilter;
 
 public class RequestLoadListener extends AbstractServletFilter
     implements ApplicationListener<ServletRequestHandledEvent> {
-    private final ExecutorService executorService;
-    private final MetricsHandler metricsHandler;
-    private Counter activeRequests;
+
+    private final Counter activeRequests;
+    private final Meter requests;
+    private final Meter errors;
+    private final Histogram processing;
     
     public RequestLoadListener(MetricRegistry registry) {
-        this.executorService = Executors.newSingleThreadExecutor(
-                r -> new Thread(r));
-        this.metricsHandler = new MetricsHandler(registry);
-        this.activeRequests = registry.counter("requests.active"); 
+        this.activeRequests = registry.counter("requests.active");
+        this.requests = registry.meter("requests.processed");
+        this.errors = registry.meter("requests.failed");
+        this.processing = registry.histogram("requests.processing.time");
     }
     
     @Override
@@ -80,60 +77,16 @@ public class RequestLoadListener extends AbstractServletFilter
 
     @Override
     public void onApplicationEvent(ServletRequestHandledEvent event) {
-        VrtxEvent vrtxEvent = new VrtxEvent(event);
-        executorService.submit(() -> {
-            metricsHandler.event(vrtxEvent);
-        });
+        requests.mark();
+        processing.update(event.getProcessingTimeMillis());
+        if (event.wasFailure()) {
+            errors.mark();
+        }
     }
 
     @Override
     public String toString() {
         return getClass().getSimpleName();
-    }
-
-    private static class VrtxEvent {
-        public final boolean failure;
-        public final long processingTimeMillis;
-        public final Optional<Long> statusCode;
-
-        public VrtxEvent(ServletRequestHandledEvent reqEvent) {
-            this.failure = reqEvent.wasFailure();
-            this.processingTimeMillis = reqEvent.getProcessingTimeMillis();
-            long sc = reqEvent.getStatusCode();
-            this.statusCode = sc != -1 ? Optional.of(sc) : Optional.empty();
-        }
-    }
-    
-    private static final class MetricsHandler {
-        private final MetricRegistry registry;
-        private final Meter requests;
-        private final Meter errors;
-        private final Histogram processing;
-        private final Map<String, Counter> status = new HashMap<>();;
-
-        public MetricsHandler(MetricRegistry registry) {
-            this.registry = registry;
-            this.requests = registry.meter("requests.processed");
-            this.errors = registry.meter("requests.failed");
-            this.processing = registry.histogram("requests.processing.time");
-        }
-
-        public void event(VrtxEvent event) {
-            requests.mark();
-            processing.update(event.processingTimeMillis);
-            if (event.failure) {
-                errors.mark();
-            }
-            event.statusCode.ifPresent(code -> {
-                String statusKey = String.valueOf("requests.status." + event.statusCode);
-                Counter counter = status.get(statusKey);
-                if (counter == null) {
-                    counter = registry.counter(statusKey);
-                    status.put(statusKey, counter);
-                }
-                counter.inc();
-            });
-        }
     }
 
 }
