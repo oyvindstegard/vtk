@@ -37,8 +37,6 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.WeakHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.apache.lucene.search.Filter;
 import org.apache.lucene.search.IndexSearcher;
 import org.apache.lucene.search.Query;
@@ -77,11 +75,10 @@ class LuceneResultCache {
 
     private final Map<Object, Map<Object,TopDocs>> cache;
     private final int maxItems;
+
     private final AtomicInteger hits = new AtomicInteger();
     private final AtomicInteger misses = new AtomicInteger();
     
-    private final Logger logger = LoggerFactory.getLogger(LuceneResultCache.class.getName());
-
     /**
      * Construct a new cache instance with {@link #DEFAULT_MAX_ITEMS} max number
      * of items per index reader instance.
@@ -123,12 +120,11 @@ class LuceneResultCache {
         TopDocs cachedResult = resultCache.get(searchCacheKey);
         
         if (cachedResult != null) {
+            // Cache hit
             if (hits.incrementAndGet() < 0) {
                 hits.set(0);
                 misses.set(0);
             }
-            // Cache hit
-            maybeLogStats(resultCache);
             return cachedResult;
         }
         
@@ -146,29 +142,7 @@ class LuceneResultCache {
 
         resultCache.put(searchCacheKey, topDocs);
         
-        maybeLogStats(resultCache);
-        
         return topDocs;
-    }
-    
-    private int lastLoggedStats = 0;
-    private void maybeLogStats(Map<Object,TopDocs> currentResultCache) {
-        if (!logger.isDebugEnabled()) return;
-        
-        int lastLogged = this.lastLoggedStats;
-        
-        int cacheRequestCount = hits.get() + misses.get();
-        
-        if (cacheRequestCount < lastLogged || cacheRequestCount > lastLogged + 100) {
-            lastLogged = cacheRequestCount;
-            logger.debug("Stats: {total-requests: " + cacheRequestCount + ", hits: " 
-                    + hits.get() + ", misses: " + misses.get() 
-                    + ", ratio: " + hitRatio() +", weak-cached-reader-count: " 
-                    + this.cache.size() + ", current-result-cache-size: " 
-                    + currentResultCache.size() + "}");
-        }
-        
-        this.lastLoggedStats = lastLogged; // racy update doesn't matter.
     }
     
     /**

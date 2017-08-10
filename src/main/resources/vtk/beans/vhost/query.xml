@@ -138,6 +138,7 @@
     <property name="changeLogDao" ref="repository.changeLogDAO"/>
     <property name="loggerId" value="${repository.index.updateLoggerId}"/>
     <property name="loggerType" value="3"/>
+    <property name="metricRegistry" ref="metrics.registry"/>
     <property name="searcher">
       <bean class="vtk.repository.search.LuceneSearcher">
         <property name="indexAccessor" ref="systemIndexAccessor"/>
@@ -147,12 +148,30 @@
       </bean>
     </property>
   </bean>
+
+  <bean parent="metrics.gaugeRegistration">
+    <property name="arguments">
+      <list>
+        <value>repository.query.luceneResultCache.hitRatio</value>
+        <value>context.getBean('systemIndexSearcher').searcher.resultCache?.hitRatio()</value>
+      </list>
+    </property>
+  </bean>
   
   <bean id="queryAuthorizationFilterFactory"
         class="vtk.repository.search.query.security.CachingQueryAuthorizationFilterFactory">
     <property name="principalManager" ref="principalManager"/>
     <property name="tokenManager" ref="tokenManager"/>
     <property name="roleManager" ref="roleManager"/>
+  </bean>
+
+  <bean parent="metrics.gaugeRegistration">
+    <property name="arguments">
+      <list>
+        <value>repository.query.authorizationFilterCache.hitRatio</value>
+        <value>context.getBean('queryAuthorizationFilterFactory').hitRatio()</value>
+      </list>
+    </property>
   </bean>
 
   <!-- Set up incremental index updates from repository changes -->

@@ -30,6 +30,8 @@
  */
 package vtk.repository.search;
 
+import com.codahale.metrics.MetricRegistry;
+import com.codahale.metrics.Timer;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.Date;
@@ -49,11 +51,14 @@ import vtk.repository.store.ChangeLogDao;
  * that has the following responsibilities:
  *
  * <ul>
- *   <li>Ensures the maximum limit on number of concurrent searches is upheld.
- * When this limit is exceeded, search threads will be blocked until other searches finish first.
- *   <li>Supports handling of threads for searches which have
+ * <li>Ensures the maximum limit on number of concurrent searches is upheld.
+ * When this limit is exceeded, search threads will be blocked until other
+ * searches finish first.
+ * <li>Supports handling of threads for searches which have
  * {@link Search#isWaitForPendingUpdates() } set. Those are potentially delayed
- * and synchronized with the incremental updater before search is actually executed.
+ * and synchronized with the incremental updater before search is actually
+ * executed.
+ * <li>Records statistics about query response times.
  * </ul>
  */
 public class SearchDispatcher implements Searcher, InitializingBean {
@@ -66,12 +71,17 @@ public class SearchDispatcher implements Searcher, InitializingBean {
     private int loggerType;
     private int loggerId;
 
+    private MetricRegistry metrics;
+    private Timer timer;
+
     private final Logger logger = LoggerFactory.getLogger(SearchDispatcher.class.getName());
+
 
     @Override
     public void afterPropertiesSet() {
         // Use fair queueing if contention
         this.searchPermits = new Semaphore(this.maxConcurrentQueries, true);
+        this.timer = metrics.timer("repository.query.responseTimer");
     }
 
     @Override
@@ -80,6 +90,8 @@ public class SearchDispatcher implements Searcher, InitializingBean {
         if (search.getWaitForPendingUpdates().isPresent()) {
             recency = waitForPendingUpdates(search.getWaitForPendingUpdates().get());
         }
+
+        final Timer.Context timerContext = timer.time();
 
         try {
             searchPermits.acquire();
@@ -95,6 +107,7 @@ public class SearchDispatcher implements Searcher, InitializingBean {
             return rs;
         } finally {
             searchPermits.release();
+            timerContext.stop();
         }
     }
 
@@ -193,6 +206,11 @@ public class SearchDispatcher implements Searcher, InitializingBean {
     @Required
     public void setLoggerId(int loggerId) {
         this.loggerId = loggerId;
+    }
+
+    @Required
+    public void setMetricRegistry(MetricRegistry metrics) {
+        this.metrics = metrics;
     }
     
 }

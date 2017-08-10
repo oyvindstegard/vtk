@@ -17,6 +17,7 @@
   <style type="text/css">
     td { padding-right: 2em; }
     .value { font-weight: bold }
+    .metainfo { color: gray }
   </style>
 </head>
 <body>
@@ -50,7 +51,7 @@
     <#assign snapshot = value.getSnapshot() >
     <tr>
       <td>${key}</td><td>mean: <span class="value">${snapshot.getMean()}</span>,
-        min: <span class="value">${snapshot.getMin()}</span>, max: <span class="value">${snapshot.getMax()}</span></td>
+        min: <span class="value">${snapshot.getMin()}</span>, max: <span class="value">${snapshot.getMax()}</span>  <span class="metainfo">[histogram size: ${snapshot.size()} samples]</span></td>
     </tr>
   </#list>
   </table>
@@ -80,8 +81,11 @@
   <#list timers as key, value>
     <#assign snapshot = value.getSnapshot() >
     <tr>
-      <td>${key}</td><td>mean: <span class="value">${snapshot.getMean()}</span>,
-min: <span class="value">${snapshot.getMin()}</span>, max: <span class="value">${snapshot.getMax()}</span></td>
+      <td>${key}</td><td>count: <span class="value">${value.getCount()}</span>,
+      mean rate: <span class="value">${value.getMeanRate()}/s</span>,
+      mean time usage: <span class="value">${(snapshot.getMean()/1000000)?round}ms</span>,
+      minimum time usage: <span class="value">${(snapshot.getMin()/1000000)?round}ms</span>,
+      maximum time usage: <span class="value">${(snapshot.getMax()/1000000)?round}ms</span> <span class="metainfo">[histogram size: ${snapshot.size()} samples]</span></td>
     </tr>
   </#list>
   </table>
