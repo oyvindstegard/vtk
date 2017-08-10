@@ -4,8 +4,8 @@
        xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-3.1.xsd 
                            http://www.springframework.org/schema/lang http://www.springframework.org/schema/lang/spring-lang-3.1.xsd">
 
-  <bean id="repositoryManageService" 
-        class="vtk.web.service.ServiceImpl">
+  <!-- Root admin entry service (abstract without handler) -->
+  <bean id="repositoryManageService" class="vtk.web.service.ServiceImpl">
     <property name="parent" ref="webService" />
     <property name="order" value="350" />
     <property name="assertions">
@@ -41,45 +41,21 @@
     </property>
   </bean>
 
-  <bean id="repositoryManageDefaultService"
-        class="vtk.web.service.ServiceImpl">
-    <property name="parent" ref="repositoryManageService" />
-    <property name="assertions">
-      <list>
-        <bean class="vtk.web.service.PrincipalQualifiedNameAssertion">
-          <property name="username" value="root@localhost"/>
-        </bean>
-      </list>
-    </property>
-    <property name="attributes">
-      <map>
-        <entry key="tabOrder"><value type="java.lang.Integer">-400</value></entry>
-      </map>
-    </property>
-    <property name="handler" ref="root1Handler" />
+  <!-- Service tabs stuff for root admin -->
+  <bean id="rootManage.tabServicesFactory" class="vtk.util.SortedCollection">
+    <constructor-arg>
+      <bean class="vtk.web.service.ServiceAttributeComparator">
+        <property name="attributeName" value="tabOrder" />
+      </bean>
+    </constructor-arg>
+    <constructor-arg name="unique" value="true" />
   </bean>
 
-  <bean parent="rootManage.tabsBuilder">
-    <property name="arguments" ref="repositoryManageDefaultService" />
+  <bean id="rootManage.tabsBuilder"
+        class="org.springframework.beans.factory.config.MethodInvokingBean" abstract="true">
+    <property name="targetObject" ref="rootManage.tabServicesFactory" />
+    <property name="targetMethod" value="add" />
   </bean>
-
-  <bean id="root1Handler"
-        class="org.springframework.web.servlet.mvc.ParameterizableViewController">
-    <property name="viewName" value="rootView" />
-  </bean>
-
-  <bean id="rootView" parent="freemarkerView">
-    <property name="url" value="pages/root/root1.ftl" />
-    <property name="referenceDataProviders">
-      <list>
-        <bean class="vtk.web.referencedata.provider.GroupedSupplierProvider">
-          <property name="modelName" value="managementStats" />
-          <property name="groups" ref="managementStatsGroups" />
-        </bean>
-      </list>
-    </property>
-  </bean>
-
 
   <bean id="rootManage.tabsComponent"
         class="vtk.web.decorating.components.ViewRenderingDecoratorComponent">
@@ -98,96 +74,133 @@
     </property>
   </bean>
 
-
   <bean id="rootManage.tabsProvider" 
-    class="vtk.web.view.components.menu.DefaultListMenuProvider">
+        class="vtk.web.view.components.menu.DefaultListMenuProvider">
     <constructor-arg ref="rootManage.tabServicesFactory" />
     <constructor-arg value="tabs"/>
     <property name="matchAncestorServices" value="true" />
   </bean>
 
-  <bean id="rootManage.tabServicesFactory" class="vtk.util.SortedCollection">
-    <constructor-arg>
-      <bean class="vtk.web.service.ServiceAttributeComparator">
-        <property name="attributeName" value="tabOrder" />
-      </bean>
-    </constructor-arg>
-    <constructor-arg name="unique" value="true" />
-  </bean>
-
-  <bean id="rootManage.tabsBuilder"
-        class="org.springframework.beans.factory.config.MethodInvokingBean" abstract="true">
-    <property name="targetObject" ref="rootManage.tabServicesFactory" />
-    <property name="targetMethod" value="add" />
-  </bean>
-
-  <bean id="managementStatsGroups" class="java.util.HashMap">
-    <constructor-arg>
+  <!-- Metrics is default root admin service (first tab), service order 0 -->
+  
+  <bean id="rootManage.metricsService" class="vtk.web.service.ServiceImpl">
+    <property name="parent" ref="repositoryManageService" />
+    <property name="assertions">
+      <list>
+        <bean class="vtk.web.service.PrincipalQualifiedNameAssertion">
+          <property name="username" value="root@localhost"/>
+        </bean>
+      </list>
+    </property>
+    <property name="attributes">
       <map>
-        <entry key="Repository" value-ref="repositoryStatsGroup" />
-        <entry key="Resource types" value-ref="resourceTypesStatsGroup" />
+        <entry key="tabOrder"><value type="java.lang.Integer">-400</value></entry>
       </map>
-    </constructor-arg>
+    </property>
+    <property name="handler" ref="rootManage.metricsHandler">
+    </property>
   </bean>
 
-  <!-- Factory bean which can generate instances of java.util.function.Supplier<?> from
-       Groovy expressions through method 'toSupplier(String)'.
-       Expressions may use variable 'context' to access Spring application context.
-  -->
-  <lang:groovy id="groovyExpressionValueSupplierFactory">
+  <bean id="rootManage.metricsHandler" class="org.springframework.web.servlet.mvc.ParameterizableViewController">
+    <property name="view">
+      <bean parent="freemarkerView">
+        <property name="url" value="pages/root/metrics.ftl" />
+        <property name="referenceDataProviders">
+          <list>
+            <ref bean="rootManage.metricsDataProvider"/>
+          </list>
+        </property>
+      </bean>
+    </property>
+  </bean>
+  
+  <lang:groovy id="rootManage.metricsDataProvider">
     <lang:inline-script><![CDATA[
-      import org.springframework.context.*
-      class GroovyExpressionValueSupplierFactory implements ApplicationContextAware {
-          private ApplicationContext context;
-          void setApplicationContext(ApplicationContext context) {
-              this.context = context;
+      import vtk.web.referencedata.*
+      import com.codahale.metrics.*
+      import javax.servlet.http.HttpServletRequest
+      class MetricsProvider implements ReferenceDataProvider {
+          private MetricRegistry registry
+          void setRegistry(MetricRegistry registry) {
+              this.registry = registry
           }
-          java.util.function.Supplier<?> toSupplier(String expr) {
-              def binding = new Binding()
-              binding.setVariable("context", context)
-              def compiledExpression = new GroovyShell(binding).parse(expr)
-              return { compiledExpression.run() } as java.util.function.Supplier<?>
+          void referenceData(Map<String, Object> model, HttpServletRequest request) {
+              model.put("gauges", registry.getGauges())
+              model.put("meters", registry.getMeters())
+              model.put("counters", registry.getCounters())
+              model.put("timers", registry.getTimers())
+              model.put("histograms", registry.getHistograms())
           }
       }
     ]]></lang:inline-script>
+    <lang:property name="registry" ref="metrics.registry" />
   </lang:groovy>
 
-  <bean id="repositoryStatsGroup" class="java.util.HashMap">
-    <constructor-arg>
-      <map>
-        <entry key="Cache size">
-          <bean factory-bean="groovyExpressionValueSupplierFactory" factory-method="toSupplier">
-            <constructor-arg>
-              <value>context.getBean('repository.cache').size()</value>
-            </constructor-arg>
-          </bean>
-        </entry>
-      </map>
-    </constructor-arg>
+  <bean parent="rootManage.tabsBuilder">
+    <property name="arguments" ref="rootManage.metricsService"/>
   </bean>
 
-  <bean id="resourceTypesStatsGroup" class="java.util.HashMap">
-    <constructor-arg>
+  <!-- Resource types tree -->
+
+  <bean id="rootManage.resourceTypesService" class="vtk.web.service.ServiceImpl">
+    <property name="parent" ref="repositoryManageService" />
+    <property name="order" value="-1" />
+    <property name="assertions">
+      <list>
+        <bean class="vtk.web.service.PrincipalQualifiedNameAssertion">
+          <property name="username" value="root@localhost"/>
+        </bean>
+        <bean class="vtk.web.service.RequestParameterAssertion">
+          <property name="parameterName" value="mode" />
+          <property name="parameterValue" value="resourcetypes" />
+        </bean>
+      </list>
+    </property>
+    <property name="attributes">
       <map>
-        <entry key="Resource type tree">
-          <bean factory-bean="groovyExpressionValueSupplierFactory" factory-method="toSupplier">
-            <constructor-arg>
-              <value>'\n' + context.getBean('resourceTypeTree').getResourceTypeTreeAsString()</value>
-            </constructor-arg>
-          </bean>
-        </entry>
+        <entry key="tabOrder"><value type="java.lang.Integer">-300</value></entry>
       </map>
-    </constructor-arg>
+    </property>
+    <property name="handler" ref="rootManage.resourceTypesHandler"/>
+  </bean>
+
+  <lang:groovy id="rootManage.resourceTypesHandler">
+    <lang:inline-script><![CDATA[
+      import org.springframework.web.servlet.mvc.*
+      import org.springframework.web.servlet.*
+      import javax.servlet.http.*
+      import vtk.repository.*
+      class ResourceTypesDumper implements Controller {
+          ModelAndView handleRequest(HttpServletRequest request, HttpServletResponse response) throws Exception {
+              response.setHeader('Content-type', 'text/html; charset=utf-8')
+              def tree_html = types.getResourceTypeTreeAsString()
+                              .replaceAll(/(\+-- [^\s]+)/, /<span style='font-weight:bold'>$1<\/span>/)
+                              .replaceAll(/(?m)^(\s[a-zA-Z-]+)/, /<span style='font-weight:bold'>$1<\/span>/)
+              def w = response.getWriter()
+              w.print("""<!DOCTYPE html>
+<html><head><title>Resource types</title></head>
+<body><h2>Resource types</h2>
+<p style='white-space: pre; font-size: 120%; font-family: monospace'>""" + tree_html + '</p></body>')
+              w.close()
+              return null
+          }
+
+          private ResourceTypeTree types
+          void setResourceTypeTree(ResourceTypeTree types) {
+              this.types = types
+          }
+      }
+    ]]></lang:inline-script>
+    <lang:property name="resourceTypeTree" ref="resourceTypeTree" />
+  </lang:groovy>
+
+  <bean parent="rootManage.tabsBuilder">
+    <property name="arguments" ref="rootManage.resourceTypesService"/>
   </bean>
 
   <!-- Service tree -->
 
-  <bean parent="rootManage.tabsBuilder">
-    <property name="arguments" ref="serviceTreeService" />
-  </bean>
-
-  <bean id="serviceTreeService"
-    class="vtk.web.service.ServiceImpl">
+  <bean id="rootManage.serviceTreeService" class="vtk.web.service.ServiceImpl">
     <property name="parent" ref="repositoryManageService" />
     <property name="order" value="-1" />
     <property name="assertions">
@@ -206,48 +219,41 @@
         <entry key="tabOrder"><value type="java.lang.Integer">-300</value></entry>
       </map>
     </property>
-    <property name="handler" ref="root2Handler" />
-  </bean>
-  
-  <bean id="root2Handler"
-    class="org.springframework.web.servlet.mvc.ParameterizableViewController">
-    <property name="viewName" value="serviceTreeView" />
-  </bean>
-  
-  <bean id="serviceTreeView" parent="freemarkerView">
-    <property name="url" value="pages/root/root1.ftl" />
-    <property name="referenceDataProviders">
-      <list>
-        <bean class="vtk.web.referencedata.provider.GroupedSupplierProvider">
-          <property name="modelName" value="managementStats" />
-          <property name="groups" ref="serviceTreeGroups" />
-        </bean>
-      </list>
+    <property name="handler" ref="rootManage.serviceTreeHandler">
     </property>
   </bean>
-
-  <bean id="serviceTreeGroups" class="java.util.HashMap">
-    <constructor-arg>
-      <map>
-        <entry key="Services" value-ref="serviceTreeStatsGroup" />
-      </map>
-    </constructor-arg>
-  </bean>
-
-  <bean id="serviceTreeStatsGroup" class="java.util.HashMap">
-    <constructor-arg>
-      <map>
-        <entry key="Service tree">
-          <bean factory-bean="groovyExpressionValueSupplierFactory" factory-method="toSupplier">
-            <constructor-arg>
-              <value>'\n' + context.getBean('requestContextInitializer').printServiceTree(true)</value>
-            </constructor-arg>
-          </bean>
-        </entry>
-      </map>
-    </constructor-arg>
-  </bean>
   
+  <lang:groovy id="rootManage.serviceTreeHandler">
+    <lang:inline-script><![CDATA[
+      import org.springframework.web.servlet.mvc.*
+      import org.springframework.web.servlet.*
+      import org.springframework.context.*
+      import javax.servlet.http.*
+      import vtk.web.*
+      class ServiceTreeDumper implements Controller, ApplicationContextAware {
+          ModelAndView handleRequest(HttpServletRequest request, HttpServletResponse response) throws Exception {
+              response.setHeader('Content-type', 'text/html; charset=utf-8')
+              def tree_html = context.getBean('requestContextInitializer').printServiceTree(true).toString()
+              tree_html = tree_html.replaceAll(/(->[^\s]+)/, /<span style='font-weight:bold'>$1<\/span>/)
+              def w = response.getWriter()
+              w.print("""<!DOCTYPE html>
+<html><head><title>Services</title></head>
+<body><h2>Services</h2><p style='white-space: pre; font-size: 120%; font-family: monospace'>""" + tree_html + '</p></body>')
+              w.close()
+              return null
+          }
+          private ApplicationContext context
+          void setApplicationContext(ApplicationContext context){
+              this.context = context
+          }
+      }
+    ]]></lang:inline-script>
+  </lang:groovy>
+
+  <bean parent="rootManage.tabsBuilder">
+    <property name="arguments" ref="rootManage.serviceTreeService" />
+  </bean>
+
   <!-- repository read only -->
 
   <bean id="repositoryReadOnlyService"

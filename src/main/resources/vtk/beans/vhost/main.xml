@@ -55,8 +55,8 @@
   <import resource="visual-profile-aspect.xml" />
   <import resource="report.xml" />
   <import resource="commenting.xml" />
-  <import resource="root-management.xml" />
   <import resource="metrics.xml" />
+  <import resource="root-management.xml" />
   <import resource="webdav.xml" />
   <import resource="source.xml" />
   <import resource="plaintextedit.xml" />
