@@ -135,6 +135,10 @@
              refresh-check-delay="-1"
              script-source="${vshell.commandsLocation}/groovy/eval.groovy"/>
 
+   <lang:groovy id="vshell.metrics"
+             refresh-check-delay="-1"
+             script-source="${vshell.commandsLocation}/metrics/metrics.groovy"/>
+
    <!-- For testing inheritable props -->
    <lang:groovy id="vshell.repo.iprop"
              refresh-check-delay="-1"
