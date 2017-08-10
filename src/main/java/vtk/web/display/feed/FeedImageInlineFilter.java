@@ -109,6 +109,18 @@ public class FeedImageInlineFilter extends AbstractServletFilter {
         }
         
         @Override
+        public void setStatus(int sc) {
+            filter = sc == HttpServletResponse.SC_OK;
+            super.setStatus(sc);
+        }
+        
+        @Override
+        public void setStatus(int sc, String sm) {
+            filter = sc == HttpServletResponse.SC_OK;
+            super.setStatus(sc, sm);
+        }
+        
+        @Override
         public void setContentType(String contentType) {
             if (contentType.startsWith("application/atom")) {
                 filter = true;

@@ -108,7 +108,7 @@ public class ViewRenderingDecoratorComponent extends AbstractDecoratorComponent 
     private void renderView(Map<String, Object> model, 
             DecoratorRequest request, DecoratorResponse response) throws Exception {
         HttpServletRequest servletRequest = request.getServletRequest();
-        BufferedResponse bufferedResponse = new BufferedResponse();
+        BufferedResponse bufferedResponse = new BufferedResponse(200);
         this.view.render(model, servletRequest, bufferedResponse);
         response.setCharacterEncoding(bufferedResponse.getCharacterEncoding());
         OutputStream out = response.getOutputStream();

@@ -40,13 +40,14 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.springframework.beans.factory.annotation.Required;
 import org.springframework.web.context.ServletContextAware;
+
+import com.sun.syndication.feed.synd.SyndFeed;
+
 import vtk.web.decorating.DecoratorRequest;
 import vtk.web.service.URL;
 import vtk.web.servlet.BufferedResponse;
 import vtk.web.servlet.ConfigurableRequestWrapper;
 import vtk.web.servlet.VTKServlet;
-
-import com.sun.syndication.feed.synd.SyndFeed;
 
 public class LocalFeedFetcher implements ServletContextAware {
 
@@ -82,7 +83,7 @@ public class LocalFeedFetcher implements ServletContextAware {
                     + servletName + "' available");
         }
 
-        BufferedResponse servletResponse = new BufferedResponse();
+        BufferedResponse servletResponse = new BufferedResponse(200);
         rd.forward(requestWrapper, servletResponse);
 
         int status = servletResponse.getStatus();
@@ -98,7 +99,7 @@ public class LocalFeedFetcher implements ServletContextAware {
                     if (location.getHost().equals(url.getHost())) {
                          requestWrapper = new ConfigurableRequestWrapper(
                                  servletRequest, location);
-                        servletResponse = new BufferedResponse();
+                        servletResponse = new BufferedResponse(200);
                         rd.forward(requestWrapper, servletResponse);
                     }
                 }

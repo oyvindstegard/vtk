@@ -69,8 +69,8 @@ public class BufferedResponse implements StatusAwareHttpServletResponse {
     private int status = 200;
     private String statusMessage;
     private ByteArrayOutputStream bufferStream = new ByteArrayOutputStream();
-    private Map<String, List<Object>> headers = new HashMap<String, List<Object>>(); 
-    private List<Cookie> cookies = new ArrayList<Cookie>();
+    private Map<String, List<Object>> headers = new HashMap<>(); 
+    private List<Cookie> cookies = new ArrayList<>();
     private int bufferSize = 1000;
     private String contentType = null;
     private long contentLength = -1L;
@@ -81,7 +81,8 @@ public class BufferedResponse implements StatusAwareHttpServletResponse {
     /**
      * Creates a buffered response with no limit on the buffer size.
      */
-    public BufferedResponse() {
+    public BufferedResponse(int status) {
+        this.status = status;
     }
     
     /**
@@ -91,7 +92,8 @@ public class BufferedResponse implements StatusAwareHttpServletResponse {
      * buffered in this response wrapper. A negative number means no
      * limit.
      */
-    public BufferedResponse(long maxBufferSize) {
+    public BufferedResponse(int status, long maxBufferSize) {
+        this.status = status;
         this.maxBufferSize = maxBufferSize;
     }
 

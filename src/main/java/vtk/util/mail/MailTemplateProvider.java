@@ -64,7 +64,7 @@ public class MailTemplateProvider {
         model.put("uri", url);
         model.put("replyTo", replyTo);
 
-        BufferedResponse response = new BufferedResponse();
+        BufferedResponse response = new BufferedResponse(200);
 
         if (resourceDetailProvider != null) {
             resourceDetailProvider.referenceData(model, request);

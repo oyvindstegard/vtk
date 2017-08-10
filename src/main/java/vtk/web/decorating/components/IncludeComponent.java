@@ -346,7 +346,7 @@ implements ServletContextAware {
         
         requestWrapper.setHeader("If-Modified-Since", null);
 
-        BufferedResponse servletResponse = new BufferedResponse();
+        BufferedResponse servletResponse = new BufferedResponse(200);
 
         try {
             requestWrapper.setAttribute(INCLUDE_ATTRIBUTE_NAME, new Object());
