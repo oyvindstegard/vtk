@@ -52,6 +52,7 @@
 
     <Logger name="org.springframework.boot" level="info" />
 
+    <Logger name="org.springframework.aop.framework.CglibAopProxy" level="error" />
     <Logger name="org.springframework.transaction" level="info" />
     <Logger name="org.springframework.transaction.support" level="info" />
     <Logger name="org.springframework.jdbc.datasource" level="info" />
@@ -63,7 +64,6 @@
     
     <Logger name="vtk.repository.index" level="info" />
     <Logger name="vtk.repository.search" level="info" />
-    <Logger name="vtk.repository.search.SearchDispatcher" level="info" />
 
     <Root level="info">
       <AppenderRef ref="stdout"/>
