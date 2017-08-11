@@ -60,9 +60,9 @@ import vtk.repository.resourcetype.Content;
  * hook methods, the transaction will be aborted and the repository operation
  * will fail as a whole.
  * 
- * <p>Repository does not allow multiple hook implementations for the same
- * content or resource types. If such a configuration is detected, the repository
- * will throw errors at initialization time.
+ * <p>Configurations with multiple type handler hooks for overlapping content
+ * or resrouce types is considered an error, and it will be arbitrary which
+ * hooks instance that will be called during repository operations.
  *
  * <p>
  * Certain aspects of the repository are currently not supported by hooks in
@@ -218,10 +218,13 @@ public interface TypeHandlerHooks {
      * @param resource the resource for which content is being stored.
      * @param content content input source
      * @param contentType the guessed content type of the input stream.
+     * @param progressCallback
+     * @param progressInterval
      * @return the resource (may be modified)
      * @throws Exception in case of errors
      */
-    ResourceImpl storeContent(ResourceImpl resource, ContentInputSource content, String contentType, Consumer<Long> progressCallback, int progressInterval) throws Exception;
+    ResourceImpl storeContent(ResourceImpl resource, ContentInputSource content, String contentType,
+            Consumer<Long> progressCallback, int progressInterval) throws Exception;
 
     /**
      * Hook method called when {@link Repository#getInputStream(java.lang.String, vtk.repository.Path, boolean)
@@ -268,7 +271,8 @@ public interface TypeHandlerHooks {
      * @throws Exception in case of errors.
      */
     ResourceImpl storeContentOnCreate(ResourceImpl resource,
-            ContentInputSource content, String contentType, Consumer<Long> progressCallback, int progressInterval) throws Exception;
+            ContentInputSource content, String contentType,
+            Consumer<Long> progressCallback, int progressInterval) throws Exception;
 
     /**
      * Hook method called when copying a resource takes place.
