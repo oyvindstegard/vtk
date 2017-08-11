@@ -271,6 +271,7 @@
             <configuration>
               <srcdir>${basedir}/src/main/websources</srcdir>
               <arguments>test</arguments>
+              <skip>${test.skip}</skip>
             </configuration>
           </execution>
         </executions>
