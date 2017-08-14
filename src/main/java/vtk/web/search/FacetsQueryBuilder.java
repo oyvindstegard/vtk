@@ -35,6 +35,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 
 import javax.servlet.http.HttpServletRequest;
 
@@ -57,7 +58,7 @@ public class FacetsQueryBuilder implements SearchComponentQueryBuilder {
     }
 
     @Override
-    public Query build(Resource base, HttpServletRequest request) {
+    public Optional<Query> build(Resource base, HttpServletRequest request) {
         List<Query> queries = new ArrayList<>();
         for (String key: templates.keySet()) {
            String[] input = request.getParameterValues(key);
@@ -90,11 +91,11 @@ public class FacetsQueryBuilder implements SearchComponentQueryBuilder {
             }
          }
         if (queries.isEmpty()) {
-            return null;
+            return Optional.empty();
         }
         AndQuery andQuery = new AndQuery();
         queries.forEach(q -> andQuery.add(q));
-        return andQuery;
+        return Optional.of(andQuery);
     }
     
     private static String escape(String value, char separator, char escape) {

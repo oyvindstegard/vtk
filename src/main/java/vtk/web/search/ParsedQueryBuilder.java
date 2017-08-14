@@ -30,6 +30,8 @@
  */
 package vtk.web.search;
 
+import java.util.Optional;
+
 import javax.servlet.http.HttpServletRequest;
 
 import org.springframework.beans.factory.annotation.Required;
@@ -42,9 +44,10 @@ import vtk.repository.search.query.Query;
 public class ParsedQueryBuilder implements SearchComponentQueryBuilder {
     protected String queryString;
     protected QueryParser queryParser;
-    
-    public Query build(Resource base, HttpServletRequest request) {
-        return queryParser.parse(queryString);
+
+    @Override
+    public Optional<Query> build(Resource base, HttpServletRequest request) {
+        return Optional.of(queryParser.parse(queryString));
     }
 
     @Required

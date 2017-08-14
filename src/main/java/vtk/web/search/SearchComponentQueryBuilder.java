@@ -30,6 +30,8 @@
  */
 package vtk.web.search;
 
+import java.util.Optional;
+
 import javax.servlet.http.HttpServletRequest;
 
 import vtk.repository.Resource;
@@ -37,6 +39,6 @@ import vtk.repository.search.query.Query;
 
 public interface SearchComponentQueryBuilder {
 
-    public Query build(Resource base, HttpServletRequest request);
+    public Optional<Query> build(Resource base, HttpServletRequest request);
 
 }

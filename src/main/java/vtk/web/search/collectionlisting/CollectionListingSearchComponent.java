@@ -31,6 +31,7 @@ package vtk.web.search.collectionlisting;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 import javax.servlet.http.HttpServletRequest;
 
@@ -267,10 +268,8 @@ public class CollectionListingSearchComponent extends QueryPartsSearchComponent 
         List<Query> result = new ArrayList<>();
         if (queryBuilders != null) {
             for (SearchComponentQueryBuilder queryBuilder : queryBuilders) {
-                Query q = queryBuilder.build(collection, request);
-                if (q != null) {
-                    result.add(q);
-                }
+                Optional<Query> query = queryBuilder.build(collection, request);
+                query.ifPresent(q -> result.add(q));
             }
         }
         return result;

@@ -31,6 +31,7 @@
 package vtk.web.search;
 
 import java.util.Map;
+import java.util.Optional;
 
 import javax.servlet.http.HttpServletRequest;
 
@@ -42,14 +43,14 @@ public class ParameterizedQueryStringProcessor extends ParsedQueryBuilder {
     private Map<String, String> replacements;
 
     @Override
-    public Query build(Resource base, HttpServletRequest request) {
+    public Optional<Query> build(Resource base, HttpServletRequest request) {
         String query = this.queryString;
         if (this.replacements != null) {
             for (Map.Entry<String, String> replacement : replacements.entrySet()) {
                 query = query.replace(replacement.getKey(), replacement.getValue());
             }
         }
-        return this.queryParser.parse(query);
+        return Optional.of(queryParser.parse(query));
     }
 
     public void setReplacements(Map<String, String> replacements) {

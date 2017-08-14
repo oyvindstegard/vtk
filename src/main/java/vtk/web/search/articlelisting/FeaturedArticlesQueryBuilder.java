@@ -31,11 +31,13 @@
 package vtk.web.search.articlelisting;
 
 import java.util.HashSet;
+import java.util.Optional;
 import java.util.Set;
 
 import javax.servlet.http.HttpServletRequest;
 
 import org.springframework.beans.factory.annotation.Required;
+
 import vtk.repository.Path;
 import vtk.repository.Property;
 import vtk.repository.Resource;
@@ -53,14 +55,14 @@ public class FeaturedArticlesQueryBuilder extends ParsedQueryBuilder {
     private boolean invert;
 
     @Override
-    public Query build(Resource collection, HttpServletRequest request) {
+    public Optional<Query> build(Resource collection, HttpServletRequest request) {
 
         Property featuredArtilesProp = collection.getProperty(this.featuredArticlesPropDef);
         if (featuredArtilesProp == null) {
-            return null;
+            return Optional.empty();
         }
 
-        Set<String> validUris = new HashSet<String>();
+        Set<String> validUris = new HashSet<>();
         for (Value value : featuredArtilesProp.getValues()) {
             try {
                 String stringValue = value.getStringValue();
@@ -73,23 +75,22 @@ public class FeaturedArticlesQueryBuilder extends ParsedQueryBuilder {
 
         // Only continue if you have at least one valid uri
         if (validUris.size() < 1) {
-            return null;
+            return Optional.empty();
         }
 
         AndQuery resultQuery = new AndQuery();
-        Query uriSetQuery = null;
         if (!invert) {
-            return new UriSetQuery(validUris, TermOperator.NI);
+            return Optional.of(new UriSetQuery(validUris, TermOperator.NI));
         }
         
-        uriSetQuery = new UriSetQuery(validUris);
-        Query resourceQuery = super.build(collection, request);
-        if (resourceQuery == null) {
-            return null;
+        Query uriSetQuery =  new UriSetQuery(validUris);
+        Optional<Query> resourceQuery = super.build(collection, request);
+        if (!resourceQuery.isPresent()) {
+            return Optional.empty();
         }
-        resultQuery.add(resourceQuery);
+        resourceQuery.ifPresent(q -> resultQuery.add(q));
         resultQuery.add(uriSetQuery);
-        return resultQuery;
+        return Optional.of(resultQuery);
 
     }
 

@@ -30,6 +30,7 @@
  */
 package vtk.web.search;
 
+import java.util.Optional;
 import java.util.Set;
 
 import javax.servlet.http.HttpServletRequest;
@@ -47,26 +48,26 @@ public class ScopeQueryBuilder implements SearchComponentQueryBuilder {
 
     private AggregationResolver aggregationResolver;
 
-    public Query build(Resource resource, HttpServletRequest request) {
+    @Override
+    public Optional<Query> build(Resource resource, HttpServletRequest request) {
 
         Path base = resource.getURI();
         if (base.isRoot()) {
             // Root. Just return. Never mind aggregation, just search entire host
-            return null;
+            return Optional.empty();
         }
         UriPrefixQuery baseQuery = new UriPrefixQuery(base + "/");
         Set<Path> aggregationPaths = this.aggregationResolver.getAggregationPaths(request, base);
-        OrQuery aggregateUriPrefixQuery = null;
         if (aggregationPaths != null && aggregationPaths.size() > 0) {
-            aggregateUriPrefixQuery = new OrQuery();
+            OrQuery aggregateUriPrefixQuery = new OrQuery();
             for (Path aggregationPath : aggregationPaths) {
                 aggregateUriPrefixQuery.add(new UriPrefixQuery(aggregationPath.toString()));
             }
             aggregateUriPrefixQuery.add(baseQuery);
-            return aggregateUriPrefixQuery;
+            return Optional.of(aggregateUriPrefixQuery);
         }
 
-        return baseQuery;
+        return Optional.of(baseQuery);
 
     }
 

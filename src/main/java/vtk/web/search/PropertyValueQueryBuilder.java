@@ -30,9 +30,12 @@
  */
 package vtk.web.search;
 
+import java.util.Optional;
+
 import javax.servlet.http.HttpServletRequest;
 
 import org.springframework.beans.factory.annotation.Required;
+
 import vtk.repository.Resource;
 import vtk.repository.resourcetype.PropertyTypeDefinition;
 import vtk.repository.search.query.PropertyTermQuery;
@@ -44,9 +47,10 @@ public class PropertyValueQueryBuilder implements SearchComponentQueryBuilder {
     private String parameterName;
     private PropertyTypeDefinition propertyTypeDefinition;
 
-    public Query build(Resource base, HttpServletRequest request) {
-        return new PropertyTermQuery(propertyTypeDefinition, request.getParameter(parameterName),
-                TermOperator.EQ_IGNORECASE);
+    @Override
+    public Optional<Query> build(Resource base, HttpServletRequest request) {
+        return Optional.of(new PropertyTermQuery(propertyTypeDefinition, request.getParameter(parameterName),
+                TermOperator.EQ_IGNORECASE));
     }
 
     @Required

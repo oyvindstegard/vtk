@@ -31,6 +31,7 @@
 package vtk.web.search;
 
 import java.util.List;
+import java.util.Optional;
 
 import javax.servlet.http.HttpServletRequest;
 
@@ -79,10 +80,8 @@ public class QueryPartsSearchComponent extends QuerySearchComponent {
         AndQuery query = new AndQuery();
 
         for (SearchComponentQueryBuilder builder : this.queryBuilders) {
-            Query q = builder.build(collection, request);
-            if (q != null) {
-                query.add(q);
-            }
+            Optional<Query> component = builder.build(collection, request);
+            component.ifPresent(q -> query.add(q));
         }
 
         return query;

@@ -30,9 +30,12 @@
  */
 package vtk.web.search;
 
+import java.util.Optional;
+
 import javax.servlet.http.HttpServletRequest;
 
 import org.springframework.beans.factory.annotation.Required;
+
 import vtk.repository.Resource;
 import vtk.repository.ResourceTypeTree;
 import vtk.repository.search.query.OrQuery;
@@ -45,12 +48,12 @@ public class ResourceTypeQueryBuilder implements SearchComponentQueryBuilder {
 
     private ResourceTypeTree resourceTypeTree;
 
-    public Query build(Resource base, HttpServletRequest request) {
+    public Optional<Query> build(Resource base, HttpServletRequest request) {
         String[] resourceTypes = request.getParameterValues(TagsHelper.RESOURCE_TYPE_PARAMETER);
         if (resourceTypes != null) {
             if (resourceTypes.length == 1) {
                 if (isValidResourceType(resourceTypes[0])) {
-                    return new TypeTermQuery(resourceTypes[0], TermOperator.IN);
+                    return Optional.of(new TypeTermQuery(resourceTypes[0], TermOperator.IN));
                 }
             }
             OrQuery resourceTypesQuery = new OrQuery();
@@ -60,10 +63,10 @@ public class ResourceTypeQueryBuilder implements SearchComponentQueryBuilder {
                 }
             }
             if (resourceTypesQuery.getQueries().size() > 0) {
-                return resourceTypesQuery;
+                return Optional.of(resourceTypesQuery);
             }
         }
-        return null;
+        return Optional.empty();
     }
 
     private boolean isValidResourceType(String resourceTypeName) {

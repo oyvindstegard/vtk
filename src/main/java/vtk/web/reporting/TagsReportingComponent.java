@@ -262,7 +262,7 @@ public class TagsReportingComponent {
         if (rtNameQueryBuilders != null) {
             AndQuery and = new AndQuery();
             for (SearchComponentQueryBuilder queryBuilder : rtNameQueryBuilders) {
-                and.add(queryBuilder.build(scopeResource, servletRequest));
+                queryBuilder.build(scopeResource, servletRequest).ifPresent(q -> and.add(q));
             }
             and.add(typeScopeQuery);
             typeScopeQuery = and;

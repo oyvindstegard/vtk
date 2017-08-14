@@ -31,10 +31,12 @@
 package vtk.web.search.eventlisting;
 
 import java.util.Calendar;
+import java.util.Optional;
 
 import javax.servlet.http.HttpServletRequest;
 
 import org.springframework.beans.factory.annotation.Required;
+
 import vtk.repository.Resource;
 import vtk.repository.ResourceTypeTree;
 import vtk.repository.resourcetype.PropertyTypeDefinition;
@@ -55,7 +57,7 @@ public class EventCalendarQueryBuilder implements SearchComponentQueryBuilder {
     private String endPropDefPointer;
 
     @Override
-    public Query build(Resource base, HttpServletRequest request) {
+    public Optional<Query> build(Resource base, HttpServletRequest request) {
         final PropertyTypeDefinition startPropDef = resourceTypeTree.getPropertyDefinitionByName(startPropDefPointer);
         final PropertyTypeDefinition endPropDef = resourceTypeTree.getPropertyDefinitionByName(endPropDefPointer);
         if (startPropDef == null) {
@@ -98,8 +100,7 @@ public class EventCalendarQueryBuilder implements SearchComponentQueryBuilder {
 
         baseQuery.add(calendarQueryConditions);
 
-        return baseQuery;
-
+        return Optional.of(baseQuery);
     }
 
     private long getToday() {

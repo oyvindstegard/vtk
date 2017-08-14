@@ -32,10 +32,12 @@ package vtk.web.search.eventlisting;
 
 import java.util.Calendar;
 import java.util.Date;
+import java.util.Optional;
 
 import javax.servlet.http.HttpServletRequest;
 
 import org.springframework.beans.factory.annotation.Required;
+
 import vtk.repository.Resource;
 import vtk.repository.search.query.Query;
 import vtk.web.display.collection.event.EventListingHelper;
@@ -46,7 +48,7 @@ public class CurrentMonthQueryStringProcessor extends ParameterizedQueryStringPr
     private EventListingHelper helper;
 
     @Override
-    public Query build(Resource base, HttpServletRequest request) {
+    public Optional<Query> build(Resource base, HttpServletRequest request) {
 
         String query = this.queryString;
         Date date = this.helper.getSpecificSearchDate(request);
@@ -62,7 +64,7 @@ public class CurrentMonthQueryStringProcessor extends ParameterizedQueryStringPr
         Date end = currentMonth.getTime();
         query = query.replace("[1]", String.valueOf(start.getTime())).replace("[2]", String.valueOf(end.getTime()));
 
-        return this.queryParser.parse(query);
+        return Optional.of(queryParser.parse(query));
     }
 
     @Required
