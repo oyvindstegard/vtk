@@ -79,7 +79,7 @@ import vtk.repository.event.ResourceModificationEvent;
 import vtk.repository.event.ResourceMovedEvent;
 import vtk.repository.hooks.TypeHandlerHookException;
 import vtk.repository.hooks.TypeHandlerHooks;
-import vtk.repository.hooks.TypeHandlerHooksHelper;
+import vtk.repository.hooks.TypeHandlerHooksRegistry;
 import vtk.repository.hooks.UnsupportedContentException;
 import vtk.repository.resourcetype.Content;
 import vtk.repository.resourcetype.PropertyType;
@@ -137,7 +137,7 @@ public class RepositoryImpl implements Repository, ApplicationContextAware,
     private File tempDir;
 
     // Registered type handler hook extensions
-    private TypeHandlerHooksHelper typeHandlerHooksHelper;
+    private TypeHandlerHooksRegistry typeHandlerHooksRegistry;
 
     // Default value of 60 days before recoverable resources are purged from
     // trash can
@@ -212,7 +212,7 @@ public class RepositoryImpl implements Repository, ApplicationContextAware,
         
         try {
             ResourceImpl toReturn = (ResourceImpl)resource.clone();
-            TypeHandlerHooks hooks = typeHandlerHooksHelper.getTypeHandlerHooks(toReturn);
+            TypeHandlerHooks hooks = typeHandlerHooksRegistry.getTypeHandlerHooks(toReturn);
             if (hooks != null) {
                 try {
                     return hooks.onRetrieve(toReturn);
@@ -325,7 +325,7 @@ public class RepositoryImpl implements Repository, ApplicationContextAware,
             this.authorizationManager.authorizeRead(uri, principal);
         }
         
-        TypeHandlerHooks hooks = typeHandlerHooksHelper.getTypeHandlerHooks(r);
+        TypeHandlerHooks hooks = typeHandlerHooksRegistry.getTypeHandlerHooks(r);
         if (hooks != null) {
             try {
                 return hooks.getInputStream(r);
@@ -408,7 +408,7 @@ public class RepositoryImpl implements Repository, ApplicationContextAware,
             this.authorizationManager.authorizeRead(uri, principal);
         }
 
-        TypeHandlerHooks hooks = typeHandlerHooksHelper.getTypeHandlerHooks(r);
+        TypeHandlerHooks hooks = typeHandlerHooksRegistry.getTypeHandlerHooks(r);
         if (hooks != null) {
             try {
                 return hooks.onGetAlternativeInputStream(r, contentIdentifier);
@@ -454,7 +454,7 @@ public class RepositoryImpl implements Repository, ApplicationContextAware,
             }
         }
         
-        TypeHandlerHooks hooks = typeHandlerHooksHelper.getTypeHandlerHooks(collection);
+        TypeHandlerHooks hooks = typeHandlerHooksRegistry.getTypeHandlerHooks(collection);
         if (hooks != null) {
             try {
                 return hooks.onListChildren((ResourceImpl)collection.clone(), list);
@@ -506,7 +506,7 @@ public class RepositoryImpl implements Repository, ApplicationContextAware,
             int aclIneritedFrom = parent.isInheritedAcl() ? parent.getAclInheritedFrom() : parent.getID();
             newResource.setAclInheritedFrom(aclIneritedFrom);
             
-            TypeHandlerHooks hooks = typeHandlerHooksHelper.getTypeHandlerHooksForCreateCollection();
+            TypeHandlerHooks hooks = typeHandlerHooksRegistry.getTypeHandlerHooksForCreateCollection();
             if (hooks != null) {
                 try {
                     hooks.onCreateCollection(newResource);
@@ -577,7 +577,7 @@ public class RepositoryImpl implements Repository, ApplicationContextAware,
             ResourceImpl newResource = src.createCopy(destUri, copyAcl ? src.getAcl() : destParent.getAcl());
             Content content = getContent(src);
             
-            TypeHandlerHooks hooks = typeHandlerHooksHelper.getTypeHandlerHooks(src);
+            TypeHandlerHooks hooks = typeHandlerHooksRegistry.getTypeHandlerHooks(src);
             if (hooks != null) {
                 try {
                     hooks.onCopy(src, dest);
@@ -703,7 +703,7 @@ public class RepositoryImpl implements Repository, ApplicationContextAware,
             content = getContent(src);
 
             // Let hooks process move
-            TypeHandlerHooks hooks = typeHandlerHooksHelper.getTypeHandlerHooks(src);
+            TypeHandlerHooks hooks = typeHandlerHooksRegistry.getTypeHandlerHooks(src);
             if (hooks != null) {
                 try {
                     hooks.onMove(src, newResource);
@@ -767,7 +767,7 @@ public class RepositoryImpl implements Repository, ApplicationContextAware,
             this.context.publishEvent(new ContentModificationEvent(this, principal, (Resource) parentCollection.clone(),
                     originalParent));
 
-            TypeHandlerHooks hooks = typeHandlerHooksHelper.getTypeHandlerHooks(resourceToDelete);
+            TypeHandlerHooks hooks = typeHandlerHooksRegistry.getTypeHandlerHooks(resourceToDelete);
             if (hooks != null) {
                 try {
                     hooks.onDelete(resourceToDelete, restorable);
@@ -1035,7 +1035,7 @@ public class RepositoryImpl implements Repository, ApplicationContextAware,
             
             ResourceImpl suppliedResource = (ResourceImpl) resource;
 
-            TypeHandlerHooks hooks = typeHandlerHooksHelper.getTypeHandlerHooks(original);
+            TypeHandlerHooks hooks = typeHandlerHooksRegistry.getTypeHandlerHooks(original);
             if (hooks != null) {
                 try {
                     suppliedResource = hooks.onStore(suppliedResource);
@@ -1076,7 +1076,7 @@ public class RepositoryImpl implements Repository, ApplicationContextAware,
 
             ResourceImpl suppliedResource = (ResourceImpl) resource;
 
-            TypeHandlerHooks hooks = typeHandlerHooksHelper.getTypeHandlerHooks(original);
+            TypeHandlerHooks hooks = typeHandlerHooksRegistry.getTypeHandlerHooks(original);
             if (hooks != null) {
                 try {
                     suppliedResource = hooks.onStoreSystemChange(suppliedResource, context);
@@ -1121,7 +1121,7 @@ public class RepositoryImpl implements Repository, ApplicationContextAware,
 
             ResourceImpl suppliedResource = (ResourceImpl) resource;
 
-            TypeHandlerHooks hooks = typeHandlerHooksHelper.getTypeHandlerHooks(original);
+            TypeHandlerHooks hooks = typeHandlerHooksRegistry.getTypeHandlerHooks(original);
             if (hooks != null) {
                 try {
                     suppliedResource = hooks.onStoreInheritableProps(suppliedResource, context);
@@ -1187,7 +1187,7 @@ public class RepositoryImpl implements Repository, ApplicationContextAware,
             
             // Check if contentType has interceptor for storage
             String contentType = MimeHelper.map(uri.getName());
-            TypeHandlerHooks hooks = typeHandlerHooksHelper.getTypeHandlerHooks(contentType);
+            TypeHandlerHooks hooks = typeHandlerHooksRegistry.getTypeHandlerHooks(contentType);
             if (hooks != null) {
                 try {
                     newResource = hooks.storeContentOnCreate(newResource, inputContent, contentType,
@@ -1251,7 +1251,7 @@ public class RepositoryImpl implements Repository, ApplicationContextAware,
         try {
             final ResourceImpl original = (ResourceImpl) r.clone();
 
-            TypeHandlerHooks hooks = typeHandlerHooksHelper.getTypeHandlerHooks(r);
+            TypeHandlerHooks hooks = typeHandlerHooksRegistry.getTypeHandlerHooks(r);
             if (hooks != null) {
                 try {
                     r = hooks.storeContent(r, contentInput, MimeHelper.map(uri.getName()),
@@ -2070,8 +2070,8 @@ public class RepositoryImpl implements Repository, ApplicationContextAware,
     }
     
     @Required
-    public void setTypeHandlerHooksHelper(TypeHandlerHooksHelper helper) {
-        this.typeHandlerHooksHelper = helper;
+    public void setTypeHandlerHooksRegistry(TypeHandlerHooksRegistry registry) {
+        this.typeHandlerHooksRegistry = registry;
     }
 
     @Required
@@ -2135,7 +2135,7 @@ public class RepositoryImpl implements Repository, ApplicationContextAware,
             return null;
         }
 
-        TypeHandlerHooks hooks = typeHandlerHooksHelper.getTypeHandlerHooks(resource);
+        TypeHandlerHooks hooks = typeHandlerHooksRegistry.getTypeHandlerHooks(resource);
         if (hooks != null) {
             try {
                 return hooks.getContentForEvaluation(resource, getDefaultContent(resource));

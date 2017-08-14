@@ -34,13 +34,10 @@ package vtk.repository.hooks;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.Map;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.BeansException;
-import org.springframework.beans.factory.InitializingBean;
-import org.springframework.context.ApplicationContext;
-import org.springframework.context.ApplicationContextAware;
+import org.springframework.context.ApplicationListener;
+import org.springframework.context.event.ContextRefreshedEvent;
 import vtk.repository.RepositoryImpl;
 import vtk.repository.ResourceImpl;
 
@@ -48,13 +45,27 @@ import vtk.repository.ResourceImpl;
  * Assists repository with management, lookup and registration of 
  * {@link TypeHandlerHooks} beans.
  */
-public class TypeHandlerHooksHelper implements ApplicationContextAware, InitializingBean {
+public class TypeHandlerHooksRegistry implements ApplicationListener<ContextRefreshedEvent> {
     
-    private List<TypeHandlerHooks> typeHandlerHooks = Collections.emptyList();
-    private ApplicationContext context;
+    private List<TypeHandlerHooks> typeHandlerHooks = new ArrayList<>();
     
     private final Logger logger = LoggerFactory.getLogger(RepositoryImpl.class.getName() 
             + ".TypeHandlerHooks");
+
+    /**
+     * Register a {@link TypeHandlerHook}.
+     *
+     * <p>This method can only be called during application initialization phase. After
+     * that point, new type handler hooks cannot be registered.
+     *
+     * @param hooks
+     */
+    public void register(TypeHandlerHooks hooks) {
+        if (typeHandlerHooks.contains(hooks)) {
+            throw new IllegalArgumentException("Already registered: " + hooks);
+        }
+        typeHandlerHooks.add(hooks);
+    }
     
     /**
      * Get registered type handler for resource.
@@ -104,23 +115,13 @@ public class TypeHandlerHooksHelper implements ApplicationContextAware, Initiali
         return null;
     }
 
+
     @Override
-    public void afterPropertiesSet() {
-
-        Map<String, TypeHandlerHooks> typeHandlerBeans
-                = this.context.getBeansOfType(TypeHandlerHooks.class, false, false);
-
-        List<TypeHandlerHooks> hooksList = new ArrayList<>(typeHandlerBeans.values());
-        if (!hooksList.isEmpty()) {
-            logger.info("Registered TypeHandlerHooks extension(s): " + hooksList);
+    public void onApplicationEvent(ContextRefreshedEvent event) {
+        typeHandlerHooks = Collections.unmodifiableList(typeHandlerHooks);
+        if (!typeHandlerHooks.isEmpty()) {
+            logger.info("Registered type handler hooks: " + typeHandlerHooks);
         }
-
-        this.typeHandlerHooks = hooksList;
-    }
-
-    @Override
-    public void setApplicationContext(ApplicationContext ac) throws BeansException {
-        this.context = ac;
     }
     
 }

@@ -38,9 +38,26 @@
     <property name="resourceTypeTree" ref="resourceTypeTree" />
     <property name="tempDir" value="${repository.tempDir}" />
     <property name="transactionManager" ref="repository.transactionManager"/>
-    <property name="typeHandlerHooksHelper">
-      <bean class="vtk.repository.hooks.TypeHandlerHooksHelper" />
-    </property>
+    <property name="typeHandlerHooksRegistry" ref="repository.typeHandlerHooksRegistry" />
+  </bean>
+
+  <!-- Type handler hooks -->
+  <!-- Registry instance: -->
+  <bean id="repository.typeHandlerHooksRegistry" class="vtk.repository.hooks.TypeHandlerHooksRegistry" />
+
+  <!-- Abstract bean for registration: -->
+  <bean id="repository.typeHandlerHooks.register" abstract="true"
+        class="org.springframework.beans.factory.config.MethodInvokingBean">
+    <property name="targetObject" ref="repository.typeHandlerHooksRegistry" />
+    <property name="targetMethod" value="register" />
+  </bean>
+
+  <!-- Abstract bean config for TypeHandlerHooks beans
+    extending DefaultTypeHandlerHooks. Sets contentStore and content
+    RepresentationRegistry properties: -->
+  <bean id="abstractTypeHandlerHooks" abstract="true">
+    <property name="contentStore" ref="${repository.contentStore}" />
+    <property name="contentRepresentationRegistry" ref="contentRepresentationRegistry" />
   </bean>
 
   <!-- Repository lock and cache control wrapper -->
@@ -172,14 +189,6 @@
     <property name="repository" ref="repository" />
   </bean>
   
-  <bean id="abstractTypeHandlerHooks" abstract="true">
-    <description>Abstract bean config for TypeHandlerHooks beans
-    extending DefaultTypeHandlerHooks. Sets contentStore and content
-    RepresentationRegistry properties.
-    </description>
-    <property name="contentStore" ref="${repository.contentStore}" />
-    <property name="contentRepresentationRegistry" ref="contentRepresentationRegistry" />
-  </bean>
 
   <bean id="repositoryResourceHelper" class="vtk.repository.RepositoryResourceHelper">
     <property name="authorizationManager" ref="authorizationManager" />
