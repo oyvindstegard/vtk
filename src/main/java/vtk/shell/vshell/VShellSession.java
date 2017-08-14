@@ -57,7 +57,7 @@ public class VShellSession extends ShellSession {
 
     public VShellSession(BufferedReader input, PrintStream output,
             List<VCommand> commands, SecurityContext securityContext) {
-        this(input, output, commands, securityContext, "vsh> ");
+        this(input, output, commands, securityContext, "vrtx$ ");
     }
 
     public VShellSession(BufferedReader input, PrintStream output,
