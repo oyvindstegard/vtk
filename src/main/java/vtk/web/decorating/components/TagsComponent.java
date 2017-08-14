@@ -221,7 +221,7 @@ public class TagsComponent extends ViewRenderingDecoratorComponent implements In
             
             String urlPattern = request.getStringParameter(PARAMETER_URL_PATTERN);
             if (urlPattern != null) {
-                URL baseURL = requestContext.getRequestURL()
+                URL baseURL = new URL(requestContext.getRequestURL())
                     .setPath(requestContext.getCurrentCollection())
                     .clearParameters();
                 tagElements = tagElements.stream().map(elem -> {
