@@ -38,8 +38,11 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.function.Consumer;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
@@ -48,6 +51,7 @@ import javax.servlet.http.HttpServletResponse;
 import org.springframework.web.HttpRequestHandler;
 
 import vtk.repository.AuthorizationException;
+import vtk.repository.ContentInputSources;
 import vtk.repository.Namespace;
 import vtk.repository.Path;
 import vtk.repository.Property;
@@ -56,6 +60,10 @@ import vtk.repository.Resource;
 import vtk.repository.ResourceNotFoundException;
 import vtk.repository.TypeInfo;
 import vtk.repository.resourcetype.PropertyTypeDefinition;
+import vtk.resourcemanagement.StructuredResource;
+import vtk.resourcemanagement.StructuredResourceDescription;
+import vtk.resourcemanagement.StructuredResourceManager;
+import vtk.resourcemanagement.ValidationResult;
 import vtk.util.Result;
 import vtk.util.repository.ResourceMappers;
 import vtk.util.repository.ResourceMappers.PropertySetMapper;
@@ -64,13 +72,16 @@ import vtk.util.text.JsonStreamer;
 import vtk.web.RequestContext;
 
 public class PropertiesApiHandler implements HttpRequestHandler {
-    
+    private StructuredResourceManager structuredResourceManager;
     private static Locale LOCALE = Locale.getDefault();
+    
+    public PropertiesApiHandler(StructuredResourceManager structuredResourceManager) {
+        this.structuredResourceManager = structuredResourceManager;
+    }
     
     @Override
     public void handleRequest(HttpServletRequest request,
             HttpServletResponse response) throws ServletException, IOException {
-
         RequestContext requestContext = RequestContext.getRequestContext(request);
         Result<Optional<Resource>> res = retrieve(requestContext, requestContext.getResourceURI());
         Result<ApiResponseBuilder> bldr = res.flatMap(opt -> {
@@ -128,6 +139,10 @@ public class PropertiesApiHandler implements HttpRequestHandler {
         public Delete(PropertyTypeDefinition propDef) { 
             super(propDef);
         }
+        @Override
+        public String toString() {
+            return getClass().getSimpleName() + "(" + propDef.getName() + ")";
+        }
     }
     
     private static class Update extends PropertyOperation {
@@ -136,13 +151,91 @@ public class PropertiesApiHandler implements HttpRequestHandler {
             super(propDef);
             this.value = value;
         }
+        @Override
+        public String toString() {
+            return getClass().getSimpleName() + "(" 
+                    + propDef.getName() + ", " + value + ")";
+        }
     }
     
     
+    private static class PropertyOperations {
+        private List<PropertyOperation> regularProps = new ArrayList<>();
+        private List<PropertyOperation> structuredProps = new ArrayList<>();
+        
+        public PropertyOperations add(PropertyOperation operation) {
+            
+            List<PropertyOperation> list = operation.propDef.getNamespace() == 
+                    Namespace.STRUCTURED_RESOURCE_NAMESPACE ? structuredProps : regularProps;
+            
+            list.add(operation);
+            return this;
+        }
+        
+        public Stream<PropertyOperation> stream() {
+            return Stream.concat(regularProps.stream(), structuredProps.stream());
+        }
+        
+        public Result<Resource> apply(Resource resource, RequestContext requestContext, 
+                StructuredResourceManager manager) {
+            
+            Result<Resource> result = Result.success(resource);
+            
+            if (!structuredProps.isEmpty()) {
+                // Properties in the structured resource name space
+                // are always derived from the JSON content. The procedure
+                // to update such properties is as follows:
+                // 
+                // 1. fetch JSON content of resource from repository
+                // 2. attach input fields to JSON (or remove)
+                // 3. store content
+                Result<StructuredResource> structured = structuredResource(
+                        requestContext, manager, resource);
+                structured.map(res -> {
+                    for (PropertyOperation op: structuredProps) {
+                        if (op instanceof Delete) {
+                            res.removeProperty(op.propDef.getName());
+                        }
+                        else if (op instanceof Update) {
+                            Update update = (Update) op;
+                            res.addProperty(update.propDef.getName(), update.value);
+                        }
+                    }
+                    return res;
+                });
+                structured = structured.flatMap(r -> {
+                    ValidationResult validation = r.validate(r.toJSON());
+                    if (validation.isValid()) return Result.success(r);
+                    return Result.failure(new RuntimeException(validation.getErrors().get(0).getMessage()));
+                });
+                result = structured.flatMap(res -> storeContent(requestContext, res));
+            }
+            
+            result = result.flatMap(res -> {
+                return Result.attempt(() -> {
+                    regularProps.forEach(op -> {
+                        res.removeProperty(op.propDef);
+                        if (op instanceof Update) {
+                            res.addProperty(createProperty(((Update) op).value, op.propDef));
+                        }
+                    });
+                    try {
+                        return requestContext.getRepository()
+                                .store(requestContext.getSecurityToken(), null, res);
+                    }
+                    catch (IOException e) {
+                        throw new UncheckedIOException(e);
+                    }
+                });
+                
+            });
+            
+            return result;
+        }
+    }
+    
     private Result<ApiResponseBuilder> getProperties(HttpServletRequest request,
             Resource resource) {
-        RequestContext requestContext = RequestContext
-                .getRequestContext(request);
         PropertySetMapper<Consumer<JsonStreamer>> mapper = 
                 ResourceMappers.jsonStreamer(LOCALE)
                 .uris(false).types(false).acls(false).compact(true).build();
@@ -159,6 +252,47 @@ public class PropertiesApiHandler implements HttpRequestHandler {
                     }
                 });
         return Result.success(builder);
+    }
+    
+    private static Result<StructuredResource> structuredResource(RequestContext requestContext, 
+            StructuredResourceManager manager, Resource resource) {
+        Result<StructuredResourceDescription> desc = Result.attempt(() -> Objects.requireNonNull(
+                manager.get(resource.getResourceType()), "Resource " + resource.getURI() 
+                + " is not a structured resource"));
+        return desc.flatMap(d -> {
+            return getContent(requestContext, resource)
+            .flatMap(is -> Result.attempt(() -> d.buildResource(is)));
+        });
+    }
+
+    private static Result<Resource> storeContent(RequestContext requestContext, 
+            StructuredResource structuredResource) {
+        return Result.attempt(() -> {
+            try {
+                byte[] buffer = JsonStreamer
+                        .toJson(structuredResource.toJSON(), 3, false)
+                        .getBytes("utf-8");
+                return requestContext.getRepository()
+                        .storeContent(requestContext.getSecurityToken(), 
+                                null, requestContext.getResourceURI(),
+                                ContentInputSources.fromBytes(buffer));
+            }
+            catch (Exception e) {
+                throw new RuntimeException(e);
+            }
+        });
+    }
+    
+    private static Result<InputStream> getContent(RequestContext requestContext, Resource resource) {
+        return Result.attempt(() -> {
+            try {
+                return requestContext.getRepository()
+                        .getInputStream(requestContext.getSecurityToken(), resource.getURI(), false);
+            }
+            catch (Exception e) {
+                throw new RuntimeException(e);
+            }
+        });
     }
     
     private Result<Optional<Resource>> retrieve(RequestContext requestContext, Path uri) {
@@ -197,43 +331,38 @@ public class PropertiesApiHandler implements HttpRequestHandler {
         });
         
         Result<Json.MapContainer> json = stream.flatMap(is -> parseJson(is));
-        Result<List<PropertyOperation>> operations = json
+        Result<PropertyOperations> operations = json
                 .flatMap(body -> propertyOperations(body, resource, requestContext));
         
-        Result<Resource> updated = operations.flatMap(ops -> {
-            return Result.attempt(() -> {
-                ops.forEach(op -> {
-                    resource.removeProperty(op.propDef);
-                    if (op instanceof Update) {
-                        resource.addProperty(createProperty(((Update) op).value, op.propDef));
-                    }
-                });
-                try {
-                    return requestContext.getRepository()
-                            .store(requestContext.getSecurityToken(), null, resource);
-                }
-                catch (IOException e) {
-                    throw new UncheckedIOException(e);
-                }
-            });
+        Result<ApiResponseBuilder> result = operations.flatMap(ops -> {
+            Result<Resource> updated = ops.apply(resource, requestContext, structuredResourceManager);
+            return updated.map(res -> {
+                return ops.stream()
+                        .map(Object::toString)
+                        .collect(Collectors.joining("\n", "Properties patched:\n", ""));
+        
+            })
+           .map(msg -> ApiResponseBuilder.ok(msg));
+        })
+        .recover(err -> {
+            if (err instanceof AuthorizationException) {
+                return ApiResponseBuilder.forbidden(err.getMessage());
+            }
+            return ApiResponseBuilder.badRequest(err.getMessage());
         });
-        return updated.map(res -> ApiResponseBuilder.ok("Propertie(s) updated/deleted"))
-            .recover(err -> {
-                if (err instanceof AuthorizationException) {
-                    return ApiResponseBuilder.forbidden(err.getMessage());
-                }
-                return ApiResponseBuilder.badRequest(err.getMessage());
-            });
+
+        return result;
     }
+
     
-    private Result<List<PropertyOperation>> propertyOperations(
-            Json.MapContainer body, Resource resource, RequestContext requestContext) {
-        return Result.attempt(() -> {
+    private Result<PropertyOperations> propertyOperations(Json.MapContainer body, 
+            Resource resource, RequestContext requestContext) {
+        Result<PropertyOperations> result = Result.attempt(() -> {
             Map<String, Object> propsMap = body.optObjectValue("properties", null);
             if (propsMap == null) throw new IllegalArgumentException(
                     "Json body must contain a 'properties' entry");
             TypeInfo typeInfo = requestContext.getRepository().getTypeInfo(resource);
-            List<PropertyOperation> operations = new ArrayList<>();
+            PropertyOperations operations = new PropertyOperations();
             for (String key: propsMap.keySet()) {
                 Namespace ns = Namespace.DEFAULT_NAMESPACE;
                 String prefix = null;
@@ -246,18 +375,14 @@ public class PropertiesApiHandler implements HttpRequestHandler {
                 if (prefix != null) {
                     ns = typeInfo.getNamespaceByPrefix(prefix);
                 }
-                // XXX: properties of structured resources must be treated differently:
-                //if (ns == Namespace.STRUCTURED_RESOURCE_NAMESPACE) {
-                    // 1. fetch JSON content from repo
-                    // 2. attach input fields to JSON (or remove)
-                    // 3. store content
-                //}
-                
                 PropertyTypeDefinition propDef = typeInfo
                         .getPropertyTypeDefinition(ns, name);
                 
-                if (propDef.getProtectionLevel() == RepositoryAction.UNEDITABLE_ACTION) {
-                    throw new IllegalArgumentException("Property '" + key + "' is not editable");
+                if (propDef.getNamespace() != 
+                        Namespace.STRUCTURED_RESOURCE_NAMESPACE) {
+                    if (propDef.getProtectionLevel() == RepositoryAction.UNEDITABLE_ACTION) {
+                        throw new IllegalArgumentException("Property '" + key + "' is not editable");
+                    }
                 }
                 Object value = propsMap.get(key);
                 if (value == null) {
@@ -273,9 +398,11 @@ public class PropertiesApiHandler implements HttpRequestHandler {
             }
             return operations;
         });
+        return result;
     }
     
-    private Property createProperty(Object input, PropertyTypeDefinition propDef) {
+    
+    private static Property createProperty(Object input, PropertyTypeDefinition propDef) {
         if (propDef.isMultiple()) {
             throw new IllegalArgumentException("Multi-value properties are not suported");
         }
@@ -314,7 +441,7 @@ public class PropertiesApiHandler implements HttpRequestHandler {
         }
     }
     
-    private Result<Json.MapContainer> parseJson(InputStream input) {
+    private static Result<Json.MapContainer> parseJson(InputStream input) {
         return Result.attempt(() -> {
             try {
                 return Json.parseToContainer(input).asObject();

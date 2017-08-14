@@ -30,7 +30,9 @@
  */
 package vtk.resourcemanagement;
 
+import java.io.IOException;
 import java.io.InputStream;
+import java.io.UncheckedIOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -57,28 +59,37 @@ public class StructuredResource {
     }
 
     @SuppressWarnings("unchecked")
-    static StructuredResource create(StructuredResourceDescription desc, InputStream source) throws Exception {
-        Object json = Json.parse(source);
-        
-        
+    static StructuredResource create(StructuredResourceDescription desc, InputStream source) {
+        try {
+            Object json = Json.parse(source);
+
+
+            ValidationResult validation = validateInternal(desc, json);
+            if (!validation.isValid()) {
+                throw new RuntimeException("Invalid document: " + validation.getErrors());
+            }
+            Map<?,?> jsonObject= (Map<?,?>) json;
+            Map<String, Object> properties = (Map<String, Object>) jsonObject.get("properties");
+            return new StructuredResource(desc, properties);
+        }
+        catch (IOException e) {
+            throw new UncheckedIOException(e);
+        }
+    }
+    
+    @SuppressWarnings("unchecked")
+    static StructuredResource createFromMap(StructuredResourceDescription desc, Map<String, Object> json) {
         ValidationResult validation = validateInternal(desc, json);
         if (!validation.isValid()) {
             throw new RuntimeException("Invalid document: " + validation.getErrors());
         }
-        Map<?,?> jsonObject= (Map<?,?>) json;
+        Map<?,?> jsonObject = json;
         Map<String, Object> properties = (Map<String, Object>) jsonObject.get("properties");
         return new StructuredResource(desc, properties);
     }
     
-    @SuppressWarnings("unchecked")
-    static StructuredResource createFromMap(StructuredResourceDescription desc, Map<String, Object> json) throws Exception {
-        ValidationResult validation = validateInternal(desc, json);
-        if (!validation.isValid()) {
-            throw new RuntimeException("Invalid document: " + validation.getErrors());
-        }
-        Map<?,?> jsonObject = (Map<?,?>) json;
-        Map<String, Object> properties = (Map<String, Object>) jsonObject.get("properties");
-        return new StructuredResource(desc, properties);
+    public ValidationResult validate(Object document) {
+        return validateInternal(this.desc, document);
     }
 
     public boolean isValidDocument(Object document) {
@@ -92,9 +103,9 @@ public class StructuredResource {
 
     // XXX: make recursive:
     public Map<String, Object> toJSON() {
-        Map<String, Object> json = new HashMap<String, Object>();
+        Map<String, Object> json = new HashMap<>();
         json.put("resourcetype", desc.getName());
-        Map<String, Object> props = new HashMap<String, Object>();
+        Map<String, Object> props = new HashMap<>();
         
         for (String name : this.properties.keySet()) {
             Object value = this.properties.get(name);
@@ -140,7 +151,7 @@ public class StructuredResource {
         
         Map<?,?> properties = (Map<?,?>) propertiesEntry;
         
-        List<ValidationError> errors = new ArrayList<ValidationError>();
+        List<ValidationError> errors = new ArrayList<>();
         for (PropertyDescription propDesc : desc.getPropertyDescriptions()) {
             if (propDesc instanceof SimplePropertyDescription) {
                 if (((SimplePropertyDescription) propDesc).isRequired()) {

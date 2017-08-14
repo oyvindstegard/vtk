@@ -149,7 +149,10 @@
       </list>
     </property>
     <property name="handler">
-      <bean class="vtk.web.api.PropertiesApiHandler" />
+      <bean class="vtk.web.api.PropertiesApiHandler">
+        <constructor-arg name="structuredResourceManager" 
+                         ref="structuredResources.resourceManager" />
+      </bean>
     </property>
   </bean>
 

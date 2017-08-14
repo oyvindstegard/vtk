@@ -88,7 +88,7 @@ public final class StructuredResourceDescription {
     }
 
     public List<PropertyDescription> getAllPropertyDescriptions() {
-        List<PropertyDescription> result = new ArrayList<PropertyDescription>();
+        List<PropertyDescription> result = new ArrayList<>();
         if (propertyDescriptions == null) {
             return result;
         }
@@ -96,7 +96,7 @@ public final class StructuredResourceDescription {
             result.addAll(parent.getAllPropertyDescriptions());
         }
 
-        Set<PropertyDescription> alreadyAdded = new HashSet<PropertyDescription>();
+        Set<PropertyDescription> alreadyAdded = new HashSet<>();
         for (int i = 0; i < result.size(); i++) {
             PropertyDescription ancestor = result.get(i);
             for (int j = 0; j < this.propertyDescriptions.size(); j++) {
@@ -133,7 +133,7 @@ public final class StructuredResourceDescription {
 
     public void addEditRule(EditRule editRule) {
         if (this.editRules == null) {
-            this.editRules = new ArrayList<EditRule>();
+            this.editRules = new ArrayList<>();
         }
         this.editRules.add(editRule);
     }
@@ -155,7 +155,7 @@ public final class StructuredResourceDescription {
     }
 
     public List<ComponentDefinition> getAllComponentDefinitions() {
-        List<ComponentDefinition> result = new ArrayList<ComponentDefinition>();
+        List<ComponentDefinition> result = new ArrayList<>();
         if (this.parent != null) {
             result.addAll(parent.getAllComponentDefinitions());
         }
@@ -176,7 +176,7 @@ public final class StructuredResourceDescription {
     }
 
     public Map<String, Map<Locale, String>> getAllLocalizedTooltips() {
-        Map<String, Map<Locale, String>> locales = new HashMap<String, Map<Locale, String>>();
+        Map<String, Map<Locale, String>> locales = new HashMap<>();
         if (this.parent != null) {
             locales.putAll(parent.getAllLocalizedTooltips());
         }
@@ -198,7 +198,7 @@ public final class StructuredResourceDescription {
     }
 
     public Map<String, Map<Locale, Map<Locale, String>>> getAllLocalization() {
-        Map<String, Map<Locale, Map<Locale, String>>> locales = new HashMap<String, Map<Locale, Map<Locale, String>>>();
+        Map<String, Map<Locale, Map<Locale, String>>> locales = new HashMap<>();
         if (this.parent != null) {
             locales.putAll(parent.getAllLocalization());
         }
@@ -206,11 +206,11 @@ public final class StructuredResourceDescription {
         return locales;
     }
 
-    public StructuredResource buildResource(InputStream source) throws Exception {
+    public StructuredResource buildResource(InputStream source) {
         return StructuredResource.create(this, source);
     }
     
-    public StructuredResource buildFromMap(Map<String, Object> json) throws Exception {
+    public StructuredResource buildFromMap(Map<String, Object> json) {
         return StructuredResource.createFromMap(this, json);
     }
     
@@ -242,7 +242,7 @@ public final class StructuredResourceDescription {
 
     public void addScriptDefinition(ScriptDefinition scriptDefinition) {
         if (this.scripts == null) {
-            this.scripts = new ArrayList<ScriptDefinition>();
+            this.scripts = new ArrayList<>();
         }
         this.scripts.add(scriptDefinition);
     }
@@ -253,7 +253,7 @@ public final class StructuredResourceDescription {
 
     public void addServiceDefinition(ServiceDefinition serviceDefinition) {
         if (this.services == null) {
-            this.services = new ArrayList<ServiceDefinition>();
+            this.services = new ArrayList<>();
         }
         this.services.add(serviceDefinition);
     }
@@ -262,6 +262,7 @@ public final class StructuredResourceDescription {
         return this.services;
     }
 
+    @Override
     public String toString() {
         return this.getClass().getName() + ":" + this.name;
     }
@@ -280,7 +281,7 @@ public final class StructuredResourceDescription {
                     return;
                 }
 
-                List<String> dependentProperties = new ArrayList<String>();
+                List<String> dependentProperties = new ArrayList<>();
                 dependentProperties.addAll(derived.getDependentProperties());
                 if (derived.getDefaultProperty() != null) {
                     dependentProperties.add(derived.getDefaultProperty());
