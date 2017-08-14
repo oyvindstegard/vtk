@@ -42,14 +42,18 @@ import vtk.repository.Resource;
 import vtk.repository.search.QueryParserFactory;
 import vtk.repository.search.query.AndQuery;
 import vtk.repository.search.query.Query;
+import vtk.util.text.TextUtils;
 
 public class FacetsQueryBuilder implements SearchComponentQueryBuilder {
     private Map<String, String> templates;
+    private Map<String, String> tokenizedTemplates;
     private QueryParserFactory parserFactory;
     
-    public FacetsQueryBuilder(QueryParserFactory parserFactory, Map<String, String> templates) {
+    public FacetsQueryBuilder(QueryParserFactory parserFactory, Map<String, String> templates, 
+            Map<String, String> tokenizedTemplates) {
         this.parserFactory = Objects.requireNonNull(parserFactory);
         this.templates = new HashMap<>(Objects.requireNonNull(templates));
+        this.tokenizedTemplates = new HashMap<>(Objects.requireNonNull(tokenizedTemplates));
     }
 
     @Override
@@ -68,6 +72,23 @@ public class FacetsQueryBuilder implements SearchComponentQueryBuilder {
                queries.add(parserFactory.getParser().parse(subQuery));
            }
         }
+        for (String key: tokenizedTemplates.keySet()) {
+            String[] input = request.getParameterValues(key);
+            if (input == null) {
+                continue;
+            }
+            String template = tokenizedTemplates.get(key);
+            for (String value: input) {
+                if ("".equals(value.trim())) continue;
+                
+                for (String token: TextUtils.tokenizeWithPhrases(value)) {
+                    token = escape(escape(token, ' ', '\\'), ' ', '\\');
+                    String subQuery = template.replaceAll("\\{" + key + "\\}", token);
+                    queries.add(parserFactory.getParser().parse(subQuery));
+                    
+                }
+            }
+         }
         if (queries.isEmpty()) {
             return null;
         }
