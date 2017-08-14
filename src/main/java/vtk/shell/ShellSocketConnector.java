@@ -148,6 +148,7 @@ public class ShellSocketConnector implements InitializingBean, DisposableBean, B
             return;
         }
         if (!sessionAuthenticator.get().authenticate(input, output)) {
+            output.println("Authentication failed");
             throw new RuntimeException("Client failed authentication");
         }
     }
