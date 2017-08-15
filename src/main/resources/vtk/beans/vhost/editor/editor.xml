@@ -600,6 +600,8 @@
             <ref bean="sortDescendingPropDef" />
             <ref bean="importancePropDef" />
             <ref bean="pageLimitPropDef" />
+            <ref bean="collection.recursiveListingPropDef" />
+            <ref bean="collection.recursiveListingSubfoldersPropDef" />
             <ref bean="displayAggregationPropDef" />
             <ref bean="aggregationPropDef" />
             <ref bean="linkOtherLanguagePropDef" />
@@ -627,6 +629,8 @@
             <ref bean="sortDescendingPropDef" />
             <ref bean="importancePropDef" />
             <ref bean="pageLimitPropDef" />
+            <ref bean="collection.recursiveListingPropDef" />
+            <ref bean="collection.recursiveListingSubfoldersPropDef" />
             <ref bean="displayAggregationPropDef" />
             <ref bean="aggregationPropDef" />
             <ref bean="projectListing.displayTypePropDef" />
@@ -656,6 +660,8 @@
             <ref bean="sortDescendingPropDef" />
             <ref bean="importancePropDef" />
             <ref bean="pageLimitPropDef" />
+            <ref bean="collection.recursiveListingPropDef" />
+            <ref bean="collection.recursiveListingSubfoldersPropDef" />
             <ref bean="displayAggregationPropDef" />
             <ref bean="aggregationPropDef" />
             <ref bean="researchGroupListing.displayTypePropDef" />
