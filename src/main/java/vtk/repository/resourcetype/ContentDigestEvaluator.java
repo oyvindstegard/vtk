@@ -71,6 +71,10 @@ public class ContentDigestEvaluator implements PropertyEvaluator {
     @Override
     public boolean evaluate(Property property, PropertyEvaluationContext ctx) throws PropertyEvaluationException {
 
+        if (ctx.isCollection()) {
+            throw new IllegalStateException("This evaluator should not be configured for properties of collection types");
+        }
+
         if (!property.isValueInitialized() || ctx.getEvaluationType() == PropertyEvaluationContext.Type.ContentChange) {
             try {
                 property.setStringValue(digest(ctx.getContent()));
