@@ -70,7 +70,7 @@ class RepoIPropCommand implements VCommand {
         }
 
         def storeContext = new InheritablePropertiesStoreContext([propDef])
-        repo.store(token, r, storeContext)
+        repo.store(token, null, r, storeContext)
     }
 
 }
