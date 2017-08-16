@@ -83,8 +83,8 @@ import vtk.web.service.URL;
  * <ul>
  * <li>{@code q} - the query string, which is parsed using 
  *      {@link vtk.web.search.SearchParser}
- * <li>{@code fq} - Additional filter string, which is appended to the template search
- * 		filter
+ * <li>{@code fq} - Additional filter query clause, which will be logically required (AND), 
+ * 		in addition to the criteria specified in the main query. Can occur zero or more times.
  * <li>{@code properties} or {@code fields} - a comma-separated list of property 
  *      names to include in the result set. If the string {@code *} appears in the list, 
  *      all properties are included. In addition, the special 
@@ -230,12 +230,13 @@ public final class QueryHandler implements HttpRequestHandler {
                     q = query;
                 }
 			}
-			if (request.getParameter("fq") != null) {
-				q += " AND " + request.getParameter("fq");
+			if (request.getParameterValues("fq") != null) {
+				for (String param : request.getParameterValues("fq")) {
+					q += " AND " + param;
+				}
 			}
 			return builder.query(q);
         }));
-
 
         qry = qry.flatMap(builder -> Result.attempt(() -> {
             if (request.getParameter("limit") != null) {
