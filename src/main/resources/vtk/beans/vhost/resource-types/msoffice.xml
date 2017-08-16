@@ -12,21 +12,6 @@
         <ref bean="contentTypeMatchesOoXml" />
       </list>
     </property>
-    <property name="propertyTypeDefinitions">
-      <list>
-        <ref bean="contentModificationCountPropDef" />
-      </list>
-    </property>
-  </bean>
-
-  <bean id="contentModificationCountPropDef" class="vtk.repository.resourcetype.PropertyTypeDefinitionImpl" parent="abstractPropDef">
-    <property name="name" value="contentModificationCount" />
-    <property name="protectionLevel" ref="PROTECTION_LEVEL_UNEDITABLE" />
-    <property name="mandatory" value="false" />
-    <property name="type" value="LONG" />
-    <property name="propertyEvaluator">
-      <bean class="vtk.repository.resourcetype.ContentModificationCountEvaluator" />
-    </property>
   </bean>
 
   <bean id="resourceTypeIsOoXml" class="vtk.repository.resourcetype.ResourceTypeAssertion" 
