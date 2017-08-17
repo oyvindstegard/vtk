@@ -61,9 +61,7 @@ public class RepositoryResourceHelper {
     private ResourceTypeTree resourceTypeTree;
     
     public ResourceImpl create(Principal principal, ResourceImpl resource, boolean collection, Content content) throws IOException {
-        if (logger.isDebugEnabled()) {
-            logger.debug("Evaluate create: " + resource.getURI());
-        }
+        logger.debug("Evaluate create: {}", resource.getURI());
         PropertyEvaluationContext ctx = PropertyEvaluationContext
                 .createResourceContext(resource, collection, principal, content);
         recursiveTreeEvaluation(ctx, this.resourceTypeTree.getRoot());
@@ -74,9 +72,7 @@ public class RepositoryResourceHelper {
     public ResourceImpl propertiesChange(ResourceImpl originalResource, Principal principal,
             ResourceImpl suppliedResource, Content content) throws AuthenticationException, AuthorizationException,
             InternalRepositoryException, IOException {
-        if (logger.isDebugEnabled()) {
-            logger.debug("Evaluate properties change: " + originalResource.getURI());
-        }
+        logger.debug("Evaluate properties change: {}", originalResource.getURI());
 
         PropertyEvaluationContext ctx = PropertyEvaluationContext.propertiesChangeContext(originalResource,
                 suppliedResource, principal, content);
@@ -89,9 +85,7 @@ public class RepositoryResourceHelper {
     public ResourceImpl inheritablePropertiesChange(ResourceImpl originalResource, Principal principal,
             ResourceImpl suppliedResource, Content content, InheritablePropertiesStoreContext storeContext) throws AuthenticationException, AuthorizationException,
             InternalRepositoryException, IOException {
-        if (logger.isDebugEnabled()) {
-            logger.debug("Evaluate inhertiable properties change: " + originalResource.getURI());
-        }
+        logger.debug("Evaluate inhertiable properties change: {}", originalResource.getURI());
 
         PropertyEvaluationContext ctx = PropertyEvaluationContext.inheritablePropertiesChangeContext(originalResource,
                 suppliedResource, principal, content);
@@ -106,9 +100,7 @@ public class RepositoryResourceHelper {
             ResourceImpl suppliedResource, Content content)
             throws AuthenticationException, AuthorizationException, InternalRepositoryException, IOException {
 
-        if (logger.isDebugEnabled()) {
-            logger.debug("Evaluate comments change: " + originalResource.getURI());
-        }
+        logger.debug("Evaluate comments change: {}", originalResource.getURI());
         PropertyEvaluationContext ctx = PropertyEvaluationContext.commentsChangeContext(originalResource,
                 suppliedResource, principal, content);
         recursiveTreeEvaluation(ctx, this.resourceTypeTree.getRoot());
@@ -118,9 +110,7 @@ public class RepositoryResourceHelper {
     }
 
     public ResourceImpl contentModification(ResourceImpl resource, Principal principal, Content content) throws IOException {
-        if (logger.isDebugEnabled()) {
-            logger.debug("Evaluate content modification: " + resource.getURI());
-        }
+        logger.debug("Evaluate content modification: {}", resource.getURI());
         PropertyEvaluationContext ctx = PropertyEvaluationContext.contentChangeContext(resource, principal, content);
         recursiveTreeEvaluation(ctx, this.resourceTypeTree.getRoot());
         lateEvaluation(ctx);
@@ -129,9 +119,7 @@ public class RepositoryResourceHelper {
     }
 
     public ResourceImpl loadRevision(ResourceImpl resource, Principal principal, Content content, Revision revision) throws IOException {
-        if (logger.isDebugEnabled()) {
-            logger.debug("Evaluate on load: " + resource.getURI() + ", revision " + revision);
-        }
+        logger.debug("Evaluate on load: {}, revision", resource.getURI(), revision);
         PropertyEvaluationContext ctx = PropertyEvaluationContext.revisionLoadContext(resource, principal, content, revision);
         recursiveTreeEvaluation(ctx, this.resourceTypeTree.getRoot());
         lateEvaluation(ctx);
@@ -141,9 +129,7 @@ public class RepositoryResourceHelper {
 
     public ResourceImpl nameChange(ResourceImpl original, ResourceImpl resource, Principal principal, Content content)
             throws IOException {
-        if (logger.isDebugEnabled()) {
-            logger.debug("Evaluate name change: " + resource.getURI());
-        }
+        logger.debug("Evaluate name change: {}", resource.getURI());
         PropertyEvaluationContext ctx = PropertyEvaluationContext.nameChangeContext(original, resource, principal,
                 content);
         recursiveTreeEvaluation(ctx, this.resourceTypeTree.getRoot());
@@ -155,9 +141,7 @@ public class RepositoryResourceHelper {
     public ResourceImpl systemChange(ResourceImpl originalResource, Principal principal, 
             ResourceImpl suppliedResource, Content content, SystemChangeContext systemChangeContext)
             throws AuthenticationException, AuthorizationException, InternalRepositoryException, IOException {
-        if (logger.isDebugEnabled()) {
-            logger.debug("Evaluate system change: " + originalResource.getURI());
-        }
+        logger.debug("Evaluate system change: {}", originalResource.getURI());
         if (systemChangeContext == null) {
             throw new IllegalArgumentException("System change context cannot be null for system change evaluation");
         }
@@ -247,10 +231,12 @@ public class RepositoryResourceHelper {
                 // Preserve only if not inheritable (a tad paranoid, inheritable should never be set for dead props.)
                 if (!propDef.isInheritable()) {
                     newResource.addProperty(suppliedProp);
-                } else {
+                }
+                else {
                     newResource.removeProperty(propDef);
                 }
-            } else if (newResource.getProperty(propDef) == null) {
+            }
+            else if (newResource.getProperty(propDef) == null) {
 
                 // If it hasn't been set for the new resource, check if zombie
                 boolean zombie = true;
@@ -264,7 +250,8 @@ public class RepositoryResourceHelper {
                     // Zombie property, preserve only if not inheritable, otherwise remove.
                     if (!propDef.isInheritable()) {
                         newResource.addProperty(suppliedProp);                        
-                    } else {
+                    }
+                    else {
                         newResource.removeProperty(propDef);
                     }
                 }
@@ -353,7 +340,8 @@ public class RepositoryResourceHelper {
         }
         if (evaluatedProp != null) {
             newResource.addProperty(evaluatedProp);
-        } else {
+        }
+        else {
             newResource.removeProperty(propDef);
         }
     }
@@ -369,7 +357,8 @@ public class RepositoryResourceHelper {
             // Keep it only if it is actually set on this resource (not inherited).
             if (originalUnchanged != null && !((PropertyImpl)originalUnchanged).isInherited()) {
                 return originalUnchanged;
-            } else {
+            }
+            else {
                 return null;
             }
         }
@@ -401,28 +390,28 @@ public class RepositoryResourceHelper {
                             // unpublished and protection level is READ_WRITE
                             this.authorizationManager.authorizeAction(ctx.getOriginalResource().getURI(),
                                 RepositoryAction.READ_WRITE_UNPUBLISHED, ctx.getPrincipal());
-                        } else {
+                        }
+                        else {
                             this.authorizationManager.authorizeAction(ctx.getOriginalResource().getURI(), propDef
                                 .getProtectionLevel(), ctx.getPrincipal());
                         }
-                    } catch (AuthorizationException e) {
+                    }
+                    catch (AuthorizationException e) {
                         throw new AuthorizationException("Principal " + ctx.getPrincipal()
-                                + " not authorized to " + (deletedByUser?"delete":"set") + " property " + property + " (protectionLevel="
-                                + propDef.getProtectionLevel() + ") on resource " + ctx.getNewResource(), e);
+                                + " not authorized to " + (deletedByUser?"delete":"set") + " property " 
+                                + propDef + " (protectionLevel=" + propDef.getProtectionLevel() 
+                                + ") on resource " + ctx.getNewResource(), e);
                     }
                 }
 
                 if (deletedByUser) {
-                    if (logger.isDebugEnabled()) {
-                        logger.debug("Property deleted by user: " + propDef + " for resource " + ctx.getNewResource()
-                            + ", type " + ctx.getNewResource().getResourceType());
-                    }
+                    logger.debug("Property deleted by user: {} for resource {}, type {}", 
+                            propDef, ctx.getNewResource(), ctx.getNewResource().getResourceType());
                     return null;
-                } else {
-                    if (logger.isDebugEnabled()) {
-                        logger.debug("Property user-modified or added: " + property + " for resource "
-                            + ctx.getNewResource() + ", type " + ctx.getNewResource().getResourceType());
-                    }
+                }
+                else {
+                    logger.debug("Property user-modified or added: {} for resource {}, type {}",
+                            property, ctx.getNewResource(), ctx.getNewResource().getResourceType());
                     return property;
                 }
             }
@@ -438,9 +427,10 @@ public class RepositoryResourceHelper {
         if (property != null) {
             try {
                 property = (Property) property.clone();
-            } catch (CloneNotSupportedException e) {
-                throw new InternalRepositoryException("Error: unable to clone property " + propDef + "on resource '"
-                        + newResource.getURI() + "'", e);
+            }
+            catch (CloneNotSupportedException e) {
+                throw new InternalRepositoryException("Error: unable to clone property " 
+                        + propDef + "on resource '" + newResource.getURI() + "'", e);
             }
         }
 
@@ -451,10 +441,8 @@ public class RepositoryResourceHelper {
             }
             boolean evaluated = evaluator.evaluate(property, ctx);
             if (!evaluated) {
-                if (logger.isDebugEnabled()) {
-                    logger.debug("Property not evaluated: " + propDef + " by evaluator " + evaluator + " for resource "
-                            + ctx.getNewResource() + ", type " + ctx.getNewResource().getResourceType());
-                }
+                logger.debug("Property not evaluated: {} by evaluator {} for resource {}, type {}",
+                        propDef, evaluator, ctx.getNewResource(), ctx.getNewResource().getResourceType());
                 return null;
             }
             if (!property.isValueInitialized()) {
@@ -472,11 +460,9 @@ public class RepositoryResourceHelper {
             property = propDef.createProperty();
             property.setValue(defaultValue);
         }
-        if (logger.isDebugEnabled()) {
-            logger.debug("[" + ctx.getEvaluationType() + "] evaluated: " + property 
-                    + ", evaluator " + evaluator + ", resource "
-                    + ctx.getNewResource() + ", type " + ctx.getNewResource().getResourceType());
-        }
+        logger.debug("[{}] evaluated: {}, evaluator {}, resource {}, type {}",
+                ctx.getEvaluationType(), property, ctx.getNewResource(), 
+                ctx.getNewResource().getResourceType());
         return property;
     }
 
@@ -499,9 +485,10 @@ public class RepositoryResourceHelper {
             if (originalProp != null && suppliedProp != null && !originalProp.equals(suppliedProp)) {
                 return (Property) suppliedProp.clone();
             }
-        } catch (CloneNotSupportedException e) {
-            throw new InternalRepositoryException("Error: unable to clone property " + suppliedProp + "on resource '"
-                    + ctx.getNewResource().getURI() + "'", e);
+        }
+        catch (CloneNotSupportedException e) {
+            throw new InternalRepositoryException("Error: unable to clone property " 
+                    + suppliedProp + "on resource '" + ctx.getNewResource().getURI() + "'", e);
         }
         return null;
     }
