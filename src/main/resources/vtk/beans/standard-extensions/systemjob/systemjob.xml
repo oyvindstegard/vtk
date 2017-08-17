@@ -238,9 +238,7 @@
   <bean id="repository.systemjob.linkrepair" 
         class="vtk.repository.systemjob.LinkRepairJob" parent="repository.systemjob">
     <constructor-arg ref="structuredResources.resourceManager" />
-    <constructor-arg ref="resourceAspectsPropDef" />
-    <constructor-arg ref="visualProfileAspect.fieldConfig" />
-    <constructor-arg value="visual-profile" />
+    <constructor-arg ref="hrefsPropDef" />
     <constructor-arg ref="canonicalUrlConstructor" />
     <property name="securityContext">
       <bean class="vtk.security.SecurityContext">
@@ -254,6 +252,13 @@
     <property name="affectedPropertyNames">
       <list>
         <value>resource::hrefs</value>
+        <value>resource::link-check</value>
+      </list>
+    </property>
+    <property name="affectedPropertyTypes">
+      <list>
+        <value>IMAGE_REF</value>
+        <value>HTML</value>
       </list>
     </property>
     <property name="pathSelector">

@@ -34,6 +34,7 @@ package vtk.repository.systemjob;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 
 import org.slf4j.Logger;
@@ -45,6 +46,7 @@ import vtk.cluster.ClusterRole;
 import vtk.repository.Repository;
 import vtk.repository.ResourceTypeTree;
 import vtk.repository.SystemChangeContext;
+import vtk.repository.resourcetype.PropertyType;
 import vtk.repository.resourcetype.PropertyTypeDefinition;
 import vtk.scheduling.AbstractTask;
 import vtk.security.SecurityContext;
@@ -68,6 +70,7 @@ public abstract class RepositoryJob extends AbstractTask implements ClusterAware
     private PropertyTypeDefinition systemJobStatusPropDef;
     private ResourceTypeTree resourceTypeTree;
     private List<String> affectedPropertyNames = Collections.emptyList();
+    private List<PropertyType.Type> affectedPropertyTypes = Collections.emptyList();
     private boolean ignoreLockingOnStore = false;
 
     private final Logger logger = LoggerFactory.getLogger(getClass());
@@ -83,7 +86,9 @@ public abstract class RepositoryJob extends AbstractTask implements ClusterAware
             SystemChangeContext systemChangeContext =
                     new SystemChangeContext(getId(), securityContext,
                             lookupPropDefs(affectedPropertyNames),
-                            systemJobStatusPropDef, ignoreLockingOnStore);
+                            affectedPropertyTypes,
+                            systemJobStatusPropDef,
+                            ignoreLockingOnStore);
 
             executeWithRepository(repository, systemChangeContext);
         }
@@ -134,7 +139,12 @@ public abstract class RepositoryJob extends AbstractTask implements ClusterAware
     }
 
     public void setAffectedPropertyNames(List<String> affectedPropertyNames) {
-        this.affectedPropertyNames = affectedPropertyNames;
+        this.affectedPropertyNames = Objects.requireNonNull(affectedPropertyNames);
+    }
+
+    public void setAffectedPropertyTypes(List<PropertyType.Type> affectedPropertyTypes) {
+        this.affectedPropertyTypes = Collections
+                .unmodifiableList(Objects.requireNonNull(affectedPropertyTypes));
     }
 
     /**

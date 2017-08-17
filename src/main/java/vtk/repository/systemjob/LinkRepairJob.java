@@ -31,7 +31,9 @@
 package vtk.repository.systemjob;
 
 import java.io.InputStream;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
@@ -40,6 +42,7 @@ import org.slf4j.LoggerFactory;
 
 import vtk.repository.ContentInputSources;
 import vtk.repository.Namespace;
+import vtk.repository.Property;
 import vtk.repository.Resource;
 import vtk.repository.Revision.Type;
 import vtk.repository.resourcetype.PropertyType;
@@ -54,7 +57,7 @@ import vtk.resourcemanagement.StructuredResource;
 import vtk.resourcemanagement.StructuredResourceDescription;
 import vtk.resourcemanagement.StructuredResourceManager;
 import vtk.util.repository.LinkReplacer;
-import vtk.util.repository.PropertyAspectDescription;
+import vtk.util.text.Json.ListContainer;
 import vtk.util.text.Json.MapContainer;
 import vtk.util.text.JsonStreamer;
 import vtk.web.service.CanonicalUrlConstructor;
@@ -67,20 +70,14 @@ public class LinkRepairJob extends AbstractResourceJob {
         LoggerFactory.getLogger(LinkRepairJob.class.getName() + ".Changes");
     
     private final StructuredResourceManager resourceManager;
-    private final PropertyTypeDefinition aspectsPropDef;
-    private final PropertyAspectDescription aspectFieldDesc;
-    private final String enabledAspect;
+    private final PropertyTypeDefinition hrefsPropDef;
     private final CanonicalUrlConstructor urlConstructor;
 
     public LinkRepairJob(StructuredResourceManager resourceManager, 
-            PropertyTypeDefinition aspectsPropDef, 
-            PropertyAspectDescription aspectFieldDesc,
-            String enabledAspect,
+            PropertyTypeDefinition hrefsPropDef, 
             CanonicalUrlConstructor urlConstructor) {
         this.resourceManager = resourceManager;
-        this.aspectsPropDef = aspectsPropDef;
-        this.aspectFieldDesc = aspectFieldDesc;
-        this.enabledAspect = enabledAspect;
+        this.hrefsPropDef = hrefsPropDef;
         this.urlConstructor = urlConstructor;
     }
     
@@ -182,8 +179,43 @@ public class LinkRepairJob extends AbstractResourceJob {
                 changeLogger.info("Link repair: " + resource.getURI() 
                     + ": " + label + ": " + from + " -> " + to);
             }
-
         };
+
+        // Update 'hrefs' JSON property with relocated 'uri' fields
+        Property hrefsProp = resource.getProperty(hrefsPropDef);
+        if (hrefsProp != null) {
+            MapContainer jsonValue = hrefsProp.getJSONValue();
+            if (jsonValue.containsKey("links")) {
+                ListContainer links = jsonValue.arrayValue("links");
+                List<Object> linksResult = new ArrayList<>();
+                for (int i = 0; i < links.size(); i++) {
+                    MapContainer hrefsObj = links.objectValue(i);
+                    if (hrefsObj.containsKey("url")) {
+                        String url = hrefsObj.stringValue("url");
+                        Optional<String> mapped = mapper.mapUrl(url);
+                        hrefsObj.put("url", mapped.orElse(url));
+                    }
+                    linksResult.add(hrefsObj);
+                }
+                jsonValue.put("links", linksResult);
+            }
+            hrefsProp.setJSONValue(jsonValue);
+        }
+        
+
+        // Remove field 'relocatedLinks' from the 'link-check' property if it exists:
+        Property linkCheck = resource.getProperty(Namespace.DEFAULT_NAMESPACE, "link-check");
+        if (linkCheck != null) {
+            MapContainer jsonValue = linkCheck.getJSONValue();
+            if (jsonValue != null && jsonValue.containsKey("relocatedLinks")) {
+                jsonValue.remove("relocatedLinks");
+            }
+            linkCheck.setJSONValue(jsonValue);
+        }
+        
+        // Process properties and content. This will also trigger evaluation
+        // of the 'hrefs' property, which will use the updated JSON value as a
+        // starting point:
         LinkReplacer.process(replaceContext);
     }
     
