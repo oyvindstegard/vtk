@@ -48,9 +48,22 @@
       <bean class="vtk.web.service.AndAssertion">
         <property name="assertions">
           <list>
-            <ref bean="webPortAssertion" />
-            <ref bean="webHostNameAssertion" />
-            <ref bean="webProtocolAssertion" />
+            <bean class="vtk.web.service.OrAssertion">
+              <property name="assertions">
+                <list>
+                  <bean class="vtk.web.service.AndAssertion">
+                    <property name="assertions">
+                      <list>
+                        <ref bean="webPortAssertion" />
+                        <ref bean="webHostNameAssertion" />
+                        <ref bean="webProtocolAssertion" />
+                      </list>
+                    </property>
+                  </bean>
+                  <ref bean="manage.serviceAssertion" />
+                </list>
+              </property>
+            </bean>
           </list>
         </property>
       </bean>
