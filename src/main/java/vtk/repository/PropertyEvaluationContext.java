@@ -194,7 +194,7 @@ public class PropertyEvaluationContext {
 
     public void addPropertyValue(String propertyName, Object value) {
         if (this.propertyValueMap == null) {
-            this.propertyValueMap = new HashMap<String, Object>();
+            this.propertyValueMap = new HashMap<>();
         }
         this.propertyValueMap.put(propertyName, value);
     }
@@ -237,13 +237,7 @@ public class PropertyEvaluationContext {
         }
         
         SystemChangeContext systemChangeContext  = (SystemChangeContext)storeContext;
-        
-        if (propDef == systemChangeContext.getSystemJobStatusPropDef()) {
-            return true;
-        }
-        
-        List<PropertyTypeDefinition> affectedProperties = systemChangeContext.getAffectedProperties();
-        return affectedProperties == null || affectedProperties.contains(propDef);
+        return systemChangeContext.affectsProperty(propDef);
     }
     
     public void addPropertyTypeDefinitionForLateEvaluation(PropertyTypeDefinition def) {

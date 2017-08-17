@@ -184,14 +184,17 @@ public class LinkCheckJob extends AbstractResourceJob {
                             Namespace.DEFAULT_NAMESPACE, 
                             PropertyType.EXTERNAL_ID_PROP_NAME);
                     if (idProp != null) {
+                        logger.debug("Resource {} with ID {} (referenced from {}) found", 
+                                href, idProp.getStringValue(), resource.getURI());
+                        
                         // Update vrtxid if the resource exists
                         hrefObj.put("vrtxid", idProp.getStringValue());
                     }
                 }
                 catch (ResourceNotFoundException e) {
-                    logger.debug("Resource " + href + " (referenced from " 
-                            + resource.getURI() + ") not found");
                     // Keep vrtxid if it exists
+                    logger.debug("Resource {} (referenced from {}) not found, keeping href object: {}", 
+                            href, resource.getURI(), hrefObj);
                 }
                 catch (Exception e) {
                     logger.debug("Failed to retrieve resource " + url.getPath(), e);
@@ -215,7 +218,7 @@ public class LinkCheckJob extends AbstractResourceJob {
         
         final LinkCheckState state = LinkCheckState.create(linkCheckProp);
         if (shouldResetState(state, resource, changeContext)) {
-            logger.debug("Reset link check state for " + resource.getURI());
+            logger.debug("Reset link check state for {}", resource.getURI());
             state.brokenLinks.clear();
             state.relocatedLinks.clear();
             state.complete = false;
@@ -223,12 +226,12 @@ public class LinkCheckJob extends AbstractResourceJob {
         }
 
         if (state.complete) {
-            logger.debug("Link check already complete and up to date for " + resource.getURI());
+            logger.debug("Link check already complete and up to date for {}", resource.getURI());
             state.write(linkCheckProp);
             return linkCheckProp;
         }
 
-        logger.debug("Running with link check state: " + state + " for " + resource.getURI());
+        logger.debug("Running with link check state: {} for {}", state, resource.getURI());
 
         // Still supported for JSON properties:
         InputStream linksStream = hrefsProp.getBinaryStream();
@@ -326,6 +329,7 @@ public class LinkCheckJob extends AbstractResourceJob {
                     case TIMEOUT:
                         break;
                     case OK:
+                        logger.debug("base: {}, resourceURL: {}, vrtxid: {}", base.getHost(), resourceURL.getHost(), vrtxid);
                         if (vrtxid != null && base.getHost().equals(resourceURL.getHost())) {
                             // Check if 'OK' was result of a redirect (relocated resource),
                             // or just a plain '200 OK':
@@ -339,9 +343,8 @@ public class LinkCheckJob extends AbstractResourceJob {
                                 }
                                 m.put("vrtxid", vrtxid);
                                 state.relocatedLinks.add(m);
-                                logger.debug("URL " + url + " (referenced from " 
-                                        + resource.getURI() + ") has moved, "
-                                        + " vrtxid: " + vrtxid + " still valid");
+                                logger.debug("URL {} (referenced from {} has moved, vrtxid: {} still valid",
+                                        url, resource.getURI(), vrtxid); 
                             }
                         }
                         break;
