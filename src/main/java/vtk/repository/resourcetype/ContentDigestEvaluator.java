@@ -34,6 +34,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.util.Objects;
 import vtk.repository.Property;
 import vtk.repository.PropertyEvaluationContext;
 import vtk.repository.resourcetype.property.PropertyEvaluationException;
@@ -65,7 +66,7 @@ public class ContentDigestEvaluator implements PropertyEvaluator {
      * @param algorithm
      */
     public ContentDigestEvaluator(String algorithm) {
-        this.algorithm = algorithm;
+        this.algorithm = Objects.requireNonNull(algorithm);
     }
 
     @Override
