@@ -52,7 +52,7 @@ public class ContentDigestEvaluatorTest {
     private final Property mockedProperty;
     private final ContentDigestEvaluator evaluator = new ContentDigestEvaluator();
 
-    private final byte[] testbytes = "abc".getBytes();
+    private final byte[] testbytes = {0x61,0x62,0x63}; // ASCII "abc"
     private final String testBytesSum = "ba7816bf8f01cfea414140de5dae2223b00361a396177a9cb410ff61f20015ad";
 
     public ContentDigestEvaluatorTest() {
