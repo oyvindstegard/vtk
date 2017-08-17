@@ -32,9 +32,10 @@ package vtk.repository;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.util.Collections;
+import java.util.Collection;
 import java.util.Date;
-import java.util.List;
+import java.util.HashSet;
+import java.util.Set;
 
 import org.apache.commons.lang.time.FastDateFormat;
 
@@ -51,8 +52,8 @@ public class SystemChangeContext implements StoreContext {
     private final String jobName;
     private SecurityContext securityContext;
     private final Date time;
-    private final List<PropertyTypeDefinition> affectedProperties;
-    private final List<PropertyType.Type> affectedPropertyTypes;
+    private final Set<PropertyTypeDefinition> affectedProperties;
+    private final Set<PropertyType.Type> affectedPropertyTypes;
     private final PropertyTypeDefinition systemJobStatusPropDef;
     private final boolean ignoreLocking;
 
@@ -63,14 +64,14 @@ public class SystemChangeContext implements StoreContext {
      * @param systemJobStatusPropDef the property definition for system job status
      */
     public SystemChangeContext(String jobName, SecurityContext securityContext,
-                               List<PropertyTypeDefinition> affectedProperties,
-                               List<PropertyType.Type> affectedPropertyTypes,
+                               Collection<PropertyTypeDefinition> affectedProperties,
+                               Collection<PropertyType.Type> affectedPropertyTypes,
                                PropertyTypeDefinition systemJobStatusPropDef) {
         this.jobName = jobName;
         this.securityContext = securityContext;
         this.time = new Date();
-        this.affectedProperties = Collections.unmodifiableList(affectedProperties);
-        this.affectedPropertyTypes = Collections.unmodifiableList(affectedPropertyTypes);
+        this.affectedProperties = new HashSet<>(affectedProperties);
+        this.affectedPropertyTypes = new HashSet<>(affectedPropertyTypes);
         this.systemJobStatusPropDef = systemJobStatusPropDef;
         this.ignoreLocking = false;
     }
@@ -85,15 +86,15 @@ public class SystemChangeContext implements StoreContext {
      * when the store operation is executed.
      */
     public SystemChangeContext(String jobName, SecurityContext securityContext,
-                               List<PropertyTypeDefinition> affectedProperties,
-                               List<PropertyType.Type> affectedPropertyTypes,
+                               Collection<PropertyTypeDefinition> affectedProperties,
+                               Collection<PropertyType.Type> affectedPropertyTypes,
                                PropertyTypeDefinition systemJobStatusPropDef,
                                boolean ignoreLocking) {
         this.jobName = jobName;
         this.securityContext = securityContext;
         this.time = new Date();
-        this.affectedProperties = Collections.unmodifiableList(affectedProperties);
-        this.affectedPropertyTypes = Collections.unmodifiableList(affectedPropertyTypes);
+        this.affectedProperties = new HashSet<>(affectedProperties);
+        this.affectedPropertyTypes = new HashSet<>(affectedPropertyTypes);
         this.systemJobStatusPropDef = systemJobStatusPropDef;
         this.ignoreLocking = ignoreLocking;
     }
