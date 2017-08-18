@@ -169,7 +169,7 @@ public class CaptureOutputLoggingFilter extends AbstractServletFilter
             return new byte[0];
         }
         
-        int getStreamBytesRead() {
+        long getStreamBytesRead() {
             if (this.streamWrapper != null) {
                 return this.streamWrapper.getStreamBytesRead();
             }
@@ -182,7 +182,7 @@ public class CaptureOutputLoggingFilter extends AbstractServletFilter
 
         private final ByteArrayOutputStream streamCopyBuffer;
         private final ServletInputStream wrappedStream;
-        private int streamBytesRead = 0;
+        private long streamBytesRead = 0;
 
         InputStreamCopyWrapper(ServletInputStream wrappedStream) {
             this.wrappedStream = wrappedStream;
@@ -202,7 +202,7 @@ public class CaptureOutputLoggingFilter extends AbstractServletFilter
             return streamCopyBuffer.toByteArray();
         }
         
-        int getStreamBytesRead() {
+        long getStreamBytesRead() {
             return streamBytesRead;
         }
 
@@ -244,7 +244,7 @@ public class CaptureOutputLoggingFilter extends AbstractServletFilter
         }
     }
 
-    private void addBytesForLogging(byte[] data, int totalBytes, String contentType, StringBuilder logBuffer) {
+    private void addBytesForLogging(byte[] data, long totalBytes, String contentType, StringBuilder logBuffer) {
         int logBytes = Math.min(maxCaptureBytes, data.length);
         String rawString = getRawAsciiString(data, 0, logBytes, isProbablyBinary(contentType));
         logBuffer.append(rawString);
@@ -321,7 +321,7 @@ public class CaptureOutputLoggingFilter extends AbstractServletFilter
             return new byte[0];
         }
         
-        int getStreamBytesWritten() {
+        long getStreamBytesWritten() {
             if (this.streamWrapper != null) {
                 return this.streamWrapper.getStreamBytesWritten();
             }
@@ -331,9 +331,9 @@ public class CaptureOutputLoggingFilter extends AbstractServletFilter
 
     private class OutputStreamCopyWrapper extends ServletOutputStream {
 
-        private ByteArrayOutputStream streamCopyBuffer;
-        private ServletOutputStream wrappedStream;
-        private int streamBytesWritten=0;
+        private final ByteArrayOutputStream streamCopyBuffer;
+        private final ServletOutputStream wrappedStream;
+        private long streamBytesWritten=0;
 
         OutputStreamCopyWrapper(ServletOutputStream wrappedStream) {
             this.wrappedStream = wrappedStream;
@@ -357,7 +357,7 @@ public class CaptureOutputLoggingFilter extends AbstractServletFilter
             return streamCopyBuffer.toByteArray();
         }
         
-        int getStreamBytesWritten() {
+        long getStreamBytesWritten() {
             return streamBytesWritten;
         }
 
