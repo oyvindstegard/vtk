@@ -69,7 +69,7 @@ public class HeaderAwareResponseWrapper extends HttpServletResponseWrapper {
     
     @Override
     public void addIntHeader(String name, int value) {
-        addHeaderInternal(name, new Integer(value), false);
+        addHeaderInternal(name, value, false);
         super.addIntHeader(name, value);
     }
     
@@ -83,6 +83,12 @@ public class HeaderAwareResponseWrapper extends HttpServletResponseWrapper {
     public void setHeader(String name, String value) {
         addHeaderInternal(name, value, true);
         super.setHeader(name, value);
+    }
+
+    @Override
+    public void setIntHeader(String name, int value) {
+        addHeaderInternal(name, value, true);
+        super.setIntHeader(name, value);
     }
 
     private void addHeaderInternal(String name, Object value, boolean overwrite) {
@@ -111,6 +117,12 @@ public class HeaderAwareResponseWrapper extends HttpServletResponseWrapper {
         super.setContentLength(length);
     }
     
+    @Override
+    public void setContentLengthLong(long len) {
+        addHeaderInternal("Content-Length", String.valueOf(len), true);
+        super.setContentLengthLong(len);
+    }
+
     @Override
     public void setContentType(String contentType) {
         addHeaderInternal("Content-Type", contentType, true);
