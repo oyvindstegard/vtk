@@ -39,6 +39,7 @@ import java.util.List;
 import java.util.Map;
 
 import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpServletResponseWrapper;
 
 /**
  * A servlet response wrapper that is aware of the HTTP headers passed
@@ -46,7 +47,7 @@ import javax.servlet.http.HttpServletResponse;
  * 
  * <p>Used for logging which response headers we explicitly set throughout request processing.
  */
-public class HeaderAwareResponseWrapper extends StatusAwareResponseWrapper {
+public class HeaderAwareResponseWrapper extends HttpServletResponseWrapper {
 
     private Map<String, List<Object>> headers = new HashMap<>();
     

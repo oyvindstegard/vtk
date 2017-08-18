@@ -66,7 +66,6 @@ import vtk.util.text.PathMappingConfig.Qualifier;
 import vtk.web.RequestContext;
 import vtk.web.service.Service;
 import vtk.web.service.URL;
-import vtk.web.servlet.StatusAwareHttpServletResponse;
 
 public class ConfigurableDecorationResolver implements DecorationResolver, InitializingBean {
 
@@ -193,12 +192,10 @@ public class ConfigurableDecorationResolver implements DecorationResolver, Initi
         String paramString = null;
         
         boolean errorPage = false;
-        if (response instanceof StatusAwareHttpServletResponse) {
-            int status = ((StatusAwareHttpServletResponse) response).getStatus();
-            if (status >= 400) {
-                errorPage = true;
-                paramString = checkErrorCodeMatch(status);
-            }
+        int status = response.getStatus();
+        if (status >= 400) {
+            errorPage = true;
+            paramString = checkErrorCodeMatch(status);
         }
 
         if (paramString == null && !errorPage) {
