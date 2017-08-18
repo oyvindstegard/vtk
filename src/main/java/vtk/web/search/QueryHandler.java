@@ -227,12 +227,13 @@ public final class QueryHandler implements HttpRequestHandler {
                     String query = template.replaceAll("\\{'q\\}", q);
                     q = escape(escape(q, ' ', '\\'), ' ', '\\');
                     query = query.replaceAll("\\{q\\}", q);
-                    q = query;
+					q = query;
                 }
 			}
 			if (request.getParameterValues("fq") != null) {
-				for (String param : request.getParameterValues("fq")) {
-					q += " AND " + param;
+				for (String fq : request.getParameterValues("fq")) {
+					fq = escape(fq, ' ', '\\');
+					builder.addFilterQuery(fq);
 				}
 			}
 			return builder.query(q);
