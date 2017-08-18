@@ -18,7 +18,7 @@
     parent="collectionListing.abstract.handler">
     <property name="searchComponents">
       <list>
-        <ref bean="structured.blogListing.searchComponent" />
+        <ref bean="blogListing.searchComponent" />
       </list>
     </property>
     <property name="viewName" value="blogListing.view" />
@@ -32,19 +32,7 @@
     <property name="queryBuilders">
       <list>
         <bean parent="queryStringParser">
-          <property name="queryString" value="(uri = {$currentFolder}/*) AND (type IN article)" />
-        </bean>
-      </list>
-    </property>
-    <property name="searchSorting" ref="articleListing.searchSorting" />
-    <property name="listingUriQueryBuilder" ref="collection.recursiveListingUriQueryBuilder" />
-  </bean>
-
-  <bean id="structured.blogListing.searchComponent" parent="blogListing.searchComponent">
-    <property name="queryBuilders">
-      <list>
-        <bean parent="queryStringParser">
-          <property name="queryString" value="(uri = {$currentFolder}/*) AND (type IN structured-article)" />
+          <property name="queryString" ref="articleListing.resourceTypeQueryString" />
         </bean>
       </list>
     </property>
