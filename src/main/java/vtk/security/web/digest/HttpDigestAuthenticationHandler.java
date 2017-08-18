@@ -55,7 +55,7 @@ import vtk.security.web.AuthenticationHandler;
 import vtk.security.web.InvalidAuthenticationRequestException;
 import vtk.util.cache.SimpleCache;
 import vtk.util.codec.Base64;
-import vtk.util.codec.MD5;
+import vtk.util.codec.Digest;
 import vtk.util.net.NetUtils;
 import vtk.util.web.HttpUtil;
 
@@ -389,9 +389,9 @@ public class HttpDigestAuthenticationHandler
                 "Password hash for principal " + principal + " not found");
         }
 
-        String componentA2 = MD5.md5sum(request.getMethod() + ":" + uri);
+        String componentA2 = Digest.md5().data(request.getMethod() + ":" + uri).compute();
         
-        StringBuffer b = new StringBuffer();
+        StringBuilder b = new StringBuilder();
         b.append(componentA1);
 
         b.append(":").append(nonce);
@@ -400,7 +400,7 @@ public class HttpDigestAuthenticationHandler
         if (qop != null) b.append(":").append(qop);
         b.append(":").append(componentA2);
                 
-        String serverDigest = MD5.md5sum(b.toString());
+        String serverDigest = Digest.md5().data(b.toString()).compute();
       
         if (this.logger.isDebugEnabled()) {
             this.logger.debug("client digest: '" + response
@@ -433,7 +433,8 @@ public class HttpDigestAuthenticationHandler
 
     private String generateNonce() {
         String timestamp = getTimestamp();
-        String nonce = Base64.encode(timestamp + MD5.md5sum(timestamp + ":" + this.nonceKey));
+        String nonce = Base64.encode(timestamp + Digest.md5()
+                .data(timestamp + ":" + this.nonceKey).compute());
         return nonce;
     }
 

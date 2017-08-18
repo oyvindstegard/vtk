@@ -30,15 +30,11 @@
  */
 package vtk.repository.resourcetype;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
 import java.util.Objects;
 import vtk.repository.Property;
 import vtk.repository.PropertyEvaluationContext;
 import vtk.repository.resourcetype.property.PropertyEvaluationException;
-import vtk.util.text.TextUtils;
+import vtk.util.codec.Digest;
 
 /**
  * Property evaluator which writes a string value containging a message digest of
@@ -46,27 +42,20 @@ import vtk.util.text.TextUtils;
  *
  * <p>
  * Values are encoded as hexadecimal strings.
- *
- * <p>
- * Default algorithm is SHA-256.
  */
 public class ContentDigestEvaluator implements PropertyEvaluator {
 
     private final String algorithm;
-
-    /**
-     * Construct evaluator with default algorithm.
-     */
-    public ContentDigestEvaluator() {
-        this("SHA-256");
-    }
+    private final Digest.Format format;
 
     /**
      * Construct evaluator with a specific algorithm, by SPI name
-     * @param algorithm
+     * @param algorithm hash algorithm identifier (Java SPI name)
+     * @param format the digest serialization format
      */
-    public ContentDigestEvaluator(String algorithm) {
+    public ContentDigestEvaluator(String algorithm, Digest.Format format) {
         this.algorithm = Objects.requireNonNull(algorithm);
+        this.format = Objects.requireNonNull(format);
     }
 
     @Override
@@ -78,25 +67,15 @@ public class ContentDigestEvaluator implements PropertyEvaluator {
 
         if (!property.isValueInitialized() || ctx.getEvaluationType() == PropertyEvaluationContext.Type.ContentChange) {
             try {
-                property.setStringValue(digest(ctx.getContent()));
-            } catch (IOException | NoSuchAlgorithmException | ValueFormatException e) {
+                String digest = Digest.create(algorithm).format(format)
+                        .data(ctx.getContent().getContentInputStream()).compute();
+                property.setStringValue(digest);
+            } catch (Exception e) {
                 throw new PropertyEvaluationException("Content digestion failed", e);
             }
         }
 
         return true;
-    }
-
-    private String digest(Content content) throws IOException, NoSuchAlgorithmException {
-        final MessageDigest md = MessageDigest.getInstance(algorithm);
-        try (InputStream is = content.getContentInputStream()) {
-            int read;
-            final byte[] buf = new byte[4096];
-            while ((read = is.read(buf)) != -1) {
-                md.update(buf, 0, read);
-            }
-        }
-        return new String(TextUtils.toHex(md.digest()));
     }
 
 }

@@ -31,30 +31,17 @@
 package vtk.repository.store;
 
 import java.io.InputStream;
+import vtk.util.codec.Digest;
 
-import vtk.util.io.AbstractInputStreamWrapper;
-import vtk.util.codec.MD5;
 
 public final class Revisions {
 
     public static String checksum(byte[] buffer) {
-        return MD5.md5sum(buffer);
+        return Digest.md5().data(buffer).compute();
     }
     
-    public static ChecksumWrapper wrap(InputStream input) {
-        return new ChecksumWrapper(input);
+    public static Digest.StreamWrapper wrap(InputStream input) {
+        return Digest.md5().data(input).wrapper();
     }
-    
-    public static class ChecksumWrapper extends AbstractInputStreamWrapper {
-        private MD5.MD5InputStream md5Wrapper;
-        private ChecksumWrapper(InputStream input) {
-            super(MD5.wrap(input));
-            this.md5Wrapper = (MD5.MD5InputStream)super.getWrappedStream();
-        }
-        
-        public String checksum() {
-            String result = this.md5Wrapper.md5sum();
-            return result;
-        }
-    }
+
 }

@@ -41,6 +41,7 @@ import vtk.repository.Path;
 import vtk.repository.Property;
 import vtk.repository.PropertyEvaluationContext;
 import vtk.repository.ResourceImpl;
+import vtk.util.codec.Digest;
 
 /**
  *
@@ -50,7 +51,7 @@ public class ContentDigestEvaluatorTest {
     private final Mockery context;
     private final Content mockedContent;
     private final Property mockedProperty;
-    private final ContentDigestEvaluator evaluator = new ContentDigestEvaluator();
+    private final ContentDigestEvaluator evaluator = new ContentDigestEvaluator("SHA-256", Digest.Format.ASCII_HEX);
 
     private final byte[] testbytes = {0x61,0x62,0x63}; // ASCII "abc"
     private final String testBytesSum = "ba7816bf8f01cfea414140de5dae2223b00361a396177a9cb410ff61f20015ad";

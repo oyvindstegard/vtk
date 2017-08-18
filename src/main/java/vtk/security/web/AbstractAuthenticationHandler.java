@@ -46,7 +46,7 @@ import vtk.security.InvalidPrincipalException;
 import vtk.security.Principal;
 import vtk.security.PrincipalFactory;
 import vtk.util.cache.SimpleCache;
-import vtk.util.codec.MD5;
+import vtk.util.codec.Digest;
 import vtk.web.service.WebAssertion;
 
 /**
@@ -144,7 +144,9 @@ public abstract class AbstractAuthenticationHandler implements
         String md5sum = null;
         if (this.cache != null) {
             // Only calculate if useful
-            md5sum = MD5.md5sum(authResult.getUID() + password);
+            md5sum = Digest.md5()
+                    .data(authResult.getUID() + password)
+                    .compute();
             
             AuthResult cachedResult = this.cache.get(md5sum);
             if (cachedResult != null) {

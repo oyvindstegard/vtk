@@ -39,7 +39,7 @@ import org.springframework.core.Ordered;
 import org.springframework.core.annotation.Order;
 import vtk.security.AuthenticationException;
 import vtk.security.Principal;
-import vtk.util.codec.MD5;
+import vtk.util.codec.Digest;
 
 /**
  * An implementation of MD5PasswordPrincipalManager that stores its
@@ -144,8 +144,8 @@ public class PropertyConfigurableMD5Store implements MD5PasswordStore, Ordered {
         throws AuthenticationException {
         
         String hash = getMD5HashString(principal);
-        String clientHash = 
-            MD5.md5sum(principal.getQualifiedName() + ":" + this.realm + ":" + password); 
+        String clientHash = Digest.md5().data(
+            principal.getQualifiedName() + ":" + this.realm + ":" + password).compute();
 
         if (hash == null || !hash.equals(clientHash)) {
             throw new AuthenticationException(

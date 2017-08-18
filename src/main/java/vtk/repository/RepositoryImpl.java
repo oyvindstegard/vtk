@@ -93,11 +93,11 @@ import vtk.repository.store.DataAccessException;
 import vtk.repository.store.DataAccessor;
 import vtk.repository.store.RevisionStore;
 import vtk.repository.store.Revisions;
-import vtk.repository.store.Revisions.ChecksumWrapper;
 import vtk.security.AuthenticationException;
 import vtk.security.InvalidPrincipalException;
 import vtk.security.Principal;
 import vtk.security.token.TokenManager;
+import vtk.util.codec.Digest;
 import vtk.util.io.IO;
 import vtk.util.repository.MimeHelper;
 
@@ -1222,7 +1222,7 @@ public class RepositoryImpl implements Repository, ApplicationContextAware,
     }
     
     /**
-     * Requests that an InputStream be written to a resource.
+     * Write data to a resource.
      */
     @Transactional(readOnly=false)
     @OpLog(write = true)
@@ -1278,7 +1278,7 @@ public class RepositoryImpl implements Repository, ApplicationContextAware,
     }
     
     /**
-     * Requests that an InputStream be written to a resource.
+     * Write data to a resource.
      * Used to update contents of working copy revision.
      */
     @Transactional(readOnly=false)
@@ -1340,14 +1340,14 @@ public class RepositoryImpl implements Repository, ApplicationContextAware,
         File tempFile = null;
         try {
             tempFile = File.createTempFile("revision", null, this.tempDir);
-            ChecksumWrapper wrapper = Revisions.wrap(contentInput.stream());
+            Digest.StreamWrapper wrapper = Revisions.wrap(contentInput.stream());
             OutputStream out = new FileOutputStream(tempFile);
             
             IO.copy(wrapper, out).bufferSize(FILE_COPY_BUF_SIZE)
                     .progress(p -> getPrincipal(token))
                     .progressInterval(TOKEN_REFRESH_PROGRESS_INTERVAL)
                     .perform();
-            checksum = wrapper.checksum();
+            checksum = wrapper.compute();
 
             contentInput = ContentInputSources.fromFile(tempFile, true);
 
@@ -1642,14 +1642,14 @@ public class RepositoryImpl implements Repository, ApplicationContextAware,
         File tempFile = null;
         try {
             tempFile = File.createTempFile("revision", null, this.tempDir);
-            Revisions.ChecksumWrapper wrapper = Revisions.wrap(content);
+            Digest.StreamWrapper wrapper = Revisions.wrap(content);
             OutputStream out = new FileOutputStream(tempFile);
             IO.copy(wrapper, out).bufferSize(FILE_COPY_BUF_SIZE)
                                  .progress(p -> getPrincipal(token))
                                  .progressInterval(TOKEN_REFRESH_PROGRESS_INTERVAL)
                                  .perform();
             
-            checksum = wrapper.checksum();
+            checksum = wrapper.compute();
 
             content = new FileInputStream(tempFile);
             Revision.Builder builder = Revision.newBuilder();

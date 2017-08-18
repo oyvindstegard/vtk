@@ -43,7 +43,8 @@ import vtk.repository.resourcetype.PropertyType;
 import vtk.repository.resourcetype.PropertyTypeDefinition;
 import vtk.security.Principal;
 import vtk.security.PrincipalFactory;
-import vtk.util.codec.MD5;
+import vtk.util.codec.Digest;
+
 import vtk.util.repository.LocaleHelper;
 
 /**
@@ -111,7 +112,7 @@ public class ResourceImpl extends PropertySetImpl implements Resource {
     public String getSerial() {
         String serial = getURI().toString() + getContentLastModified() + getPropertiesLastModified()
                 + getContentLength();
-        serial = MD5.md5sum(serial);
+        serial = Digest.md5().data(serial).compute();
         serial = "vortex-" + serial;
         return serial;
     }
