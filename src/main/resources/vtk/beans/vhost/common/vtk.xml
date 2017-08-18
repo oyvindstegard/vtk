@@ -145,8 +145,6 @@
   </bean>
   
   <!-- Spring session filter (works only with spring boot) -->
-  <!--bean id="springSessionRepositoryFilter" class="vtk.web.servlet.NullFilter" /-->
-
   <bean id="springSessionRepositoryFilter" 
         class="vtk.web.servlet.SessionRepositoryFilter">
     <constructor-arg name="sessionRepository" ref="spring.sessionRepository" />
