@@ -36,7 +36,6 @@ import java.util.Date;
 import java.util.Locale;
 import java.util.TimeZone;
 
-import org.apache.commons.lang.time.FastDateFormat;
 import vtk.util.cache.ArrayStackCache;
 import vtk.util.cache.ReusableObjectCache;
 import vtk.util.web.HttpUtil;

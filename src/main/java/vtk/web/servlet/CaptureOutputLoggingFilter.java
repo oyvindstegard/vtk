@@ -237,11 +237,12 @@ public class CaptureOutputLoggingFilter extends AbstractServletFilter
 
     private void addHeadersForLogging(CaptureOutputResponseWrapper responseWrapper, StringBuilder logBuffer) {
         for (String header: responseWrapper.getHeaderNames()) {
-            List<Object> values = responseWrapper.getHeaderValues(header);
+            List<?> values = responseWrapper.getHeaderValues(header);
             for (Object value : values) {
                 logBuffer.append(header).append(": ").append(value).append('\n');
             }
         }
+
     }
 
     private void addBytesForLogging(byte[] data, long totalBytes, String contentType, StringBuilder logBuffer) {

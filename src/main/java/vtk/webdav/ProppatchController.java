@@ -31,9 +31,6 @@
 package vtk.webdav;
 
 import java.io.IOException;
-import java.io.OutputStream;
-import java.io.UnsupportedEncodingException;
-import java.nio.charset.StandardCharsets;
 import java.text.ParseException;
 import java.util.Iterator;
 import java.util.List;
@@ -105,8 +102,6 @@ public class ProppatchController extends AbstractWebdavController  {
 
             InheritablePropertiesStoreContext sc = new InheritablePropertiesStoreContext();
             Document doc = doPropertyUpdate(request, resource, requestBody, principal, typeInfo, sc);
-            Format format = Format.getPrettyFormat();
-            format.setEncoding("utf-8");
 
             /* Store the altered resource: */
             if (this.logger.isDebugEnabled()) {
@@ -121,28 +116,9 @@ public class ProppatchController extends AbstractWebdavController  {
                 resource = repository.store(token, null, resource, sc);
             }
 
-            XMLOutputter xmlOutputter = new XMLOutputter(format);
-            String xml = xmlOutputter.outputString(doc);
-            byte[] buffer = xml.getBytes(StandardCharsets.UTF_8);
-            
-            response.setHeader("Content-Type", "text/xml;charset=utf-8");
-            response.setContentLength(buffer.length);
-            response.setStatus(HttpUtil.SC_MULTI_STATUS,
-                               WebdavUtil.getStatusMessage(
-                                   HttpUtil.SC_MULTI_STATUS));
-            OutputStream out = null;
-            try {
-                out = response.getOutputStream();
-                out.write(buffer, 0, buffer.length);
-                out.flush();
-                out.close();
-
-            } finally {
-                if (out != null) {
-                    out.flush();
-                    out.close();
-                }
-            }
+            responseBuilder(HttpUtil.SC_MULTI_STATUS)
+                    .handler(xmlResponseHandler(doc))
+                    .writeTo(response);
         }
         catch (InvalidRequestException e) {
             this.logger.info("Invalid request on URI '" + uri + "'", e);
@@ -179,34 +155,10 @@ public class ProppatchController extends AbstractWebdavController  {
         error.addContent(errormsg);
 
         Document doc = new Document(error);
-        Format format = Format.getPrettyFormat();
-        format.setEncoding("utf-8");
 
-        XMLOutputter xmlOutputter = new XMLOutputter(format);
-        String xml = xmlOutputter.outputString(doc);
-        byte[] buffer = null;
-        try {
-            buffer = xml.getBytes("utf-8");
-        } catch (UnsupportedEncodingException ex) {
-            logger.warn("Warning: UTF-8 encoding not supported", ex);
-            throw new RuntimeException("UTF-8 encoding not supported");
-        }
-        response.setHeader("Content-Type", "text/xml;charset=utf-8");
-        response.setContentLength(buffer.length);
-        response.setStatus(status, WebdavUtil.getStatusMessage(status));
-        OutputStream out = null;
-        try {
-            out = response.getOutputStream();
-            out.write(buffer, 0, buffer.length);
-            out.flush();
-            out.close();
-
-        } finally {
-            if (out != null) {
-                out.flush();
-                out.close();
-            }
-        }       
+        responseBuilder(status)
+                .handler(xmlResponseHandler(doc))
+                .writeTo(response);
     }
     
     /**

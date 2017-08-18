@@ -31,6 +31,7 @@
 package vtk.util.io;
 
 import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
@@ -41,6 +42,7 @@ import java.nio.channels.FileChannel;
 import java.util.Arrays;
 import java.util.function.Consumer;
 import java.util.function.Function;
+import vtk.util.io.IO.CaptureBuffer;
 
 /**
  * Input/output tool.
@@ -258,7 +260,7 @@ public abstract class IO {
          */
         long perform() throws IOException;
     }
-    
+
     private static abstract class ReadBase<I,R> implements Read<I,R> {
         
         protected long limit = -1;
@@ -546,6 +548,41 @@ public abstract class IO {
                 return copy(in, out);
             }
         };
+    }
+
+
+
+    /**
+     * Represents capture data in a memory buffer (memory sink).
+     *
+     * <p>Based on a {@link ByteArrayOutputStream}, but with promiscuous access
+     * to the internal buffer to avoid final copying of all data in
+     * {@link ByteArrayOutputStream#toByteArray() }.
+     */
+    public static final class CaptureBuffer extends ByteArrayOutputStream {
+
+        private CaptureBuffer() {}
+
+        /**
+         * Access memory buffer for data capture so far,
+         * which may be larger than actual amount of captured data.
+         *
+         * <p>Use {@link #size() } to determine how many bytes in this buffer that are valid.
+         * @return
+         */
+        public byte[] buffer() {
+            return buf;
+        }
+    }
+
+    /**
+     * Capture everything written to an output stream into memory and make the
+     * internal buffer directly available.
+     *
+     * @return a new {@link CaptureBuffer}
+     */
+    public static CaptureBuffer captureBuffer() {
+        return new CaptureBuffer();
     }
     
     /**

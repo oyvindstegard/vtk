@@ -31,24 +31,34 @@
 package vtk.webdav;
 
 
+import java.io.IOException;
+import java.io.OutputStream;
+import java.io.OutputStreamWriter;
+import java.io.UncheckedIOException;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.function.Consumer;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import javax.servlet.http.HttpServletResponse;
+import org.jdom.Document;
 
 import org.jdom.Namespace;
+import org.jdom.output.Format;
+import org.jdom.output.XMLOutputter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.web.HttpRequestHandler;
 
 import vtk.repository.Path;
 import vtk.repository.resourcetype.PropertyType;
+import vtk.util.io.IO;
 import vtk.web.api.ApiResponseBuilder;
 import vtk.web.service.URL;
 
@@ -160,6 +170,34 @@ public abstract class AbstractWebdavController implements HttpRequestHandler {
             .message(message)
             .writeTo(response);
     }
+
+    /**
+     * @param doc XML document to be serialized
+     * @return a {@link ApiResponseBuilder#handler(java.util.function.Consumer) handler}
+     * which writes the provided JDOM document to response output stream,
+     * along with headers "Content-Type" and "Content-Length".
+     */
+    public Consumer<HttpServletResponse> xmlResponseHandler(Document doc) {
+        return response -> {
+            Format format = Format.getPrettyFormat();
+            format.setEncoding("utf-8");
+            XMLOutputter xmlOutputter = new XMLOutputter(format);
+            response.setHeader("Content-Type", "text/xml;charset=utf-8");
+            IO.CaptureBuffer buf = IO.captureBuffer();
+            try {
+                xmlOutputter.output(doc, new OutputStreamWriter(buf, StandardCharsets.UTF_8));
+            } catch (IOException io) {
+                throw new UncheckedIOException(io);
+            }
+            response.setIntHeader("Content-Length", buf.size());
+            try (OutputStream out = response.getOutputStream()) {
+                IO.write(buf.buffer(), out).limit(buf.size()).perform();
+            } catch (IOException io) {
+                throw new UncheckedIOException(io);
+            }
+        };
+    }
+
 
 }
 

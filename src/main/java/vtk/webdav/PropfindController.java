@@ -31,9 +31,7 @@
 package vtk.webdav;
 
 import java.io.IOException;
-import java.io.OutputStream;
 import java.io.StringReader;
-import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
@@ -52,8 +50,6 @@ import org.jdom.Document;
 import org.jdom.Element;
 import org.jdom.JDOMException;
 import org.jdom.input.SAXBuilder;
-import org.jdom.output.Format;
-import org.jdom.output.XMLOutputter;
 import org.springframework.beans.factory.InitializingBean;
 
 import vtk.repository.AuthorizationException;
@@ -201,7 +197,12 @@ public class PropfindController extends AbstractWebdavController
             PropfindRequestModel model = buildPropfindModel(request,
                 resource, requestBody, depth, token);
 
-            writeResponse(request, response, model);
+            Element e = buildMultistatusElement(request, model);
+            Document doc = new Document(e);
+
+            responseBuilder(HttpUtil.SC_MULTI_STATUS)
+                    .handler(xmlResponseHandler(doc))
+                    .writeTo(response);
         }
         catch (InvalidRequestException e) {
             responseBuilder(HttpServletResponse.SC_BAD_REQUEST)
@@ -547,51 +548,6 @@ public class PropfindController extends AbstractWebdavController
         }
     }
     
-
-    /**
-     *  Builds a DAV 'multistatus' XML element.
-     */
-    private void writeResponse(HttpServletRequest request, 
-            HttpServletResponse response, PropfindRequestModel model) throws IOException {
-        
-        Element e = buildMultistatusElement(request, model);
-
-        Document doc = new Document(e);
-
-        Format format = Format.getPrettyFormat();
-        format.setEncoding("utf-8");
-        //format.setLineSeparator("\r\n");
-        //format.setIndent("");
-
-        XMLOutputter xmlOutputter = new XMLOutputter(format);
-        String xml = xmlOutputter.outputString(doc);
-        byte[] buffer = null;
-        try {
-            buffer = xml.getBytes("utf-8");
-        } catch (UnsupportedEncodingException ex) {
-            logger.warn("Warning: UTF-8 encoding not supported", ex);
-            throw new RuntimeException("UTF-8 encoding not supported");
-        }
-        response.setHeader("Content-Type", "text/xml;charset=utf-8");
-        response.setIntHeader("Content-Length", buffer.length);
-        response.setStatus(HttpUtil.SC_MULTI_STATUS,
-                WebdavUtil.getStatusMessage(
-                        HttpUtil.SC_MULTI_STATUS));
-        OutputStream out = null;
-        try {
-            out = response.getOutputStream();
-            out.write(buffer, 0, buffer.length);
-            out.flush();
-            out.close();
-
-        } finally {
-            if (out != null) {
-                out.flush();
-                out.close();
-            }
-        }
-    }
-
     private Element buildMultistatusElement(HttpServletRequest request, 
             PropfindRequestModel model) throws IOException {
 

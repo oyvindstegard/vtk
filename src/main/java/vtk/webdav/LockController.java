@@ -322,18 +322,10 @@ public class LockController extends AbstractWebdavController {
         Lock lock = resource.getLock();
         Element lockDiscovery = buildLockDiscovery(lock);
         Document doc = new Document(lockDiscovery);
-        Format format = Format.getPrettyFormat();
-        format.setEncoding("utf-8");
-        XMLOutputter outputter = new XMLOutputter(format);
-        String xml = outputter.outputString(doc);
-        
-        //byte[] buffer = xml.getBytes(StandardCharsets.UTF_8);
-        
+
         responseBuilder(HttpServletResponse.SC_OK)
-            .header("Content-Type", "text/xml;charset=utf-8")
             .header("Lock-Token", lock.getLockToken())
-            //.header("Content-Length", String.valueOf(buffer.length))
-            .message(xml)
+            .handler(xmlResponseHandler(doc))
             .writeTo(response);
     }
 
