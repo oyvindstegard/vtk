@@ -32,34 +32,12 @@
       display: block;
       padding: 5px 0 6px;
     }
-    /*
-    &.deleteResourcesService a {
-      background: url(images/tab-menu-delete.png) no-repeat center left;
-      padding-left: 25px;
-    }
-    &.moveResourcesService a {
-      background: url(images/tab-menu-move.png) no-repeat center left;
-      padding-left: 41px;
-    }
-    &.copyResourcesService a {
-      background: url(images/tab-menu-copy.png) no-repeat center left;
-      padding-left: 38px;
-    }
-    &.fileUploadService a {
-      background: url(images/tab-menu-upload.png) no-repeat center left;
-    }
-    &.createDocumentService a {
-      background: url(images/tab-menu-new-file.png) no-repeat center left;
-    }
-    &.createCollectionService a {
-      background: url(images/tab-menu-new-folder.png) no-repeat center left;
-    }
-    */
     &.fileUploadService,
     &.adminSearchService {
       margin-left: 60px;
     }
     &.deleteResourcesService,
+    &.recoverResourceService,
     &.fileUploadService,
     &.adminSearchService {
       padding-left: 0;
@@ -73,17 +51,9 @@
         overflow: hidden;
       }
     }
-
     &.adminSearchService {
       padding-left: 15px;
     }
-
-    /*
-    &.recoverResourceService a,
-    &.deleteResourcePermanentService a {
-      padding-left: 0;
-    }
-    */
   }
 }
 

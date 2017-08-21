@@ -1446,11 +1446,6 @@ VrtxAdmin.prototype.addSearchInActiveTab = function addSearchInActiveTab() {
                '</div>';
       }
     };
-    /*
-    if (params) {
-      $.extend(p, params);
-    }
-    */
 
     var field = $('#vrtx-autocomplete-admin-search');
     field.autocomplete('?service=resource-autocomplete&fq=uri=' + location.pathname + '*', p);
