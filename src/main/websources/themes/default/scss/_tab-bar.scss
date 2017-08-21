@@ -32,8 +32,7 @@
       display: block;
       padding: 5px 0 6px;
     }
-    &.fileUploadService,
-    &.adminSearchService {
+    &.fileUploadService {
       margin-left: 60px;
     }
     &.deleteResourcesService,
@@ -51,13 +50,13 @@
         overflow: hidden;
       }
     }
-    &.adminSearchService {
-      padding-left: 15px;
-    }
   }
 }
 
 #tabMenuRight li.adminSearchService {
+  min-width: 210px;
+  text-align: right;
+
   > .vrtx-textfield {
     display: none;
   }

@@ -1373,8 +1373,8 @@ VrtxAdmin.prototype.addSearchInActiveTab = function addSearchInActiveTab() {
   var search = "?service=resource-autocomplete&q=s%C3%B8keterm&fq=uri=/gjeldende/sti*";
 
   var html = '<li class="adminSearchService">' +
-               '<a href="javascript:void(0);">Søk i mappen</a>' +
-               '<input class="vrtx-textfield ac_input" placeholder="Søk i tittel eller filnavn" id="vrtx-autocomplete-admin-search" type="text" size="24" />' +
+               '<a href="javascript:void(0);">' + vrtxAdmin.messages.search.expandLink + '</a>' +
+               '<input class="vrtx-textfield ac_input" placeholder="' + vrtxAdmin.messages.search.placeholder + '" id="vrtx-autocomplete-admin-search" type="text" size="20" />' +
              '</li>';
   vrtxAdm.cachedActiveTab.find("#tabMenuRight").append(html);
 

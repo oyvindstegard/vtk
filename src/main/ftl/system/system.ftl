@@ -50,6 +50,10 @@
       unpublishDateBefore: '${vrtx.getMsg("publishing.edit.invalid.unpublishDateBefore")}',
       unpublishDateNonExisting: '${vrtx.getMsg("publishing.edit.invalid.unpublishDateNonExisting")}'
     },
+    search: {
+      expandLink: '${vrtx.getMsg("tabMenuRight.adminSearchService")}',
+      placeholder: '${vrtx.getMsg("tabMenuRight.adminSearchService.placeholder")}'
+    },
     dropdowns: {
       createTitle: '${vrtx.getMsg("dropdowns.create.title")}',
       resourceTitle: '${vrtx.getMsg("dropdowns.resource.title")}',
