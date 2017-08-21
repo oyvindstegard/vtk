@@ -24,13 +24,15 @@
 
   li {
     float: left;
-    margin: -10px 0 0 30px;
-    padding: 10px 0 10px;
+    margin: -10px 0 0 15px;
+    padding: 10px 0 10px 15px;
+    background: url("images/seperator-grey-gradient.png") no-repeat scroll left top transparent;
 
     a {
       display: block;
-      padding: 5px 0 6px 30px;
+      padding: 5px 0 6px;
     }
+    /*
     &.deleteResourcesService a {
       background: url(images/tab-menu-delete.png) no-repeat center left;
       padding-left: 25px;
@@ -52,9 +54,63 @@
     &.createCollectionService a {
       background: url(images/tab-menu-new-folder.png) no-repeat center left;
     }
+    */
+    &.fileUploadService,
+    &.adminSearchService {
+      margin-left: 60px;
+    }
+    &.deleteResourcesService,
+    &.fileUploadService,
+    &.adminSearchService {
+      padding-left: 0;
+      background: none;
+    }
+    &.more-menu {
+      padding-left: 5px;
+
+      > div > a {
+        text-indent: -9999px;
+        overflow: hidden;
+      }
+    }
+
+    &.adminSearchService {
+      padding-left: 15px;
+    }
+
+    /*
     &.recoverResourceService a,
     &.deleteResourcePermanentService a {
       padding-left: 0;
+    }
+    */
+  }
+}
+
+#tabMenuRight li.adminSearchService {
+  > .vrtx-textfield {
+    display: none;
+  }
+
+  &.visible-search {
+    > a {
+      display: none;
+    }
+    > .vrtx-textfield {
+      display: inline-block !important;
+    }
+  }
+}
+
+#vrtx-manage-collectionlisting .ac_results {
+  margin-left: 0px !important;
+  margin-top: -3px !important;
+
+  .vrtx-autocomplete-search-info {
+    .vrtx-autocomplete-search-filename,
+    .vrtx-autocomplete-search-uri {
+      display: block;
+      font-size: 13px;
     }
   }
 }

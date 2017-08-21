@@ -1045,6 +1045,8 @@ VrtxAdmin.prototype.collectionListingInteraction = function collectionListingInt
     vrtxAdm.placePublishButtonInActiveTab();
     vrtxAdm.placeUnpublishButtonInActiveTab();
     vrtxAdm.dropdownPlain("#collection-more-menu");
+
+    vrtxAdm.addSearchInActiveTab();
   }
 
   vrtxAdm.placeRecoverButtonInActiveTab();
@@ -1222,7 +1224,7 @@ VrtxAdmin.prototype.placePublishButtonInActiveTab = function placeDeleteButtonIn
                  '<ul><li><a id="publishTheResourcesService" href="javascript:void(0);">' + btn.attr('title') + '</a></li></ul>' +
                '</div>' +
              '</li>';
-  menu.append(html);
+  $(html).insertAfter(menu.find(".copyResourcesService"));
 
   $('#publishTheResourcesService').click(function (e) {
     var boxes = vrtxAdm.cachedDirectoryListing.find('td input[type=checkbox]:checked');
@@ -1362,6 +1364,100 @@ VrtxAdmin.prototype.placeDeletePermanentButtonInActiveTab = function placeDelete
     }
     e.stopPropagation();
     e.preventDefault();
+  });
+};
+
+VrtxAdmin.prototype.addSearchInActiveTab = function addSearchInActiveTab() {
+  var vrtxAdm = vrtxAdmin;
+
+  var search = "?service=resource-autocomplete&q=s%C3%B8keterm&fq=uri=/gjeldende/sti*";
+
+  var html = '<li class="adminSearchService">' +
+               '<a href="javascript:void(0);">Søk i mappen</a>' +
+               '<input class="vrtx-textfield ac_input" placeholder="Søk i tittel eller filnavn" id="vrtx-autocomplete-admin-search" type="text" size="24" />' +
+             '</li>';
+  vrtxAdm.cachedActiveTab.find("#tabMenuRight").append(html);
+
+  vrtxAdm.cachedActiveTab.on("click", ".adminSearchService > a", function(e) {
+    var link = $(this);
+    var parent = link.parent();
+    parent.addClass("visible-search");
+    parent.find(".vrtx-textfield")[0].focus();
+
+    e.stopPropagation();
+    e.preventDefault();
+  });
+
+  vrtxAdm.cachedDoc.on("click", function(e) {
+    if($(e.target).closest(".adminSearchService").length) return;
+
+    var parent = $(".adminSearchService");
+    parent.removeClass("visible-search");
+  });
+
+  $.loadCSS(vrtxAdm.rootUrl + "/js/autocomplete/autocomplete.override.css");
+  $.getScript(vrtxAdm.rootUrl + "/jquery/plugins/jquery.autocomplete.js", function() {
+    var p = {
+      minChars: 2,
+      multiple: false,
+      selectFirst: true,
+      max: 20,
+      resultsBeforeScroll: 0,
+      cacheLength: 10,
+      adjustForParentWidth: 16,
+      formatItem : function(data, i, n, value) {
+        var splitted = value.split(';');
+        return {
+          title: splitted[0],
+          uri: splitted[1],
+          resourceType: splitted[2]
+        }
+      },
+      highlight : function(value, term) {
+        var valueArray = value.title.split(" ");
+        var uriValue = value.uri;
+        var filenameValue = uriValue.split("/");
+        filenameValue = filenameValue[filenameValue.length - 1];
+
+        var termArray = term.split(" ");
+        var returnValue = "";
+
+        for (v in valueArray) {
+          var val = valueArray[v];
+          for (t in termArray) {
+            var regex = new RegExp("^(?![^&;]+;)(?!<[^<>]*)("
+                + termArray[t].replace(/([\^\$\(\)\[\]\{\}\*\.\+\?\|\\])/gi, "\\$1") + ")(?![^<>]*>)(?![^&;]+;)", "gi");
+            val = val.replace(regex, "<strong>$1</strong>");
+          }
+          returnValue = (returnValue == "") ? val : (returnValue + " " + val);
+        }
+
+        for (t in termArray) {
+          var regex = new RegExp("^(?![^&;]+;)(?!<[^<>]*)("
+              + termArray[t].replace(/([\^\$\(\)\[\]\{\}\*\.\+\?\|\\])/gi, "\\$1") + ")(?![^<>]*>)(?![^&;]+;)", "gi");
+          filenameValue = filenameValue.replace(regex, "<strong>$1</strong>");
+          uriValue = uriValue.replace(regex, "<strong>$1</strong>");
+        }
+
+        return '<div class="vrtx-autocomplete-search-info ' + value.resourceType + '">' +
+                 '<span class="vrtx-autocomplete-search-title">' + returnValue + '</span>' +
+                 '<span class="vrtx-autocomplete-search-filename">' + filenameValue + '</span>' +
+                 '<span class="vrtx-autocomplete-search-uri">' + uriValue + '</span>' +
+               '</div>';
+      }
+    };
+    /*
+    if (params) {
+      $.extend(p, params);
+    }
+    */
+
+    var field = $('#vrtx-autocomplete-admin-search');
+    field.autocomplete('?service=resource-autocomplete&fq=uri=' + location.pathname + '*', p);
+    field.result(function(event, data, formatted) {
+      var uri = formatted.split(";")[1];
+      location.pathname = uri;
+    });
   });
 };
 
