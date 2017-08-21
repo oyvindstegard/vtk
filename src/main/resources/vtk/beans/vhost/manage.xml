@@ -450,7 +450,32 @@
   <bean parent="collectionMenuBuilder">
     <property name="arguments" ref="createCollectionService" />
   </bean>
-
+  
+  <bean id="createAdminSearchService" class="vtk.web.service.ServiceImpl">
+    <property name="parent" ref="manageCollectionListingService" />
+    <property name="order" value="-950" />
+    <property name="assertions">
+      <list>
+        <ref bean="bindPermissionAssertion" />
+        <ref bean="resourceInCollection" />
+        <bean class="vtk.web.service.RequestParameterAssertion">
+          <property name="parameterName" value="action" />
+          <property name="parameterValue" value="admin-search" />
+        </bean>
+      </list>
+    </property>
+    <property name="handler" ref="createCollectionHandler" />
+    <property name="attributes">
+      <map>
+        <entry key-ref="system.decoratorTemplateAttribute" value="dialog-template.html" />
+      </map>
+    </property>
+  </bean>
+  
+  <bean parent="collectionMenuBuilder">
+    <property name="arguments" ref="createAdminSearchService" />
+  </bean>
+  
   <bean id="renameService" class="vtk.web.service.ServiceImpl">
     <property name="parent" ref="manageService" />
     <property name="order" value="-1000" />
