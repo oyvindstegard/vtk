@@ -59,6 +59,7 @@ import org.apache.lucene.index.IndexableField;
 import org.apache.lucene.index.StoredFieldVisitor;
 import org.springframework.context.ApplicationListener;
 import vtk.repository.Acl;
+import vtk.repository.resourcetype.PropertyTypeDefinitionImpl;
 import vtk.repository.resourcetype.event.TypeConfigurationEvent;
 
 
@@ -122,7 +123,7 @@ public class DocumentMapper implements InitializingBean, ApplicationListener<Typ
     // Typically used only by an indexing thread.
     private final Map<ResourceTypeDefinition, PropertySelect> typeToPropertySelect = new HashMap<>();
 
-    private PropertyTypeDefinition propertyDefinitionFromField(String fieldName) {
+    private PropertyTypeDefinition managedPropertyDefinitionFromField(String fieldName) {
         return propertyFieldToDef.computeIfAbsent(fieldName, f -> {
             String prefix = PropertyFields.propertyNamespacePrefix(f);
             String name = PropertyFields.propertyName(f);
@@ -130,7 +131,14 @@ public class DocumentMapper implements InitializingBean, ApplicationListener<Typ
         });
     }
 
-    private boolean propertyBelongsToType(ResourceTypeDefinition def, PropertyTypeDefinition propDef) {
+    private PropertyTypeDefinition makeDefaultPropertyDefinitionFromField(String fieldName, boolean multiValue) {
+        String prefix = PropertyFields.propertyNamespacePrefix(fieldName);
+        String name = PropertyFields.propertyName(fieldName);
+        Namespace namespace = resourceTypeTree.getNamespaceByPrefix(prefix);
+        return PropertyTypeDefinitionImpl.createDefault(namespace, name, multiValue);
+    }
+
+    private boolean propertyBelongsToType(PropertyTypeDefinition propDef, ResourceTypeDefinition def) {
         // Called only by indexing threads, so there will never be much contention here.
         // Still we'd like getDocument to be thread safe, so synchronize.
         PropertySelect pSelect;
@@ -178,7 +186,7 @@ public class DocumentMapper implements InitializingBean, ApplicationListener<Typ
             // Completely ignore any property without a definition
             if (property.getDefinition() == null) continue;
 
-            if (!propertyBelongsToType(def, property.getDefinition()) && !property.isInherited()) {
+            if (!propertyBelongsToType(property.getDefinition(), def) && !property.isInherited()) {
                 // SKip all (dead/zombie) props which are not inherited
                 continue;
             }
@@ -253,13 +261,15 @@ public class DocumentMapper implements InitializingBean, ApplicationListener<Typ
                 public StoredFieldVisitor.Status needsField(FieldInfo fieldInfo) throws IOException {
                     
                     if (PropertyFields.isPropertyField(fieldInfo.name)) {
-                        PropertyTypeDefinition def = propertyDefinitionFromField(fieldInfo.name);
-                        if (def != null) {
-                            if (select.isIncludedProperty(def)) {
-                                return StoredFieldVisitor.Status.YES;
-                            } else {
-                                return StoredFieldVisitor.Status.NO;
-                            }
+                        PropertyTypeDefinition def = managedPropertyDefinitionFromField(fieldInfo.name);
+                        if (def == null) {
+                            def = makeDefaultPropertyDefinitionFromField(fieldInfo.name, false);
+                        }
+
+                        if (select.isIncludedProperty(def)) {
+                            return StoredFieldVisitor.Status.YES;
+                        } else {
+                            return StoredFieldVisitor.Status.NO;
                         }
                     }
                     
@@ -292,8 +302,7 @@ public class DocumentMapper implements InitializingBean, ApplicationListener<Typ
      * Only loaded fields will be mapped to available properties.
      * 
      * @return an instance of {@link LazyMappedPropertySet} containing properties for all
-     * loaded property fields present in the document. This can be used together
-     * with {@link ResultSetWithAcls} for making ACLs available.
+     * loaded property fields present in the document.
      * 
      * @throws DocumentMappingException in case of errors mapping from document.
      */
@@ -303,12 +312,9 @@ public class DocumentMapper implements InitializingBean, ApplicationListener<Typ
     }
     
     Property propertyFromFields(String fieldName, List<IndexableField> fields) throws DocumentMappingException {
-        PropertyTypeDefinition def = propertyDefinitionFromField(fieldName);
+        PropertyTypeDefinition def = managedPropertyDefinitionFromField(fieldName);
         if (def == null) {
-            String name = PropertyFields.propertyName(fieldName);
-            String nsPrefix = PropertyFields.propertyNamespacePrefix(fieldName);
-            def = resourceTypeTree.getPropertyTypeDefinition(Namespace.getNamespaceFromPrefix(nsPrefix), name);
-            logger.warn("Definition for property '" + nsPrefix + PropertyFields.NAMESPACEPREFIX_NAME_SEPARATOR + name + "' not found");
+            def = makeDefaultPropertyDefinitionFromField(fieldName, fields.size() > 1);
         }
         
         return propertyFields.fromFields(def, fields);

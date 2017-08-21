@@ -181,5 +181,9 @@ public class MockResourceTypeTree implements ResourceTypeTree {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 
+    @Override
+    public PropertyTypeDefinition getManagedPropertyTypeDefinition(Namespace namespace, String name) {
+        return null;
+    }
 
 }

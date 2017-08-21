@@ -57,7 +57,21 @@ import vtk.security.Principal;
 @SuppressWarnings("deprecation")
 public class PropertyTypeDefinitionImpl implements PropertyTypeDefinition, InitializingBean {
 
-    private Map<String, Object> metadata = new HashMap<>();
+    /**
+     * Default value separator, no special formats or localizations.
+     */
+    public static final ValueSeparator DEFAULT_VALUE_SEPARATOR = new ConfigurableValueSeparator();
+
+    /**
+     * Default value formatter.
+     */
+    public static final ValueFormatter DEFAULT_VALUE_FORMATTER = new StringValueFormatter();
+
+    /**
+     * Default value factory.
+     */
+    public static final ValueFactory DEFAULT_VALUE_FACTORY = new DefaultValueFactory();
+
     private Namespace namespace;
     private String name;
     private Type type = PropertyType.Type.STRING;
@@ -65,16 +79,38 @@ public class PropertyTypeDefinitionImpl implements PropertyTypeDefinition, Initi
     private boolean mandatory = false;
     private boolean inheritable = false;
     private RepositoryAction protectionLevel = PropertyType.PROTECTION_LEVEL_ACL_WRITE;
+    private ValueFormatter valueFormatter = DEFAULT_VALUE_FORMATTER;
+    private ValueSeparator valueSeparator = DEFAULT_VALUE_SEPARATOR;
+    private ValueFactory valueFactory = DEFAULT_VALUE_FACTORY;
+    private Map<String, Object> metadata = new HashMap<>(1);
+
+    // Optional fields:
     private Value defaultValue;
     private PropertyEvaluator propertyEvaluator;
     private PropertyValidator validator;
-    private ValueFormatter valueFormatter;
-    private ValueSeparator defaultValueSeparator = new ConfigurableValueSeparator();
-    private Map<String, ValueSeparator> valueSeparators = new HashMap<>();
     private Vocabulary<Value> vocabulary;
-    private ValueFactory valueFactory;
     private ValueFormatterRegistry valueFormatterRegistry;
-    private TypeLocalizationProvider typeLocalizationProvider = null;
+    private TypeLocalizationProvider typeLocalizationProvider;
+
+    /**
+     * Create a default property definition with value type {@link PropertyType.Type#STRING}.
+     *
+     * <p>Typically, such definitions will be used for properties which are unmanaged/unknown
+     * by the repository resource type system. (Also known as dead properties.)
+     *
+     * @param namespace the namespace in which to put the property
+     * @param name the name of the property
+     * @param multiValue whether the property should support multiple values or not
+     * @return a new {@code PropertyTypeDefinition} instance of type STRING with provided namespace, name and multiValue
+     */
+    public static PropertyTypeDefinitionImpl createDefault(Namespace namespace, String name, boolean multiValue) {
+        PropertyTypeDefinitionImpl def = new PropertyTypeDefinitionImpl();
+        def.setNamespace(namespace);
+        def.setName(name);
+        def.setMultiple(multiValue);
+        def.afterPropertiesSet();
+        return def;
+    }
 
     public void setMetadata(Map<String, Object> metadata) {
         if (metadata == null) {
@@ -137,8 +173,7 @@ public class PropertyTypeDefinitionImpl implements PropertyTypeDefinition, Initi
             prop.setValues(values);
         } else {
             // Not multi-value, stringValues must be of length 1, otherwise
-            // there are
-            // inconsistency problems between data store and config.
+            // there are inconsistency problems between data store and config.
             if (stringValues.length > 1) {
                 throw new ValueFormatException("Cannot convert multiple values: " + Arrays.asList(stringValues)
                         + " to a single-value property" + " for property " + prop);
@@ -191,12 +226,21 @@ public class PropertyTypeDefinitionImpl implements PropertyTypeDefinition, Initi
 
     @Override
     public void afterPropertiesSet() {
-        if (this.valueFormatter == null) {
-            this.valueFormatter = this.valueFormatterRegistry.getValueFormatter(this.type);
+        if (name == null) {
+            throw new IllegalStateException("A property type definition must have a name");
+        }
+
+        // Possibly override default value formatter from an impl provided by value formatter registry
+        if (valueFormatter == DEFAULT_VALUE_FORMATTER && valueFormatterRegistry != null) {
+            ValueFormatter vf = valueFormatterRegistry.getValueFormatter(type);
+            if (vf != null) {
+                this.valueFormatter = vf;
+            }
         }
 
         this.metadata = Collections.unmodifiableMap(this.metadata);
 
+        // Possibly do conversion and validation of default value
         if (defaultValue != null) {
             // Possibly attempt conversion to proper type set during init
             if (defaultValue.getType() != type) {
@@ -330,6 +374,12 @@ public class PropertyTypeDefinitionImpl implements PropertyTypeDefinition, Initi
         return this.valueFormatter;
     }
 
+    /**
+     * Set a specific value formatter. This will override any value formatter
+     * provided by {@link #setValueFormatterRegistry(vtk.repository.resourcetype.ValueFormatterRegistry) }.
+     *
+     * @param valueFormatter
+     */
     public void setValueFormatter(ValueFormatter valueFormatter) {
         this.valueFormatter = valueFormatter;
     }
@@ -355,20 +405,12 @@ public class PropertyTypeDefinitionImpl implements PropertyTypeDefinition, Initi
     }
 
     @Override
-    public ValueSeparator getValueSeparator(String format) {
-        ValueSeparator separator = this.valueSeparators.get(format);
-        if (separator != null) {
-            return separator;
-        }
-        return this.defaultValueSeparator;
+    public ValueSeparator getValueSeparator() {
+        return this.valueSeparator;
     }
 
-    public void setDefaultValueSeparator(ValueSeparator defaultValueSeparator) {
-        this.defaultValueSeparator = defaultValueSeparator;
-    }
-
-    public void setValueSeparators(Map<String, ValueSeparator> valueSeparators) {
-        this.valueSeparators = valueSeparators;
+    public void setValueSeparator(ValueSeparator valueSeparator) {
+        this.valueSeparator = valueSeparator;
     }
 
     @Required

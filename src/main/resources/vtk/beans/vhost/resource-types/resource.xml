@@ -20,8 +20,6 @@
         <property name="messageSource" ref="messageSource" />
       </bean>
     </property>
-    <property name="valueFactory" ref="valueFactory" />
-    <property name="valueFormatterRegistry" ref="valueFormatterRegistry" />
   </bean>
 
   <bean id="resourceResourceTypeDefinition" class="vtk.repository.resourcetype.PrimaryResourceTypeDefinitionImpl">

@@ -48,7 +48,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.BeanFactoryUtils;
 import org.springframework.beans.factory.BeanInitializationException;
 import org.springframework.beans.factory.InitializingBean;
-import org.springframework.beans.factory.annotation.Required;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 import org.springframework.context.ApplicationListener;
@@ -64,8 +63,6 @@ import vtk.repository.resourcetype.PropertyTypeDefinition;
 import vtk.repository.resourcetype.PropertyTypeDefinitionImpl;
 import vtk.repository.resourcetype.ResourceTypeDefinition;
 import vtk.repository.resourcetype.TypeLocalizationProvider;
-import vtk.repository.resourcetype.ValueFactory;
-import vtk.repository.resourcetype.ValueFormatterRegistry;
 import vtk.repository.resourcetype.event.DynamicTypeRegisteredEvent;
 import vtk.repository.resourcetype.event.DynamicTypeRegistrationComplete;
 import vtk.repository.resourcetype.event.StaticTypesInitializedEvent;
@@ -174,10 +171,6 @@ public class ResourceTypeTreeImpl implements ResourceTypeTree, InitializingBean,
 
     private TypeLocalizationProvider typeLocalizationProvider;
 
-    private ValueFormatterRegistry valueFormatterRegistry;
-
-    private ValueFactory valueFactory;
-
     // Lazy cache for method flattenedDescendants
     private final Map<String, Set<String>> nameDescendantsCache = new ConcurrentHashMap<>();
     // Lazy cache for method flattenedAncestors
@@ -194,24 +187,26 @@ public class ResourceTypeTreeImpl implements ResourceTypeTree, InitializingBean,
     }
     
     @Override
-    public boolean isManagedProperty(PropertyTypeDefinition definition) {
-        Map<String, PropertyTypeDefinition> map = 
-                propertyTypeDefinitions.get(definition.getNamespace());
+    public PropertyTypeDefinition getManagedPropertyTypeDefinition(Namespace namespace, String name) {
+        Map<String, PropertyTypeDefinition> map = propertyTypeDefinitions.get(namespace);
         if (map == null) {
-            return false;
+            return null;
         }
-        return map.get(definition.getName()) != null;
+
+        return map.get(name);
     }
 
     @Override
-    public PropertyTypeDefinition getPropertyTypeDefinition(Namespace namespace, String name) {
-        Map<String, PropertyTypeDefinition> map = this.propertyTypeDefinitions.get(namespace);
+    public boolean isManagedProperty(PropertyTypeDefinition def) {
+        return getManagedPropertyTypeDefinition(def.getNamespace(), def.getName()) != null;
+    }
 
-        if (map != null) {
-            PropertyTypeDefinition propDef = map.get(name);
-            if (propDef != null) {
-                return propDef;
-            }
+    // TODO rename to "getPropertyTypeDefinitionOrDefault" to reduce overall confusion
+    @Override
+    public PropertyTypeDefinition getPropertyTypeDefinition(Namespace namespace, String name) {
+        PropertyTypeDefinition propDef = getManagedPropertyTypeDefinition(namespace, name);
+        if (propDef != null) {
+            return propDef;
         }
 
         if (logger.isDebugEnabled()) {
@@ -219,14 +214,7 @@ public class ResourceTypeTreeImpl implements ResourceTypeTree, InitializingBean,
                     + namespace.getPrefix() + ":" + name + ", returning default");
         }
 
-        PropertyTypeDefinitionImpl propDef = new PropertyTypeDefinitionImpl();
-        propDef.setNamespace(namespace);
-        propDef.setName(name);
-        propDef.setValueFactory(this.valueFactory);
-        propDef.setValueFormatterRegistry(this.valueFormatterRegistry);
-        propDef.afterPropertiesSet();
-
-        return propDef;
+        return PropertyTypeDefinitionImpl.createDefault(namespace, name, false);
     }
 
     @Override
@@ -404,14 +392,19 @@ public class ResourceTypeTreeImpl implements ResourceTypeTree, InitializingBean,
         return type;
     }
 
+    /**
+     * @param prefix
+     * @param name
+     * @return
+     */
     @Override
     public PropertyTypeDefinition getPropertyDefinitionByPrefix(String prefix, String name) {
         Namespace namespace = this.namespacePrefixMap.get(prefix);
         if (namespace == null) {
             return null;
         }
-        PropertyTypeDefinition propertyTypeDefinition = getPropertyTypeDefinition(namespace, name);
-        return propertyTypeDefinition;
+
+        return getManagedPropertyTypeDefinition(namespace, name);
     }
 
     @Override
@@ -521,30 +514,6 @@ public class ResourceTypeTreeImpl implements ResourceTypeTree, InitializingBean,
         if (resourceTypeName == null) return false;
         return flattenedAncestors(resourceTypeName).contains(def.getName())
                         || def.getName().equals(resourceTypeName);
-
-// Old logic kept for easy inspection:
-//
-//        ResourceTypeDefinition type = this.resourceTypeNameMap.get(resourceTypeName);
-//        if (type == null || !(type instanceof PrimaryResourceTypeDefinition)) {
-//            return false;
-//        }
-//
-//        PrimaryResourceTypeDefinition primaryDef = (PrimaryResourceTypeDefinition) type;
-//
-//        // recursive ascent on the parent axis
-//        while (primaryDef != null) {
-//            if (def instanceof MixinResourceTypeDefinition) {
-//                for (MixinResourceTypeDefinition mixin: primaryDef.getMixinTypeDefinitions()) {
-//                    if (mixin.equals(def)) {
-//                        return true;
-//                    }
-//                }
-//            } else if (primaryDef.equals(def)) {
-//                return true;
-//            }
-//            primaryDef = primaryDef.getParentTypeDefinition();
-//        }
-//        return false;
     }
 
     
@@ -563,16 +532,23 @@ public class ResourceTypeTreeImpl implements ResourceTypeTree, InitializingBean,
     public Namespace getNamespace(String namespaceUrl) {
         Namespace namespace = this.namespaceUriMap.get(namespaceUrl);
         
-        if (namespace == null) 
+        if (namespace == null) {
             namespace = new Namespace(namespaceUrl);
+        }
+
         return namespace;
     }
     
     @Override
     public Namespace getNamespaceByPrefix(String prefix) {
-        return this.namespacePrefixMap.get(prefix);
-    }
+        Namespace namespace = this.namespacePrefixMap.get(prefix);
 
+        if (namespace == null) {
+            namespace = Namespace.getNamespaceFromPrefix(prefix);
+        }
+
+        return namespace;
+    }
 
     @Override
     public PrimaryResourceTypeDefinition[] getPrimaryResourceTypesForPropDef(
@@ -910,20 +886,9 @@ public class ResourceTypeTreeImpl implements ResourceTypeTree, InitializingBean,
         }
     }
     
-
     public void setTypeLocalizationProvider(
             TypeLocalizationProvider typeLocalizationProvider) {
         this.typeLocalizationProvider = typeLocalizationProvider;
-    }
-
-    @Required
-    public void setValueFormatterRegistry(ValueFormatterRegistry valueFormatterRegistry) {
-        this.valueFormatterRegistry = valueFormatterRegistry;
-    }
-
-    @Required
-    public void setValueFactory(ValueFactory valueFactory) {
-        this.valueFactory = valueFactory;
     }
 
     @Override

@@ -35,6 +35,7 @@ import java.util.List;
 import vtk.repository.resourcetype.HierarchicalVocabulary;
 import vtk.repository.resourcetype.MixinResourceTypeDefinition;
 import vtk.repository.resourcetype.PrimaryResourceTypeDefinition;
+import vtk.repository.resourcetype.PropertyType;
 import vtk.repository.resourcetype.PropertyTypeDefinition;
 import vtk.repository.resourcetype.ResourceTypeDefinition;
 
@@ -46,12 +47,43 @@ import vtk.repository.resourcetype.ResourceTypeDefinition;
  */
 public interface ResourceTypeTree extends HierarchicalVocabulary<String> {
 
+    /**
+     * Obtain a property definition with namespace and name.
+     *
+     * <p>For properties which are unrecognized (not part of any defined resource type, aka dead),
+     * a default definition is returned for a single valued property of data type {@link PropertyType.Type#STRING}.
+     *
+     * @param namespace
+     * @param name
+     * @return a property type definition, never {@code null}
+     */
     public PropertyTypeDefinition getPropertyTypeDefinition(Namespace namespace, String name);
 
-    public String getResourceTypeTreeAsString();
+    /**
+     * Obtain a managed property definition by namespace and name.
+     *
+     * <p>A managed property definition has a connection to a known resource type.
+     *
+     * <p>The difference from {@link #getPropertyTypeDefinition(vtk.repository.Namespace, java.lang.String) } is that
+     * this method will return {@code null} if no definition is found (no resource type has such a property).
+     *
+     * @param namespace
+     * @param name
+     * @return a property type definition, or {@code null} if no such known definition exists
+     */
+    public PropertyTypeDefinition getManagedPropertyTypeDefinition(Namespace namespace, String name);
 
-    public void registerDynamicResourceType(PrimaryResourceTypeDefinition def);
+    /**
+     * Decides whether a property definition is part of some resource type definition,
+     * or whether it is a default definition for a "dead" (unknown) property.
+     *
+     * @param definition the definition
+     */
+    public boolean isManagedProperty(PropertyTypeDefinition definition);
 
+    /**
+     * @return the root resource type definition
+     */
     public PrimaryResourceTypeDefinition getRoot();
     
     public List<MixinResourceTypeDefinition> getMixinTypes(PrimaryResourceTypeDefinition def);
@@ -89,7 +121,7 @@ public interface ResourceTypeTree extends HierarchicalVocabulary<String> {
     public ResourceTypeDefinition getResourceTypeDefinitionByName(String name);
     
     /**
-     * Gets a property type definition by prefix and name
+     * Gets a property type definition by namespace prefix and name.
      *
      * @param prefix the prefix of the property type
      * @param name the name of the property
@@ -130,23 +162,11 @@ public interface ResourceTypeTree extends HierarchicalVocabulary<String> {
     public List<PropertyTypeDefinition> getPropertyTypeDefinitions();
 
     /**
-     * Decides whether a property definition is part of some resource type definition,
-     * or whether it represents a "dead" property
-     */
-    boolean isManagedProperty(PropertyTypeDefinition definition);
-
-
-
-    /**
      * Return a <code>List</code> of the immediate children of the given resource type.
      * @param def
      * @return a <code>List</code> of the immediate children of the given resource type.
      */
     public List<PrimaryResourceTypeDefinition> getResourceTypeDefinitionChildren(PrimaryResourceTypeDefinition def);
-
-    public Namespace getNamespace(String namespaceUrl);
-    
-    public Namespace getNamespaceByPrefix(String prefix);
 
     /** 
      * Since a mixin might be included in several primary resource types, this
@@ -157,5 +177,13 @@ public interface ResourceTypeTree extends HierarchicalVocabulary<String> {
      * this property, or an empty array if none 
      */
     public PrimaryResourceTypeDefinition[] getPrimaryResourceTypesForPropDef(PropertyTypeDefinition definition);
+
+    public Namespace getNamespace(String namespaceUrl);
+
+    public Namespace getNamespaceByPrefix(String prefix);
+
+    public String getResourceTypeTreeAsString();
+
+    public void registerDynamicResourceType(PrimaryResourceTypeDefinition def);
 
 }

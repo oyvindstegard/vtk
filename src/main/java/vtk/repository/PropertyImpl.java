@@ -530,15 +530,15 @@ public class PropertyImpl implements Property {
         }
 
         ValueFormatter formatter = propertyTypeDefinition.getValueFormatter();
-        ValueSeparator separator = propertyTypeDefinition.getValueSeparator(format);
+        ValueSeparator separator = propertyTypeDefinition.getValueSeparator();
         StringBuilder sb = new StringBuilder();
         for (int i = 0; i < values.length; i++) {
             Value value = values[i];
             sb.append(formatter.valueToString(value, format, locale));
             if (i < values.length - 2) {
-                sb.append(separator.getIntermediateSeparator(value, locale));
+                sb.append(separator.getIntermediateSeparator(value, format, locale));
             } else if (i == values.length - 2) {
-                sb.append(separator.getFinalSeparator(value, locale));
+                sb.append(separator.getFinalSeparator(value, format, locale));
             }
         }
         return sb.toString();

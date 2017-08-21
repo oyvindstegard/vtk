@@ -233,8 +233,8 @@ public class OverridingPropertyTypeDefinitionImpl implements OverridableProperty
     }
 
     @Override
-    public ValueSeparator getValueSeparator(String format) {
-        return this.overriddenPropDef.getValueSeparator(format);
+    public ValueSeparator getValueSeparator() {
+        return this.overriddenPropDef.getValueSeparator();
     }
 
     @Override

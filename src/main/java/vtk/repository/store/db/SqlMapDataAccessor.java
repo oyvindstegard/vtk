@@ -39,12 +39,10 @@ import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.function.BinaryOperator;
-import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import org.apache.ibatis.session.SqlSession;
@@ -62,13 +60,12 @@ import vtk.repository.PropertyImpl;
 import vtk.repository.PropertySet;
 import vtk.repository.PropertySetImpl;
 import vtk.repository.RecoverableResource;
-import vtk.repository.Repository.Depth;
 import vtk.repository.ResourceImpl;
 import vtk.repository.ResourceTypeTree;
 import vtk.repository.resourcetype.BinaryValue;
-import vtk.repository.resourcetype.BufferedBinaryValue;
 import vtk.repository.resourcetype.PropertyType;
 import vtk.repository.resourcetype.PropertyTypeDefinition;
+import vtk.repository.resourcetype.PropertyTypeDefinitionImpl;
 import vtk.repository.resourcetype.Value;
 import vtk.repository.resourcetype.ValueFactory;
 import vtk.repository.store.DataAccessException;
@@ -837,7 +834,7 @@ public class SqlMapDataAccessor extends AbstractSqlMapDataAccessor implements Da
 
         List<Map<String, Object>> list = sqlSession.selectList(sqlMap, paths);
 
-        Map<String, Integer> uris = new HashMap<String, Integer>();
+        Map<String, Integer> uris = new HashMap<>();
         for (Map<String, Object> map : list) {
             uris.put((String) map.get("uri"), (Integer) map.get("resourceId"));
         }
@@ -871,12 +868,12 @@ public class SqlMapDataAccessor extends AbstractSqlMapDataAccessor implements Da
         if (resources.length == 0) {
             return;
         }
-        List<Map<String, Object>> propertyRows = new ArrayList<Map<String, Object>>();
+        List<Map<String, Object>> propertyRows = new ArrayList<>();
         String sqlMap = getSqlMap("loadInheritableProperties");
-        Map<String, Object> parameterMap = new HashMap<String, Object>();
+        Map<String, Object> parameterMap = new HashMap<>();
         
-        Set<Path> handled = new HashSet<Path>();
-        Set<Path> paths = new HashSet<Path>();
+        Set<Path> handled = new HashSet<>();
+        Set<Path> paths = new HashSet<>();
         // Load inheritable properties from all ancestors
         for (int i = 0; i < resources.length; i++) {
             Path parent = resources[i].getURI().getParent();
@@ -897,9 +894,9 @@ public class SqlMapDataAccessor extends AbstractSqlMapDataAccessor implements Da
 
         // Aggregate all properties in resultset rows, and also link paths to PropHolder instances
         // Map linking path to list of PropHolder instances
-        final Map<Path, List<PropHolder>> inheritableMap = new HashMap<Path, List<PropHolder>>();
+        final Map<Path, List<PropHolder>> inheritableMap = new HashMap<>();
         // Map for PropHolder value aggregation
-        final Map<PropHolder, List<Object>> holderValues = new HashMap<PropHolder, List<Object>>();
+        final Map<PropHolder, List<Object>> holderValues = new HashMap<>();
         for (Map<String, Object> propEntry : propertyRows) {
             PropHolder propHolder = new PropHolder();
             propHolder.propID = propEntry.get("id");
@@ -911,7 +908,7 @@ public class SqlMapDataAccessor extends AbstractSqlMapDataAccessor implements Da
             List<Object> values = holderValues.get(propHolder);
             if (values == null) {
                 // New Property
-                values = new ArrayList<Object>(2);
+                values = new ArrayList<>(2);
                 propHolder.values = values;
                 holderValues.put(propHolder, values);
 
@@ -919,7 +916,7 @@ public class SqlMapDataAccessor extends AbstractSqlMapDataAccessor implements Da
                 Path uri = (Path) propEntry.get("uri");
                 List<PropHolder> holderList = inheritableMap.get(uri);
                 if (holderList == null) {
-                    holderList = new ArrayList<PropHolder>();
+                    holderList = new ArrayList<>();
                     inheritableMap.put(uri, holderList);
                 }
                 holderList.add(propHolder);
@@ -935,10 +932,10 @@ public class SqlMapDataAccessor extends AbstractSqlMapDataAccessor implements Da
         
         // Create Property instances from PropHolders in inheritableMap
         final Map<Path, List<Property>> inheritableProperties
-                = new HashMap<Path, List<Property>>(inheritableMap.size(), 1.0f);
+                = new HashMap<>(inheritableMap.size(), 1.0f);
         for (Map.Entry<Path, List<PropHolder>> entry: inheritableMap.entrySet()) {
             List<PropHolder> holderList = entry.getValue();
-            List<Property> propList = new ArrayList<Property>(holderList.size());
+            List<Property> propList = new ArrayList<>(holderList.size());
             for (PropHolder ph: holderList) {
                 propList.add(createInheritedProperty(ph));
             }
@@ -946,7 +943,7 @@ public class SqlMapDataAccessor extends AbstractSqlMapDataAccessor implements Da
         }
 
         // Populate loaded resources with inheritable props, handling override from bottom up in paths
-        final Set<PropertyTypeDefinition> encountered = new HashSet<PropertyTypeDefinition>();
+        final Set<PropertyTypeDefinition> encountered = new HashSet<>();
         for (ResourceImpl r : resources) {
             Path parent = r.getURI().getParent();
             if (parent == null) {
@@ -977,14 +974,14 @@ public class SqlMapDataAccessor extends AbstractSqlMapDataAccessor implements Da
         if (resources.length == 0) {
             return;
         }
-        Set<Integer> resourceIds = new HashSet<Integer>();
+        Set<Integer> resourceIds = new HashSet<>();
         for (int i = 0; i < resources.length; i++) {
 
             int id = resources[i].isInheritedAcl() ? resources[i].getAclInheritedFrom() : resources[i].getID();
 
             resourceIds.add(id);
         }
-        Map<Integer, AclHolder> map = loadAclMap(new ArrayList<Integer>(resourceIds), sqlSession);
+        Map<Integer, AclHolder> map = loadAclMap(new ArrayList<>(resourceIds), sqlSession);
 
         for (ResourceImpl resource : resources) {
             AclHolder aclHolder = null;
@@ -1005,7 +1002,7 @@ public class SqlMapDataAccessor extends AbstractSqlMapDataAccessor implements Da
 
     private Map<Integer, AclHolder> loadAclMap(List<Integer> resourceIds, SqlSession sqlSession) {
 
-        Map<Integer, AclHolder> resultMap = new HashMap<Integer, AclHolder>();
+        Map<Integer, AclHolder> resultMap = new HashMap<>();
         if (resourceIds.isEmpty()) {
             return resultMap;
         }
@@ -1171,16 +1168,12 @@ public class SqlMapDataAccessor extends AbstractSqlMapDataAccessor implements Da
             prop.resourceId = (Integer) propEntry.get("resourceId");
             prop.binary = (Boolean) propEntry.get("binary");
 
-            List<Object> values = propValuesMap.get(prop);
-            if (values == null) {
-                values = new ArrayList<>(2); // Most props have only one value
-                prop.values = values;
-                propValuesMap.put(prop, values);
-            }
+            prop.values = propValuesMap.computeIfAbsent(prop, ph -> new ArrayList<>(2));
+
             if (prop.binary) {
-                values.add(prop.propID);
+                prop.values.add(prop.propID);
             } else {
-                values.add(propEntry.get("value"));
+                prop.values.add(propEntry.get("value"));
             }
         }
 
@@ -1294,7 +1287,7 @@ public class SqlMapDataAccessor extends AbstractSqlMapDataAccessor implements Da
 
     /**
      * Create property from namespace, name and value.
-     * 
+     *
      * Data type specific format validation is not performed here.
      */
     Property createProperty(Namespace ns, String name, Object objectValue) {
@@ -1335,8 +1328,14 @@ public class SqlMapDataAccessor extends AbstractSqlMapDataAccessor implements Da
      * Data type specific format validation is not performed at this stage.
      */
     Property createProperty(PropHolder holder) {
-        Namespace namespace = this.resourceTypeTree.getNamespace(holder.namespaceUri);
-        PropertyTypeDefinition propDef = this.resourceTypeTree.getPropertyTypeDefinition(namespace, holder.name);
+        Namespace namespace = resourceTypeTree.getNamespace(holder.namespaceUri);
+        PropertyTypeDefinition propDef = resourceTypeTree.getManagedPropertyTypeDefinition(namespace, holder.name);
+        if (propDef == null) {
+            // Dead/unknown property, fall back to creating a default definition
+            boolean multiValue = holder.values.size() > 1;
+            propDef = PropertyTypeDefinitionImpl.createDefault(namespace, holder.name, multiValue);
+        }
+
         PropertyImpl prop = new PropertyImpl(propDef);
         
         // In case of multi-value props, some values may be stored as binary
@@ -1346,12 +1345,12 @@ public class SqlMapDataAccessor extends AbstractSqlMapDataAccessor implements Da
         for (int i=0; i<holder.values.size(); i++) {
             Object objectValue = holder.values.get(i);
             if (objectValue.getClass() == String.class) {
-                values[i] = this.valueFactory.createValue((String)objectValue, propDef.getType());
+                values[i] = valueFactory.createValue((String)objectValue, propDef.getType());
             } else if (objectValue.getClass() == Integer.class) {
                 // Binary value reference
                 BinaryValueReference binVal = new BinaryValueReference(this, (Integer)objectValue);
                 try {
-                    values[i] = this.valueFactory.createValue(binVal, propDef.getType());
+                    values[i] = valueFactory.createValue(binVal, propDef.getType());
                 } catch (IllegalArgumentException ia) {
                     logger.warn("Failed to create property value from integer ref = " 
                             + objectValue + ", resource id = " + holder.resourceId 
@@ -1361,23 +1360,18 @@ public class SqlMapDataAccessor extends AbstractSqlMapDataAccessor implements Da
                 }
             } else if (objectValue instanceof BinaryValue) {
                 // Already (buffered/loaded) binary value
-                values[i] = this.valueFactory.createValue((BinaryValue)objectValue, propDef.getType());
+                values[i] = valueFactory.createValue((BinaryValue)objectValue, propDef.getType());
             } else {
                 throw new DataAccessException("Expected PropHolder value to be either string or integer reference for property " + prop);
             }
         }
-        
-        // Set value(s) without strict validation
+
         if (propDef.isMultiple()) {
             prop.setValues(values, false);
         } else {
-            if (values.length > 1) {
-                    throw new DataAccessException("Property " + propDef
-                            + " is not multi-value, but multiple values found in database.");
-            }
             prop.setValue(values[0], false);
         }
-        
+
         return prop;
     }
 

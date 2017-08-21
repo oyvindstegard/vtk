@@ -32,9 +32,13 @@ package vtk.repository.resourcetype;
 
 import java.util.Locale;
 
+/**
+ * Format, locale and value specific property value separation strings.
+ */
 public interface ValueSeparator {
 
-    public String getIntermediateSeparator(Value value, Locale locale);
+    public String getIntermediateSeparator(Value value, String format, Locale locale);
 
-    public String getFinalSeparator(Value value, Locale locale);
+    public String getFinalSeparator(Value value, String format, Locale locale);
+
 }

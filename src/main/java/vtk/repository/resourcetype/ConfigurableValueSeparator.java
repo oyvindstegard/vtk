@@ -31,25 +31,58 @@
 package vtk.repository.resourcetype;
 
 import java.util.Locale;
+import java.util.Objects;
+import java.util.Optional;
+import org.springframework.context.MessageSource;
 
+/**
+ * Provides a default intermediate and final separator, as well as possibility
+ * to provide a message source with format and locale sensitive variants.
+ *
+ * <p>Keys in message sources must be on the form:
+ *  {@code "valueSeparator.intermediate.<format>"} and {@code "valueSeparator.final.<format>"}. For the
+ * default {@code null} format, the {@code ".<format>"} part of the
+ * message key may be omitted.
+ */
 public class ConfigurableValueSeparator implements ValueSeparator {
-    private String intermediateSeparator = ", ";
-    private String finalSeparator = ", ";
+    
+    private final String defaultIntermediateSeparator;
+    private final String defaultFinalSeparator;
+    private final Optional<MessageSource> separators;
 
-    public String getFinalSeparator(Value value, Locale locale) {
-        return this.finalSeparator;
+    public ConfigurableValueSeparator() {
+        this(", ", ", ", null);
     }
 
-    public String getIntermediateSeparator(Value value, Locale locale) {
-        return this.intermediateSeparator;
+    public ConfigurableValueSeparator(String defaultIntermediateSeparator, String defaultFinalSeparator) {
+        this(defaultIntermediateSeparator, defaultFinalSeparator, null);
     }
 
-    public void setIntermediateSeparator(String intermediateSeparator) {
-        this.intermediateSeparator = intermediateSeparator;
+    public ConfigurableValueSeparator(String defaultIntermediateSeparator, String defaultFinalSeparator, MessageSource messages) {
+        this.defaultIntermediateSeparator = Objects.requireNonNull(defaultIntermediateSeparator);
+        this.defaultFinalSeparator = Objects.requireNonNull(defaultFinalSeparator);
+        this.separators = Optional.ofNullable(messages);
     }
 
-    public void setFinalSeparator(String finalSeparator) {
-        this.finalSeparator = finalSeparator;
+    @Override
+    public String getFinalSeparator(Value value, String format, Locale locale) {
+        if (separators.isPresent()) {
+            return separators.get().getMessage("valueSeparator.final"
+                    + (format != null ? "." + format : ""), null, defaultFinalSeparator, locale);
+        }
+
+        return defaultFinalSeparator;
     }
+
+    @Override
+    public String getIntermediateSeparator(Value value, String format, Locale locale) {
+        if (separators.isPresent()) {
+            return separators.get().getMessage("valueSeparator.intermediate"
+                    + (format != null ? "." + format : ""), null, defaultIntermediateSeparator, locale);
+        }
+
+        return defaultIntermediateSeparator;
+    }
+
 
 }
