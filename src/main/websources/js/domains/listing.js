@@ -1404,7 +1404,7 @@ VrtxAdmin.prototype.addSearchInActiveTab = function addSearchInActiveTab() {
       max: 20,
       resultsBeforeScroll: 0,
       cacheLength: 10,
-      adjustForParentWidth: 16,
+      minWidth: 350,
       formatItem : function(data, i, n, value) {
         var splitted = value.split(';');
         return {
