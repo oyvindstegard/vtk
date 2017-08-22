@@ -136,6 +136,7 @@ public class CollectionListingAggregationResolverTest {
         propDef.setName(name);
         propDef.setType(type);
         propDef.setValueFormatter(valueFormatter);
+        propDef.afterPropertiesSet();
         return propDef;
     }
 

@@ -316,6 +316,7 @@ public class TestResourceFactory {
                         }
                         def.setName(key);
                         def.setNamespace(Namespace.DEFAULT_NAMESPACE);
+                        def.afterPropertiesSet();
                         PropertyImpl p = new PropertyImpl(def);
                         p.setValue(value);
                         resource.addProperty(p);

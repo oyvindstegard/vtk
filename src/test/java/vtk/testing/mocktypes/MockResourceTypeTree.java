@@ -77,6 +77,7 @@ public class MockResourceTypeTree implements ResourceTypeTree {
         PropertyTypeDefinitionImpl propDef = new PropertyTypeDefinitionImpl();
         propDef.setNamespace(Namespace.getNamespaceFromPrefix(prefix));
         propDef.setName(name);
+        propDef.afterPropertiesSet();
         return propDef;
     }
 

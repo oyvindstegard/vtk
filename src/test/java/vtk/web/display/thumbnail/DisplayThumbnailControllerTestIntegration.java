@@ -155,6 +155,7 @@ public class DisplayThumbnailControllerTestIntegration extends AbstractControlle
             thumbnailPropDef.setType(Type.BINARY);
             thumbnailPropDef.setNamespace(Namespace.DEFAULT_NAMESPACE);
             thumbnailPropDef.setName(PropertyType.THUMBNAIL_PROP_NAME);
+            thumbnailPropDef.afterPropertiesSet();
 
             context.checking(new Expectations() {
                 {

@@ -243,13 +243,8 @@ public class PropertySetImplTest {
         }
     }
     
-    private PropertyImpl newStringProperty(Namespace namespace, String name, String value) {
-        PropertyTypeDefinitionImpl def = new PropertyTypeDefinitionImpl();
-        def.setName(name);
-        def.setNamespace(namespace);
-        def.setType(PropertyType.Type.STRING);
-        PropertyImpl p = new PropertyImpl(def);
-        p.setValue(new Value(value, PropertyType.Type.STRING));
-        return p;
+    private Property newStringProperty(Namespace namespace, String name, String value) {
+        return PropertyTypeDefinitionImpl.createDefault(namespace, name, false)
+                                         .createProperty(value);
     }
 }

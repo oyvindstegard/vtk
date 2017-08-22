@@ -329,6 +329,7 @@ public class LinkReplacerTest {
         def.setNamespace(Namespace.DEFAULT_NAMESPACE);
         def.setName(name);
         def.setType(type);
+        def.afterPropertiesSet();
         PropertyImpl p = new PropertyImpl(def);
         p.setStringValue(value);
         return p;
@@ -340,6 +341,7 @@ public class LinkReplacerTest {
         def.setName(name);
         def.setType(type);
         def.setMultiple(true);
+        def.afterPropertiesSet();
         PropertyImpl p = new PropertyImpl(def);
         List<Value> list = new ArrayList<>();
         for (String v: values) {
