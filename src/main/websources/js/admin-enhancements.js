@@ -1125,14 +1125,14 @@ VrtxAdmin.prototype.addSearch = function addSearch() {
 
   var globalHtml = '<div class="global-menu-small adminSearchService">' +
                      '<a href="javascript:void(0);">' + vrtxAdmin.messages.search.expandLink.split(" ")[0] + '</a>' +
-                     '<input class="vrtx-textfield ac_input" placeholder="' + vrtxAdmin.messages.search.placeholder + '" id="vrtx-autocomplete-admin-global-search" type="text" size="17" />' +
+                     '<input class="vrtx-textfield ac_input" placeholder="' + vrtxAdmin.messages.search.placeholder + '" id="vrtx-autocomplete-admin-global-search" type="text" size="18" />' +
                    '</div>';
   $("#global-menu-top").prepend(globalHtml);
 
   if(isCollectionListing) {
     var html = '<li class="adminSearchService">' +
                  '<a href="javascript:void(0);">' + vrtxAdmin.messages.search.expandLink + '</a>' +
-                 '<input class="vrtx-textfield ac_input" placeholder="' + vrtxAdmin.messages.search.placeholder + '" id="vrtx-autocomplete-admin-search" type="text" size="17" />' +
+                 '<input class="vrtx-textfield ac_input" placeholder="' + vrtxAdmin.messages.search.placeholder + '" id="vrtx-autocomplete-admin-search" type="text" size="18" />' +
                '</li>';
     vrtxAdm.cachedActiveTab.find("#tabMenuRight").append(html);
   }
