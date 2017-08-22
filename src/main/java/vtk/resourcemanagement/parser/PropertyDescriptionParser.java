@@ -35,9 +35,9 @@ import java.util.List;
 
 import org.antlr.runtime.tree.CommonTree;
 import org.antlr.runtime.tree.Tree;
+
 import vtk.repository.resource.ResourcetreeLexer;
 import vtk.resourcemanagement.StructuredResourceDescription;
-import vtk.resourcemanagement.property.BinaryPropertyDescription;
 import vtk.resourcemanagement.property.DerivedPropertyDescription;
 import vtk.resourcemanagement.property.DerivedPropertyEvaluationDescription;
 import vtk.resourcemanagement.property.DerivedPropertyEvaluationDescription.EvaluationElement;
@@ -51,7 +51,7 @@ public class PropertyDescriptionParser {
 
     @SuppressWarnings("unchecked")
     public void parsePropertyDescriptions(StructuredResourceDescription srd, List<CommonTree> propertyDescriptions) {
-        List<PropertyDescription> props = new ArrayList<PropertyDescription>();
+        List<PropertyDescription> props = new ArrayList<>();
         if (propertyDescriptions != null) {
             for (CommonTree propDesc : propertyDescriptions) {
                 int type = propDesc.getChild(0).getType();
@@ -60,17 +60,14 @@ public class PropertyDescriptionParser {
                     p.setName(propDesc.getText());
                     populateDerivedPropertyDescription(p, propDesc.getChildren());
                     props.add(p);
-                } else if (type == ResourcetreeLexer.JSON) {
+                }
+                else if (type == ResourcetreeLexer.JSON) {
                     JSONPropertyDescription json = new JSONPropertyDescription();
                     json.setName(propDesc.getText());
                     populateJSONPropertyDescription(json, propDesc.getChildren());
                     props.add(json);
-                } else if (type == ResourcetreeLexer.BINARY) {
-                    BinaryPropertyDescription bin = new BinaryPropertyDescription();
-                    bin.setName(propDesc.getText());
-                    populateBinaryPropertyDescription(bin, propDesc.getChildren());
-                    props.add(bin);
-                } else {
+                }
+                else {
                     SimplePropertyDescription p = new SimplePropertyDescription();
                     p.setName(propDesc.getText());
                     populateSimplePropertyDescription(p, propDesc.getChildren());
@@ -78,19 +75,6 @@ public class PropertyDescriptionParser {
                 }
             }
             srd.setPropertyDescriptions(props);
-        }
-    }
-
-    private void populateBinaryPropertyDescription(BinaryPropertyDescription bin, List<CommonTree> propertyDescription) {
-        for (CommonTree descEntry : propertyDescription) {
-            switch (descEntry.getType()) {
-            case ResourcetreeLexer.BINARY:
-                bin.setType(descEntry.getText());
-                break;
-            default:
-                throw new IllegalStateException("Unknown token type for simple property description: "
-                        + descEntry.getText());
-            }
         }
     }
 
@@ -181,7 +165,6 @@ public class PropertyDescriptionParser {
         }
     }
 
-    @SuppressWarnings("unchecked")
     private void handleJSONAttributes(JSONPropertyDescription p, CommonTree descEntry) {
         List<CommonTree> jsonSpecList = descEntry.getChildren();
         if (jsonSpecList != null) {
@@ -215,7 +198,7 @@ public class PropertyDescriptionParser {
             return;
         }
 
-        List<String> dependentFields = new ArrayList<String>();
+        List<String> dependentFields = new ArrayList<>();
         for (int i = index; i < fields.getChildCount(); i++) {
             dependentFields.add(fields.getChild(i).getText());
         }

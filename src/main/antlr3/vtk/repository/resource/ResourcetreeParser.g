@@ -98,8 +98,7 @@ resourceprops
 propertytypedef
 	:	(derivedpropertytypedef 
 	| 	jsonpropertytypedef 
-	|	plainpropertytypedef 
-	|	binarypropertytypedef)
+	|	plainpropertytypedef)
 	;
 
 derivedpropertytypedef
@@ -155,9 +154,6 @@ plainpropertytypedef
 defaultvalue
 	:	DEFAULTVALUE LP QTEXT RP -> ^(DEFAULTVALUE QTEXT)
 	;
-
-binarypropertytypedef
-	:	NAME COLON BINARY -> ^(NAME BINARY);
 
 overrides
 	:	OVERRIDES NAME

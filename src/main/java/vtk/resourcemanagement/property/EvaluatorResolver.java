@@ -79,9 +79,6 @@ public class EvaluatorResolver {
         else if (desc instanceof JSONPropertyDescription) {
             return createJSONPropertyEvaluator((JSONPropertyDescription) desc, resourceDesc);
         }
-        else if (desc instanceof BinaryPropertyDescription) {
-            return new BinaryPropertyEvaluator(desc);
-        }
         return createDerivedPropertyEvaluator((DerivedPropertyDescription) desc, resourceDesc);
     }
 
@@ -415,49 +412,6 @@ public class EvaluatorResolver {
         }
     }
 
-    private class BinaryPropertyEvaluator implements PropertyEvaluator {
-
-        private final PropertyDescription propertyDesc;
-
-        private BinaryPropertyEvaluator(PropertyDescription desc) {
-            this.propertyDesc = desc;
-        }
-
-        @Override
-        public String toString() {
-            return getClass().getName() + ": " + propertyDesc.getName();
-        }
-
-        @SuppressWarnings("unchecked")
-        @Override
-        public boolean evaluate(Property property, PropertyEvaluationContext ctx) throws PropertyEvaluationException {
-
-            if (property.isValueInitialized()
-                    && ctx.getEvaluationType() != PropertyEvaluationContext.Type.ContentChange
-                    && ctx.getEvaluationType() != PropertyEvaluationContext.Type.Create) {
-                return true;
-            }
-
-            Object value = null;
-            String affectingService = propertyDesc.getAffectingService();
-            if (affectingService != null) {
-                Object o = ctx.getEvaluationAttribute(affectingService);
-                if (o != null) {
-                    Map<String, Object> map = (Map<String, Object>) o;
-                    value = map.get(property.getDefinition().getName());
-                    // No value was found for this prop, don't show anything
-                    if (value == null) {
-                        return false;
-                    }
-                }
-            }
-            if (value != null) {
-                setPropValue(property, value);
-                return true;
-            }
-            return false;
-        }
-    }
 
     private void setPropValue(Property property, Object value) {
         if (!property.getDefinition().isMultiple()) {
