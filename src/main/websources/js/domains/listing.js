@@ -1374,7 +1374,7 @@ VrtxAdmin.prototype.addSearchInActiveTab = function addSearchInActiveTab() {
 
   var html = '<li class="adminSearchService">' +
                '<a href="javascript:void(0);">' + vrtxAdmin.messages.search.expandLink + '</a>' +
-               '<input class="vrtx-textfield ac_input" placeholder="' + vrtxAdmin.messages.search.placeholder + '" id="vrtx-autocomplete-admin-search" type="text" size="20" />' +
+               '<input class="vrtx-textfield ac_input" placeholder="' + vrtxAdmin.messages.search.placeholder + '" id="vrtx-autocomplete-admin-search" type="text" size="17" />' +
              '</li>';
   vrtxAdm.cachedActiveTab.find("#tabMenuRight").append(html);
 
@@ -1398,11 +1398,11 @@ VrtxAdmin.prototype.addSearchInActiveTab = function addSearchInActiveTab() {
   $.loadCSS(vrtxAdm.rootUrl + "/js/autocomplete/autocomplete.override.css");
   $.getScript(vrtxAdm.rootUrl + "/jquery/plugins/jquery.autocomplete.js", function() {
     var p = {
-      minChars: 2,
+      minChars: 1,
       multiple: false,
-      selectFirst: true,
+      selectFirst: false,
       max: 20,
-      resultsBeforeScroll: 0,
+      resultsBeforeScroll: 4,
       cacheLength: 10,
       minWidth: 350,
       formatItem : function(data, i, n, value) {
@@ -1441,7 +1441,7 @@ VrtxAdmin.prototype.addSearchInActiveTab = function addSearchInActiveTab() {
 
         return '<div class="vrtx-autocomplete-search-info ' + value.resourceType + '">' +
                  '<span class="vrtx-autocomplete-search-title">' + returnValue + '</span>' +
-                 '<span class="vrtx-autocomplete-search-filename">' + filenameValue + '</span>' +
+                 (returnValue !== filenameValue ? '<span class="vrtx-autocomplete-search-filename">' + filenameValue + '</span>' : '') +
                  '<span class="vrtx-autocomplete-search-uri">' + uriValue + '</span>' +
                '</div>';
       }
