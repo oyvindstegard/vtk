@@ -87,6 +87,9 @@
     .vrtx-autocomplete-search-uri {
       font-size: 13px;
       color: #777;
+      white-space: nowrap;
+      text-overflow: ellipsis;
+      overflow: hidden;
     }
   }
   .ac_over .vrtx-autocomplete-search-info {
