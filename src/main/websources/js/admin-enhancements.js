@@ -1121,13 +1121,15 @@ VrtxAdmin.prototype.logoutButtonAsLink = function logoutButtonAsLink() {
 VrtxAdmin.prototype.addSearch = function addSearch() {
   var vrtxAdm = vrtxAdmin;
 
+  var isCollectionListing = $("body#vrtx-manage-collectionlisting").length && vrtxAdm.cachedActiveTab.length;
+
   var globalHtml = '<div class="global-menu-small adminSearchService">' +
                      '<a href="javascript:void(0);">' + vrtxAdmin.messages.search.expandLink.split(" ")[0] + '</a>' +
                      '<input class="vrtx-textfield ac_input" placeholder="' + vrtxAdmin.messages.search.placeholder + '" id="vrtx-autocomplete-admin-global-search" type="text" size="17" />' +
                    '</div>';
   $("#global-menu-top").prepend(globalHtml);
 
-  if(vrtxAdm.cachedActiveTab.length) {
+  if(isCollectionListing) {
     var html = '<li class="adminSearchService">' +
                  '<a href="javascript:void(0);">' + vrtxAdmin.messages.search.expandLink + '</a>' +
                  '<input class="vrtx-textfield ac_input" placeholder="' + vrtxAdmin.messages.search.placeholder + '" id="vrtx-autocomplete-admin-search" type="text" size="17" />' +
@@ -1212,7 +1214,7 @@ VrtxAdmin.prototype.addSearch = function addSearch() {
       location.pathname = uri;
     });
 
-    if(vrtxAdm.cachedActiveTab.length) {
+    if(isCollectionListing) {
       var field = $('#vrtx-autocomplete-admin-search');
       field.autocomplete('?service=resource-autocomplete&fq=uri=' + location.pathname + '*', p);
       field.result(function(event, data, formatted) {
