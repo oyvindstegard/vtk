@@ -4,7 +4,7 @@
 
 
   <bean id="pdfResourceTypeDefinition"
-        class="vtk.repository.resourcetype.PrimaryResourceTypeDefinitionImpl">
+        parent="primaryResourceType">
     <property name="name" value="pdf"/>
     <property name="namespace" ref="PDF_NAMESPACE" />
     <property name="parentTypeDefinition" ref="fileResourceTypeDefinition" />

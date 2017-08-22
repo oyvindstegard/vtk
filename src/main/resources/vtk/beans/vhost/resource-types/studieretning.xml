@@ -4,7 +4,7 @@
 
   <!-- Studieretning XML resource -->
 
-  <bean id="studieretningXmlResource" class="vtk.repository.resourcetype.PrimaryResourceTypeDefinitionImpl">
+  <bean id="studieretningXmlResource" parent="primaryResourceType">
     <property name="name" value="studieretning"/>
     <property name="namespace" ref="STUDIERETNING_NAMESPACE" /> 
     <property name="parentTypeDefinition" ref="managedXmlResource" />

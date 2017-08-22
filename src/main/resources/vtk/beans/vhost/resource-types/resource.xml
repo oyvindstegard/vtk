@@ -13,16 +13,21 @@
     <property name="arguments" value="vtk.i18n.resource-types" />
   </bean>
 
-  <bean id="resourceTypeTree" class="vtk.repository.ResourceTypeTreeImpl">
-    <property name="typeLocalizationProvider" >
-      <!-- TODO: get rid of this: -->
-      <bean class="vtk.repository.resourcetype.MessageSourceTypeLocalizationProvider">
-        <property name="messageSource" ref="messageSource" />
-      </bean>
-    </property>
+  <!-- Beans defining a primary resource type should inherit from this abstract bean -->
+  <bean id="primaryResourceType" abstract="true" class="vtk.repository.resourcetype.PrimaryResourceTypeDefinitionImpl">
+    <property name="typeLocalizationProvider" ref="resourceTypeLocalizationProvider" />
   </bean>
 
-  <bean id="resourceResourceTypeDefinition" class="vtk.repository.resourcetype.PrimaryResourceTypeDefinitionImpl">
+  <!-- Beans defining a mixin resource type should inherit from this abstract bean -->
+  <bean id="mixinResourceType" abstract="true" class="vtk.repository.resourcetype.MixinResourceTypeDefinitionImpl">
+    <property name="typeLocalizationProvider" ref="resourceTypeLocalizationProvider" />
+  </bean>
+
+  <!-- Resource type manager. -->
+  <bean id="resourceTypeTree" class="vtk.repository.ResourceTypeTreeImpl" />
+
+  <!-- Root resource type definition -->
+  <bean id="resourceResourceTypeDefinition" parent="primaryResourceType">
     <property name="name" value="resource" />
     <property name="namespace" ref="DEFAULT_NAMESPACE" />
     <property name="mixinTypeDefinitions">
@@ -108,7 +113,7 @@
   </bean>
 
   <bean id="titlePropDef" class="vtk.repository.resourcetype.OverridablePropertyTypeDefinitionImpl"
-    parent="abstractPropDef">
+        parent="abstractPropDef">
     <property name="name" value="title" />
     <property name="type" value="STRING" />
     <property name="protectionLevel" ref="PROTECTION_LEVEL_UNEDITABLE" />

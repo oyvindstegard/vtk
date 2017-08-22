@@ -7,6 +7,7 @@
     <property name="baseType" ref="json.managedObjectResourceType" />
     <property name="valueFactory" ref="valueFactory" />
     <property name="valueFormatterRegistry" ref="valueFormatterRegistry" />
+    <property name="typeLocalizationProvider" ref="resourceTypeLocalizationProvider" />
     <property name="assertion" ref="json.objectHasResourceTypeAssertion" />
     <property name="evaluatorResolver" ref="evaluatorResolver" />
   </bean>

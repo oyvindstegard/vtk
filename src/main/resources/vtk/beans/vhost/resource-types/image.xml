@@ -4,7 +4,7 @@
 
   <!-- Image resource -->
 
-  <bean id="imageResourceTypeDefinition" class="vtk.repository.resourcetype.PrimaryResourceTypeDefinitionImpl">
+  <bean id="imageResourceTypeDefinition" parent="primaryResourceType">
     <property name="name" value="image" />
     <property name="namespace" ref="DEFAULT_NAMESPACE" />
     <property name="parentTypeDefinition" ref="fileResourceTypeDefinition" />

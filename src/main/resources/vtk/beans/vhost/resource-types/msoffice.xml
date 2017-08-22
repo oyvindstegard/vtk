@@ -3,7 +3,7 @@
        xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-3.1.xsd">
 
   <bean id="ooXmlResourceTypeDefinition"
-        class="vtk.repository.resourcetype.PrimaryResourceTypeDefinitionImpl">
+        parent="primaryResourceType">
     <property name="name" value="ooxml"/>
     <property name="namespace" ref="DEFAULT_NAMESPACE" />
     <property name="parentTypeDefinition" ref="fileResourceTypeDefinition" />
@@ -26,7 +26,7 @@
   </bean>
 
   <bean id="docResourceTypeDefinition"
-        class="vtk.repository.resourcetype.PrimaryResourceTypeDefinitionImpl">
+        parent="primaryResourceType">
     <property name="name" value="doc"/>
     <property name="namespace" ref="DEFAULT_NAMESPACE" />
     <property name="parentTypeDefinition" ref="ooXmlResourceTypeDefinition" />
@@ -38,7 +38,7 @@
   </bean>
   
   <bean id="xlsResourceTypeDefinition"
-        class="vtk.repository.resourcetype.PrimaryResourceTypeDefinitionImpl">
+        parent="primaryResourceType">
     <property name="name" value="xls"/>
     <property name="namespace" ref="DEFAULT_NAMESPACE" />
     <property name="parentTypeDefinition" ref="ooXmlResourceTypeDefinition" />
@@ -51,7 +51,7 @@
   
   
   <bean id="pptResourceTypeDefinition"
-        class="vtk.repository.resourcetype.PrimaryResourceTypeDefinitionImpl">
+        parent="primaryResourceType">
     <property name="name" value="ppt"/>
     <property name="namespace" ref="DEFAULT_NAMESPACE" />
     <property name="parentTypeDefinition" ref="ooXmlResourceTypeDefinition" />

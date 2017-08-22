@@ -5,7 +5,7 @@
     <!-- Treaty XML resource -->
     
     <bean id="treatyXmlResource"
-        class="vtk.repository.resourcetype.PrimaryResourceTypeDefinitionImpl">
+        parent="primaryResourceType">
         <property name="name" value="treaty"/>
         <property name="namespace" ref="TREATY_NAMESPACE" />
         <property name="parentTypeDefinition" ref="managedXmlResource" />

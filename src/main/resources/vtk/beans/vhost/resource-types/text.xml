@@ -6,7 +6,7 @@
 
   
   <bean id="textResourceTypeDefinition"
-        class="vtk.repository.resourcetype.PrimaryResourceTypeDefinitionImpl">
+        parent="primaryResourceType">
     <property name="name" value="text"/>
     <property name="namespace" ref="DEFAULT_NAMESPACE" />
     <property name="parentTypeDefinition" ref="fileResourceTypeDefinition" />

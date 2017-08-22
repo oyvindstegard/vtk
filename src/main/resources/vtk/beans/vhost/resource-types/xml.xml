@@ -6,7 +6,7 @@
 
   <!-- XML resource -->
 
-  <bean id="xmlResource" class="vtk.repository.resourcetype.PrimaryResourceTypeDefinitionImpl">
+  <bean id="xmlResource" parent="primaryResourceType">
     <property name="name" value="xml-resource"/>
     <property name="namespace" ref="DEFAULT_NAMESPACE" />
     <property name="parentTypeDefinition" ref="textResourceTypeDefinition" />

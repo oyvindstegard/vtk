@@ -13,10 +13,15 @@
   <bean id="abstractPropDef" abstract="true">
     <property name="valueFactory" ref="valueFactory" />
     <property name="valueFormatterRegistry" ref="valueFormatterRegistry" />
+    <property name="typeLocalizationProvider" ref="resourceTypeLocalizationProvider" />
     <property name="protectionLevel" ref="PROTECTION_LEVEL_UNEDITABLE" />
     <property name="mandatory" value="false" />
   </bean>
-    
+
+  <bean id="resourceTypeLocalizationProvider" class="vtk.repository.resourcetype.MessageSourceTypeLocalizationProvider">
+    <property name="messageSource" ref="messageSource" />
+  </bean>
+
   <bean id="valueFactory" class="vtk.repository.resourcetype.ValueFactoryImpl">
     <property name="principalFactory" ref="principalFactory" />
   </bean>

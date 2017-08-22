@@ -5,7 +5,7 @@
   <!-- File resource -->
 
   <bean id="fileResourceTypeDefinition"
-    class="vtk.repository.resourcetype.PrimaryResourceTypeDefinitionImpl">
+    parent="primaryResourceType">
     <property name="name" value="file" />
     <property name="namespace" ref="DEFAULT_NAMESPACE" />
     <property name="parentTypeDefinition" ref="resourceResourceTypeDefinition" />

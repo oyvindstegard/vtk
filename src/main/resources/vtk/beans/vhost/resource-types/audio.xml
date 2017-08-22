@@ -7,7 +7,7 @@
   <!-- Audio resource -->
 
   <bean id="audioResourceTypeDefinition"
-        class="vtk.repository.resourcetype.PrimaryResourceTypeDefinitionImpl">
+        parent="primaryResourceType">
     <property name="name" value="audio"/>
         <property name="namespace" ref="DEFAULT_NAMESPACE" />
     <property name="parentTypeDefinition" ref="fileResourceTypeDefinition" />

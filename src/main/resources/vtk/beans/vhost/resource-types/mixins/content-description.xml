@@ -5,7 +5,7 @@
   <!-- Content description Mixin -->
   
   <bean id="contentDescriptionMixinResourceTypeDef" 
-        class="vtk.repository.resourcetype.MixinResourceTypeDefinitionImpl">
+        parent="mixinResourceType">
     <property name="name" value="contentDescription"/>
     <property name="namespace" ref="CONTENT_NAMESPACE" /> 
     <property name="propertyTypeDefinitions" ref="contentDescriptionPropertyDefinitions" />
