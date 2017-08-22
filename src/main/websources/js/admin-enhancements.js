@@ -1207,19 +1207,27 @@ VrtxAdmin.prototype.addSearch = function addSearch() {
       }
     };
 
+    var resultHandler = function(formatted) {
+      var parent = $(".adminSearchService");
+      parent.removeClass("visible-search");
+
+      var uri = formatted.split(";")[1];
+      location.pathname = uri;
+    };
+
     var fieldGlobal = $('#vrtx-autocomplete-admin-global-search');
     fieldGlobal.autocomplete('?service=resource-autocomplete', p);
     fieldGlobal.result(function(event, data, formatted) {
-      var uri = formatted.split(";")[1];
-      location.pathname = uri;
+      fieldGlobal.val("");
+      resultHandler(formatted);
     });
 
     if(isCollectionListing) {
       var field = $('#vrtx-autocomplete-admin-search');
       field.autocomplete('?service=resource-autocomplete&fq=uri=' + location.pathname + '*', p);
       field.result(function(event, data, formatted) {
-        var uri = formatted.split(";")[1];
-        location.pathname = uri;
+        field.val("");
+        resultHandler(formatted);
       });
     }
   });
