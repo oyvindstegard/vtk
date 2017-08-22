@@ -250,6 +250,7 @@ vrtxAdmin._$(document).ready(function () {
   vrtxAdm.initScrollBreadcrumbs();
   vrtxAdm.domainsInstantIsReady.resolve();
   vrtxAdm.initMiscAdjustments();
+  vrtxAdm.addSearch();
 
   var waitALittle = setTimeout(function() {
     vrtxAdm.initTooltips();
@@ -1109,6 +1110,115 @@ VrtxAdmin.prototype.logoutButtonAsLink = function logoutButtonAsLink() {
   btn.after('&nbsp;<a id=\"logoutAction.link\" name=\"logoutAction\" href="javascript:void(0);">' + btn.attr('value') + '</a>');
   eventListen($("#app-head-wrapper"), "click", "#logoutAction\\.link", function(ref) {
     btn.click();
+  });
+};
+
+/**
+ * Add search in global- and collection tab menu
+ *
+ * @this {VrtxAdmin}
+ */
+VrtxAdmin.prototype.addSearch = function addSearch() {
+  var vrtxAdm = vrtxAdmin;
+
+  var globalHtml = '<div class="global-menu-small adminSearchService">' +
+                     '<a href="javascript:void(0);">' + vrtxAdmin.messages.search.expandLink.split(" ")[0] + '</a>' +
+                     '<input class="vrtx-textfield ac_input" placeholder="' + vrtxAdmin.messages.search.placeholder + '" id="vrtx-autocomplete-admin-global-search" type="text" size="17" />' +
+                   '</div>';
+  $("#global-menu-top").prepend(globalHtml);
+
+  if(vrtxAdm.cachedActiveTab.length) {
+    var html = '<li class="adminSearchService">' +
+                 '<a href="javascript:void(0);">' + vrtxAdmin.messages.search.expandLink + '</a>' +
+                 '<input class="vrtx-textfield ac_input" placeholder="' + vrtxAdmin.messages.search.placeholder + '" id="vrtx-autocomplete-admin-search" type="text" size="17" />' +
+               '</li>';
+    vrtxAdm.cachedActiveTab.find("#tabMenuRight").append(html);
+  }
+
+  vrtxAdm.cachedDoc.on("click", ".adminSearchService > a", function(e) {
+    var link = $(this);
+    var parent = link.parent();
+    parent.addClass("visible-search");
+    parent.find(".vrtx-textfield")[0].focus();
+
+    e.stopPropagation();
+    e.preventDefault();
+  });
+
+  vrtxAdm.cachedDoc.on("click", function(e) {
+    if($(e.target).closest(".adminSearchService").length) return;
+
+    var parent = $(".adminSearchService");
+    parent.removeClass("visible-search");
+  });
+
+  $.loadCSS(vrtxAdm.rootUrl + "/js/autocomplete/autocomplete.override.css");
+  $.getScript(vrtxAdm.rootUrl + "/jquery/plugins/jquery.autocomplete.js", function() {
+    var p = {
+      minChars: 1,
+      multiple: false,
+      selectFirst: false,
+      max: 20,
+      resultsBeforeScroll: 4,
+      cacheLength: 10,
+      minWidth: 350,
+      formatItem : function(data, i, n, value) {
+        var splitted = value.split(';');
+        return {
+          title: splitted[0],
+          uri: splitted[1],
+          resourceType: splitted[2]
+        }
+      },
+      highlight : function(value, term) {
+        var valueArray = value.title.split(" ");
+        var uriValue = value.uri;
+        var filenameValue = uriValue.split("/");
+        filenameValue = filenameValue[filenameValue.length - 1];
+
+        var termArray = term.split(" ");
+        var returnValue = "";
+
+        for (v in valueArray) {
+          var val = valueArray[v];
+          for (t in termArray) {
+            var regex = new RegExp("^(?![^&;]+;)(?!<[^<>]*)("
+                + termArray[t].replace(/([\^\$\(\)\[\]\{\}\*\.\+\?\|\\])/gi, "\\$1") + ")(?![^<>]*>)(?![^&;]+;)", "gi");
+            val = val.replace(regex, "<strong>$1</strong>");
+          }
+          returnValue = (returnValue == "") ? val : (returnValue + " " + val);
+        }
+
+        for (t in termArray) {
+          var regex = new RegExp("^(?![^&;]+;)(?!<[^<>]*)("
+              + termArray[t].replace(/([\^\$\(\)\[\]\{\}\*\.\+\?\|\\])/gi, "\\$1") + ")(?![^<>]*>)(?![^&;]+;)", "gi");
+          filenameValue = filenameValue.replace(regex, "<strong>$1</strong>");
+          uriValue = uriValue.replace(regex, "<strong>$1</strong>");
+        }
+
+        return '<div class="vrtx-autocomplete-search-info ' + value.resourceType + '">' +
+                 '<span class="vrtx-autocomplete-search-title">' + returnValue + '</span>' +
+                 (returnValue !== filenameValue ? '<span class="vrtx-autocomplete-search-filename">' + filenameValue + '</span>' : '') +
+                 '<span class="vrtx-autocomplete-search-uri">' + uriValue + '</span>' +
+               '</div>';
+      }
+    };
+
+    var fieldGlobal = $('#vrtx-autocomplete-admin-global-search');
+    fieldGlobal.autocomplete('?service=resource-autocomplete', p);
+    fieldGlobal.result(function(event, data, formatted) {
+      var uri = formatted.split(";")[1];
+      location.pathname = uri;
+    });
+
+    if(vrtxAdm.cachedActiveTab.length) {
+      var field = $('#vrtx-autocomplete-admin-search');
+      field.autocomplete('?service=resource-autocomplete&fq=uri=' + location.pathname + '*', p);
+      field.result(function(event, data, formatted) {
+        var uri = formatted.split(";")[1];
+        location.pathname = uri;
+      });
+    }
   });
 };
 
