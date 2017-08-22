@@ -1162,6 +1162,7 @@ VrtxAdmin.prototype.addSearch = function addSearch() {
       resultsBeforeScroll: 4,
       cacheLength: 10,
       minWidth: 350,
+      wrapperClass: "admin-search",
       formatItem : function(data, i, n, value) {
         var splitted = value.split(';');
         return {
