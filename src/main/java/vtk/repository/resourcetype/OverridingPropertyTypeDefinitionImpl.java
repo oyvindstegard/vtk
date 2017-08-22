@@ -51,6 +51,9 @@ import vtk.repository.resourcetype.PropertyType.Type;
  * <li>default value
  * <li>evaluator
  * </ul>
+ *
+ * <p>All other parts are delegated to the 
+ * {@link #setOverriddenPropDef(vtk.repository.resourcetype.OverridablePropertyTypeDefinition)  overridden property definition.}
  */
 public class OverridingPropertyTypeDefinitionImpl implements OverridablePropertyTypeDefinition, InitializingBean {
 

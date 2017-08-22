@@ -37,11 +37,6 @@ import org.springframework.beans.factory.InitializingBean;
 import vtk.repository.Namespace;
 
 /**
- * XXX: We should consider re-modeling some of this wrt. to mixins and regular
- *      resource types (with the current model, implementations of 
- *      MixinResourceTypeDefinitoin are required to implement getMixinTypeDefinitions, 
- *      but that does not really make sense, since mixins should not have their
- *      own mixin types) 
  */
 public abstract class AbstractResourceTypeDefinitionImpl implements ResourceTypeDefinition, InitializingBean {
 
@@ -109,7 +104,7 @@ public abstract class AbstractResourceTypeDefinitionImpl implements ResourceType
     public void setPropertyTypeDefinitions(PropertyTypeDefinition[] propertyTypeDefinitions) {
         this.propertyTypeDefinitions = propertyTypeDefinitions;
     }
-    
+
     public void setTypeLocalizationProvider(TypeLocalizationProvider provider) {
         this.typeLocalizationProvider = provider;
     }

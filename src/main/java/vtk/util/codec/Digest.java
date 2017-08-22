@@ -198,7 +198,7 @@ public class Digest {
     }
 
     /**
-     * Computes digest if input data and verifies that result is equal to provided
+     * Computes digest of input data and verifies that result is equal to provided
      * argument, which must be formatted in the same way.
      * 
      * @param digest
