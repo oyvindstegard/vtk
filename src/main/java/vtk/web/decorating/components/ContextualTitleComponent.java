@@ -58,10 +58,9 @@ public class ContextualTitleComponent extends AbstractDecoratorComponent {
         
         Resource resource = requestContext.getRepository().retrieve(
                 requestContext.getSecurityToken(), path, true);
-        Writer writer = response.getWriter();
-        writer.write(this.resolver.resolve(resource));
-        writer.flush();
-        writer.close();
+        try (Writer writer = response.getWriter()) {
+            writer.write(this.resolver.resolve(resource));
+        }
     }
     
     // For debugging
