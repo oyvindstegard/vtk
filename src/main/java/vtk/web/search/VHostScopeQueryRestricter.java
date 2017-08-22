@@ -33,7 +33,6 @@ package vtk.web.search;
 import java.util.List;
 
 import vtk.repository.Namespace;
-import vtk.repository.resourcetype.PropertyType;
 import vtk.repository.resourcetype.PropertyTypeDefinition;
 import vtk.repository.resourcetype.PropertyTypeDefinitionImpl;
 import vtk.repository.search.query.AndQuery;
@@ -45,15 +44,8 @@ import vtk.web.service.URL;
 
 public class VHostScopeQueryRestricter {
 
-    public static final PropertyTypeDefinition vHostPropDef;
-
-    static {
-        PropertyTypeDefinitionImpl tmp = new PropertyTypeDefinitionImpl();
-        tmp.setNamespace(Namespace.DEFAULT_NAMESPACE);
-        tmp.setName("vhost");
-        tmp.setType(PropertyType.Type.STRING);
-        vHostPropDef = tmp;
-    }
+    public static final PropertyTypeDefinition vHostPropDef =
+            PropertyTypeDefinitionImpl.createDefault(Namespace.DEFAULT_NAMESPACE, "vhost", false);
 
     /**
      * 

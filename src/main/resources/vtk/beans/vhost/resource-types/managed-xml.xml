@@ -4,7 +4,7 @@
 
   <!-- Managed XML resource -->
 
-  <bean id="managedXmlResource" class="vtk.repository.resourcetype.PrimaryResourceTypeDefinitionImpl">
+  <bean id="managedXmlResource" parent="primaryResourceType">
     <property name="name" value="managed-xml" />
     <property name="namespace" ref="DEFAULT_NAMESPACE" />
     <property name="parentTypeDefinition" ref="xmlResource" />

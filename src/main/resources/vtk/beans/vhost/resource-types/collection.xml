@@ -5,7 +5,7 @@
                            http://www.springframework.org/schema/util http://www.springframework.org/schema/util/spring-util-3.1.xsd">
 
   <!-- Resource type 'collection' -->
-  <bean id="collectionResourceTypeDefinition" class="vtk.repository.resourcetype.PrimaryResourceTypeDefinitionImpl">
+  <bean id="collectionResourceTypeDefinition" parent="primaryResourceType">
     <property name="name" value="collection" />
     <property name="namespace" ref="DEFAULT_NAMESPACE" />
     <property name="parentTypeDefinition" ref="resourceResourceTypeDefinition" />

@@ -52,7 +52,6 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 import org.springframework.context.ApplicationListener;
 
-import vtk.repository.resourcetype.AbstractResourceTypeDefinitionImpl;
 import vtk.repository.resourcetype.LatePropertyEvaluator;
 import vtk.repository.resourcetype.MixinResourceTypeDefinition;
 import vtk.repository.resourcetype.OverridablePropertyTypeDefinition;
@@ -62,7 +61,6 @@ import vtk.repository.resourcetype.PrimaryResourceTypeDefinition;
 import vtk.repository.resourcetype.PropertyTypeDefinition;
 import vtk.repository.resourcetype.PropertyTypeDefinitionImpl;
 import vtk.repository.resourcetype.ResourceTypeDefinition;
-import vtk.repository.resourcetype.TypeLocalizationProvider;
 import vtk.repository.resourcetype.event.DynamicTypeRegisteredEvent;
 import vtk.repository.resourcetype.event.DynamicTypeRegistrationComplete;
 import vtk.repository.resourcetype.event.StaticTypesInitializedEvent;
@@ -168,8 +166,6 @@ public class ResourceTypeTreeImpl implements ResourceTypeTree, InitializingBean,
      */
     private final Map<Namespace, Map<String, Set<PrimaryResourceTypeDefinition>>> propDefPrimaryTypesMap =
         new HashMap<>();
-
-    private TypeLocalizationProvider typeLocalizationProvider;
 
     // Lazy cache for method flattenedDescendants
     private final Map<String, Set<String>> nameDescendantsCache = new ConcurrentHashMap<>();
@@ -606,7 +602,6 @@ public class ResourceTypeTreeImpl implements ResourceTypeTree, InitializingBean,
         this.parentChildMap.computeIfAbsent(parent, k -> new ArrayList<>()).add(def);
 
         registerMixins(def);
-        injectTypeLocalizationProvider(def);
         mapPropertyDefinitionsToPrimaryTypes();
         clearLazyCaches();
 
@@ -661,18 +656,11 @@ public class ResourceTypeTreeImpl implements ResourceTypeTree, InitializingBean,
             }
 
             registerMixins(def);
-            
-            // Inject localized type name provider
-            // XXX: I wanted to avoid having to explicitly configure the dependency for
-            //      every defined resource type ...
-            injectTypeLocalizationProvider(def);
         }
 
         for (MixinResourceTypeDefinition mixinDef: this.mixinTypes) {
             this.resourceTypeNameMap.put(mixinDef.getName(), mixinDef);
             addNamespacesAndProperties(mixinDef);
-            
-            injectTypeLocalizationProvider(mixinDef);
         }
 
         mapPropertyDefinitionsToPrimaryTypes();
@@ -694,20 +682,6 @@ public class ResourceTypeTreeImpl implements ResourceTypeTree, InitializingBean,
         }
 
         this.mixinTypeDefinitionMap.put(def, mixins);
-    }
-    
-    private void injectTypeLocalizationProvider(ResourceTypeDefinition def) {
-        AbstractResourceTypeDefinitionImpl defImpl = (AbstractResourceTypeDefinitionImpl)def;
-        
-        defImpl.setTypeLocalizationProvider(this.typeLocalizationProvider);
-        
-        for (PropertyTypeDefinition propDef: def.getPropertyTypeDefinitions()) {
-            if (propDef instanceof PropertyTypeDefinitionImpl) {
-                PropertyTypeDefinitionImpl propDefImpl
-                    = (PropertyTypeDefinitionImpl)propDef;
-                propDefImpl.setTypeLocalizationProvider(this.typeLocalizationProvider);
-            }
-        }
     }
 
     private void addNamespacesAndProperties(ResourceTypeDefinition def) {
@@ -886,11 +860,6 @@ public class ResourceTypeTreeImpl implements ResourceTypeTree, InitializingBean,
         }
     }
     
-    public void setTypeLocalizationProvider(
-            TypeLocalizationProvider typeLocalizationProvider) {
-        this.typeLocalizationProvider = typeLocalizationProvider;
-    }
-
     @Override
     public void setApplicationContext(ApplicationContext applicationContext) {
         this.applicationContext = applicationContext;

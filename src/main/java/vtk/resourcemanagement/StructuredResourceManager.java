@@ -53,6 +53,7 @@ import vtk.repository.resourcetype.PropertyType.Type;
 import vtk.repository.resourcetype.PropertyTypeDefinition;
 import vtk.repository.resourcetype.RepositoryAssertion;
 import vtk.repository.resourcetype.ResourceTypeDefinition;
+import vtk.repository.resourcetype.TypeLocalizationProvider;
 import vtk.repository.resourcetype.Value;
 import vtk.repository.resourcetype.ValueFactory;
 import vtk.repository.resourcetype.ValueFormatterRegistry;
@@ -88,6 +89,7 @@ public class StructuredResourceManager {
     private Map<String, StructuredResourceDescription> types = new HashMap<>();
     private ValueFactory valueFactory;
     private ValueFormatterRegistry valueFormatterRegistry;
+    private TypeLocalizationProvider typeLocalizationProvider;
     private EvaluatorResolver evaluatorResolver;
 
     public void register(StructuredResourceDescription description) throws Exception {
@@ -174,6 +176,11 @@ public class StructuredResourceManager {
     }
 
     @Required
+    public void setTypeLocalizationProvider(TypeLocalizationProvider t) {
+        this.typeLocalizationProvider = t;
+    }
+
+    @Required
     public void setAssertion(JSONObjectSelectAssertion assertion) {
         this.assertion = assertion;
     }
@@ -204,6 +211,7 @@ public class StructuredResourceManager {
 
         def.setName(description.getName());
         def.setNamespace(this.namespace);
+        def.setTypeLocalizationProvider(this.typeLocalizationProvider);
 
         ResourceTypeDefinition parentDefinition = this.baseType;
 
@@ -374,6 +382,7 @@ public class StructuredResourceManager {
         def.setMultiple(propertyDescription.isMultiple());
         def.setValueFactory(this.valueFactory);
         def.setValueFormatterRegistry(this.valueFormatterRegistry);
+        def.setTypeLocalizationProvider(this.typeLocalizationProvider);
         def.setPropertyEvaluator(this.evaluatorResolver.createPropertyEvaluator(propertyDescription,
                 resourceDescription));
 

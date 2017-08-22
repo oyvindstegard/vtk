@@ -2,18 +2,14 @@ package vtk.web.search;
 
 import org.junit.Test;
 import vtk.repository.Property;
-import vtk.repository.PropertyImpl;
-import vtk.repository.resourcetype.PropertyType;
 import vtk.repository.resourcetype.PropertyTypeDefinitionImpl;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import vtk.repository.Namespace;
 
 public class ListingUriQueryBuilderTest {
-    private static final PropertyTypeDefinitionImpl recursivePropertyDef = new PropertyTypeDefinitionImpl();
-    static {
-        recursivePropertyDef.setMultiple(false);
-        recursivePropertyDef.setType(PropertyType.Type.STRING);
-    }
+    private static final PropertyTypeDefinitionImpl RECURSIVE_PROP_DEF =
+            PropertyTypeDefinitionImpl.createDefault(Namespace.DEFAULT_NAMESPACE, "recursive-listing", false);
 
     @Test
     public void only_default_values_should_be_SELF() throws Exception {
@@ -56,8 +52,6 @@ public class ListingUriQueryBuilderTest {
     }
 
     private Property getRecursiveProperty(String value) {
-        PropertyImpl property = new PropertyImpl(recursivePropertyDef);
-        property.setStringValue(value);
-        return property;
+        return RECURSIVE_PROP_DEF.createProperty(value);
     }
 }

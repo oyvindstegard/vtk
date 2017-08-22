@@ -4,7 +4,7 @@
 
   <bean id="jsonObjectContentFactory" class="vtk.repository.content.JsonContentFactory" />
 
-  <bean id="json.resourceType" class="vtk.repository.resourcetype.PrimaryResourceTypeDefinitionImpl">
+  <bean id="json.resourceType" parent="primaryResourceType">
     <property name="name" value="json-resource" />
     <property name="namespace" ref="DEFAULT_NAMESPACE" />
     <property name="parentTypeDefinition" ref="textResourceTypeDefinition" />
@@ -59,7 +59,7 @@
 
   <bean id="json.syntaxErrorsEvaluator" class="vtk.repository.resourcetype.property.JsonSyntaxErrorsEvaluator" />
 
-  <bean id="json.managedObjectResourceType" class="vtk.repository.resourcetype.PrimaryResourceTypeDefinitionImpl">
+  <bean id="json.managedObjectResourceType" parent="primaryResourceType">
     <property name="name" value="managed-json-resource" />
     <property name="namespace" ref="DEFAULT_NAMESPACE" />
     <property name="parentTypeDefinition" ref="json.resourceType" />

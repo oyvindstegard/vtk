@@ -6,7 +6,7 @@
 
   <!-- Html resource -->
 
-  <bean id="htmlResourceTypeDefinition" class="vtk.repository.resourcetype.PrimaryResourceTypeDefinitionImpl">
+  <bean id="htmlResourceTypeDefinition" parent="primaryResourceType">
     <property name="name" value="html"/>
     <property name="namespace" ref="DEFAULT_NAMESPACE" />
     <property name="parentTypeDefinition" ref="textResourceTypeDefinition" />

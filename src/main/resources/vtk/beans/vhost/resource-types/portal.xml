@@ -5,7 +5,7 @@
   <!-- Portal XML resource -->
   
   <bean id="portalXmlResource"
-        class="vtk.repository.resourcetype.PrimaryResourceTypeDefinitionImpl">
+        parent="primaryResourceType">
     <property name="name" value="portal"/>
     <property name="namespace" ref="PORTAL_NAMESPACE" />
     <property name="parentTypeDefinition" ref="managedXmlResource" />

@@ -2,7 +2,7 @@
 <beans xmlns="http://www.springframework.org/schema/beans" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
        xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-3.1.xsd">
 
-  <bean id="ssiMixinResourceTypeDef" class="vtk.repository.resourcetype.MixinResourceTypeDefinitionImpl">
+  <bean id="ssiMixinResourceTypeDef" parent="mixinResourceType">
     <property name="name" value="ssi" />
     <property name="namespace" ref="SSI_NAMESPACE" />
     <property name="propertyTypeDefinitions" ref="ssiPropertyDefinitions" />

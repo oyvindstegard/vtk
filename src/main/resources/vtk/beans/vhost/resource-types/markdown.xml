@@ -5,7 +5,7 @@
   <bean id="markdown.contentFactory" class="vtk.repository.content.MarkdownInfoContentFactory" />  
 
   <bean id="markdown.resourceTypeDefinition"
-        class="vtk.repository.resourcetype.PrimaryResourceTypeDefinitionImpl">
+        parent="primaryResourceType">
     <property name="name" value="markdown"/>
     <property name="namespace" ref="DEFAULT_NAMESPACE" />
     <property name="parentTypeDefinition" ref="textResourceTypeDefinition" />

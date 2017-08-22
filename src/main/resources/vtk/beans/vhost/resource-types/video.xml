@@ -4,7 +4,7 @@
 
   <!-- Video resource -->
 
-  <bean id="videoResourceTypeDefinition" class="vtk.repository.resourcetype.PrimaryResourceTypeDefinitionImpl">
+  <bean id="videoResourceTypeDefinition" parent="primaryResourceType">
     <property name="name" value="video" />
     <property name="namespace" ref="DEFAULT_NAMESPACE" />
     <property name="parentTypeDefinition" ref="fileResourceTypeDefinition" />

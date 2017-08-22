@@ -3,7 +3,7 @@
        xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-3.1.xsd">
 
   <bean id="odfResourceTypeDefinition"
-        class="vtk.repository.resourcetype.PrimaryResourceTypeDefinitionImpl">
+        parent="primaryResourceType">
     <property name="name" value="odf"/>
     <property name="namespace" ref="DEFAULT_NAMESPACE" />
     <property name="parentTypeDefinition" ref="fileResourceTypeDefinition" />
@@ -15,7 +15,7 @@
   </bean>
 
   <bean id="odfTextResourceTypeDefinition"
-        class="vtk.repository.resourcetype.PrimaryResourceTypeDefinitionImpl">
+        parent="primaryResourceType">
     <property name="name" value="odt"/>
     <property name="namespace" ref="DEFAULT_NAMESPACE" />
     <property name="assertions" ref="contentTypeMatchesOdfText" />
@@ -23,7 +23,7 @@
   </bean>
 
   <bean id="odfPresentationResourceTypeDefinition"
-        class="vtk.repository.resourcetype.PrimaryResourceTypeDefinitionImpl">
+        parent="primaryResourceType">
     <property name="name" value="odp"/>
     <property name="namespace" ref="DEFAULT_NAMESPACE" />
     <property name="assertions" ref="contentTypeMatchesOdfPresentation" />
@@ -31,7 +31,7 @@
   </bean>
   
   <bean id="odfSpreadsheetResourceTypeDefinition"
-        class="vtk.repository.resourcetype.PrimaryResourceTypeDefinitionImpl">
+        parent="primaryResourceType">
     <property name="name" value="ods"/>
     <property name="namespace" ref="DEFAULT_NAMESPACE" />
     <property name="assertions" ref="contentTypeMatchesOdfSpreadsheet" />
@@ -39,7 +39,7 @@
   </bean>
 
   <bean id="odfGraphicsResourceTypeDefinition"
-        class="vtk.repository.resourcetype.PrimaryResourceTypeDefinitionImpl">
+        parent="primaryResourceType">
     <property name="name" value="odg"/>
     <property name="namespace" ref="DEFAULT_NAMESPACE" />
     <property name="assertions" ref="contentTypeMatchesOdfGraphics" />
@@ -47,7 +47,7 @@
   </bean>
 
   <bean id="odfDatabaseResourceTypeDefinition"
-        class="vtk.repository.resourcetype.PrimaryResourceTypeDefinitionImpl">
+        parent="primaryResourceType">
     <property name="name" value="odb"/>
     <property name="namespace" ref="DEFAULT_NAMESPACE" />
     <property name="assertions" ref="contentTypeMatchesOdfDatabase" />
