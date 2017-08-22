@@ -15,6 +15,10 @@
     @include borderRadius(3px);
     background: url("images/admin-search-mag-glass-field.png") no-repeat 95% 50%;
     padding-right: 30px;
+
+    &.ac_loading {
+      background-image: url("/vrtx/__vrtx/static-resources/themes/default/icons/tabmenu-spinner.gif");
+    }
   }
 
   &.visible-search {
