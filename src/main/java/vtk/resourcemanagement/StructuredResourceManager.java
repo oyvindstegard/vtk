@@ -78,7 +78,6 @@ public class StructuredResourceManager {
         PROPTYPE_MAP.put(ParserConstants.PROPTYPE_IMAGEREF, PropertyType.Type.IMAGE_REF);
         PROPTYPE_MAP.put(ParserConstants.PROPTYPE_MEDIAREF, PropertyType.Type.IMAGE_REF);
         PROPTYPE_MAP.put(ParserConstants.PROPTYPE_RESOURCEREF, PropertyType.Type.IMAGE_REF);
-        PROPTYPE_MAP.put(ParserConstants.PROPTYPE_BINARY, PropertyType.Type.BINARY);
         PROPTYPE_MAP.put(ParserConstants.PROPTYPE_JSON, PropertyType.Type.JSON);
     }
     private ResourceTypeTree resourceTypeTree;
@@ -210,7 +209,7 @@ public class StructuredResourceManager {
 
         PropertyTypeDefinition[] descPropDefs = createPropDefs(description);
 
-        List<PropertyTypeDefinition> allPropDefs = new ArrayList<PropertyTypeDefinition>();
+        List<PropertyTypeDefinition> allPropDefs = new ArrayList<>();
         for (PropertyTypeDefinition d : descPropDefs) {
             allPropDefs.add(d);
         }
@@ -261,7 +260,7 @@ public class StructuredResourceManager {
     }
 
     private List<RepositoryAssertion> createAssertions(StructuredResourceDescription description) {
-        List<RepositoryAssertion> assertions = new ArrayList<RepositoryAssertion>();
+        List<RepositoryAssertion> assertions = new ArrayList<>();
         JSONObjectSelectAssertion typeElementAssertion = this.assertion.createAssertion("resourcetype",
                 description.getName());
         assertions.add(typeElementAssertion);
@@ -281,7 +280,7 @@ public class StructuredResourceManager {
 
     private PropertyTypeDefinition[] createPropDefs(StructuredResourceDescription description) throws Exception {
         List<PropertyDescription> propertyDescriptions = description.getPropertyDescriptions();
-        List<PropertyTypeDefinition> result = new ArrayList<PropertyTypeDefinition>();
+        List<PropertyTypeDefinition> result = new ArrayList<>();
         if (propertyDescriptions != null) {
             for (PropertyDescription d : propertyDescriptions) {
                 PropertyTypeDefinition def = createPropDef(d, description);
@@ -384,14 +383,14 @@ public class StructuredResourceManager {
 
             List<EditRule> editRules = resourceDescription.getEditRules();
             if (editRules != null && editRules.size() > 0) {
-                Map<String, Set<String>> editHints = new HashMap<String, Set<String>>();
+                Map<String, Set<String>> editHints = new HashMap<>();
                 for (EditRule editRule : editRules) {
                     if (EditRuleType.EDITHINT.equals(editRule.getType())) {
                         if (editRule.getName().equals(propertyDescription.getName())) {
                             String key = editRule.getEditHintKey();
                             Set<String> values = editHints.get(key);
                             if (values == null) {
-                                values = new HashSet<String>();
+                                values = new HashSet<>();
                                 editHints.put(key, values);
                             }
                             values.add(editRule.getEditHintValue());
