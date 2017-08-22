@@ -22,13 +22,14 @@ class RepoEvaluateCommand implements VCommand {
 
         def repo = beanContext.getBean("repository")
         def token = beanContext.getBean("writeAllToken")
+        def principal = beanContext.getBean("tokenManager").getPrincipal(token)
         def tm = beanContext.getBean("repository.transactionManager")
         def searcher = beanContext.getBean("systemIndexSearcher")
         def parserFactory = beanContext.getBean("queryParserFactory")
 
         def cache = beanContext.getBean("repository.cache")
         def dao = cache.wrappedAccessor
-        def cluster = repo.repository.clusterContext
+        def cluster = repo.clusterContext
         def helper = beanContext.getBean("repositoryResourceHelper")
         def contentStore = beanContext.getBean("repository.fsContentStore")
         def contentRegistry = beanContext.getBean("contentRepresentationRegistry")
@@ -139,7 +140,7 @@ class RepoEvaluateCommand implements VCommand {
                 }
 
                 // trigger re-indexing:
-                def event = new ResourceModificationEvent(repo, evaluated, origClone)
+                def event = new ResourceModificationEvent(repo, principal, evaluated, origClone)
                 beanContext.publishEvent(event)
 
                 tm.commit(status)
