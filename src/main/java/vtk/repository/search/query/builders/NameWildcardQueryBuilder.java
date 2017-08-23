@@ -49,28 +49,51 @@ import vtk.repository.search.query.filter.FilterFactory;
  */
 public class NameWildcardQueryBuilder implements QueryBuilder {
 
-    private NameWildcardQuery nwq;
+    private final NameWildcardQuery query;
 
-    public NameWildcardQueryBuilder(NameWildcardQuery nwq) {
-        this.nwq = nwq;
+    public NameWildcardQueryBuilder(NameWildcardQuery q) {
+        this.query = q;
     }
 
     @Override
     public Query buildQuery() throws QueryBuilderException {
         
-        String wildcard = this.nwq.getTerm();
-        
+        String wildcard = query.getTerm();
+        boolean inverted = false;
+        boolean ignoreCase = false;
+        switch (query.getOperator()) {
+            case EQ:
+                break;
+            case EQ_IGNORECASE:
+                ignoreCase = true;
+                break;
+            case NE:
+                inverted = true;
+                break;
+            case NE_IGNORECASE:
+                inverted = true;
+                ignoreCase = true;
+                break;
+            default:
+                throw new QueryBuilderException("Unsupported term operator: " + query.getOperator());
+        }
+
         if (wildcard.indexOf(WildcardQuery.WILDCARD_CHAR) == -1
                 && wildcard.indexOf(WildcardQuery.WILDCARD_STRING) == -1) {
             throw new QueryBuilderException("The search term '" 
                     + wildcard + "' does not have any wildcard characters (?,*) !");
         }
-        
-        Term wTerm = new Term(ResourceFields.NAME_FIELD_NAME, wildcard);
+
+        Term wTerm;
+        if (ignoreCase) {
+            wTerm = new Term(ResourceFields.NAME_LC_FIELD_NAME, wildcard.toLowerCase());
+        } else {
+            wTerm = new Term(ResourceFields.NAME_FIELD_NAME, wildcard);
+        }
         
         Filter filter = FilterFactory.wildcardFilter(wTerm);
 
-        if (this.nwq.isInverted()) {
+        if (inverted) {
             filter = FilterFactory.inversionFilter(filter);
         }
         

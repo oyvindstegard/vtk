@@ -52,6 +52,8 @@ import vtk.testing.mocktypes.MockResourceTypeTree;
 
 import static org.junit.Assert.*;
 import org.junit.Test;
+import vtk.repository.search.query.NamePrefixQuery;
+import vtk.repository.search.query.NameWildcardQuery;
 
 public class QueryParserTest {
 
@@ -228,6 +230,69 @@ public class QueryParserTest {
         assertTrue(q instanceof UriTermQuery);
         assertEquals("/i am a file with spaces(YES)?*><=x\\\\/ AND uri=/hoho.txt", ((UriTermQuery) q).getUri());
         assertEquals(((UriTermQuery) q).getOperator(), TermOperator.EQ);
+    }
+
+    @Test
+    public void namePrefixQuery() {
+        Query q = queryParser.parse("name = foo*");
+        assertTrue(q instanceof NamePrefixQuery);
+        NamePrefixQuery npq = (NamePrefixQuery)q;
+        assertEquals(TermOperator.EQ, npq.getOperator());
+        assertEquals("foo", npq.getTerm());
+
+        q = queryParser.parse("name != foo*");
+        assertTrue(q instanceof NamePrefixQuery);
+        npq = (NamePrefixQuery)q;
+        assertEquals(TermOperator.NE, npq.getOperator());
+        assertEquals("foo", npq.getTerm());
+
+        q = queryParser.parse("name =~ foo*");
+        assertTrue(q instanceof NamePrefixQuery);
+        npq = (NamePrefixQuery)q;
+        assertEquals(TermOperator.EQ_IGNORECASE, npq.getOperator());
+        assertEquals("foo", npq.getTerm());
+
+        q = queryParser.parse("name !=~ foo*");
+        assertTrue(q instanceof NamePrefixQuery);
+        npq = (NamePrefixQuery)q;
+        assertEquals(TermOperator.NE_IGNORECASE, npq.getOperator());
+        assertEquals("foo", npq.getTerm());
+    }
+
+    @Test
+    public void nameWildcardQuery() {
+        Query q = queryParser.parse("name = *foo");
+        assertTrue(q instanceof NameWildcardQuery);
+
+        q = queryParser.parse("name = f*oo");
+        assertTrue(q instanceof NameWildcardQuery);
+
+        q = queryParser.parse("name = f*oo*");
+        assertTrue(q instanceof NameWildcardQuery);
+
+        q = queryParser.parse("name = *foo*");
+        assertTrue(q instanceof NameWildcardQuery);
+        NameWildcardQuery npq = (NameWildcardQuery)q;
+        assertEquals(TermOperator.EQ, npq.getOperator());
+        assertEquals("*foo*", npq.getTerm());
+
+        q = queryParser.parse("name != *foo*");
+        assertTrue(q instanceof NameWildcardQuery);
+        npq = (NameWildcardQuery)q;
+        assertEquals(TermOperator.NE, npq.getOperator());
+        assertEquals("*foo*", npq.getTerm());
+
+        q = queryParser.parse("name =~ *foo*");
+        assertTrue(q instanceof NameWildcardQuery);
+        npq = (NameWildcardQuery)q;
+        assertEquals(TermOperator.EQ_IGNORECASE, npq.getOperator());
+        assertEquals("*foo*", npq.getTerm());
+
+        q = queryParser.parse("name !=~ *foo*");
+        assertTrue(q instanceof NameWildcardQuery);
+        npq = (NameWildcardQuery)q;
+        assertEquals(TermOperator.NE_IGNORECASE, npq.getOperator());
+        assertEquals("*foo*", npq.getTerm());
     }
     
     @Test

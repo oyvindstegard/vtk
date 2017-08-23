@@ -37,22 +37,22 @@ import java.util.Objects;
  */
 public class NamePrefixQuery implements NameQuery {
 
-    private static final long serialVersionUID = -861663856942200482L;
+    private static final long serialVersionUID = 6632611535224560139L;
 
     private final String term;
-    private final boolean inverted;
+    private final TermOperator op;
 
-    public NamePrefixQuery(String term, boolean inverted) {
+    public NamePrefixQuery(String term, TermOperator op) {
         this.term = term;
-        this.inverted = inverted;
+        this.op = op;
     }
 
     public String getTerm() {
         return this.term;
     }
 
-    public boolean isInverted() {
-        return inverted;
+    public TermOperator getOperator() {
+        return op;
     }
 
     @Override
@@ -62,9 +62,9 @@ public class NamePrefixQuery implements NameQuery {
 
     @Override
     public int hashCode() {
-        int hash = 7;
-        hash = 67 * hash + Objects.hashCode(this.term);
-        hash = 67 * hash + (this.inverted ? 1 : 0);
+        int hash = 5;
+        hash = 97 * hash + Objects.hashCode(this.term);
+        hash = 97 * hash + Objects.hashCode(this.op);
         return hash;
     }
 
@@ -80,18 +80,16 @@ public class NamePrefixQuery implements NameQuery {
             return false;
         }
         final NamePrefixQuery other = (NamePrefixQuery) obj;
-        if (this.inverted != other.inverted) {
-            return false;
-        }
         if (!Objects.equals(this.term, other.term)) {
             return false;
         }
-        return true;
+        return this.op == other.op;
     }
+
 
     @Override
     public String toString() {
-        return "NamePrefixQuery{" + "term=" + term + ", inverted=" + inverted + '}';
+        return "NamePrefixQuery{" + "term=" + term + ", operator=" + op + '}';
     }
 
 }

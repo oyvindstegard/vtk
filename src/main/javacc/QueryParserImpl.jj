@@ -295,7 +295,7 @@ Query DepthQuery() :
 
 Query ACLQuery() :
 {
-   Query q;
+    Query q;
 }
 {
     <ACL> (q=AclExistsQuery() | q=AclReadForAllQuery())
@@ -306,7 +306,7 @@ Query ACLQuery() :
 
 Query AclExistsQuery():
 {
-  Token ex=null;
+    Token ex=null;
 }
 {
     (ex=<EXISTS> | <NOTEXISTS>)
@@ -317,7 +317,7 @@ Query AclExistsQuery():
 }
 Query AclReadForAllQuery():
 {
-  Token all=null;
+    Token all=null;
 }
 {
     (all=<ALL> | <NOTALL>)
@@ -419,25 +419,35 @@ Query NameQuery() :
 
 Query NamePrefixQuery() : 
 {
-    Token t, eq=null;
+    Token t, eq=null, ne=null, eqi=null, nei=null;
+    TermOperator operator;
 }
 {
-    <NAME> (<NE> | eq=<EQ>) t=<VALUE> <ASTERISK>
+    <NAME> (eq=<EQ> | ne=<NE> | eqi=<EQ_IGNORECASE> | nei=<NE_IGNORECASE>) t=<VALUE> <ASTERISK>
         { 
-            boolean inverted = (eq == null); 
-            return new NamePrefixQuery(unescape(t.image), inverted); 
+            if (eq != null) operator = TermOperator.EQ;
+            else if (ne != null) operator = TermOperator.NE;
+            else if (eqi != null) operator = TermOperator.EQ_IGNORECASE;
+            else operator = TermOperator.NE_IGNORECASE;
+            
+            return new NamePrefixQuery(unescape(t.image), operator);
         }
 }
 
 Query NameWildcardQuery() :
 {
-    Token t, eq=null;
+    Token t, eq=null, ne=null, eqi=null, nei=null;
+    TermOperator operator;
 }
 {
-    <NAME> (<NE> | eq=<EQ>) t=<WILDVALUE>
+    <NAME> (eq=<EQ> | ne=<NE> | eqi=<EQ_IGNORECASE> | nei=<NE_IGNORECASE>) t=<WILDVALUE>
         {
-           boolean inverted = (eq == null);
-           return new NameWildcardQuery(unescape(t.image), inverted);
+            if (eq != null) operator = TermOperator.EQ;
+            else if (ne != null) operator = TermOperator.NE;
+            else if (eqi != null) operator = TermOperator.EQ_IGNORECASE;
+            else operator = TermOperator.NE_IGNORECASE;
+
+            return new NameWildcardQuery(unescape(t.image), operator);
         }
 }
 

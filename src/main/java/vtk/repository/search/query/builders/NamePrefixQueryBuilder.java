@@ -47,7 +47,7 @@ import vtk.repository.search.query.filter.FilterFactory;
  */
 public class NamePrefixQueryBuilder implements QueryBuilder {
 
-    private NamePrefixQuery query;
+    private final NamePrefixQuery query;
 
     public NamePrefixQueryBuilder(NamePrefixQuery query) {
         this.query = query;
@@ -58,13 +58,37 @@ public class NamePrefixQueryBuilder implements QueryBuilder {
      */
     @Override
     public Query buildQuery() throws QueryBuilderException {
-        
-        Term prefixTerm = new Term(ResourceFields.NAME_FIELD_NAME, 
-                                                        this.query.getTerm());
+
+        String prefix = query.getTerm();
+        boolean ignoreCase = false;
+        boolean invert = false;
+        switch (query.getOperator()) {
+            case EQ:
+                break;
+            case EQ_IGNORECASE:
+                ignoreCase = true;
+                break;
+            case NE:
+                invert = true;
+                break;
+            case NE_IGNORECASE:
+                invert = true;
+                ignoreCase = true;
+                break;
+            default:
+                throw new QueryBuilderException("Unsupported term operator: " + query.getOperator());
+        }
+
+        Term prefixTerm;
+        if (ignoreCase) {
+            prefixTerm = new Term(ResourceFields.NAME_LC_FIELD_NAME, prefix.toLowerCase());
+        } else {
+            prefixTerm = new Term(ResourceFields.NAME_FIELD_NAME, prefix);
+        }
         
         Filter filter = new PrefixFilter(prefixTerm);
         
-        if (query.isInverted()) {
+        if (invert) {
             filter = FilterFactory.inversionFilter(filter);
         }
 

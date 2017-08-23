@@ -65,7 +65,7 @@ public class NameTermQueryBuilder implements QueryBuilder {
         if (op == TermOperator.EQ || op == TermOperator.NE) {
             Term t = new Term(ResourceFields.NAME_FIELD_NAME, term);
                 
-            if (op == TermOperator.EQ){
+            if (op == TermOperator.EQ) {
                 return new TermQuery(t);
             } else {
                 return new ConstantScoreQuery(FilterFactory.inversionFilter(new TermFilter(t)));

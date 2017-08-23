@@ -38,22 +38,22 @@ import java.util.Objects;
  */
 public class NameWildcardQuery implements NameQuery {
 
-    private static final long serialVersionUID = -6671421735774452421L;
+    private static final long serialVersionUID = 2774150272876674526L;
 
     private final String term;
-    private final boolean inverted;
+    private final TermOperator operator;
 
-    public NameWildcardQuery(String term, boolean inverted) {
+    public NameWildcardQuery(String term, TermOperator operator) {
         this.term = term;
-        this.inverted = inverted;
+        this.operator = operator;
     }
 
     public String getTerm() {
         return this.term;
     }
     
-    public boolean isInverted() {
-        return this.inverted;
+    public TermOperator getOperator() {
+        return operator;
     }
 
     @Override
@@ -62,10 +62,15 @@ public class NameWildcardQuery implements NameQuery {
     }
 
     @Override
+    public String toString() {
+        return "NameWildcardQuery{" + "term=" + term + ", operator=" + operator + '}';
+    }
+
+    @Override
     public int hashCode() {
-        int hash = 7;
-        hash = 79 * hash + Objects.hashCode(this.term);
-        hash = 79 * hash + (this.inverted ? 1 : 0);
+        int hash = 5;
+        hash = 67 * hash + Objects.hashCode(this.term);
+        hash = 67 * hash + Objects.hashCode(this.operator);
         return hash;
     }
 
@@ -81,18 +86,11 @@ public class NameWildcardQuery implements NameQuery {
             return false;
         }
         final NameWildcardQuery other = (NameWildcardQuery) obj;
-        if (this.inverted != other.inverted) {
-            return false;
-        }
         if (!Objects.equals(this.term, other.term)) {
             return false;
         }
-        return true;
+        return this.operator == other.operator;
     }
 
-    @Override
-    public String toString() {
-        return "NameWildcardQuery{" + "term=" + term + ", inverted=" + inverted + '}';
-    }
 
 }
