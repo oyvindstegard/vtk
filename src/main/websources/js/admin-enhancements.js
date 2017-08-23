@@ -1213,7 +1213,7 @@ VrtxAdmin.prototype.addSearch = function addSearch() {
 
       var splitted = formatted.split(";");
 
-      var uri = splitted[1];
+      var uri = splitted[1].replace(/\;/, ";");
       var resourceType = splitted[2];
       if(resourceType === "collection") {
         location.pathname = uri + "/";
