@@ -1187,15 +1187,15 @@ VrtxAdmin.prototype.addSearch = function addSearch() {
       },
       highlight : function(value, term) {
 
-        // Highlight all terms globally across all fields
-        var terms = term.split(" ");
-        for(var i = 0, len = terms.length; i < len; i++) {
-          var valReplace = "$1<strong>$2</strong>$3";
-          var regex = new RegExp("^(?![^&;]+;)(?!<[^<>]*)([^>]*)(" + terms[i].replace(/([\^\$\(\)\[\]\{\}\*\.\+\?\|\\])/gi, "\\$1") + ")([^>]*)(?![^<>]*>)(?![^&;]+;)", "gi");
-          for(var field in value) {
-            if(field !== "resourceType") {
-              value[field] = value[field].replace(regex, valReplace);
-            }
+        var terms = term.split(" ").sort(function(a, b) {
+          return b.length - a.length;
+        }).join("|");
+        var termsRegexp = new RegExp("(" + terms + ")", "gi")
+
+        for(var field in value) {
+          if(field === "title"
+          || field === "filename") {
+            value[field] = value[field].replace(termsRegexp, "<strong>$1</strong>");
           }
         }
 
