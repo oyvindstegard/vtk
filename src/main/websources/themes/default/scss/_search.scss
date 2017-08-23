@@ -42,12 +42,12 @@
   border-color: #ccc;
 
   .vrtx-autocomplete-search-info {
-    background: transparent url(images/file.gif) no-repeat 0px 3px;
+    background: transparent url("images/file.gif") no-repeat 0px 3px;
     padding-left: 40px;
     position: relative;
 
-    &.unpublished {
-      background: transparent url(images/file-unpublished.png) no-repeat 0px 3px;
+    &.collection {
+      background: transparent url("images/folder.gif") no-repeat 0px 5px;
     }
     @include resourceTitleIcon(folder,   0px 5px,  42px);
     @include resourceTitleIcon(text,     0px 2px);

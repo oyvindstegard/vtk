@@ -1164,6 +1164,7 @@ VrtxAdmin.prototype.addSearch = function addSearch() {
       resultsBeforeScroll: 4,
       cacheLength: 10,
       minWidth: 350,
+      delay: 200,
       wrapperClass: "admin-search",
       formatItem : function(data, i, n, value) {
         var splitted = value.split(';');
@@ -1175,34 +1176,44 @@ VrtxAdmin.prototype.addSearch = function addSearch() {
       },
       highlight : function(value, term) {
         var valueArray = value.title.split(" ");
+
         var uriValue = value.uri;
+        if(this.wrapperClass != "admin-search admin-global-search") {
+          uriValue = uriValue.replace(new RegExp("^" + location.pathname, "gi"), "");
+        }
+
         var filenameValue = uriValue.split("/");
         filenameValue = filenameValue[filenameValue.length - 1];
 
         var termArray = term.split(" ");
         var returnValue = "";
 
+        var startRegex = "^(?![^&;]+;)(?!<[^<>]*)(";
+        var endRegex = ")(?![^<>]*>)(?![^&;]+;)";
+        var termReplace = /([\^\$\(\)\[\]\{\}\*\.\+\?\|\\])/gi;
+        var valReplace = "<strong>$1</strong>";
+
+        // Do matching for each word in title
         for (v in valueArray) {
           var val = valueArray[v];
           for (t in termArray) {
-            var regex = new RegExp("^(?![^&;]+;)(?!<[^<>]*)("
-                + termArray[t].replace(/([\^\$\(\)\[\]\{\}\*\.\+\?\|\\])/gi, "\\$1") + ")(?![^<>]*>)(?![^&;]+;)", "gi");
-            val = val.replace(regex, "<strong>$1</strong>");
+            var regex = new RegExp(startRegex + termArray[t].replace(termReplace, "\\$1") + endRegex, "gi");
+            val = val.replace(regex, valReplace);
           }
           returnValue = (returnValue == "") ? val : (returnValue + " " + val);
         }
 
+        // Otherwise match the whole thing
         for (t in termArray) {
-          var regex = new RegExp("^(?![^&;]+;)(?!<[^<>]*)("
-              + termArray[t].replace(/([\^\$\(\)\[\]\{\}\*\.\+\?\|\\])/gi, "\\$1") + ")(?![^<>]*>)(?![^&;]+;)", "gi");
-          filenameValue = filenameValue.replace(regex, "<strong>$1</strong>");
-          uriValue = uriValue.replace(regex, "<strong>$1</strong>");
+          var regex = new RegExp(startRegex + termArray[t].replace(termReplace, "\\$1") + endRegex, "gi");
+          filenameValue = filenameValue.replace(regex, valReplace);
+          uriValue = uriValue.replace(regex, valReplace);
         }
 
         return '<div class="vrtx-autocomplete-search-info ' + value.resourceType + '">' +
                  '<span class="vrtx-autocomplete-search-title">' + returnValue + '</span>' +
                  (returnValue !== filenameValue ? '<span class="vrtx-autocomplete-search-filename">' + filenameValue + '</span>' : '') +
-                 '<span class="vrtx-autocomplete-search-uri">' + uriValue + '</span>' +
+                 (filenameValue !== uriValue ? '<span class="vrtx-autocomplete-search-uri">' + uriValue + '</span>' : '') +
                '</div>';
       }
     };
@@ -1211,12 +1222,21 @@ VrtxAdmin.prototype.addSearch = function addSearch() {
       var parent = $(".adminSearchService");
       parent.removeClass("visible-search");
 
-      var uri = formatted.split(";")[1];
-      location.pathname = uri;
+      var splitted = formatted.split(";");
+
+      var uri = splitted[1];
+      var resourceType = splitted[2];
+      if(resourceType === "collection") {
+        location.pathname = uri + "/";
+      } else {
+        location.pathname = uri;
+      }
     };
 
     var fieldGlobal = $('#vrtx-autocomplete-admin-global-search');
-    fieldGlobal.autocomplete('?service=resource-autocomplete', p);
+    fieldGlobal.autocomplete('?service=resource-autocomplete', $.extend({}, p, {
+      wrapperClass: "admin-search admin-global-search"
+    }));
     fieldGlobal.result(function(event, data, formatted) {
       fieldGlobal.val("");
       resultHandler(formatted);
