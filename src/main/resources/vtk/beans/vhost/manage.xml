@@ -650,7 +650,7 @@
     </constructor-arg>
     <constructor-arg name="templates">
       <map>
-          <entry key="admin-autocomplete" value="title =~*{q}* OR filename=~*{q}*" />
+          <entry key="admin-autocomplete" value="(title =~*{q}* OR name =*{q}*)"/>
       </map>
     </constructor-arg>
     <constructor-arg name="defaultParameters">
@@ -660,7 +660,7 @@
         <entry key="fields" value="title,uri,type" />
         <entry key="format" value="semicolon-separated" />
         <entry key="unique-filter" value="false" />
-        <entry key="sort" value="title" />
+        <entry key="sort" value="title,lastModified desc" />
       </map>
     </constructor-arg>
   </bean>
