@@ -1168,34 +1168,39 @@ VrtxAdmin.prototype.addSearch = function addSearch() {
       wrapperClass: "admin-search",
       formatItem : function(data, i, n, value) {
         var splitted = value.split(';');
+
+        var uri = splitted[1];
+        var filename = uri.split("/");
+        filename = filename[filename.length - 1];
+
+        if(this.wrapperClass != "admin-search admin-global-search") {
+          uri = uri.replace(new RegExp("^" + location.pathname, "i"), "");
+          uri = uri.replace(new RegExp("^\\/", "i"), "");
+        }
+
         return {
           title: splitted[0],
-          uri: splitted[1],
+          filename: filename,
+          uri: uri,
           resourceType: splitted[2]
         }
       },
       highlight : function(value, term) {
-        var titleValue = value.title;
-        var uriValue = value.uri;
-
-        var filenameValue = uriValue.split("/");
-        filenameValue = filenameValue[filenameValue.length - 1];
-        if(this.wrapperClass != "admin-search admin-global-search") {
-          uriValue = uriValue.replace(new RegExp("^" + location.pathname, "i"), "");
-          uriValue = uriValue.replace(new RegExp("^\\/", "i"), "");
-        }
 
         // Highlight all terms globally across all fields
-        var valReplace = "<strong>$1</strong>";
-        var regex = new RegExp("(" + term + ")", "gi");
-        titleValue = titleValue.replace(regex, valReplace);
-        filenameValue = filenameValue.replace(regex, valReplace);
-        uriValue = uriValue.replace(regex, valReplace);
+        var terms = term.split(" ");
+        for(var i = 0, len = terms.length; i < len; i++) {
+          var valReplace = "$1<strong>$2</strong>$3";
+          var regex = new RegExp("^(?![^&;]+;)(?!<[^<>]*)([^>]*)(" + terms[i].replace(/([\^\$\(\)\[\]\{\}\*\.\+\?\|\\])/gi, "\\$1") + ")([^>]*)(?![^<>]*>)(?![^&;]+;)", "gi");
+          for(var field in value) {
+            value[field] = value[field].replace(regex, valReplace);
+          }
+        }
 
         return '<div class="vrtx-autocomplete-search-info ' + value.resourceType + '">' +
-                 '<span class="vrtx-autocomplete-search-title">' + titleValue + '</span>' +
-                 (titleValue !== filenameValue ? '<span class="vrtx-autocomplete-search-filename">' + filenameValue + '</span>' : '') +
-                 (filenameValue !== uriValue ? '<span class="vrtx-autocomplete-search-uri">' + uriValue + '</span>' : '') +
+                 '<span class="vrtx-autocomplete-search-title">' + value.title + '</span>' +
+                 (value.title !== value.filename ? '<span class="vrtx-autocomplete-search-filename">' + value.filename + '</span>' : '') +
+                 (value.filename !== value.uri ? '<span class="vrtx-autocomplete-search-uri">' + value.uri + '</span>' : '') +
                '</div>';
       }
     };
