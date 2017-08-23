@@ -1175,45 +1175,27 @@ VrtxAdmin.prototype.addSearch = function addSearch() {
         }
       },
       highlight : function(value, term) {
-        var valueArray = value.title.split(" ");
+        console.log(value);
+        var titleValue = value.title;
 
         var uriValue = value.uri;
+        var filenameValue = uriValue.split("/");
+        filenameValue = filenameValue[filenameValue.length - 1];
         if(this.wrapperClass != "admin-search admin-global-search") {
           uriValue = uriValue.replace(new RegExp("^" + location.pathname, "i"), "");
           uriValue = uriValue.replace(new RegExp("^\\/", "i"), "");
         }
 
-        var filenameValue = uriValue.split("/");
-        filenameValue = filenameValue[filenameValue.length - 1];
-
-        var termArray = term.split(" ");
-        var returnValue = "";
-
-        var startRegex = "^(?![^&;]+;)(?!<[^<>]*)(";
-        var endRegex = ")(?![^<>]*>)(?![^&;]+;)";
-        var termReplace = /([\^\$\(\)\[\]\{\}\*\.\+\?\|\\])/gi;
+        // Do the matching
         var valReplace = "<strong>$1</strong>";
-
-        // Do matching for each word in title
-        for (v in valueArray) {
-          var val = valueArray[v];
-          for (t in termArray) {
-            var regex = new RegExp(startRegex + termArray[t].replace(termReplace, "\\$1") + endRegex, "gi");
-            val = val.replace(regex, valReplace);
-          }
-          returnValue = (returnValue == "") ? val : (returnValue + " " + val);
-        }
-
-        // Otherwise match the whole thing
-        for (t in termArray) {
-          var regex = new RegExp(startRegex + termArray[t].replace(termReplace, "\\$1") + endRegex, "gi");
-          filenameValue = filenameValue.replace(regex, valReplace);
-          uriValue = uriValue.replace(regex, valReplace);
-        }
+        var regex = new RegExp("(" + term + ")", "gi");
+        titleValue = titleValue.replace(regex, valReplace);
+        filenameValue = filenameValue.replace(regex, valReplace);
+        uriValue = uriValue.replace(regex, valReplace);
 
         return '<div class="vrtx-autocomplete-search-info ' + value.resourceType + '">' +
-                 '<span class="vrtx-autocomplete-search-title">' + returnValue + '</span>' +
-                 (returnValue !== filenameValue ? '<span class="vrtx-autocomplete-search-filename">' + filenameValue + '</span>' : '') +
+                 '<span class="vrtx-autocomplete-search-title">' + titleValue + '</span>' +
+                 (titleValue !== filenameValue ? '<span class="vrtx-autocomplete-search-filename">' + filenameValue + '</span>' : '') +
                  (filenameValue !== uriValue ? '<span class="vrtx-autocomplete-search-uri">' + uriValue + '</span>' : '') +
                '</div>';
       }
