@@ -30,6 +30,7 @@
  */
 package vtk.web.search;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
@@ -50,6 +51,7 @@ import vtk.repository.search.Search;
 import vtk.repository.search.Searcher;
 import vtk.repository.search.Sorting;
 import vtk.repository.search.SortingParserFactory;
+import vtk.repository.search.query.AndQuery;
 
 /**
  * Simple index searcher (built on top of the 
@@ -193,13 +195,14 @@ public final class SimpleSearcher {
     
     public static final class QueryBuilder {
         private vtk.repository.search.query.Query query;
+		private List<vtk.repository.search.query.Query> filterQueries = new ArrayList<>();
         private int limit = 100;
         private int offset = 0;
         private Sorting sorting;
         private List<String> fields = Collections.emptyList();
         private PropertySelect select = PropertySelect.NONE;
         private boolean unpublished;
-        
+
         private QueryParserFactory parserFactory;
         private SortingParserFactory sortingFactory;
         private ResourceTypeTree resourceTypeTree;
@@ -218,6 +221,12 @@ public final class SimpleSearcher {
             return this;
         }
         
+		public QueryBuilder addFilterQuery(String filterQuery) {
+			Objects.requireNonNull(filterQuery);
+			filterQueries.add(parserFactory.getParser().parse(filterQuery));
+			return this;
+		}
+
         public QueryBuilder limit(int limit) {
             if (limit <= 0 || limit > 1000) {
                 throw new IllegalArgumentException("Limit must be an integer between 0 and 1000");
@@ -255,8 +264,19 @@ public final class SimpleSearcher {
         public Query build() {
             Objects.requireNonNull(query, "Field 'query' is NULL");
             Objects.requireNonNull(query, "Field 'select' is NULL");
-            
-            return new Query(query, limit, offset, 
+
+			vtk.repository.search.query.Query q = query;
+
+			if (!filterQueries.isEmpty()) {
+				AndQuery aq = new AndQuery();
+				aq.add(query);
+				for (vtk.repository.search.query.Query filterQuery : filterQueries) {
+					aq.add(filterQuery);
+				}
+				q = aq;
+			}
+
+			return new Query(q, limit, offset,
                     Optional.ofNullable(sorting), fields, select,
                     unpublished);
         }

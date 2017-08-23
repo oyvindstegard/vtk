@@ -83,6 +83,8 @@ import vtk.web.service.URL;
  * <ul>
  * <li>{@code q} - the query string, which is parsed using 
  *      {@link vtk.web.search.SearchParser}
+ * <li>{@code fq} - Additional filter query clause, which will be logically required (AND), 
+ * 		in addition to the criteria specified in the main query. Can occur zero or more times.
  * <li>{@code properties} or {@code fields} - a comma-separated list of property 
  *      names to include in the result set. If the string {@code *} appears in the list, 
  *      all properties are included. In addition, the special 
@@ -194,7 +196,6 @@ public final class QueryHandler implements HttpRequestHandler {
         format = format.recover(err -> badRequest(err));
         return format;
     }
-
     
     private Result<SimpleSearcher.Query> buildQuery(HttpServletRequest request) {
 
@@ -226,10 +227,16 @@ public final class QueryHandler implements HttpRequestHandler {
                     String query = template.replaceAll("\\{'q\\}", q);
                     q = escape(escape(q, ' ', '\\'), ' ', '\\');
                     query = query.replaceAll("\\{q\\}", q);
-                    q = query;
+					q = query;
                 }
-            }
-            return builder.query(q);
+			}
+			if (request.getParameterValues("fq") != null) {
+				for (String fq : request.getParameterValues("fq")) {
+					fq = escape(fq, ' ', '\\');
+					builder.addFilterQuery(fq);
+				}
+			}
+			return builder.query(q);
         }));
 
         qry = qry.flatMap(builder -> Result.attempt(() -> {

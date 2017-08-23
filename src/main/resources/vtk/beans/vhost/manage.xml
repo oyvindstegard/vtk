@@ -450,7 +450,7 @@
   <bean parent="collectionMenuBuilder">
     <property name="arguments" ref="createCollectionService" />
   </bean>
-
+  
   <bean id="renameService" class="vtk.web.service.ServiceImpl">
     <property name="parent" ref="manageService" />
     <property name="order" value="-1000" />
@@ -624,6 +624,46 @@
   </bean>
 
 
+  <!-- Auto-complete service -->
+  <bean id="manage.autoCompleteService" class="vtk.web.service.ServiceImpl" parent="autoCompleteService">
+    <property name="assertions">
+      <list>
+        <bean class="vtk.web.service.RequestParameterAssertion">
+          <property name="parameterName" value="service" />
+          <property name="parameterValue" value="resource-autocomplete" />
+        </bean>
+      </list>
+    </property>
+    <property name="handler" ref="manage.autoCompleteHandler" />
+  </bean>
+
+  <bean id="manage.autoCompleteHandler" class="vtk.web.search.QueryHandler">
+    <constructor-arg name="searcher" ref="propertySearch.searcher" />
+    <constructor-arg name="formats">
+      <map>
+        <entry key="semicolon-separated">
+          <bean class="vtk.web.search.QueryHandler" factory-method="fieldSeparatedResponseHandler">
+            <constructor-arg value=";" />
+          </bean>
+        </entry>
+      </map>
+    </constructor-arg>
+    <constructor-arg name="templates">
+      <map>
+          <entry key="admin-autocomplete" value="title =~*{q}* OR filename=~*{q}*" />
+      </map>
+    </constructor-arg>
+    <constructor-arg name="defaultParameters">
+      <map>
+        <entry key="t" value="admin-autocomplete" />
+        <entry key="tokenize" value="true" />
+        <entry key="fields" value="title,uri,type" />
+        <entry key="format" value="semicolon-separated" />
+        <entry key="unique-filter" value="false" />
+        <entry key="sort" value="title" />
+      </map>
+    </constructor-arg>
+  </bean>
 
   <!-- Locale controllers -->
   <bean id="setNorwegianNBLocaleController" class="vtk.web.actions.locale.SetLocaleController">

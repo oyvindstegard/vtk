@@ -1222,7 +1222,7 @@ VrtxAdmin.prototype.placePublishButtonInActiveTab = function placeDeleteButtonIn
                  '<ul><li><a id="publishTheResourcesService" href="javascript:void(0);">' + btn.attr('title') + '</a></li></ul>' +
                '</div>' +
              '</li>';
-  menu.append(html);
+  $(html).insertAfter(menu.find(".copyResourcesService"));
 
   $('#publishTheResourcesService').click(function (e) {
     var boxes = vrtxAdm.cachedDirectoryListing.find('td input[type=checkbox]:checked');

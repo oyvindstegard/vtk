@@ -24,37 +24,31 @@
 
   li {
     float: left;
-    margin: -10px 0 0 30px;
-    padding: 10px 0 10px;
+    margin: -10px 0 0 15px;
+    padding: 10px 0 10px 15px;
+    background: url("images/seperator-grey-gradient.png") no-repeat scroll left top transparent;
 
     a {
       display: block;
-      padding: 5px 0 6px 30px;
+      padding: 5px 0 6px;
     }
-    &.deleteResourcesService a {
-      background: url(images/tab-menu-delete.png) no-repeat center left;
-      padding-left: 25px;
+    &.fileUploadService {
+      margin-left: 60px;
     }
-    &.moveResourcesService a {
-      background: url(images/tab-menu-move.png) no-repeat center left;
-      padding-left: 41px;
-    }
-    &.copyResourcesService a {
-      background: url(images/tab-menu-copy.png) no-repeat center left;
-      padding-left: 38px;
-    }
-    &.fileUploadService a {
-      background: url(images/tab-menu-upload.png) no-repeat center left;
-    }
-    &.createDocumentService a {
-      background: url(images/tab-menu-new-file.png) no-repeat center left;
-    }
-    &.createCollectionService a {
-      background: url(images/tab-menu-new-folder.png) no-repeat center left;
-    }
-    &.recoverResourceService a,
-    &.deleteResourcePermanentService a {
+    &.deleteResourcesService,
+    &.recoverResourceService,
+    &.fileUploadService,
+    &.adminSearchService {
       padding-left: 0;
+      background: none;
+    }
+    &.more-menu {
+      padding-left: 5px;
+
+      > div > a {
+        text-indent: -9999px;
+        overflow: hidden;
+      }
     }
   }
 }
