@@ -1179,7 +1179,7 @@ VrtxAdmin.prototype.addSearch = function addSearch() {
         }
 
         return {
-          title: splitted[0],
+          title: vrtxAdm.escapeHtml(splitted[0]),
           filename: filename,
           uri: uri,
           resourceType: splitted[2]
@@ -1241,6 +1241,24 @@ VrtxAdmin.prototype.addSearch = function addSearch() {
     }
   });
 };
+
+// Credits: https://stackoverflow.com/questions/24816/escaping-html-strings-with-jquery
+VrtxAdmin.prototype.escapeHtml = function escapeHtml(str) {
+  var entityMap = {
+    '&': '&amp;',
+    '<': '&lt;',
+    '>': '&gt;',
+    '"': '&quot;',
+    "'": '&#39;',
+    '/': '&#x2F;',
+    '`': '&#x60;',
+    '=': '&#x3D;'
+  };
+
+  return str.replace(/[&<>"'`=\/]/g, function (s) {
+    return entityMap[s];
+  });
+}
 
 
 /**
