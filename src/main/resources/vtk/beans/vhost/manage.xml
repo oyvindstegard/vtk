@@ -650,7 +650,7 @@
     </constructor-arg>
     <constructor-arg name="templates">
       <map>
-          <entry key="admin-autocomplete" value="(title =~*{q}* OR name =*{q}*)"/>
+          <entry key="admin-autocomplete" value="(title =~*{q}* OR name =~*{q}*)"/>
       </map>
     </constructor-arg>
     <constructor-arg name="defaultParameters">
