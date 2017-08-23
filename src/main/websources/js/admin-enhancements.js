@@ -1193,7 +1193,9 @@ VrtxAdmin.prototype.addSearch = function addSearch() {
           var valReplace = "$1<strong>$2</strong>$3";
           var regex = new RegExp("^(?![^&;]+;)(?!<[^<>]*)([^>]*)(" + terms[i].replace(/([\^\$\(\)\[\]\{\}\*\.\+\?\|\\])/gi, "\\$1") + ")([^>]*)(?![^<>]*>)(?![^&;]+;)", "gi");
           for(var field in value) {
-            value[field] = value[field].replace(regex, valReplace);
+            if(field !== "resourceType") {
+              value[field] = value[field].replace(regex, valReplace);
+            }
           }
         }
 
