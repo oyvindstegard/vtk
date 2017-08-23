@@ -1175,10 +1175,9 @@ VrtxAdmin.prototype.addSearch = function addSearch() {
         }
       },
       highlight : function(value, term) {
-        console.log(value);
         var titleValue = value.title;
-
         var uriValue = value.uri;
+
         var filenameValue = uriValue.split("/");
         filenameValue = filenameValue[filenameValue.length - 1];
         if(this.wrapperClass != "admin-search admin-global-search") {
@@ -1186,7 +1185,7 @@ VrtxAdmin.prototype.addSearch = function addSearch() {
           uriValue = uriValue.replace(new RegExp("^\\/", "i"), "");
         }
 
-        // Do the matching
+        // Highlight all terms globally across all fields
         var valReplace = "<strong>$1</strong>";
         var regex = new RegExp("(" + term + ")", "gi");
         titleValue = titleValue.replace(regex, valReplace);
