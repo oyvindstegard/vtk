@@ -1179,7 +1179,8 @@ VrtxAdmin.prototype.addSearch = function addSearch() {
 
         var uriValue = value.uri;
         if(this.wrapperClass != "admin-search admin-global-search") {
-          uriValue = uriValue.replace(new RegExp("^" + location.pathname, "gi"), "");
+          uriValue = uriValue.replace(new RegExp("^" + location.pathname, "i"), "");
+          uriValue = uriValue.replace(new RegExp("^\\/", "i"), "");
         }
 
         var filenameValue = uriValue.split("/");
