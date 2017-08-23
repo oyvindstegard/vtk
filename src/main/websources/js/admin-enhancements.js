@@ -1190,7 +1190,7 @@ VrtxAdmin.prototype.addSearch = function addSearch() {
         var terms = term.split(" ").sort(function(a, b) {
           return b.length - a.length;
         }).join("|");
-        var termsRegexp = new RegExp("(" + terms + ")", "gi")
+        var termsRegexp = new RegExp("(" + terms + ")", "gi");
 
         for(var field in value) {
           if(field === "title"
