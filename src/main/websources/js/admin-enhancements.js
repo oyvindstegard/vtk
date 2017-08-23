@@ -1124,7 +1124,7 @@ VrtxAdmin.prototype.addSearch = function addSearch() {
   var isCollectionListing = $("body#vrtx-manage-collectionlisting").length && vrtxAdm.cachedActiveTab.length;
 
   var globalHtml = '<div class="global-menu-small adminSearchService">' +
-                     '<a href="javascript:void(0);">' + vrtxAdmin.messages.search.expandLink.split(" ")[0] + '</a>' +
+                     '<a href="javascript:void(0);">' + vrtxAdmin.messages.search.globalExpandLink + '</a>' +
                      '<input class="vrtx-textfield ac_input" placeholder="' + vrtxAdmin.messages.search.placeholder + '" id="vrtx-autocomplete-admin-global-search" type="text" size="18" />' +
                    '</div>';
   $("#global-menu-top").prepend(globalHtml);

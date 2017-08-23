@@ -52,7 +52,8 @@
     },
     search: {
       expandLink: '${vrtx.getMsg("tabMenuRight.adminSearchService")}',
-      placeholder: '${vrtx.getMsg("tabMenuRight.adminSearchService.placeholder")}'
+      placeholder: '${vrtx.getMsg("tabMenuRight.adminSearchService.placeholder")}',
+      globalExpandLink: '${vrtx.getMsg("tabMenuRight.adminSearchService.globalTitle")}'
     },
     dropdowns: {
       createTitle: '${vrtx.getMsg("dropdowns.create.title")}',
