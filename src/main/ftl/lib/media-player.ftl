@@ -55,6 +55,7 @@
       <#if showPlayButton><a class="playbutton" href="${url}"></a></#if>
     </div>
     <div id="mediaspiller-${dateStr}"<#if showPlayButton> class="vrtx-media-player-no-flash"</#if>>
+      <#if flashDownloadLink?? && flashDownloadLink><p><a href="https://get.adobe.com/flashplayer/">Enable flash</a></p></#if>
       <#if hideVideoFallbackLink?? == false><a class="vrtx-media" href="${url}"></#if>
         <img src="${imgSrc}" width="${width}" height="${height}" alt="${alt}"/>
         <#if showPlayButton><span class="playbutton"></span></#if>
