@@ -59,6 +59,7 @@ public abstract class ShellSessionFactorySupport implements ShellSessionFactory,
     protected ResourceLoader resourceLoader;
     protected ApplicationContext applicationContext;
     protected List<String> initFiles = Collections.emptyList();
+    protected List<String> initExpressions = Collections.emptyList();
 
     private final Logger logger = LoggerFactory.getLogger(
             ShellSessionFactorySupport.class.getName());
@@ -75,6 +76,10 @@ public abstract class ShellSessionFactorySupport implements ShellSessionFactory,
         ss.bind("context", applicationContext);
         ss.bind("resourceLoader", resourceLoader);
         ss.bind("logger", shellContextLogger);
+
+        for (String expression: initExpressions) {
+            ss.evaluate(expression);
+        }
 
         for (String fileResource: initFiles) {
             Resource resource = this.resourceLoader.getResource(fileResource);
@@ -100,9 +105,36 @@ public abstract class ShellSessionFactorySupport implements ShellSessionFactory,
         this.applicationContext = applicationContext;
     }
 
+    /**
+     * Set a list of source code files used to initialize a shell session.
+     *
+     * <p>The files are evaluated by calling {@link ShellSession#evaluate(java.io.Reader) }, and the
+     * contents should use UTF-8 encoding.
+     *
+     * <p>Evaluataion of init files occur after {@link #setInitExpressions(java.util.List) evaluation
+     * of init expressions}.
+     * @param initFiles
+     */
     public void setInitFiles(List<String> initFiles) {
         this.initFiles = Objects.requireNonNull(initFiles, "initFiles cannot be null").stream()
                 .filter(f -> !f.trim().isEmpty())
+                .collect(Collectors.toList());
+    }
+
+    /**
+     * Set a list of expressions which can be used to initialize new sessions.
+     *
+     * <p>The expressions are evaluated by calling {@link ShellSession#evaluate(java.lang.String) }.
+     *
+     * <p>Evaluation of init expressions occur before {@link #setInitFiles(java.util.List) evaluation
+     * of init files}.
+     *
+     * @param initExpressions
+     */
+    public void setInitExpressions(List<String> initExpressions) {
+        this.initExpressions = Objects.requireNonNull(initExpressions, "initExpressions cannot be null").stream()
+                .map(e -> e.trim())
+                .filter(e -> !e.isEmpty())
                 .collect(Collectors.toList());
     }
 

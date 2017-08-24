@@ -10,6 +10,19 @@
       <property name="port" value="${groovyShell.listenPort}" />
       <property name="shellSessionFactory">
         <bean class="vtk.shell.groovy.GroovyShellSessionFactory">
+          <property name="initExpressions">
+            <list>
+              <value>:import vtk.repository.*</value>
+              <value>:import vtk.repository.resourcetype.*</value>
+              <value>:import vtk.repository.resourcetype.value.*</value>
+              <value>:import vtk.repository.search.*</value>
+              <value>:import vtk.security.*</value>
+              <value>:import vtk.util.io.*</value>
+              <value>:import vtk.util.codec.*</value>
+              <value>:import vtk.util.text.*</value>
+              <value>:import java.time.*</value>
+            </list>
+          </property>
           <property name="initFiles" value="#{'${groovyShell.initFiles}'.split('\\s*,\\s*')}"/>
         </bean>
       </property>

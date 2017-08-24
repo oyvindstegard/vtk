@@ -30,6 +30,17 @@ class GroovyEvalCommand implements VCommand {
                 resourceLoader = vshContext.get('resourceLoader')
                 prompt = ""
                 printWelcomeMessage = false
+                initExpressions = [
+                  ':import vtk.repository.*',
+                  ':import vtk.repository.resourcetype.*',
+                  ':import vtk.repository.resourcetype.value.*',
+                  ':import vtk.repository.search.*',
+                  ':import vtk.security.*',
+                  ':import vtk.util.io.*',
+                  ':import vtk.util.codec.*',
+                  ':import vtk.util.text.*',
+                  ':import java.time.*'
+                ]
             }
 
             shellSession = factory.newSession(out)
