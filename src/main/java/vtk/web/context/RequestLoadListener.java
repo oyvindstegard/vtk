@@ -31,8 +31,6 @@
 package vtk.web.context;
 
 import java.io.IOException;
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
 
 import javax.servlet.FilterChain;
 import javax.servlet.ServletException;
@@ -53,12 +51,11 @@ import vtk.web.servlet.AbstractServletFilter;
 
 public class RequestLoadListener extends AbstractServletFilter
     implements ApplicationListener<ServletRequestHandledEvent> {
-    private MetricRegistry registry;
+    private final MetricRegistry registry;
     private final Counter activeRequests;
     private final Meter requests;
     private final Meter errors;
     private final Histogram processing;
-    private final Map<Service, Counter> serviceCounters = new ConcurrentHashMap<>();
     
     public RequestLoadListener(MetricRegistry registry) {
         this.registry = registry;
@@ -105,9 +102,7 @@ public class RequestLoadListener extends AbstractServletFilter
             service = service.getParent();
         }
         if (enabled) {
-            service = requestContext.getService();
-            serviceCounters.computeIfAbsent(service, 
-                    s -> registry.counter("services." + s.getName())).inc();
+            registry.counter("services." + requestContext.getService().getName()).inc();
         }
     }
 
