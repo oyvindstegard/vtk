@@ -626,6 +626,7 @@
 
   <!-- Auto-complete service -->
   <bean id="manage.autoCompleteService" class="vtk.web.service.ServiceImpl" parent="autoCompleteService">
+    <property name="parent" ref="manageService" />
     <property name="assertions">
       <list>
         <bean class="vtk.web.service.RequestParameterAssertion">
@@ -635,6 +636,11 @@
       </list>
     </property>
     <property name="handler" ref="manage.autoCompleteHandler" />
+    <property name="attributes">
+      <map>
+        <entry key="enable-metrics" value="true" />
+      </map>
+    </property>
   </bean>
 
   <bean id="manage.autoCompleteHandler" class="vtk.web.search.QueryHandler">

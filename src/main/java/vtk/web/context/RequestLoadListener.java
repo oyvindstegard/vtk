@@ -45,17 +45,20 @@ import com.codahale.metrics.Histogram;
 import com.codahale.metrics.Meter;
 import com.codahale.metrics.MetricRegistry;
 
+import vtk.web.RequestContext;
+import vtk.web.service.Service;
 import vtk.web.servlet.AbstractServletFilter;
 
 public class RequestLoadListener extends AbstractServletFilter
     implements ApplicationListener<ServletRequestHandledEvent> {
-
+    private final MetricRegistry registry;
     private final Counter activeRequests;
     private final Meter requests;
     private final Meter errors;
     private final Histogram processing;
     
     public RequestLoadListener(MetricRegistry registry) {
+        this.registry = registry;
         this.activeRequests = registry.counter("requests.active");
         this.requests = registry.meter("requests.processed");
         this.errors = registry.meter("requests.failed");
@@ -68,7 +71,8 @@ public class RequestLoadListener extends AbstractServletFilter
             throws IOException, ServletException {
         try {
             activeRequests.inc();
-            chain.doFilter(request, response);
+            chain.doFilter(request, response);            
+            updateServiceCounters(request);            
         }
         finally {
             activeRequests.dec();
@@ -81,6 +85,24 @@ public class RequestLoadListener extends AbstractServletFilter
         processing.update(event.getProcessingTimeMillis());
         if (event.wasFailure()) {
             errors.mark();
+        }
+        
+    }
+    
+    private void updateServiceCounters(HttpServletRequest request) {
+        RequestContext requestContext = RequestContext.getRequestContext(request);
+        Service service = requestContext.getService();
+        boolean enabled = false;
+        while (service != null) {
+            Object attribute = service.getAttribute("enable-metrics");
+            if (Boolean.TRUE.equals(attribute) || "true".equals(attribute)) {
+                enabled = true;
+                break;
+            }
+            service = service.getParent();
+        }
+        if (enabled) {
+            registry.counter("services." + requestContext.getService().getName()).inc();
         }
     }
 
