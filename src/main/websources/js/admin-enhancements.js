@@ -1211,9 +1211,9 @@ VrtxAdmin.prototype.addSearch = function addSearch() {
       var parent = $(".adminSearchService");
       parent.removeClass("visible-search");
 
-      var splitted = formatted.split(";");
-
-      var uri = splitted[1].replace(/\;/, ";");
+      var splitted = formatted.replace(/([^\\]);/g, '$1\u000B').split('\u000B');
+            
+      var uri = splitted[1].replace(/\\;/, ";");
       var resourceType = splitted[2];
       if(resourceType === "collection") {
         location.pathname = uri + "/";
