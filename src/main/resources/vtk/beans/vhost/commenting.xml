@@ -216,8 +216,7 @@
   </bean>
 
   <bean id="commenting.postProtocol" class="vtk.web.service.RequestProtocolAssertion">
-    <property name="protocol" value="${webProtocol}" />
-    <property name="preferRequestProtocol" value="true" />
+    <property name="protocol" value="${webProtocolRestricted}" />
   </bean>
 
   <bean id="commenting.commentsEnabled"
