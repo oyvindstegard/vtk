@@ -221,6 +221,7 @@
     <constructor-arg name="filter">
       <bean class="vtk.web.servlet.ServiceFilterInvoker" />
     </constructor-arg>
+    <constructor-arg name="order" value="-1" />
   </bean>
   
   <bean id="repositoryContextInitializer" class="vtk.web.RepositoryContextInitializer" />
