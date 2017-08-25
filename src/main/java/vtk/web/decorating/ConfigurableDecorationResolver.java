@@ -153,9 +153,9 @@ public class ConfigurableDecorationResolver implements DecorationResolver, Initi
         }
     }
 
+    @Override
     public DecorationDescriptor resolve(HttpServletRequest request,
-                                        HttpServletResponse response) throws Exception {
-        
+                                        HttpServletResponse response) {
         InternalDescriptor descriptor = new InternalDescriptor();
         RequestContext requestContext = RequestContext.getRequestContext(request);
         Path uri = requestContext.getResourceURI();
@@ -193,9 +193,9 @@ public class ConfigurableDecorationResolver implements DecorationResolver, Initi
         
         boolean errorPage = false;
         int status = response.getStatus();
-        if (status >= 400) {
-            errorPage = true;
-            paramString = checkErrorCodeMatch(status);
+        if (status >= 500) {
+            paramString = checkErrorMatch();
+            errorPage = paramString != null;
         }
 
         if (paramString == null && !errorPage) {
@@ -203,9 +203,17 @@ public class ConfigurableDecorationResolver implements DecorationResolver, Initi
         }
         
         if (paramString == null && !errorPage) {
-            paramString = checkPathMatch(request, uri, resource);
+            paramString = checkPathMatch(request, response, uri, resource);
         }
         
+        if (status >= 400 && !errorPage) {
+            String errorParams = checkErrorCodeMatch(status);
+            if (errorParams != null) {
+                paramString = errorParams;
+            }
+        }
+        
+        logger.debug("Decorator descriptor spec: {}", paramString);
         if (paramString != null) {
             Locale locale = Locale.getDefault();
         
@@ -230,16 +238,21 @@ public class ConfigurableDecorationResolver implements DecorationResolver, Initi
         return descriptor;
     }
 
+    private String checkErrorMatch() {
+        String value = this.decorationConfiguration.getProperty("error");
+        logger.debug("Error match: {}", value);
+        return value;
+    }
+    
     private String checkErrorCodeMatch(int status) {
         String value = this.decorationConfiguration.getProperty("error[" + status + "]");
-        if (value == null) {
-            value = this.decorationConfiguration.getProperty("error");
-        }
+        logger.debug("Error code match[{}]: {}", status, value);
         return value;
     }
     
     private String checkRegexpMatch(String uri) {
         Enumeration<?> keys = this.decorationConfiguration.propertyNames();
+        String result = null;
         while (keys.hasMoreElements()) {
             String key = (String) keys.nextElement();
             if (!key.startsWith("regexp[")) {
@@ -261,14 +274,16 @@ public class ConfigurableDecorationResolver implements DecorationResolver, Initi
             
             Matcher m = cached.compiled.matcher(uri);
             if (m.find()) {
-                return this.decorationConfiguration.getProperty(key);
+                result = decorationConfiguration.getProperty(key);
             } 
         }
-        return null;
+        logger.debug("Regexp match: {}", result);
+        return result;
     }
 
-    private String checkPathMatch(HttpServletRequest request, 
-            Path uri, Resource resource) throws Exception {
+    private String checkPathMatch(HttpServletRequest request,
+            HttpServletResponse response,
+            Path uri, Resource resource) {
         if (this.config == null) {
             return null;
         }
@@ -302,7 +317,7 @@ public class ConfigurableDecorationResolver implements DecorationResolver, Initi
                         score.put(entry, 0);
                     }
                     for (Qualifier predicate: predicates) {
-                        if (!matchPredicate(request, predicate, resource)) {
+                        if (!matchPredicate(request, response, predicate, resource)) {
                             score.put(entry, -1);
                             break;
                         }
@@ -323,17 +338,24 @@ public class ConfigurableDecorationResolver implements DecorationResolver, Initi
                     }
                 }
                 if (topEntry != null) {
+                    logger.debug("Path match: matched: entry: {} = {} (q: {})", 
+                            path, topEntry.getValue(), topEntry.getQualifiers());
                     return topEntry.getValue();
                 }
             }
         }
+        logger.debug("Path match: no entry matched");
         return null;
     }
     
 
-    private boolean matchPredicate(HttpServletRequest request, 
-            Qualifier predicate, Resource resource) throws Exception {
-        if ("type".equals(predicate.getName())) {
+    private boolean matchPredicate(HttpServletRequest request,
+            HttpServletResponse response, Qualifier predicate, Resource resource) {
+        if ("status".equals(predicate.getName())) {
+            int status = response.getStatus();
+            return String.valueOf(status).equals(predicate.getValue());
+        }
+        else if ("type".equals(predicate.getName())) {
             
             TypeInfo typeInfo = this.repository.getTypeInfo(resource);
             PrimaryResourceTypeDefinition type = typeInfo.getResourceType();
@@ -391,7 +413,7 @@ public class ConfigurableDecorationResolver implements DecorationResolver, Initi
     }
     
     private void populateDescriptor(InternalDescriptor descriptor, Locale locale, 
-                                    String entry) throws Exception {
+                                    String entry) {
         String[] directives = entry.split(",");
         for (String directive : directives) {
             directive = directive.trim();
@@ -400,7 +422,8 @@ public class ConfigurableDecorationResolver implements DecorationResolver, Initi
                 descriptor.parse = false;
                 descriptor.templates.clear();
                 break;
-            } else if ("TIDY".equals(directive)) {
+            }
+            else if ("TIDY".equals(directive)) {
                 descriptor.tidy = true;
             }
             else if ("NOPARSING".equals(directive)) {
@@ -493,8 +516,7 @@ public class ConfigurableDecorationResolver implements DecorationResolver, Initi
     }
 
 
-    private Optional<Template> resolveTemplateReferences(Locale locale, String mapping)
-        throws Exception {
+    private Optional<Template> resolveTemplateReferences(Locale locale, String mapping) {
         
         String[] localizedRefs = buildLocalizedReferences(mapping, locale);
         for (int j = 0; j < localizedRefs.length; j++) {
