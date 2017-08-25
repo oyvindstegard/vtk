@@ -73,6 +73,7 @@ public class ConfigurableRequestWrapper extends HttpServletRequestWrapper {
         super(request);
         this.url = URL.create(request);
         this.wrappedURL = new URL(this.url);
+        this.method = request.getMethod();
         initHeaders();
     }
     
@@ -86,6 +87,7 @@ public class ConfigurableRequestWrapper extends HttpServletRequestWrapper {
         super(request);
         this.url = new URL(url);
         this.wrappedURL = URL.create(request);
+        this.method = request.getMethod();
         initHeaders();
     }
 
