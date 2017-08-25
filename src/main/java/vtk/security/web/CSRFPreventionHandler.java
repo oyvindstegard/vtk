@@ -70,7 +70,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.web.util.HtmlUtils;
 
-import vtk.repository.AuthorizationException;
 import vtk.repository.Path;
 import vtk.security.AuthenticationException;
 import vtk.security.SecurityContext;
@@ -175,8 +174,8 @@ public class CSRFPreventionHandler extends AbstractServletFilter implements Html
         case "POST":
             String contentType = request.getContentType();
             if (contentType == null) {
-                throw new AuthorizationException(
-                        "Content-Type is required for POST requests");
+                send403(response, "Content-Type is required for POST requests");
+                return;
             }
             if (contentType.startsWith("multipart/form-data")) {
                 verifyMultipartPost(request, response, chain);
@@ -191,8 +190,8 @@ public class CSRFPreventionHandler extends AbstractServletFilter implements Html
                 return;
             }
             else {
-                throw new AuthorizationException(
-                        "Invalid Content-Type: " + contentType + " for POST requests");
+                send403(response, "Invalid Content-Type: " + contentType + " for POST requests");
+                return;
             }
         }
         chain.doFilter(request, response);
@@ -206,8 +205,7 @@ public class CSRFPreventionHandler extends AbstractServletFilter implements Html
             multipartRequest.parseRequest();
             String token = multipartRequest.getParameter(TOKEN_REQUEST_PARAMETER);
             URL url = URL.create(request);
-            verifyToken(multipartRequest, token, url);
-            chain.doFilter(multipartRequest, response);
+            verifyToken(multipartRequest, response, chain, token, url);
         }
         catch (FileUploadException e) {
             throw new IOException(e);
@@ -221,8 +219,7 @@ public class CSRFPreventionHandler extends AbstractServletFilter implements Html
             FilterChain chain) throws IOException, ServletException {
         String token = request.getParameter(TOKEN_REQUEST_PARAMETER);
         URL url = URL.create(request);
-        verifyToken(request, token, url);
-        chain.doFilter(request, response);
+        verifyToken(request, response, chain, token, url);
     }
 
     private void verifyApiRequest(HttpServletRequest request, HttpServletResponse response, 
@@ -231,8 +228,7 @@ public class CSRFPreventionHandler extends AbstractServletFilter implements Html
         URL url = URL.create(request)
                 .clearParameters()
                 .setPath(Path.ROOT);
-        verifyToken(request, token, url);
-        chain.doFilter(request, response);
+        verifyToken(request, response, chain, token, url);
     }
     
     
@@ -283,8 +279,10 @@ public class CSRFPreventionHandler extends AbstractServletFilter implements Html
             throw new IllegalStateException("Failed to generate secret key", e);
         }
     }
+    
+    private void verifyToken(HttpServletRequest request, HttpServletResponse response, 
+            FilterChain filterChain, String token, URL requestURL) throws IOException, ServletException {
 
-    private void verifyToken(HttpServletRequest request, String token, URL requestURL) {
         RequestContext requestContext = RequestContext.getRequestContext(request);
         if (requestContext.getPrincipal() == null) {
             throw new AuthenticationException("Illegal anonymous action");
@@ -295,15 +293,18 @@ public class CSRFPreventionHandler extends AbstractServletFilter implements Html
         }
         Service service = requestContext.getService();
         if (Boolean.TRUE.equals(service.getAttribute("disable-csrf-checking"))) {
+            filterChain.doFilter(request, response);
             return;
         }
         SecretKey secret = (SecretKey) session.getAttribute(SECRET_SESSION_ATTRIBUTE);
         if (secret == null) {
-            throw new AuthorizationException("Missing CSRF prevention secret in session");
+            send403(response, "Missing CSRF prevention secret in session");
+            return;
         }
         if (token == null) {
-            throw new AuthorizationException("Missing CSRF prevention token in request: " 
-                    + request.getMethod() + " " + URL.create(request));
+            send403(response, "Missing CSRF prevention token in request: " 
+                    + request.getMethod() + " " + requestURL);
+            return;
         }
         String computed = generateToken(requestURL, session);
         if (logger.isDebugEnabled()) {
@@ -311,8 +312,18 @@ public class CSRFPreventionHandler extends AbstractServletFilter implements Html
                     + ", computed token: " + computed + ", secret: " + secret);
         }
         if (!computed.equals(token)) {
-            throw new AuthorizationException("CSRF prevention token mismatch");
+            send403(response, "CSRF prevention token mismatch");
+            return;
         }
+        filterChain.doFilter(request, response);
+    }
+    
+    private void send403(HttpServletResponse response, String message) throws IOException {
+        response.setStatus(HttpServletResponse.SC_FORBIDDEN);
+        response.setContentType("text/plain;charset=utf-8");
+        PrintWriter writer = response.getWriter();
+        writer.write(message);
+        writer.close();
     }
     
     private static class MultipartWrapper extends HttpServletRequestWrapper {
