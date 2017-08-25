@@ -88,26 +88,21 @@ public class DecoratingServletResponse extends HttpServletResponseWrapper {
         Map<String, Object> model = new HashMap<>();
         
         if (contentType != null && contentType.startsWith("text/html")) {
-            try {
-                DecorationDescriptor descriptor = resolver.resolve(request, this);
-                logger.debug("Descriptor[" + getStatus() + "]: " + descriptor);
-                List<Template> templates = descriptor.getTemplates();
+            DecorationDescriptor descriptor = resolver.resolve(request, this);
+            logger.debug("Descriptor[" + getStatus() + "]: " + descriptor);
+            List<Template> templates = descriptor.getTemplates();
 
-                if (descriptor.decorate() && templates != null && !templates.isEmpty()) {
-                    
-                    ServletOutputStream stream = response.getOutputStream();
-                    for (int i = templates.size() - 1; i >= 0; i--) {
-                        Template template = templates.get(i);
-                        Map<String, Object> parameters = 
-                                descriptor.getParameters(template);
-                        stream = wrap(stream, template, model, parameters);
-                    }
-                    this.out = stream;
-                    return stream;
+            if (descriptor.decorate() && templates != null && !templates.isEmpty()) {
+
+                ServletOutputStream stream = response.getOutputStream();
+                for (int i = templates.size() - 1; i >= 0; i--) {
+                    Template template = templates.get(i);
+                    Map<String, Object> parameters = 
+                            descriptor.getParameters(template);
+                    stream = wrap(stream, template, model, parameters);
                 }
-            }
-            catch (Exception e) {
-                throw new IOException(e);
+                this.out = stream;
+                return stream;
             }
         }
         out = response.getOutputStream();

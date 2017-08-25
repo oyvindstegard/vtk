@@ -37,6 +37,6 @@ import javax.servlet.http.HttpServletResponse;
 public interface DecorationResolver {
 
     public DecorationDescriptor resolve(HttpServletRequest request,
-                                        HttpServletResponse response) throws Exception;
+            HttpServletResponse response);
     
 }
