@@ -356,7 +356,9 @@ public class ConfigurableDecorationResolver implements DecorationResolver, Initi
             return String.valueOf(status).equals(predicate.getValue());
         }
         else if ("type".equals(predicate.getName())) {
-            
+            if (resource == null) {
+                return false;
+            }
             TypeInfo typeInfo = this.repository.getTypeInfo(resource);
             PrimaryResourceTypeDefinition type = typeInfo.getResourceType();
             while (type != null) {
