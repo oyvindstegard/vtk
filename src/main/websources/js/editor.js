@@ -122,6 +122,11 @@ $(document).ready(function () {
   vrtxEdit.initEnhancements();
   vrtxEdit.richtextEditorFacade.setupMultiple(true);
 
+  // CTRL+S save inside editors
+  if (typeof CKEDITOR !== "undefined" && vrtxEditor.editorForm && vrtxEditor.editorForm.length) { // Don't add event if not regular editor
+    vrtxEditor.richtextEditorFacade.setupCTRLS();
+  }
+
   /*-------------------------------------------------------------------*\
       3. DOM is fully loaded
   \*-------------------------------------------------------------------*/
@@ -143,11 +148,6 @@ $(document).ready(function () {
       storeInitPropValues($("#app-content > form, #contents"));
       vrtxEditor.isReady = true;
     });
-
-    // CTRL+S save inside editors
-    if (typeof CKEDITOR !== "undefined" && vrtxEditor.editorForm && vrtxEditor.editorForm.length) { // Don't add event if not regular editor
-      vrtxEditor.richtextEditorFacade.setupCTRLS();
-    }
   });
 });
 
@@ -385,9 +385,9 @@ VrtxEditor.prototype.richtextEditorFacade = {
     var rteFacade = this;
     var setupCTRLSPrivate = function(event) {
       // Interactions inside iframe
-      _$(".cke_contents iframe").contents().find("body").bind('keydown', 'ctrl+s meta+s', $.debounce(150, true, function (e) {
+      _$(".cke_contents iframe").contents().find("body").bind('keydown', 'ctrl+s meta+s', function (e) {
         ctrlSEventHandler(_$, e);
-      }));
+      });
       _$(".cke_contents iframe").contents().find("body").bind('keydown mousedown', $.debounce(150, true, function (e) {
         vrtxAdmin.editorLastInteraction = +new Date();
       }));

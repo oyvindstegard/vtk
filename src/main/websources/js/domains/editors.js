@@ -30,9 +30,9 @@ $.when(vrtxAdmin.domainsIsReady).done(function() {
         });
 
         // Save shortcut and AJAX
-        vrtxAdm.cachedDoc.bind('keydown', 'ctrl+s meta+s', $.debounce(150, true, function (e) {
+        vrtxAdm.cachedDoc.bind('keydown', 'ctrl+s meta+s', function (e) {
           ctrlSEventHandler(_$, e);
-        }));
+        });
 
         // Save
         eventListen(vrtxAdm.cachedAppContent, "click", ".vrtx-save-button", function (ref) {
@@ -444,9 +444,9 @@ function ajaxSaveAsCopy() {
 }
 
 function ctrlSEventHandler(_$, e) {
+  e.preventDefault();
   if (!_$("#dialog-loading:visible").length) {
     _$(".vrtx-focus-button:last").click();
   }
-  e.preventDefault();
   return false;
 }
