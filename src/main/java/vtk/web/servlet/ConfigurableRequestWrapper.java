@@ -58,9 +58,9 @@ import vtk.web.service.URL;
  */
 public class ConfigurableRequestWrapper extends HttpServletRequestWrapper {
 
-    private String method = "GET";
-    private URL url;
-    private URL wrappedURL;
+    private String method;
+    private final URL url;
+    private final URL wrappedURL;
     private boolean anonymous = false;
     private Map<String, Set<String>> headers;
     
@@ -92,7 +92,10 @@ public class ConfigurableRequestWrapper extends HttpServletRequestWrapper {
     }
 
     /**
-     * Sets the HTTP method. The default is <code>GET</code>.
+     * Sets the HTTP method.
+     * 
+     * <p>The default value is the method of the wrapped request.
+     * @param method HTTP method
      */
     public void setMethod(String method) {
         this.method = method;
