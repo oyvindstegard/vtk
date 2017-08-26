@@ -274,7 +274,7 @@ public class ResourceTypeTreeImpl implements ResourceTypeTree, InitializingBean,
      * <ul>
      *    <li>The type itself is not included.
      *    <li>Any mixin types defined on the type itself <strong>are included</strong>.
-     *    <li>All super types of the type, and any mixins defined on syper types are included.
+     *    <li>All super types of the type, and any mixins defined on super types are included.
      * </ul>
      *
      * @param name
