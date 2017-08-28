@@ -59,7 +59,7 @@ public abstract class AbstractControllerTest {
                 null, getRequestPath(), null, false, false, true, mockRepository, mockPrincipalMetadataDao);
         context.checking(new Expectations() {{
             allowing(mockRequest).getAttribute("vtk.web.RequestContext.requestAttribute");
-            will(returnValue(requestContext));
+            will(returnValue(new java.util.Stack<>()));
         }});
         RequestContext.setRequestContext(requestContext, mockRequest);
     }

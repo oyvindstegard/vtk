@@ -416,7 +416,6 @@ public class SecurityInitializer {
      * @see vtk.web.ContextInitializer#destroyContext()
      */
     public void destroyContext(HttpServletRequest request) {
-        SecurityContext.setSecurityContext(null, request);
     }
 
     @Override

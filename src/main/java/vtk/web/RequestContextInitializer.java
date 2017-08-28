@@ -184,8 +184,15 @@ public class RequestContextInitializer implements ContextInitializer, ServiceRes
 
     @Override
     public void createContext(HttpServletRequest request) {
+        
+        RequestContext.push(request);
 
         SecurityContext securityContext = SecurityContext.getSecurityContext(request);
+        if (securityContext == null) {
+            throw new IllegalStateException(
+                    "Cannot initialize request context, no security context exists on request " 
+                            + request);
+        }
         Repository repository = RequestLocalRepository.create(request, this.repository);
         
     	URL url;
@@ -267,7 +274,7 @@ public class RequestContextInitializer implements ContextInitializer, ServiceRes
     }
 
     public void destroyContext(HttpServletRequest request) {
-        RequestContext.setRequestContext(null, request);
+        RequestContext.pop(request);
     }
 
 

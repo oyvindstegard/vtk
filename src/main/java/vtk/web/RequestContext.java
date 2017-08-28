@@ -39,6 +39,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Stack;
 import java.util.function.Supplier;
 
 import javax.servlet.http.HttpServletRequest;
@@ -189,21 +190,71 @@ public class RequestContext {
         this.revisionParameter = (servletRequest != null && servletRequest.getParameter("revision") != null 
                 && previewUnpublished) ? servletRequest.getParameter("revision") : null;
     }
+    
+    private static class RequestContextHolder {
+        public Optional<RequestContext> ctx = Optional.empty();
+    }
+    
+    static void push(HttpServletRequest request) {
+        @SuppressWarnings("unchecked")
+        Stack<RequestContextHolder> stack = (Stack<RequestContextHolder>) 
+                request.getAttribute(REQUEST_ATTRIBUTE);
+        if (stack == null) {
+            stack = new Stack<>();
+            request.setAttribute(REQUEST_ATTRIBUTE, stack);
+        }
+        stack.push(new RequestContextHolder());
+    }
+    
+    static void pop(HttpServletRequest request) {
+        @SuppressWarnings("unchecked")
+        Stack<RequestContextHolder> stack = (Stack<RequestContextHolder>) 
+                request.getAttribute(REQUEST_ATTRIBUTE);
+        if (stack == null || stack.isEmpty()) {
+            return;
+        }
+        stack.pop();
+    }
 
     public static void setRequestContext(RequestContext requestContext, HttpServletRequest request) {
-        request.setAttribute(REQUEST_ATTRIBUTE, requestContext);
+        @SuppressWarnings("unchecked")
+        Stack<RequestContextHolder> stack = 
+                (Stack<RequestContextHolder>) request.getAttribute(REQUEST_ATTRIBUTE);
+        if (stack == null) {
+            stack = new Stack<>();
+            request.setAttribute(REQUEST_ATTRIBUTE, stack);
+        }
+        if (stack.isEmpty()) {
+            stack.push(new RequestContextHolder());
+        }
+        RequestContextHolder holder = stack.peek();
+        holder.ctx = Optional.ofNullable(requestContext);
     }
 
     public static boolean exists(HttpServletRequest request) {
-        return request.getAttribute(REQUEST_ATTRIBUTE) != null;
-    }
+        @SuppressWarnings("unchecked")
+        Stack<RequestContextHolder> stack = 
+                (Stack<RequestContextHolder>) request.getAttribute(REQUEST_ATTRIBUTE);
+        if (stack == null || stack.isEmpty()) {
+            return false;
+        }
+        RequestContextHolder holder = stack.peek();
+        return holder.ctx.isPresent();
+     }
 
     /**
      * Gets the current request context.
      * 
      */
     public static RequestContext getRequestContext(HttpServletRequest request) {
-        return (RequestContext) request.getAttribute(REQUEST_ATTRIBUTE);
+        @SuppressWarnings("unchecked")
+        Stack<RequestContextHolder> stack = 
+                (Stack<RequestContextHolder>) request.getAttribute(REQUEST_ATTRIBUTE);
+        if (stack == null || stack.isEmpty()) {
+            return null;
+        }
+        RequestContextHolder holder = stack.peek();
+        return holder.ctx.orElse(null);
     }
 
     /**
