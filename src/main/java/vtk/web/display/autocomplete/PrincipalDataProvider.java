@@ -42,6 +42,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Required;
 
 import vtk.repository.store.PrincipalSearch.SearchType;
+import vtk.security.InvalidPrincipalException;
 import vtk.security.Principal;
 import vtk.security.Principal.Type;
 import vtk.security.PrincipalFactory;
@@ -49,26 +50,32 @@ import vtk.security.PrincipalManager;
 
 public class PrincipalDataProvider implements VocabularyDataProvider<Principal> {
 
-    private static final Logger logger = LoggerFactory.getLogger(PrincipalDataProvider.class);
+    private final Logger logger = LoggerFactory.getLogger(PrincipalDataProvider.class);
 
     private Type type;
     private PrincipalFactory principalFactory;
     private PrincipalManager principalManager;
 
+    @Override
     public List<Principal> getCompletions(CompletionContext context) {
         return null; // We require input
     }
 
+    @Override
     public List<Principal> getCompletions(String input, CompletionContext context) {
 
-        Set<Principal> result = new HashSet<Principal>(0);
+        Set<Principal> result = new HashSet<>(0);
 
         try {
             SearchType searchType = null;
             if (Type.USER.equals(type)) {
-                Principal singleUser = this.principalFactory.getPrincipal(input, type);
-                if (this.principalManager.validatePrincipal(singleUser)) {
-                    result.add(singleUser);
+                try {
+                    Principal singleUser = this.principalFactory.getPrincipal(input, type);
+                    if (this.principalManager.validatePrincipal(singleUser)) {
+                        result.add(singleUser);
+                    }
+                } catch (InvalidPrincipalException ip) {
+                    // Ignore
                 }
                 searchType = SearchType.FULL_USER_SEARCH;
             }
@@ -77,16 +84,17 @@ public class PrincipalDataProvider implements VocabularyDataProvider<Principal> 
                 result.addAll(searchResult);
             }
         } catch (Exception e) {
-            logger.error("An error occured while getting prefixcompilations", e);
+            logger.warn("An error occured while getting principal completions for input '" + input + "'", e);
         }
 
-        List<Principal> l = new ArrayList<Principal>(result);
+        List<Principal> l = new ArrayList<>(result);
         Collections.sort(l, new PrincipalComparator());
         return l;
     }
 
     private final class PrincipalComparator implements Comparator<Principal> {
 
+        @Override
         public int compare(Principal p1, Principal p2) {
             if (Type.USER.equals(type)) {
                 return p1.getDescription().compareToIgnoreCase(p2.getDescription());
