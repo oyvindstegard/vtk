@@ -33,6 +33,7 @@ package vtk.web.decorating;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.nio.charset.Charset;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -99,7 +100,7 @@ public class DecoratingServletResponse extends HttpServletResponseWrapper {
                     Template template = templates.get(i);
                     Map<String, Object> parameters = 
                             descriptor.getParameters(template);
-                    stream = wrap(stream, template, model, parameters);
+                    stream = wrap(stream, template, model, parameters, descriptor.parse());
                 }
                 this.out = stream;
                 return stream;
@@ -159,10 +160,11 @@ public class DecoratingServletResponse extends HttpServletResponseWrapper {
     }
     
     private DecoratingServletOutputStream wrap(ServletOutputStream stream, 
-            Template template, Map<String, Object> model, Map<String, Object> parameters) {
+            Template template, Map<String, Object> model, Map<String, Object> parameters, boolean filter) {
         
         Charset encoding = Charset.forName(getCharacterEncoding());
-        return  new DecoratingServletOutputStream(stream,
+        List<HtmlNodeFilter> filters = filter ? this.filters : Collections.emptyList();
+        return new DecoratingServletOutputStream(stream,
                 request, model, parameters, encoding, template, htmlParser, filters, maxSize);
     }
     

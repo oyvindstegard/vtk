@@ -338,8 +338,8 @@ public class ConfigurableDecorationResolver implements DecorationResolver, Initi
                     }
                 }
                 if (topEntry != null) {
-                    logger.debug("Path match: matched: entry: {} = {} (q: {})", 
-                            path, topEntry.getValue(), topEntry.getQualifiers());
+                    logger.debug("Path match: {}, matched: entry: {} = {} (q: {})", 
+                            uri, path, topEntry.getValue(), topEntry.getQualifiers());
                     return topEntry.getValue();
                 }
             }
