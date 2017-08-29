@@ -45,8 +45,7 @@ $.when(vrtxAdmin.domainsIsReady).done(function() {
               selector: "form#" + tabMenuServices[i] + "-form input[type=submit]",
               transitionSpeed: speedCreationServices,
               funcBeforeComplete: function () {
-                createTitleChange("#vrtx-textfield-collection-title", $("#vrtx-textfield-collection-name"), $("#isIndex"));
-                createTitleChange("#vrtx-textfield-file-title", $("#vrtx-textfield-file-name"), $("#isIndex"));
+                createTitleChange($("#title"), $("#name"), $("#isIndex"));
               }
             });
             if (vrtxAdm.fragmentParams['action'] === tabMenuServices[i]) {
@@ -193,15 +192,15 @@ function createFuncComplete() {
     }
   });
 
-  eventListen(vrtxAdm.cachedDoc, "keyup", "#vrtx-div-collection-title input[type='text']", function(ref) {
-    createTitleChange($(ref), $("#vrtx-div-collection-name input[type='text']"), null);
+  eventListen(vrtxAdm.cachedDoc, "keyup", "#vrtx-div-collection-title #title", function(ref) {
+    createTitleChange($(ref), $("#vrtx-div-collection-name #name"), null);
   }, null, vrtxAdm.keyInputDebounceRate);
 
-  eventListen(vrtxAdm.cachedDoc, "keyup", "#vrtx-div-file-title input[type='text']", function(ref) {
-    createTitleChange($(ref), $("#vrtx-div-file-name input[type='text']"), $("#isIndex"));
+  eventListen(vrtxAdm.cachedDoc, "keyup", "#vrtx-div-file-title #title", function(ref) {
+    createTitleChange($(ref), $("#vrtx-div-file-name #name"), $("#isIndex"));
   }, null, vrtxAdm.keyInputDebounceRate);
 
-  eventListen(vrtxAdm.cachedDoc, "keyup", "#vrtx-div-file-name input[type='text'], #vrtx-div-collection-name input[type='text']", function(ref) {
+  eventListen(vrtxAdm.cachedDoc, "keyup", "#name", function(ref) {
     createFileNameChange($(ref));
   }, null, vrtxAdm.keyInputDebounceRate);
 
@@ -250,7 +249,7 @@ function createChangeTemplate(hasTitle) {
       indexCheckbox.parent().hide();
       if (indexCheckbox.is(":checked")) {
         indexCheckbox.removeAttr("checked");
-        createCheckUncheckIndexFile($("#vrtx-div-file-name input[type='text']"), indexCheckbox);
+        createCheckUncheckIndexFile($("#vrtx-div-file-name #name"), indexCheckbox);
       }
     } else {
       indexCheckbox.parent().show();
@@ -403,9 +402,9 @@ function initDragAndDropUpload(opts) {
   }
 
   var isUploadAction = $("#fileUploadService-form").length;
-
-  if(vrtxAdmin.uploadIsAdvanced && !isUploadAction) {
-    vrtxAdmin.serverFacade.getHtml($(opts.uploadSeviceSelector)[0].href, {
+  var uploadService = $(opts.uploadSeviceSelector);
+  if(vrtxAdmin.uploadIsAdvanced && !isUploadAction && uploadService.length > 0) {
+    vrtxAdmin.serverFacade.getHtml(uploadService[0].href, {
       success: function (results, status, resp) {
         // Add upload form
         var html = $($.parseHTML(results)).find(".expandedForm.vrtx-admin-form");
@@ -975,7 +974,7 @@ VrtxAdmin.prototype.collectionListingInteraction = function collectionListingInt
   if (!vrtxAdm.cachedDirectoryListing.length) return;
 
   vrtxAdmin.cachedAppContent.on("click", "#vrtx-checkbox-is-index #isIndex", function (e) {
-    createCheckUncheckIndexFile($("#vrtx-div-file-name input[type='text']"), $(this));
+    createCheckUncheckIndexFile($("#vrtx-div-file-name #name"), $(this));
     e.stopPropagation();
   });
   vrtxAdmin.cachedAppContent.on("click", ".radio-buttons input", function (e) {
