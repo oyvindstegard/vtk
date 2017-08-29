@@ -3,6 +3,7 @@
 
 <#-- XXX: remove hard-coded 'authTarget' parameter: -->
 
+<#if (leaveAdmin.url)??>
 <#assign url = leaveAdmin.url />
 <#if url?contains("?")>
   <#assign url = url + "&authTarget=http" />
@@ -10,3 +11,4 @@
   <#assign url = url + "?authTarget=http" />
 </#if>
 <a href="${url}"><@vrtx.msg code="manage.leaveManageMode" default="Leave admin" /></a>
+</#if>

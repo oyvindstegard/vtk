@@ -12,7 +12,7 @@
   -   debug (produces stack traces)
   -
   -->
-
+<#if error??>
 <#-- Print exception detail and stack trace if debug is set: -->
   <h1 class="errorHeader">${error.errorDescription}</h1>
   <p class="errorMessage">${error.exception.message?default('No message')}</p>
@@ -51,4 +51,5 @@
     </div>
   </div>
 <#if !debug>--></#if>
+</#if>
 </#if>

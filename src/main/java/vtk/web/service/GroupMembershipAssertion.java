@@ -91,6 +91,15 @@ public class GroupMembershipAssertion implements WebAssertion {
     public void setPrincipalManager(PrincipalManager principalManager) {
         this.principalManager = principalManager;
     }
+    
+    @Override
+    public String toString() {
+        if (allowAll) {
+            return "principal.groups.anyOf(*)";
+            
+        }
+        return "principal.groups.anyOf(" + groups + ")";
+    }
 
     private boolean match(Principal p) {
         if (this.allowAll) {

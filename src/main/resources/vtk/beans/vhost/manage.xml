@@ -203,10 +203,34 @@
         </bean>
       </list>
     </property>
-    <property name="handler">
-      <bean class="vtk.web.actions.auth.UnauthorizedController" />
+    <property name="handler" ref="manage.notAuthorizedHandler" />
+    <property name="attributes">
+      <map>
+        <entry key-ref="system.decoratorTemplateAttribute" value="admin-error.html" />
+      </map>
     </property>
   </bean>
+
+  <bean id="manage.notAuthorizedHandler" 
+        class="org.springframework.web.servlet.mvc.ParameterizableViewController">
+    <property name="statusCode">
+      <bean class="org.springframework.http.HttpStatus" factory-method="valueOf">
+        <constructor-arg value="FORBIDDEN" />
+      </bean>
+    </property>
+    <property name="viewName" value="manage.notAuthorizedView" />
+  </bean>
+
+  <bean id="manage.notAuthorizedView" parent="freemarkerView">
+    <property name="url" value="pages/error/403.ftl" />
+    <property name="referenceDataProviders">
+      <list>
+        <ref bean="resourceContextProvider" />
+      </list>
+    </property>
+  </bean>
+  
+
 
   <bean id="setNorwegianNBLocaleService" class="vtk.web.service.ServiceImpl">
     <property name="parent" ref="manageService" />

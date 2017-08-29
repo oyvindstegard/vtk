@@ -154,19 +154,16 @@ public class ErrorHandlerFilter extends AbstractServletFilter {
             model = handler.getErrorModel(req, resp, t);
 
             Object obj = handler.getErrorView(req, resp, t);
-            if (logger.isDebugEnabled()) {
-                logger.debug("-__obj: " + obj);
-            }
             if (obj instanceof View) {
                 view = (View) obj;
             }
             else {
-                //Locale locale = RequestContextUtils.getLocale(req);
                 Locale locale = new org.springframework.web.servlet.support.RequestContext(
                         req, req.getServletContext()).getLocale();
 
                 view = viewResolver.resolveViewName((String) obj, locale);
             }
+            logger.debug("Error view: {}", obj);
 
             statusCode = handler.getHttpStatusCode(req, resp, t);
         }

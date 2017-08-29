@@ -1,0 +1,51 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta name="viewport" content="width=1140, user-scalable=yes" /> 
+    ${manage:css place=[head]}
+    ${manage:css}
+    <!--[if lte IE 8]>
+      <link rel="stylesheet" href="/vrtx/__vrtx/static-resources/themes/default/default-ie8.css" type="text/css"/>
+    <![endif]--> 
+    <!--[if lte IE 7]>
+      <link rel="stylesheet" href="/vrtx/__vrtx/static-resources/themes/default/default-ie7.css" type="text/css"/> 
+    <![endif]--> 
+    ${manage:javascript place=[head]}
+    ${manage:javascript}
+    ${document:element select=[html.head] exclude=[title]} 
+    <title>${document:element select=[html.head.title]}</title>
+  </head>
+  <body${document:element-attributes select=[html.body] exclude=[class]} class="app-fluid forms-new ${document:element-attributes select=[html.body] exclude=[id] value-only=[true]}"> 
+    <div id="app-head-wrapper">  
+      ${manage:display-line-top}
+      <div id="app-head">
+        <div id="app-name"> 
+          <a href='/?vrtx=admin'>${manage:repository-id}</a> 
+          <span id="tagline">${manage:localized-text code=[manage.bannerText] default=[Administration of webdocuments]}</span>
+        </div>
+        <div id="global-menu-top"><div class="global-menu-small">${manage:help}</div>
+        </div>
+        <div id="global-menu-bottom"><div class="global-menu" id="global-menu-leave-admin">${manage:leave-admin}</div>
+                                     <div class="global-menu">${manage:principal-info}</div>
+        </div>
+      </div>
+      ${manage:system-message}
+      ${manage:breadcrumb}
+    </div> 
+    
+    <div id="app-content">
+      <div id="main">
+        <div id="contents">
+          ${document:body}
+        </div>
+      </div>
+    </div>
+    
+    <div id="app-footer-wrapper" class="footer">    
+      <div id="app-footer">
+        ${manage:version-info}
+      </div>
+    </div>
+    ${manage:javascript place=[body_end]}
+  </body>
+</html>

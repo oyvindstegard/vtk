@@ -151,7 +151,7 @@ public class BreadCrumbProvider implements ReferenceDataProvider, InitializingBe
             } catch (Exception e) {
                 // Let's not fail the entire breadcrumb just
                 // because we can't show the service name
-                logger.error("An error occured while getting the servicename", e);
+                logger.debug("An error occured while getting the servicename", e);
             }
         }
 
