@@ -1383,7 +1383,7 @@ VrtxAdmin.prototype.buildFileList = function buildFileList(boxes, boxesSize, use
   var list = "<ul>";
   for (var i = 0; i < boxesSizeTmp; i++) {
     var name = boxes[i][fileNameAttr].split("/");
-    list += "<li>" + name[name.length - 1] + "</li>";
+    list += "<li>" + vrtxAdmin.escapeHtml(name[name.length - 1]) + "</li>";
   }
   list += "</ul>";
   if (boxesSizeExceedsTen) {
