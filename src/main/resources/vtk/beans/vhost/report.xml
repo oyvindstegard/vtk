@@ -197,7 +197,7 @@
     <property name="name" value="broken-links" />
     <property name="viewName" value="brokenLinksReportView" />
     <property name="alternativeName" value="broken-links-collection" />
-    <property name="alternativeViewName" value="brokenLinksCollectionReport" />
+    <property name="alternativeViewName" value="brokenLinksCollectionReportView" />
     <property name="manageService" ref="manageService" />
     <property name="reportService" ref="reportService" />
     <property name="pageSize" value="25" />
@@ -593,6 +593,7 @@
           <property name="path" value="${editor.fck.browseURL}" />
           <property name="modelName" value="fckBrowse" />
         </bean>
+        <ref bean="resourceContextProvider" />
       </list>
     </property>
   </bean>
