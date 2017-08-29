@@ -226,7 +226,8 @@ public class ConfigurableDecorationResolver implements DecorationResolver, Initi
             if (resource == null) {
                 descriptor.parse = false;
             }
-            if (resource != null && resource.getProperty(this.parseableContentPropDef) == null) {
+            if (resource != null && !resource.isCollection() && 
+                    resource.getProperty(this.parseableContentPropDef) == null) {
                 descriptor.parse = false;
             }
         }
