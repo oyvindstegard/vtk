@@ -63,8 +63,6 @@
 </#if>
 <span id="resource-can-edit" class="hidden-server-info"><#if (writePermissionAtAll.permissionsQueryResult)?exists && writePermissionAtAll.permissionsQueryResult = 'true'>true<#else>false</#if></span>
 
-<#include "/system/system.ftl" />
-
 <#-- ***************
       Keep-alive
      ***************

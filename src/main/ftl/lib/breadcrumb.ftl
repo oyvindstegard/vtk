@@ -44,7 +44,7 @@
         <#else>
           <span class="vrtx-breadcrumb-level vrtx-breadcrumb-level-${counter} vrtx-breadcrumb-active">${name}
         </#if>
-        <#if elem.delimiter?exists>
+        <#if elem.delimiter?exists && elem.URL??>
       	  <span class="vrtx-breadcrumb-delimiter">${elem.delimiter}</span>
         </#if>
         </span>

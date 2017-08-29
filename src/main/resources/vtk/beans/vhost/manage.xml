@@ -1524,6 +1524,17 @@
     <property name="name" value="localized-text" />
   </bean>
 
+  <bean id="manage.localizedMessagesCompontent" class="vtk.web.decorating.components.ViewRenderingDecoratorComponent">
+    <property name="namespace" ref="decorating.manageNamespace" />
+    <property name="name" value="localization" />
+    <property name="description" value="Translated messages" />
+    <property name="view">
+      <bean parent="freemarkerView">
+        <property name="url" value="system/localization.ftl" />
+      </bean>
+    </property>
+  </bean>
+
   <bean id="manage.messagesComponent" class="vtk.web.decorating.components.ViewRenderingDecoratorComponent">
     <property name="namespace" ref="decorating.manageNamespace" />
     <property name="name" value="messages" />
