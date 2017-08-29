@@ -50,7 +50,7 @@ import vtk.security.SecurityContext;
  */
 public class SystemChangeContext implements StoreContext {
     private final String jobName;
-    private SecurityContext securityContext;
+    private final SecurityContext securityContext;
     private final Date time;
     private final Set<PropertyTypeDefinition> affectedProperties;
     private final Set<PropertyType.Type> affectedPropertyTypes;
