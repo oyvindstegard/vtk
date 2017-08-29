@@ -136,7 +136,7 @@ public class CommentsProvider implements ReferenceDataProvider {
                 if (baseDeleteURL != null) {
                     URL clone = new URL(baseDeleteURL);
                     clone.addParameter("comment-id", String.valueOf(c.getID()));
-                    deleteCommentURLs.put(String.valueOf(c.getID()), clone);
+                    deleteCommentURLs.put(String.valueOf(c.getID()), ensureProtocolMatch(clone, servletRequest));
                 }
             }
             model.put("deleteCommentURLs", deleteCommentURLs);
@@ -146,7 +146,7 @@ public class CommentsProvider implements ReferenceDataProvider {
                         .withResource(resource)
                         .withPrincipal(principal)
                         .constructURL();
-                model.put("deleteAllCommentsURL", deleteAllCommentsURL);
+                model.put("deleteAllCommentsURL", ensureProtocolMatch(deleteAllCommentsURL, servletRequest));
             }
             catch (Exception e) { }
 
@@ -166,7 +166,7 @@ public class CommentsProvider implements ReferenceDataProvider {
                         .withResource(resource)
                         .withPrincipal(principal)
                         .constructURL();
-                model.put("postCommentURL", postCommentURL);
+                model.put("postCommentURL", ensureProtocolMatch(postCommentURL, servletRequest));
             }
             catch (Exception e) { }
 
@@ -232,4 +232,18 @@ public class CommentsProvider implements ReferenceDataProvider {
         this.formSessionAttributeName = formSessionAttributeName;
     }
 
+    /*
+     * To prevent warnings about sending insecure forms (posting to http from https). 
+     * Normally this logic would be handled of by {@link WebAssertion assertions} 
+     * and redirecting to correct protocol, but in this case it is difficult since we are 
+     * a {@link ReferenceDataProvider} and not a {@link Controller}.
+     */
+    private URL ensureProtocolMatch(URL postURL, HttpServletRequest request) {
+        String requestProtocol = request.isSecure() ? "https" : "http";
+        if (!postURL.getProtocol().equals(requestProtocol)) {
+            return new URL(postURL).setProtocol(requestProtocol);
+        }
+        return postURL;
+    }
+    
 }
