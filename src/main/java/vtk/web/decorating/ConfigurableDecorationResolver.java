@@ -58,7 +58,6 @@ import vtk.repository.Repository;
 import vtk.repository.Resource;
 import vtk.repository.ResourceNotFoundException;
 import vtk.repository.TypeInfo;
-import vtk.repository.resourcetype.PrimaryResourceTypeDefinition;
 import vtk.repository.resourcetype.PropertyTypeDefinition;
 import vtk.util.text.PathMappingConfig;
 import vtk.util.text.PathMappingConfig.ConfigEntry;
@@ -359,15 +358,7 @@ public class ConfigurableDecorationResolver implements DecorationResolver, Initi
             if (resource == null) {
                 return false;
             }
-            TypeInfo typeInfo = this.repository.getTypeInfo(resource);
-            PrimaryResourceTypeDefinition type = typeInfo.getResourceType();
-            while (type != null) {
-                if (type.getName().equals(predicate.getValue())) {
-                    return true;
-                }
-                type = type.getParentTypeDefinition();
-            }
-            return false;
+            return repository.getTypeInfo(resource).isOfType(predicate.getValue());
         }
         else if ("service".equals(predicate.getName())) {
 
