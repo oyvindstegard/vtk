@@ -12,6 +12,11 @@
       </list>
     </property>
     <property name="handler" ref="webdavGetHandler" />
+    <property name="attributes">
+      <map>
+        <entry key="x-prevent-decorating" value="true" />
+      </map>
+    </property>
   </bean>
 
   <bean id="getXmlSourceService" class="vtk.web.service.ServiceImpl">
