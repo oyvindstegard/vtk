@@ -1,5 +1,7 @@
-<#ftl strip_whitespace=true output_format="HTML" auto_esc=true>
+<#ftl strip_whitespace=true output_format="HTML" auto_esc=true />
 <#import "/lib/vtk.ftl" as vrtx />
+
+<#if resourceContext.principal??>
 
 <span class="principal">
   <span class="name">${resourceContext.principal.description}</span>
@@ -10,3 +12,4 @@
     </form>
   </#if>
 </span>
+</#if>

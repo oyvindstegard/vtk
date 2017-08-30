@@ -193,6 +193,32 @@
   </bean>
 
 
+  <bean id="manage.resourceNotFoundService" class="vtk.web.service.ServiceImpl">
+    <property name="parent" ref="manageService" />
+    <property name="order" value="-10000" />
+    <property name="assertions">
+      <list>
+        <bean class="vtk.web.service.InvertAssertion">
+          <property name="assertion">
+            <bean class="vtk.web.service.ResourceExistsAssertion" />
+          </property>
+        </bean>
+      </list>
+    </property>
+    <property name="handler">
+      <!-- Will throw ResourceNotFoundException which will be caught by manage error handler: -->
+      <bean class="vtk.web.display.file.ResourceAwareParameterizableViewController">
+        <property name="viewName" value="404" />
+      </bean>
+    </property>
+    <property name="attributes">
+      <map>
+        <entry key-ref="system.decoratorTemplateAttribute" value="admin-error.html" />
+      </map>
+    </property>
+  </bean>
+
+
   <bean id="manage.notAuthorizedService" class="vtk.web.service.ServiceImpl">
     <property name="parent" ref="manageService" />
     <property name="order" value="-9999" />
@@ -230,7 +256,6 @@
     </property>
   </bean>
   
-
 
   <bean id="setNorwegianNBLocaleService" class="vtk.web.service.ServiceImpl">
     <property name="parent" ref="manageService" />
