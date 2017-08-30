@@ -80,7 +80,6 @@ public class IndexQueryPathSelector implements PathSelector {
                 PathSelectCallback callback) throws Exception {
 
         final String token = context.getSecurityContext().getToken();
-                
         Query query = getQuery(context);
         Sorting sort = getSorting(context);
         Search search = new Search();
@@ -113,12 +112,14 @@ public class IndexQueryPathSelector implements PathSelector {
         if (queryString == null) {
             throw new IllegalStateException("No query string configured");
         }
+        String query = queryString;
         if (queryProcessor != null) {
             ProcessorContext queryProcessorContext = 
                     new QueryStringPreProcessor.ProcessorContext(Path.ROOT, Path.ROOT);
-            queryString = queryProcessor.process(queryString, queryProcessorContext);
+            
+            query = queryProcessor.process(queryString, queryProcessorContext);
         }
-        return parser.getParser().parse(queryString);
+        return parser.getParser().parse(query);
     }
     
     protected Sorting getSorting(SystemChangeContext context) {
