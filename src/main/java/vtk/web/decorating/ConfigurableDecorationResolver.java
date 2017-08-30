@@ -192,24 +192,18 @@ public class ConfigurableDecorationResolver implements DecorationResolver, Initi
         
         boolean errorPage = false;
         int status = response.getStatus();
-        if (status >= 500) {
-            paramString = checkErrorMatch();
-            errorPage = paramString != null;
+        
+        if (status >= 400) {
+            paramString = checkErrorCodeMatch(request, status);
+            errorPage = true;
         }
-
+        
         if (paramString == null && !errorPage) {
             paramString = checkRegexpMatch(uri.toString());
         }
         
         if (paramString == null && !errorPage) {
             paramString = checkPathMatch(request, response, uri, resource);
-        }
-        
-        if (status >= 400 && !errorPage) {
-            String errorParams = checkErrorCodeMatch(status);
-            if (errorParams != null) {
-                paramString = errorParams;
-            }
         }
         
         logger.debug("Decorator descriptor spec: {}", paramString);
@@ -237,17 +231,37 @@ public class ConfigurableDecorationResolver implements DecorationResolver, Initi
         }
         return descriptor;
     }
-
-    private String checkErrorMatch() {
-        String value = this.decorationConfiguration.getProperty("error");
-        logger.debug("Error match: {}", value);
-        return value;
-    }
     
-    private String checkErrorCodeMatch(int status) {
-        String value = this.decorationConfiguration.getProperty("error[" + status + "]");
-        logger.debug("Error code match[{}]: {}", status, value);
-        return value;
+    private String checkErrorCodeMatch(HttpServletRequest request, int status) {
+        // Check error[status],service[service.name] = spec
+        Service currentService = RequestContext.getRequestContext(request).getService();
+        while (currentService != null) {
+            Object attr = currentService.getAttribute("decorating.servicePredicateName");
+            if (attr != null && attr instanceof String) {
+                String value = decorationConfiguration.getProperty(
+                        "error[" + status + "],service[" + attr + "]");
+                if (value != null) {
+                    logger.debug("Error code/service match: {}, {}, {}", status, attr, value);
+                    return value;
+                }
+            }
+            currentService = currentService.getParent();
+        }
+
+        // Check error[status] = spec
+        String value = decorationConfiguration.getProperty("error[" + status + "]");
+        if (value != null) {
+            logger.debug("Error code match[{}]: {}", status, value);
+            return value;
+        }
+        
+        // Check error = spec
+        value = decorationConfiguration.getProperty("error");
+        if (value != null) {
+            logger.debug("Error match: {}", value);
+            return value;
+        }
+        return null;
     }
     
     private String checkRegexpMatch(String uri) {
