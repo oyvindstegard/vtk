@@ -687,7 +687,7 @@
       <map>
         <entry key="t" value="admin-autocomplete" />
         <entry key="tokenize" value="true" />
-        <entry key="fields" value="title,uri,type" />
+        <entry key="fields" value="title,uri,type,published" />
         <entry key="format" value="semicolon-separated" />
         <entry key="unique-filter" value="false" />
         <entry key="sort" value="title,lastModified desc" />

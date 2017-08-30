@@ -1215,6 +1215,7 @@ VrtxAdmin.prototype.addSearch = function addSearch() {
             
       var uri = splitted[1].replace(/\\;/, ";");
       var resourceType = splitted[2];
+      var unpublished = splitted[3];
       if(resourceType === "collection") {
         location.pathname = uri + "/";
       } else {
@@ -1223,7 +1224,7 @@ VrtxAdmin.prototype.addSearch = function addSearch() {
     };
 
     var fieldGlobal = $('#vrtx-autocomplete-admin-global-search');
-    fieldGlobal.autocomplete('?vrtx=admin&service=resource-autocomplete', $.extend({}, p, {
+    fieldGlobal.autocomplete('?vrtx=admin&service=resource-autocomplete&unpublished=true', $.extend({}, p, {
       wrapperClass: "admin-search admin-global-search"
     }));
     fieldGlobal.result(function(event, data, formatted) {
@@ -1233,7 +1234,7 @@ VrtxAdmin.prototype.addSearch = function addSearch() {
 
     if(isCollectionListing) {
       var field = $('#vrtx-autocomplete-admin-search');
-      field.autocomplete('?vrtx=admin&service=resource-autocomplete&fq=uri=' + location.pathname + '*', p);
+      field.autocomplete('?vrtx=admin&service=resource-autocomplete&unpublished=true&fq=uri=' + location.pathname + '*', p);
       field.result(function(event, data, formatted) {
         field.val("");
         resultHandler(formatted);

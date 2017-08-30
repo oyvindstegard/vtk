@@ -85,6 +85,7 @@ import vtk.web.service.URL;
  *      {@link vtk.web.search.SearchParser}
  * <li>{@code fq} - Additional filter query clause, which will be logically required (AND), 
  * 		in addition to the criteria specified in the main query. Can occur zero or more times.
+ * <li>{@code unpublished} - If set to true search will return both published and unpublished resources
  * <li>{@code properties} or {@code fields} - a comma-separated list of property 
  *      names to include in the result set. If the string {@code *} appears in the list, 
  *      all properties are included. In addition, the special 
@@ -240,6 +241,15 @@ public final class QueryHandler implements HttpRequestHandler {
         }));
 
         qry = qry.flatMap(builder -> Result.attempt(() -> {
+			if (request.getParameter("unpublished") != null) {
+				if ("true".equals(request.getParameter("unpublished"))) {
+					return builder.unpublished(true);
+				}
+			}
+			return builder;
+		}));
+
+		qry = qry.flatMap(builder -> Result.attempt(() -> {
             if (request.getParameter("limit") != null) {
                 Integer limit = Integer
                         .parseInt(request.getParameter("limit"));
