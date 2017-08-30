@@ -320,7 +320,9 @@ SELECT next value for extra_prop_entry_seq_pk,
        0,
        null,
        'title',
-       '/'
+       '/',
+       null,
+       null
 from vortex_resource where uri = '/';
 
 

@@ -29,6 +29,10 @@
     <flexmark.version>0.19.4</flexmark.version>
     <groovy.version>2.4.12</groovy.version>
     <frontend.build.args>default --production</frontend.build.args>
+    <hsqldb.version>2.4.0</hsqldb.version>
+    <test.unit.skip>${test.skip}</test.unit.skip>
+    <test.integration.skip>${test.skip}</test.integration.skip>
+    <test.frontend.skip>${test.skip}</test.frontend.skip>
   </properties>
 
   <organization>
@@ -175,6 +179,53 @@
       </testResource>
     </testResources>
 
+    <pluginManagement>
+      <plugins>
+        <plugin>
+          <groupId>fr.avianey.mojo</groupId>
+          <artifactId>hsqldb-maven-plugin</artifactId>
+          <version>1.0.0</version>
+          <configuration>
+            <driver>org.hsqldb.jdbcDriver</driver>
+            <path>mem:vtk-test</path>
+            <address>localhost</address>
+            <name>vtk-test</name>
+            <username>sa</username>
+            <validationQuery>SELECT 1 FROM INFORMATION_SCHEMA.SYSTEM_USERS</validationQuery>
+            <skip>${test.integration.skip}</skip>
+          </configuration>
+          <dependencies>
+            <dependency>
+              <groupId>org.hsqldb</groupId>
+              <artifactId>hsqldb</artifactId>
+              <version>${hsqldb.version}</version>
+            </dependency>
+          </dependencies>
+        </plugin>
+        <plugin>
+          <groupId>org.codehaus.mojo</groupId>
+          <artifactId>sql-maven-plugin</artifactId>
+          <version>1.5</version>
+          <configuration>
+            <driver>org.hsqldb.jdbcDriver</driver>
+            <url>jdbc:hsqldb:hsql://localhost/vtk-test</url>
+            <username>sa</username>
+            <skip>${test.integration.skip}</skip>
+            <srcFiles>
+              <srcFile>src/main/sql/hsqldb-schema.sql</srcFile>
+            </srcFiles>
+          </configuration>
+          <dependencies>
+            <dependency>
+              <groupId>org.hsqldb</groupId>
+              <artifactId>hsqldb</artifactId>
+              <version>${hsqldb.version}</version>
+            </dependency>
+          </dependencies>
+        </plugin>
+      </plugins>
+    </pluginManagement>
+
     <plugins>
 
       <plugin>
@@ -271,7 +322,7 @@
             <configuration>
               <srcdir>${basedir}/src/main/websources</srcdir>
               <arguments>test</arguments>
-              <skip>${test.skip}</skip>
+              <skip>${test.frontend.skip}</skip>
             </configuration>
           </execution>
         </executions>
@@ -437,13 +488,13 @@
         </configuration>
       </plugin>
 
-      <!-- Surefire -->
+      <!-- Unit testing -->
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-surefire-plugin</artifactId>
-        <version>2.18.1</version>
+        <version>2.20</version>
         <configuration>
-          <skip>${test.skip}</skip>
+          <skip>${test.unit.skip}</skip>
           <useFile>false</useFile>
           <forkCount>2</forkCount>
           <reuseForks>true</reuseForks>
@@ -454,9 +505,71 @@
             </property>
           </systemProperties>
           <excludes>
-            <exclude>**/Abstract*.java</exclude>
+            <exclude>**/*IntegrationTest.java</exclude>
+            <exclude>**/*IntegrationTests.java</exclude>
           </excludes>
         </configuration>
+      </plugin>
+
+      <!-- Integration testing -->
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-failsafe-plugin</artifactId>
+        <version>2.20</version>
+        <executions>
+          <execution>
+            <goals>
+              <goal>integration-test</goal>
+              <goal>verify</goal>
+            </goals>
+          </execution>
+        </executions>
+        <configuration>
+          <skip>${test.integration.skip}</skip>
+          <systemProperties>
+            <property>
+              <name>log4j.configurationFile</name>
+              <value>log4j2.test.xml</value>
+            </property>
+          </systemProperties>
+          <includes>
+            <include>**/*IntegrationTest.java</include>
+            <include>**/*IntegrationTests.java</include>
+          </includes>
+        </configuration>
+      </plugin>
+      <plugin>
+        <groupId>fr.avianey.mojo</groupId>
+        <artifactId>hsqldb-maven-plugin</artifactId>
+        <executions>
+          <execution>
+            <id>start-hsqldb</id>
+            <phase>pre-integration-test</phase>
+            <goals>
+              <goal>start</goal>
+            </goals>
+          </execution>
+          <execution>
+            <id>stop-hsqldb</id>
+            <phase>post-integration-test</phase>
+            <goals>
+              <goal>stop</goal>
+            </goals>
+          </execution>
+        </executions>
+      </plugin>
+      <plugin>
+        <groupId>org.codehaus.mojo</groupId>
+        <artifactId>sql-maven-plugin</artifactId>
+        <executions>
+          <execution>
+            <id>create-schema</id>
+            <phase>pre-integration-test</phase>
+            <goals>
+              <goal>execute</goal>
+            </goals>
+          </execution>
+        </executions>
       </plugin>
 
       <!-- Require Maven v3.3+ -->
@@ -951,12 +1064,6 @@
       <artifactId>postgresql</artifactId>
       <version>9.4.1211.jre7</version>
       <scope>runtime</scope>
-    </dependency>
-    <dependency>
-      <groupId>org.hsqldb</groupId>
-      <artifactId>hsqldb</artifactId>
-      <version>2.3.4</version>
-      <scope>test</scope>
     </dependency>
 
     <!-- Known logging API routes:

@@ -40,7 +40,7 @@ import org.springframework.context.support.ClassPathXmlApplicationContext;
 
 public abstract class AbstractBeanContextTestIntegration {
 
-    private final static String configBasePath = "classpath:/vtk/beans/vhost/";
+    private final static String configBasePath = "classpath:/testcontext/";
 
     static {
         System.setProperty("org.apache.commons.logging.Log", "org.apache.commons.logging.impl.Log4JLogger");
@@ -49,12 +49,9 @@ public abstract class AbstractBeanContextTestIntegration {
 
     protected ApplicationContext getApplicationContext(String... configFiles) {
 
-        List<String> configLocations = new ArrayList<String>();
+        List<String> configLocations = new ArrayList<>();
 
-        configLocations.add(configBasePath + "common/html-util.xml");
-        configLocations.add(configBasePath + "common/common.xml");
-        configLocations.add(configBasePath + "common/security.xml");
-        configLocations.add(configBasePath + "common/vtk.xml");
+        configLocations.add("classpath:integrationTestContext.xml");
 
         for (String configFile : configFiles) {
             configLocations.add(configBasePath + configFile);
