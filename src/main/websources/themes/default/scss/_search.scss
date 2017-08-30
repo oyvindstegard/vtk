@@ -46,8 +46,15 @@
     padding-left: 40px;
     position: relative;
 
+    &.unpublished {
+      background: transparent url("images/file-unpublished.png") no-repeat 0px 3px;
+    }
     &.collection {
       background: transparent url("images/folder.gif") no-repeat 0px 5px;
+      
+      &.unpublished {
+        background: transparent url("images/folder-unpublished.png") no-repeat 0px 3px;
+      }
     }
     @include resourceTitleIcon(folder,   0px 5px,  42px);
     @include resourceTitleIcon(text,     0px 2px);

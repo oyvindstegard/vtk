@@ -1182,7 +1182,8 @@ VrtxAdmin.prototype.addSearch = function addSearch() {
           title: vrtxAdm.escapeHtml(splitted[0]),
           filename: filename,
           uri: uri,
-          resourceType: splitted[2]
+          resourceType: splitted[2],
+          published: splitted[3]
         }
       },
       highlight : function(value, term) {
@@ -1199,7 +1200,7 @@ VrtxAdmin.prototype.addSearch = function addSearch() {
           }
         }
 
-        return '<div class="vrtx-autocomplete-search-info ' + value.resourceType + '">' +
+        return '<div class="vrtx-autocomplete-search-info ' + value.resourceType + (value.published == "false" ? " unpublished" : "") + '">' +
                  '<span class="vrtx-autocomplete-search-title">' + value.title + '</span>' +
                  (value.title !== value.filename ? '<span class="vrtx-autocomplete-search-filename">' + value.filename + '</span>' : '') +
                  (value.filename !== value.uri ? '<span class="vrtx-autocomplete-search-uri">' + value.uri + '</span>' : '') +
