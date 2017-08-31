@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-3.1.xsd">
+
+  <description>
+    This is the main bean configuration file. This file does not
+    contain any bean definitions, its purpose is
+    to import the other
+    configuration files in a given order. When a new bean configuration file is
+    added to the system,
+    it must be included in the list below.
+  </description>
+
+  <import resource="common.xml" />
+  <import resource="content/init.xml" />
+  <import resource="backend/init.xml" />
+  <import resource="web/init.xml" />
+
+</beans>

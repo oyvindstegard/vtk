@@ -1,11 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <beans xmlns="http://www.springframework.org/schema/beans" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-  xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-3.1.xsd">
-
-  <bean id="structuredResources.typeAssertion" 
-        class="vtk.repository.resourcetype.ResourceTypeAssertion" parent="repositoryAware">
-    <property name="resourceTypeDefinition" ref="json.managedObjectResourceType" />
-  </bean>
+       xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-3.1.xsd">
 
   <bean id="structuredResources.displayService" class="vtk.web.service.ServiceImpl">
     <property name="parent" ref="displayResourceService" />
@@ -41,22 +36,6 @@
         <constructor-arg name="provider" ref="invalidUidMessageProvider" />
       </bean>
     </property>
-  </bean>
-
-  <bean id="resourceTypeIsPerson" class="vtk.web.service.RepositoryAssertionWrapper">
-    <constructor-arg name="assertion">
-      <bean 
-          class="vtk.repository.resourcetype.ResourceTypeAssertion" parent="repositoryAware">
-        <property name="resourceType" value="person" />
-      </bean>
-    </constructor-arg>
-  </bean>
-
-  <bean id="invalidUidMessageProvider" class="vtk.web.referencedata.provider.InvalidUidMessageProvider">
-    <property name="modelName" value="tabMessage" />
-    <property name="localizationKey" value="preview.invalid.uid" />
-    <property name="resourceTypeTree" ref="resourceTypeTree" />
-    <property name="principalFactory" ref="principalFactory" />
   </bean>
 
   <bean id="structuredResources.editService" class="vtk.web.service.ServiceImpl">
@@ -99,7 +78,7 @@
        This is an extension point where exceptions to the defaults can be added.  -->
   <bean id="editableResourcesAssertion.list" class="java.util.ArrayList" />
 
-  <bean id="editableResourcesAssertion.list.addValue" 
+  <bean id="editableResourcesAssertion.list.addValue"
         class="org.springframework.beans.factory.config.MethodInvokingBean"
         abstract="true">
     <property name="targetObject" ref="editableResourcesAssertion.list"/>
@@ -113,9 +92,9 @@
     <property name="messageKey" value="tabs.editWorkingCopy" />
   </bean>
 
-  <bean id="structuredResources.displayHandler" 
+  <bean id="structuredResources.displayHandler"
         class="vtk.resourcemanagement.view.StructuredResourceDisplayController"
-    depends-on="structuredResource.parser">
+        depends-on="structuredResource.parser">
     <property name="resourceManager" ref="structuredResources.resourceManager" />
     <property name="componentResolver" ref="decorating.defaultComponentResolver" />
     <property name="htmlParser" ref="decorating.htmlParser" />
@@ -272,7 +251,6 @@
     </constructor-arg>
   </bean>
 
-
   <bean id="structuredResources.urlJSONFunction" class="vtk.resourcemanagement.view.tl.CacheLookupFunction">
     <constructor-arg>
       <bean class="vtk.text.tl.Symbol">
@@ -283,6 +261,7 @@
       <ref bean="structuredResources.jsonURLCache" />
     </constructor-arg>
   </bean>
+
 
   <bean id="structuredResources.jsonURLCache" class="vtk.util.cache.EhContentCache">
     <constructor-arg name="cache">
@@ -378,7 +357,6 @@
     </constructor-arg>
   </bean>
 
-
   <bean id="structuredResources.ResourceLocaleFunction" class="vtk.resourcemanagement.view.tl.ResourceLocaleFunction">
     <constructor-arg>
       <bean class="vtk.text.tl.Symbol">
@@ -437,17 +415,14 @@
     <constructor-arg value="structured-resource" />
   </bean>
 
-
-
-
-  <bean id="structuredResources.componentNamespace" class="java.lang.String">
-    <constructor-arg type="java.lang.String" value="json" />
-  </bean>
-
-  <bean id="structuredResources.fieldSelectComponent" class="vtk.resourcemanagement.view.StructuredResourceFieldComponent">
-    <property name="namespace" ref="structuredResources.componentNamespace" />
-    <property name="name" value="field" />
-    <property name="resourceModelKey" value="structured-resource" />
+  <bean class="vtk.web.AdminMedia">
+    <constructor-arg ref="manage.cssRegistry" />
+    <constructor-arg value="structured-resources-editor:head" />
+    <constructor-arg>
+      <list>
+        <value>${themeBaseURL}/structured-resources/editor.css</value>
+      </list>
+    </constructor-arg>
   </bean>
 
   <bean id="structuredResources.editHandler" class="vtk.resourcemanagement.edit.StructuredResourceEditor">
@@ -517,57 +492,8 @@
     </property>
   </bean>
 
-  <bean class="vtk.web.AdminMedia">
-    <constructor-arg ref="manage.cssRegistry" />
-    <constructor-arg value="structured-resources-editor:head" />
-    <constructor-arg>
-      <list>
-        <value>${themeBaseURL}/structured-resources/editor.css</value>
-      </list>
-    </constructor-arg>
-  </bean>
-
-  <!-- TODO move out of VTK: -->
-  <bean id="resourceTypeIsOrganizationalUnit" class="vtk.web.service.RepositoryAssertionWrapper">
-    <constructor-arg name="assertion">
-      <bean class="vtk.repository.resourcetype.ResourceTypeAssertion" parent="repositoryAware">
-        <property name="resourceType" value="organizational-unit" />
-      </bean>
-    </constructor-arg>
-  </bean>
-
-  <!-- TODO move out of VTK: -->
-  <bean id="resourceTypeIsOrganizationalUnitPublications" class="vtk.web.service.RepositoryAssertionWrapper">
-    <constructor-arg name="assertion">
-      <bean class="vtk.repository.resourcetype.ResourceTypeAssertion"
-            parent="repositoryAware">
-        <property name="resourceType" value="unit-publications" />
-      </bean>
-    </constructor-arg>
-  </bean>
-
-  <!-- TODO move out of VTK: -->
-  <bean id="resourceTypeIsProject" class="vtk.web.service.RepositoryAssertionWrapper">
-    <constructor-arg name="assertion">
-      <bean class="vtk.repository.resourcetype.ResourceTypeAssertion"
-            parent="repositoryAware">
-        <property name="resourceType" value="structured-project" />
-      </bean>
-    </constructor-arg>
-  </bean>
-
-  <!-- ### SHARED TEXT ### -->
-  <bean id="sharedTextResolver" class="vtk.resourcemanagement.studies.SharedTextResolver">
-    <property name="repository" ref="repository" />
-    <property name="resourceTypeTree" ref="resourceTypeTree" />
-    <property name="safeHtmlFilter" ref="sharedTextResolver.filter" />
-    <property name="htmlParser" ref="decorating.htmlParser" />
-    <property name="localeResolver" ref="viewServiceResourceAwareLocaleResolver" />
-  </bean>
-
-  <bean id="sharedTextResolver.filter" class="vtk.text.html.SimpleHtmlPageFilter">
-    <property name="illegalElements" ref="safeHtml.illegalElementSet" />
-    <property name="checkValidElements" value="false" />
+  <bean id="decorating.sharedTextComponent.view" parent="freemarkerView">
+    <property name="url" value="studies/shared-text.ftl" />
   </bean>
 
   <bean id="sharedTextComponent" class="vtk.resourcemanagement.studies.SharedTextComponent">
@@ -575,10 +501,6 @@
     <property name="name" value="shared-text" />
     <property name="sharedTextResolver" ref="sharedTextResolver" />
     <property name="view" ref="decorating.sharedTextComponent.view" />
-  </bean>
-
-  <bean id="decorating.sharedTextComponent.view" parent="freemarkerView">
-    <property name="url" value="studies/shared-text.ftl" />
   </bean>
 
 </beans>

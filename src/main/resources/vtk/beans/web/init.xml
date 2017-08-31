@@ -1,40 +1,18 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <beans xmlns="http://www.springframework.org/schema/beans" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-  xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-3.1.xsd">
+       xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-3.1.xsd">
 
-  <description>
-    This is the main bean configuration file. This file does not
-    contain any bean definitions, its purpose is
-    to import the other
-    configuration files in a given order. When a new bean configuration file is
-    added to the system,
-    it must be included in the list below.
-  </description>
+  <import resource="servlet.xml" />
+  <import resource="resource-view/init.xml" />
+  <import resource="resource-listing/init.xml" />
 
-  <import resource="cache.xml" />
-
-  <!-- Common beans used across resources, services and backend -->
-  <import resource="common/common.xml" />
-  <import resource="common/html-util.xml" />
-  <import resource="common/security.xml" />
-  <import resource="common/vtk.xml" />
-
-  <import resource="resource-types/main.xml" />
-  <import resource="resource-listing/main.xml" />
-
-  <import resource="repository.xml" />
-  <import resource="cluster.xml" />
-  <import resource="query.xml" />
-  <import resource="schema-registry.xml" />
-  <import resource="template-lang.xml" />
+  <import resource="templating/template-lang.xml" />
   <import resource="view.xml" />
   <import resource="view-as-webpage.xml" />
-  <import resource="system-decorating.xml" />
+  <import resource="decorating/system-decorating.xml" />
   <import resource="controllers.xml" />
   <import resource="service.xml" />
   <import resource="authentication.xml" />
-  <import resource="structured-resources-management.xml" />
-  <import resource="structured-resources.xml" />
 
   <!-- Decorating and decorator components -->
   <import resource="decorating/decorating.xml" />
@@ -47,23 +25,19 @@
   <import resource="editor/editor.xml" />
   <import resource="editor/ajaxeditor.xml" />
 
-  <import resource="resource-wrapper.xml" />
-
   <import resource="manage.xml" />
   <import resource="api.xml" />
   <import resource="property-edit.xml" />
   <import resource="visual-profile-aspect.xml" />
   <import resource="report.xml" />
   <import resource="commenting.xml" />
-  <import resource="metrics.xml" />
   <import resource="root-management.xml" />
   <import resource="webdav.xml" />
   <import resource="source.xml" />
   <import resource="plaintextedit.xml" />
-  <import resource="versioning.xml" />
   <import resource="copy-move.xml" />
   <import resource="errorhandlers.xml" />
-  <import resource="templates.xml" />
+  <import resource="templating/templates.xml" />
   <import resource="autocomplete.xml" />
   <import resource="ical.xml" />
   <import resource="vcf.xml" />
@@ -82,11 +56,5 @@
 
   <import resource="tags/tags.xml" />
 
-  <!-- OperationLog interceptor for Repository -->
-  <import resource="repository-operationlog-interceptor.xml" />
-
-  <!-- System task manager -->
-  <import resource="scheduling/scheduling.xml" />
   <import resource="simple-structured-editor.xml" />
-  
 </beans>

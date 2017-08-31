@@ -31,29 +31,31 @@
 package vtk.repository;
 
 import java.util.List;
-import static org.junit.Assert.*;
 import org.junit.Before;
 import org.junit.Test;
 
 import org.springframework.context.ApplicationContext;
 
-public class RepositoryTestIntegration extends AbstractBeanContextTestIntegration {
+import static org.assertj.core.api.Assertions.assertThat;
+
+public class RepositoryIntegrationTest extends AbstractBeanContextTestIntegration {
 
     private Repository repository;
 
     @Before
-    protected void setUp() throws Exception {
-        ApplicationContext ctx = getApplicationContext("resource-types/resource.xml", "repository.xml");
+    public void setUp() throws Exception {
+        ApplicationContext ctx = getApplicationContext("repository.xml");
         repository = (Repository) ctx.getBean("repository");
     }
 
     @Test
     public void retrieve() throws Exception {
         Resource root = repository.retrieve(null, Path.ROOT, true);
-        assertNotNull("No root object exists", root);
+        assertThat(root).isNotNull();
         List<Property> properties = root.getProperties();
-        assertTrue("Root object has no properties", properties != null && properties.size() > 0);
-        assertNotNull("Root object has no acl associated with it", root.getAcl());
+        assertThat(properties).isNotEmpty();
+        assertThat(root.getAcl()).isNotNull()
+                .withFailMessage("Root object has no acl associated with it");
     }
 
 }

@@ -2,6 +2,8 @@
 <beans xmlns="http://www.springframework.org/schema/beans" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
        xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-3.1.xsd">
 
+  <import resource="metrics.xml" />
+
   <bean id="uri.abstractBean" 
         class="org.springframework.beans.factory.config.MethodInvokingFactoryBean" abstract="true">
     <property name="staticMethod" value="vtk.repository.Path.fromString" />    
@@ -60,5 +62,43 @@
   </bean>
 
   <bean id="documentPrincipalMetadataRetriever" class="vtk.util.repository.DocumentPrincipalMetadataRetriever" />
+
+
+  <!-- @Required annotations -->
+  <bean class="org.springframework.beans.factory.annotation.RequiredAnnotationBeanPostProcessor" />
+
+  <bean class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer">
+    <property name="ignoreResourceNotFound" value="true" />
+    <property name="locations" ref="vtk.configLocations" />
+    <!-- System properties may override placeholders: -->
+    <property name="systemPropertiesMode" value="2" />
+    <!--property name="nullValue" value="[[null]]" /-->
+  </bean>
+
+  <bean id="vrtx" class="org.springframework.beans.factory.config.PropertiesFactoryBean">
+    <property name="locations" ref="vtk.configLocations" />
+    <property name="ignoreResourceNotFound" value="true" />
+  </bean>
+
+  <bean id="ordered" abstract="true">
+    <property name="comparator">
+      <bean class="org.springframework.core.OrderComparator" />
+    </property>
+  </bean>
+
+  <!-- Builders for header reference data providers: -->
+  <bean id="vtk.globalHeaders.referenceDataProviders" class="java.util.ArrayList" />
+  <bean id="vtk.globalHeaders.referenceDataProvider"
+        class="org.springframework.beans.factory.config.MethodInvokingBean"
+        abstract="true">
+    <property name="targetObject" ref="vtk.globalHeaders.referenceDataProviders" />
+    <property name="targetMethod" value="add" />
+  </bean>
+
+  <bean parent="vtk.globalHeaders.referenceDataProvider">
+    <property name="arguments">
+      <bean class="vtk.web.referencedata.provider.FrameworkVersionProvider" />
+    </property>
+  </bean>
 
 </beans>

@@ -1,0 +1,98 @@
+<?xml version="1.0" encoding="utf-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-3.1.xsd">
+
+  <!-- Video resource -->
+
+  <bean id="videoResourceTypeDefinition" parent="primaryResourceType">
+    <property name="name" value="video" />
+    <property name="namespace" ref="DEFAULT_NAMESPACE" />
+    <property name="parentTypeDefinition" ref="fileResourceTypeDefinition" />
+    <property name="assertions">
+      <list>
+        <ref bean="contentTypeMatchesVideo" />
+      </list>
+    </property>
+    <property name="propertyTypeDefinitions">
+      <list>
+        <ref bean="posterImagePropDef" />
+        <ref bean="videoHtmlDescriptionPropDef" />
+        <ref bean="hideVideoDownloadLinkPropDef" />
+        <ref bean="hideVideoFallbackLinkPropDef" />
+      </list>
+    </property>
+    <property name="mixinTypeDefinitions">
+      <list>
+        <ref bean="mediaMixinResourceTypeDef" />
+      </list>
+    </property>
+  </bean>
+
+  <bean id="videoHtmlDescriptionPropDef" class="vtk.repository.resourcetype.PropertyTypeDefinitionImpl"
+          parent="abstractPropDef">
+    <property name="name" value="video-description" />
+    <property name="type" value="HTML" />
+    <property name="protectionLevel" ref="PROTECTION_LEVEL_ACL_WRITE" />
+    <property name="mandatory" value="false" />
+  </bean>
+
+  <bean id="posterImagePropDef" class="vtk.repository.resourcetype.PropertyTypeDefinitionImpl" parent="abstractPropDef">
+    <property name="name" value="poster-image" />
+    <property name="type" value="IMAGE_REF" />
+    <property name="protectionLevel" ref="PROTECTION_LEVEL_ACL_WRITE" />
+    <property name="mandatory" value="false" />
+  </bean>
+
+  <bean id="hideVideoDownloadLinkPropDef" class="vtk.repository.resourcetype.PropertyTypeDefinitionImpl" parent="abstractPropDef">
+    <property name="name" value="hide-video-download-link" />
+    <property name="type" value="BOOLEAN" />
+    <property name="protectionLevel" ref="PROTECTION_LEVEL_ACL_WRITE" />
+    <property name="mandatory" value="false" />
+    <property name="vocabulary">
+      <bean class="vtk.repository.resourcetype.ValueVocabulary">
+        <constructor-arg value="BOOLEAN"/>
+        <property name="values">
+          <list>
+            <ref bean="VALUE_TRUE" />
+          </list>
+        </property>
+      </bean>
+    </property>
+    <property name="metadata">
+      <map>
+        <entry key="editingHints">
+          <map>
+            <entry key="hideLabel" value="true" />
+          </map>
+        </entry>
+      </map>
+    </property>
+  </bean>
+
+  <bean id="hideVideoFallbackLinkPropDef" class="vtk.repository.resourcetype.PropertyTypeDefinitionImpl" parent="abstractPropDef">
+    <property name="name" value="hide-video-fallback-link" />
+    <property name="type" value="BOOLEAN" />
+    <property name="protectionLevel" ref="PROTECTION_LEVEL_ACL_WRITE" />
+    <property name="mandatory" value="false" />
+    <property name="vocabulary">
+      <bean class="vtk.repository.resourcetype.ValueVocabulary">
+        <constructor-arg value="BOOLEAN"/>
+        <property name="values">
+          <list>
+            <ref bean="VALUE_TRUE" />
+          </list>
+        </property>
+      </bean>
+    </property>
+    <property name="metadata">
+      <map>
+        <entry key="editingHints">
+          <map>
+            <entry key="hideLabel" value="true" />
+          </map>
+        </entry>
+      </map>
+    </property>
+  </bean>
+
+</beans>

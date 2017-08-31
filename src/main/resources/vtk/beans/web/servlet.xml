@@ -1,32 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <beans xmlns="http://www.springframework.org/schema/beans" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
        xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-3.1.xsd">
-  
-  <!-- @Required annotations -->
-  <bean class="org.springframework.beans.factory.annotation.RequiredAnnotationBeanPostProcessor" />
-  
-  <bean class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer">
-    <property name="ignoreResourceNotFound" value="true" />
-    <property name="locations" ref="vtk.configLocations" />
-    <!-- System properties may override placeholders: -->
-    <property name="systemPropertiesMode" value="2" />
-    <!--property name="nullValue" value="[[null]]" /-->
-  </bean>
- 
-  <bean id="vrtx" class="org.springframework.beans.factory.config.PropertiesFactoryBean">
-    <property name="locations" ref="vtk.configLocations" />
-    <property name="ignoreResourceNotFound" value="true" />
-  </bean>
-
-  <bean id="ordered" abstract="true">
-    <property name="comparator">
-      <bean class="org.springframework.core.OrderComparator" />
-    </property>
-  </bean>
 
   <!-- Context Initializers -->
   <bean id="requestContextInitializer" class="vtk.web.RequestContextInitializer"
-    lazy-init="true">
+        lazy-init="true">
     <description> This bean is required in order to initialize requests with the
       request context. The request context contains the service and the URI for
       each request. (See classes vtk.web.RequestContext and
@@ -43,7 +21,7 @@
     </property>
     <property name="viewUnauthenticatedParameter" value="x-prevent-decorating"/>
   </bean>
-  
+
   <bean id="vtk.globalHeaders.provider" class="vtk.web.servlet.DefaultFilterFactory">
     <constructor-arg name="filter">
       <bean class="vtk.web.filter.TemplateHeaderProvider">
@@ -59,33 +37,14 @@
     <constructor-arg name="order" value="0" />
   </bean>
 
-  <bean parent="vtk.initializingServletFilters.builder">
-    <property name="arguments" ref="vtk.globalHeaders.provider" />
-  </bean>
-
-  <!-- Builders for header reference data providers: -->
-  <bean id="vtk.globalHeaders.referenceDataProviders" class="java.util.ArrayList" />
-  <bean id="vtk.globalHeaders.referenceDataProvider" 
-        class="org.springframework.beans.factory.config.MethodInvokingBean"
-        abstract="true">
-    <property name="targetObject" ref="vtk.globalHeaders.referenceDataProviders" />
-    <property name="targetMethod" value="add" />
-  </bean>
-
-  <bean parent="vtk.globalHeaders.referenceDataProvider">
-    <property name="arguments">
-      <bean class="vtk.web.referencedata.provider.FrameworkVersionProvider" />
-    </property>
-  </bean>
-
   <bean id="services" class="vtk.beans.factory.BeansListingFactoryBean">
     <property name="targetBeansClass" value="vtk.web.service.Service" />
   </bean>
-  
+
   <bean id="indexFileResolver" class="vtk.web.IndexFileResolver">
     <property name="indexFilePropDef" ref="collection.indexFilePropDef" />
   </bean>
-  
+
   <bean id="spCookieAuthHandlers" class="vtk.util.SortedCollection">
     <constructor-arg>
       <bean class="org.springframework.core.OrderComparator" />
@@ -143,9 +102,9 @@
   <bean id="cookieLinkStore.cache" class="vtk.util.cache.SimpleCacheImpl">
     <property name="timeoutSeconds" value="3600" />
   </bean>
-  
+
   <!-- Spring session filter (works only with spring boot) -->
-  <bean id="springSessionRepositoryFilter" 
+  <bean id="springSessionRepositoryFilter"
         class="vtk.web.servlet.SessionRepositoryFilter">
     <constructor-arg name="sessionRepository" ref="spring.sessionRepository" />
     <property name="sessionStrategy">
@@ -156,7 +115,7 @@
     </property>
   </bean>
 
-  <bean id="spring.sessionRepository" 
+  <bean id="spring.sessionRepository"
         class="org.springframework.session.MapSessionRepository">
     <constructor-arg name="sessions" ref="spring.sessionRepository.sessionMap" />
     <property name="defaultMaxInactiveInterval" value="1800" />
@@ -217,13 +176,17 @@
     <property name="arguments" ref="vtk.serviceFilterInvoker" />
   </bean>
 
+  <bean parent="vtk.initializingServletFilters.builder">
+    <property name="arguments" ref="vtk.globalHeaders.provider" />
+  </bean>
+
   <bean id="vtk.serviceFilterInvoker" class="vtk.web.servlet.DefaultFilterFactory">
     <constructor-arg name="filter">
       <bean class="vtk.web.servlet.ServiceFilterInvoker" />
     </constructor-arg>
     <constructor-arg name="order" value="-1" />
   </bean>
-  
+
   <bean id="repositoryContextInitializer" class="vtk.web.RepositoryContextInitializer" />
 
   <!-- HandlerMapping -->
@@ -249,9 +212,9 @@
 
        Source: org/springframework/web/servlet/DispatcherServlet.properties -->
 
-  <bean id="handlerAdapter" class="org.springframework.web.servlet.mvc.SimpleControllerHandlerAdapter" /> 
+  <bean id="handlerAdapter" class="org.springframework.web.servlet.mvc.SimpleControllerHandlerAdapter" />
 
   <!-- Spring HandlerAdapter for all HttpRequestHandler instances: -->
   <bean class="org.springframework.web.servlet.mvc.HttpRequestHandlerAdapter" />
-  
+
 </beans>

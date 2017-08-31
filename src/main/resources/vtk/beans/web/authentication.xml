@@ -460,4 +460,96 @@
     <constructor-arg name="authHandlerRegistry" ref="vtk.authenticationHandlerRegistry" />
   </bean>
 
+  <bean parent="vtk.initializingServletFilters.builder">
+    <property name="arguments" ref="vrtx.sessionValidationFilter" />
+  </bean>
+
+  <!-- Authentication challenges -->
+  <!-- The digest authentication handler also implements AuthenticationChallenge: -->
+  <alias name="httpDigestAuthenticationHandler"
+         alias="httpDigestAuthenticationChallenge" />
+
+  <bean id="httpBasicAuthenticationChallenge"
+        class="vtk.security.web.basic.HttpBasicAuthenticationChallenge">
+    <description>A HTTP/Basic authentication challenge</description>
+    <property name="principalStore" ref="localPrincipalStore" />
+  </bean>
+
+  <bean id="httpBasicAuthenticationHandler"
+        class="vtk.security.web.basic.HttpBasicAuthenticationHandler">
+    <description>
+      A HTTP/Basic authentication manager running against a
+      principal store of "local" users and groups
+    </description>
+    <property name="identifier" value="HTTP/Basic" />
+    <property name="order" value="100" />
+    <property name="recognizedDomains">
+      <set>
+        <value>localhost</value>
+        <null />
+      </set>
+    </property>
+    <property name="requireSecureConnection" value="${httpBasicAuthenticationHandler.requireSecureConnection}" />
+    <property name="challenge" ref="httpBasicAuthenticationChallenge" />
+    <property name="principalStore" ref="localPrincipalStore"/>
+    <property name="principalFactory" ref="principalFactory" />
+  </bean>
+
+  <bean id="httpBasicProxyAuthenticationHandler"
+        class="vtk.security.web.basic.ProxyAuthenticationHandler"
+        parent="httpBasicAuthenticationHandler">
+    <constructor-arg index="0" value="${proxyAuth.proxyUser}" />
+    <constructor-arg index="1" value="${proxyAuth.targetUserRegexp}" />
+    <constructor-arg index="2" value="${proxyAuth.requestParameter}" />
+    <property name="identifier" value="HTTP/Basic/Proxy/${proxyAuth.proxyUser}" />
+    <property name="targetPrincipalStore" value="#{${proxyAuth.principalStore}}" />
+    <property name="assertions" value="#{{${proxyAuth.assertions}}}" />
+  </bean>
+
+  <!-- List of assertions in an "or"-expression for proxy auth.
+       The list is populated during application context initialization. -->
+  <bean id="proxyAuth.allowedServicesAssertions" class="java.util.ArrayList" />
+
+  <!-- Abstract bean which should be used to register allowed service assertions
+       throughout the bean context. -->
+  <bean id="proxyAuth.allowedServicesAssertion"
+        class="org.springframework.beans.factory.config.MethodInvokingBean"
+        abstract="true">
+    <property name="targetObject" ref="proxyAuth.allowedServicesAssertions" />
+    <property name="targetMethod" value="add" />
+  </bean>
+
+  <bean parent="proxyAuth.allowedServicesAssertion">
+    <property name="arguments">
+      <ref bean="vrtxParameterIsFeedAssertion" />
+    </property>
+  </bean>
+
+  <bean id="proxyAuthAllowedServices" class="vtk.web.service.OrAssertion">
+    <description>
+      Example usage in vtk.properties:
+      proxyAuth.assertions = @webServiceAssertion,@'request.isGetOrHead',@proxyAuthAllowedServices
+    </description>
+    <property name="assertions" ref="proxyAuth.allowedServicesAssertions" />
+  </bean>
+
+  <bean id="httpDigestAuthenticationHandler"
+        class="vtk.security.web.digest.HttpDigestAuthenticationHandler">
+    <description>
+      A HTTP/Digest authentication manager running against a
+      principal store of "local" users and groups
+    </description>
+    <property name="identifier" value="HTTP/Digest" />
+    <property name="order" value="0" />
+    <!--      <property name="stateMap" ref="digestStateMap" />-->
+    <property name="recognizedDomains">
+      <set>
+        <value>localhost</value>
+        <null />
+      </set>
+    </property>
+    <property name="principalStore" ref="localPrincipalStore" />
+    <property name="principalFactory" ref="principalFactory" />
+  </bean>
+
 </beans>

@@ -1,46 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<beans xmlns="http://www.springframework.org/schema/beans" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-  xmlns:aop="http://www.springframework.org/schema/aop" xmlns:tx="http://www.springframework.org/schema/tx"
-  xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-3.1.xsd
-                      http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx-3.1.xsd
-                      http://www.springframework.org/schema/aop http://www.springframework.org/schema/aop/spring-aop-3.1.xsd">
-
-  <!-- Transaction manager for database access -->
-  <bean id="repository.transactionManager" class="org.springframework.jdbc.datasource.DataSourceTransactionManager">
-    <property name="dataSource" ref="repository.dataSource" />
-  </bean>
-
-  <!-- Spring annotation-driven transaction management magic using CGLIB. -->
-  <tx:annotation-driven transaction-manager="repository.transactionManager"
-                        proxy-target-class="true" order="1000" />
-
-  <!-- AOP pointcut for all transactional methods. This is referenced by
-       various interceptor throughout, which need to hook on to these methods. -->
-  <aop:config proxy-target-class="true">
-    <aop:pointcut id="transactionalAnnotationPointcut"
-                  expression="@annotation(org.springframework.transaction.annotation.Transactional)"/>
-  </aop:config>
-
-  <!-- Main repository instance. -->
-  <bean id="repository.internal" class="vtk.repository.RepositoryImpl" destroy-method="destroy">
-    <property name="id" value="${repositoryID}" />
-    <property name="tokenManager" ref="tokenManager" />
-    <property name="authorizationManager" ref="authorizationManager" />
-    <property name="dao" ref="${repositoryBackend}" />
-    <property name="revisionStore" ref="${repository.revisionStore}" />
-    <property name="commentDAO" ref="${repository.commentDao}" />
-    <property name="contentStore" ref="${repository.contentStore}" />
-    <property name="contentRepresentationRegistry" ref="contentRepresentationRegistry" />
-    <property name="repositoryResourceHelper" ref="repositoryResourceHelper" />
-    <property name="maxResourceChildren" value="${repository.maxResourceChildren}" />
-    <property name="permanentDeleteOverdueLimitInDays" value="${repository.permanentDeleteOverdueLimitInDays}" />
-    <property name="searcher" ref="systemIndexSearcher" />
-    <property name="resourceTypeTree" ref="resourceTypeTree" />
-    <property name="tempDir" value="${repository.tempDir}" />
-    <property name="transactionManager" ref="repository.transactionManager"/>
-    <property name="typeHandlerHooksRegistry" ref="repository.typeHandlerHooksRegistry" />
-  </bean>
-
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:aop="http://www.springframework.org/schema/aop"
+       xmlns:tx="http://www.springframework.org/schema/tx"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-3.1.xsd
+                           http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx-3.1.xsd
+                           http://www.springframework.org/schema/aop http://www.springframework.org/schema/aop/spring-aop-3.1.xsd">
   <!-- Type handler hooks -->
   <!-- Registry instance: -->
   <bean id="repository.typeHandlerHooksRegistry" class="vtk.repository.hooks.TypeHandlerHooksRegistry" />
@@ -60,23 +25,31 @@
     <property name="contentRepresentationRegistry" ref="contentRepresentationRegistry" />
   </bean>
 
-  <!-- Repository lock and cache control wrapper -->
-  <bean id="repository" class="vtk.repository.LockingCacheControlRepositoryWrapper">
-    <property name="wrappedRepository" ref="repository.internal" />
-    <property name="cache" ref="repository.cache" />
-    <property name="tempDir" value="${upload.tempDir}" />
-    <property name="tokenManager" ref="tokenManager" />
+  <bean id="repositoryAware" abstract="true">
+    <description>
+      Simple parent template for repository aware controllers. Just
+      saves a couple of lines for each
+      controller having a repository
+      property, that's just about all of them
+    </description>
+    <property name="repository" ref="repository" />
   </bean>
 
-  <bean parent="metrics.gaugeRegistration">
-    <property name="arguments">
-      <list>
-        <value>repository.nslocks.size</value>
-        <value>context.getBean("repository").lockManager.locks.size()</value>
-      </list>
-    </property>
+  <!-- Transaction manager for database access -->
+  <bean id="repository.transactionManager" class="org.springframework.jdbc.datasource.DataSourceTransactionManager">
+    <property name="dataSource" ref="repository.dataSource" />
   </bean>
 
+  <!-- Spring annotation-driven transaction management magic using CGLIB. -->
+  <tx:annotation-driven transaction-manager="repository.transactionManager"
+                        proxy-target-class="true" order="1000" />
+
+  <!-- AOP pointcut for all transactional methods. This is referenced by
+       various interceptor throughout, which need to hook on to these methods. -->
+  <aop:config proxy-target-class="true">
+    <aop:pointcut id="transactionalAnnotationPointcut"
+                  expression="@annotation(org.springframework.transaction.annotation.Transactional)"/>
+  </aop:config>
 
   <!-- Default data source setup -->
   <bean id="repository.dataSource" class="org.apache.commons.dbcp2.BasicDataSource" destroy-method="close">
@@ -110,7 +83,6 @@
     <constructor-arg name="executorType" value="BATCH" />
   </bean>
 
-
   <!-- Override MYBATIS SQL map statement names in this map (should generally not be necessary): -->
   <bean id="repository.statementMappings" class="java.util.HashMap">
     <constructor-arg>
@@ -140,7 +112,7 @@
     <property name="repositoryTrashCanDirectory" value="${repositoryTrashCanDirectory}" />
   </bean>
 
-  <bean id="repository.indexDao" class="vtk.repository.store.db.SqlMapIndexDao" 
+  <bean id="repository.indexDao" class="vtk.repository.store.db.SqlMapIndexDao"
         parent="repository.abstractSqlMapDao">
     <property name="sqlMaps" ref="repository.statementMappings" />
     <property name="sqlMapDataAccessor" ref="repository.sqlMapDao" />
@@ -166,7 +138,7 @@
     </property>
   </bean>
 
-  <bean id="repository.defaultRevisionStore" class="vtk.repository.store.DefaultRevisionStore" 
+  <bean id="repository.defaultRevisionStore" class="vtk.repository.store.DefaultRevisionStore"
         parent="repository.abstractSqlMapDao">
     <property name="sqlMaps" ref="repository.statementMappings" />
     <property name="principalFactory" ref="principalFactory" />
@@ -174,21 +146,10 @@
     <property name="tempDir" value="${repository.tempDir}" />
   </bean>
 
-  <bean id="repository.sqlMapCommentDao" class="vtk.repository.store.db.SqlMapCommentDAO" 
+  <bean id="repository.sqlMapCommentDao" class="vtk.repository.store.db.SqlMapCommentDAO"
         parent="repository.abstractSqlMapDao">
     <property name="sqlMaps" ref="repository.statementMappings" />
   </bean>
-
-  <bean id="repositoryAware" abstract="true">
-    <description>
-      Simple parent template for repository aware controllers. Just
-      saves a couple of lines for each
-      controller having a repository
-      property, that's just about all of them
-    </description>
-    <property name="repository" ref="repository" />
-  </bean>
-  
 
   <bean id="repositoryResourceHelper" class="vtk.repository.RepositoryResourceHelper">
     <property name="authorizationManager" ref="authorizationManager" />
@@ -256,7 +217,7 @@
     <property name="trim" value="true" />
   </bean>
 
-  <!-- <bean id="repository.acl.blacklist.bindTemplate" class="vtk.context.CSVListFactoryBean"> <property name="csvList" 
+  <!-- <bean id="repository.acl.blacklist.bindTemplate" class="vtk.context.CSVListFactoryBean"> <property name="csvList"
     value="${permissions.blacklist.bind-template}" /> <property name="trim" value="true" /> </bean> -->
 
   <bean id="repository.acl.blacklist.read" class="vtk.context.CSVListFactoryBean">
@@ -274,5 +235,5 @@
   <bean id="multiHostSearcher" class="vtk.repository.MultiHostSearcher" >
     <property name="enabled" value="false" />
   </bean>
-  
+
 </beans>
