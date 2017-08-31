@@ -31,6 +31,7 @@
 package vtk.util.repository;
 
 import java.io.InputStream;
+import java.util.Map;
 import java.util.Properties;
 
 import org.slf4j.Logger;
@@ -38,6 +39,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Required;
 import org.springframework.context.event.ContextRefreshedEvent;
+
 import vtk.repository.AuthorizationException;
 import vtk.repository.Path;
 import vtk.repository.Repository;
@@ -77,6 +79,7 @@ public final class PropertiesResource extends Properties implements Initializing
     private String token;
     private boolean demandResourceAvailability = false;
     private boolean lazyInit = false;
+    private Properties defaultProperties;
     
     public PropertiesResource() {
     }
@@ -88,12 +91,18 @@ public final class PropertiesResource extends Properties implements Initializing
     public PropertiesResource(Repository repository, Path uri, String token,
                               boolean demandResourceAvailability, boolean lazyInit) 
         throws Exception {
-        
+        this(repository, uri, token, demandResourceAvailability, lazyInit, new Properties());
+    }
+
+    public PropertiesResource(Repository repository, Path uri, String token,
+            boolean demandResourceAvailability, boolean lazyInit, Properties defaults) 
+                    throws Exception {
         this.repository = repository;
         this.uri = uri;
         this.token = token;
         this.demandResourceAvailability = demandResourceAvailability;
         this.lazyInit = lazyInit;
+        this.defaultProperties = defaults;
         afterPropertiesSet();
     }
 
@@ -122,6 +131,13 @@ public final class PropertiesResource extends Properties implements Initializing
     public void setLazyInit(boolean lazyInit) {
         this.lazyInit = lazyInit;
     }
+    
+    public void setDefaultProperties(Map<?, ?> defaultProperties) {
+        if (defaultProperties != null) {
+            this.defaultProperties = new Properties();
+            this.defaultProperties.putAll(defaultProperties);
+        }
+    }
 
     @Override
     public void afterPropertiesSet() throws Exception {
@@ -139,20 +155,24 @@ public final class PropertiesResource extends Properties implements Initializing
         this.logger.info("Loading properties resource at URI " + this.uri);
         if (demandResourceAvailability) {
             doLoad(token, uri);
-        } else {
+        }
+        else {
             try {
                 doLoad(token, uri);
-            } catch (ResourceNotFoundException rnf) {
+            }
+            catch (ResourceNotFoundException rnf) {
                 this.logger.warn("Unable to load properties from uri '"
                         + uri + "', repository '" + repository
                         + "', token '" + token + "' (resource not found)");
             
-            } catch (AuthorizationException ae) {
+            }
+            catch (AuthorizationException ae) {
                 this.logger.warn("Unable to load properties from uri '"
                         + uri + "', repository '" + repository
                         + "', token '" + token + "' (authorization exception: "
                         + ae.getMessage()+ ")");
-            } catch (Exception e) {
+            }
+            catch (Exception e) {
                 this.logger.warn("Unable to load properties from uri '"
                             + uri + "', repository '" + repository
                             + "', token '" + token + "' (" + e.getMessage() + ")");
@@ -161,6 +181,9 @@ public final class PropertiesResource extends Properties implements Initializing
     }
     
     private void doLoad(String token, Path uri) throws Exception {
+        if (defaultProperties != null) {
+            super.putAll(defaultProperties);
+        }
         InputStream inputStream = this.repository.getInputStream(token, uri, false);
         super.load(inputStream); 
         inputStream.close();
