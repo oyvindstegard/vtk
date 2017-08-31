@@ -15,6 +15,8 @@
     </constructor-arg>
   </bean>
 
+  <bean id="decorating.componentRegistry" class="vtk.web.decorating.BeanContextComponentRegistry" />
+
   <bean id="decorating.initialFilters"
         class="org.springframework.beans.factory.config.ListFactoryBean">
     <property name="sourceList">
@@ -46,9 +48,10 @@
       </constructor-arg>
       </bean>
     </property>
+    <!-- Map directive to component namespace+name ref -->
     <property name="ssiDirectiveComponentMap">
       <map>
-        <entry key="include" value-ref="decorating.includeComponent" />
+        <entry key="include" value="include:file" />
       </map>
     </property>
     <property name="contentComponentParser" ref="decorating.dollarSyntaxTemplateParser" />
@@ -147,9 +150,10 @@
   </bean>
 
   <bean id="decorating.builtinComponentResolver" 
-        class="vtk.web.decorating.BeanContextComponentResolver">
+        class="vtk.web.decorating.FilteredComponentResolver">
     <property name="availableComponentNamespaces"
               ref="decorating.defaultBuiltinComponentNamespaces" />
+    <property name="beanContextComponentRegistry" ref="decorating.componentRegistry"/>
   </bean>
 
   <bean id="decorating.defaultBuiltinComponentNamespaces" class="java.util.HashSet">
@@ -187,9 +191,10 @@
   </bean>
 
   <bean name="decorating.builtinDocumentComponentResolver"
-        class="vtk.web.decorating.BeanContextComponentResolver">
+        class="vtk.web.decorating.FilteredComponentResolver">
     <property name="availableComponentNamespaces"
               ref="decorating.builtinDocumentComponentNamespaces" />
+    <property name="beanContextComponentRegistry" ref="decorating.componentRegistry"/>
   </bean>
 
 
