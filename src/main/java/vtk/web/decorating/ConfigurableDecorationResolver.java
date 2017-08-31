@@ -45,6 +45,7 @@ import java.util.regex.Pattern;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpServletResponseWrapper;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -191,6 +192,9 @@ public class ConfigurableDecorationResolver implements DecorationResolver, Initi
         String paramString = null;
         
         boolean errorPage = false;
+        
+        response = mapStatusCode(request, response);
+        
         int status = response.getStatus();
         
         if (status >= 400) {
@@ -230,6 +234,34 @@ public class ConfigurableDecorationResolver implements DecorationResolver, Initi
                     + " to decorating descriptor " + descriptor);
         }
         return descriptor;
+    }
+    
+    private HttpServletResponse mapStatusCode(HttpServletRequest request, HttpServletResponse response) {
+        // Check for directives: map_status[service:service.name] = <code>
+        Service currentService = RequestContext.getRequestContext(request).getService();
+        while (currentService != null) {
+            Object attr = currentService.getAttribute("decorating.servicePredicateName");
+            if (attr != null && attr instanceof String) {
+                String value = decorationConfiguration.getProperty(
+                        "map_status[service:" + attr + "]");
+                if (value != null) {
+                    try {
+                        int status = Integer.parseInt(value);
+                        logger.debug("Mapping status code from {} to {} for service {}", 
+                                response.getStatus(), status, currentService.getName());
+                        return new HttpServletResponseWrapper(response) {
+                            @Override
+                            public int getStatus() {
+                                return status;
+                            }
+                        };
+                    }
+                    catch (NumberFormatException e) { }
+                }
+            }
+            currentService = currentService.getParent();
+        }
+        return response;
     }
     
     private String checkErrorCodeMatch(HttpServletRequest request, int status) {

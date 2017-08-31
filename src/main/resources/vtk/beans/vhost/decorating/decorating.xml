@@ -72,6 +72,11 @@
     <property name="repository" ref="repository" />
     <property name="uri" value="${decorating.templateConfigFile}" />
     <property name="lazyInit" value="false" />
+    <property name="defaultProperties">
+      <bean class="vtk.context.JSONFactoryBean">
+        <constructor-arg value="${decorating.templateConfigFile.defaultEntries}"/>
+      </bean>
+    </property>
   </bean>
 
   <bean id="decorating.templateConfigRefreshTrigger"
