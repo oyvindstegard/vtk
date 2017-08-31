@@ -70,7 +70,7 @@ public class ComponentInvokingNodeFilter implements
 
     private ComponentResolver componentResolver;
 
-    private Map<String, DecoratorComponent> ssiDirectiveComponentMap;
+    private Map<String, String> ssiDirectiveComponentMap;
     private Set<String> availableComponentNamespaces = new HashSet<>();
     private TextualComponentParser contentComponentParser;
     private boolean parseAttributes = false;
@@ -79,7 +79,7 @@ public class ComponentInvokingNodeFilter implements
         this.componentResolver = componentResolver;
     }
 
-    public void setSsiDirectiveComponentMap(Map<String, DecoratorComponent> ssiDirectiveComponentMap) {
+    public void setSsiDirectiveComponentMap(Map<String, String> ssiDirectiveComponentMap) {
         this.ssiDirectiveComponentMap = ssiDirectiveComponentMap;
     }
 
@@ -95,6 +95,7 @@ public class ComponentInvokingNodeFilter implements
         this.parseAttributes = parseAttributes;
     }
 
+    @Override
     public void afterPropertiesSet() {
         if (this.componentResolver == null) {
             throw new BeanInitializationException(
@@ -103,6 +104,11 @@ public class ComponentInvokingNodeFilter implements
         if (this.ssiDirectiveComponentMap == null) {
             throw new BeanInitializationException(
             "JavaBean property 'ssiDirectiveComponentMap' not specified");
+        }
+        for (String ref: this.ssiDirectiveComponentMap.values()) {
+            if (ref.indexOf(":") <= 0 || ref.indexOf(":") == ref.length()-1) {
+                throw new IllegalArgumentException("Invalid component reference in ssiDirectiveComponentMap: '" + ref + "'");
+            }
         }
     }
 
@@ -124,7 +130,7 @@ public class ComponentInvokingNodeFilter implements
         private HttpServletRequest request;
         
         private ComponentResolver componentResolver;
-        private Map<String, DecoratorComponent> ssiDirectiveComponentMap;
+        private final Map<String, String> ssiDirectiveComponentMap;
         private Set<String> availableComponentNamespaces = new HashSet<>();
         private TextualComponentParser contentComponentParser;
         private boolean parseAttributes = false;
@@ -145,7 +151,7 @@ public class ComponentInvokingNodeFilter implements
 
         
         public Filter(HttpServletRequest request, ComponentResolver componentResolver, 
-                Map<String, DecoratorComponent> ssiDirectiveComponentMap, 
+                Map<String, String> ssiDirectiveComponentMap,
                 Set<String> availableComponentNamespaces, 
                 TextualComponentParser contentComponentParser, boolean parseAttributes) {
             this.request = request;
@@ -259,8 +265,13 @@ public class ComponentInvokingNodeFilter implements
                 }
             }
 
-            final DecoratorComponent component = 
-                this.ssiDirectiveComponentMap.get(directive);
+            final String componentRef = this.ssiDirectiveComponentMap.get(directive);
+            if (componentRef == null) {
+                return null;
+            }
+            final String componentName = componentRef.substring(componentRef.indexOf(":")+1);
+            final String componentNamespace = componentRef.substring(0, componentRef.indexOf(":"));
+            final DecoratorComponent component = componentResolver.resolveComponent(componentNamespace, componentName);
             if (component == null) {
                 return null;
             }
