@@ -526,6 +526,12 @@
         <#return prop.getFormattedValue(format, locale) />
       </#if>
     </#if>
+  <#else>
+    <#-- possible dead property: -->
+    <#local prop =  resource.getPropertyByPrefix(prefix, name)! />
+    <#if prop?? && prop?has_content>
+      <#return prop.getFormattedValue(format, locale) />
+    </#if>
   </#if>
 </#function>
 
