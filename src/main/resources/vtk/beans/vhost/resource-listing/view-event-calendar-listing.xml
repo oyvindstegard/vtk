@@ -158,7 +158,7 @@
   </bean>
 
   <bean id="calendarEventListing.viewAllUpcomingFeedHandler" parent="eventListing.calendarAllUpcomingHandler">
-    <property name="viewName" value="calendarEventListing.viewAllUpcomingFeedView" />
+    <property name="viewName" value="eventListingCalendar.feedView" />
   </bean>
 
   <bean id="viewParameterEquals" class="vtk.web.service.RequestParameterAssertion" abstract="true">
