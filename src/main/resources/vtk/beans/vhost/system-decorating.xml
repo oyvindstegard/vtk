@@ -57,12 +57,13 @@
   </bean>
 
   <bean name="system.decoratorComponentResolver"
-        class="vtk.web.decorating.BeanContextComponentResolver">
+        class="vtk.web.decorating.FilteredComponentResolver">
     <property name="availableComponentNamespaces">
       <set>
         <value>*</value>
       </set>
     </property>
+    <property name="beanContextComponentRegistry" ref="decorating.componentRegistry"/>
   </bean>
 
   <bean id="system.decoratorTemplateParser"
