@@ -27,7 +27,6 @@ CREATE TABLE vortex_resource
     properties_modified_by VARCHAR (64) NOT NULL,
     modified_by VARCHAR (64) NOT NULL,
     resource_owner VARCHAR (64) NOT NULL,
-    content_language VARCHAR (64) NULL,
     content_type VARCHAR (256) NULL,
     content_length bigint NULL, -- NULL for collections.
     resource_type VARCHAR(64) NOT NULL,
@@ -189,7 +188,8 @@ CREATE TABLE extra_prop_entry
     name VARCHAR (64) NOT NULL,
     value VARCHAR (2048) NOT NULL,
     binary_content LONGVARBINARY,
-    binary_mimetype varchar (64)
+    binary_mimetype varchar (64),
+    is_inheritable CHAR(1) DEFAULT 'N' NOT NULL
 );
 
 ALTER TABLE extra_prop_entry
@@ -250,10 +250,12 @@ CREATE UNIQUE INDEX changelog_entry_index1
 -- Action types
 
 INSERT INTO action_type (action_type_id, name) VALUES (1, 'read');
-INSERT INTO action_type (action_type_id, name) VALUES (2, 'write');
+INSERT INTO action_type (action_type_id, name) VALUES (2, 'read-write');
 INSERT INTO action_type (action_type_id, name) VALUES (3, 'all');
 INSERT INTO action_type (action_type_id, name) VALUES (4, 'read-processed');
-INSERT INTO action_type (action_type_id, name) VALUES (5, 'bind');
+--INSERT INTO action_type (action_type_id, name) VALUES (5, 'bind-template');
+INSERT INTO action_type (action_type_id, name) VALUES (6, 'add-comment');
+INSERT INTO action_type (action_type_id, name) VALUES (7, 'read-write-unpublished');
 
 -- Property value types
 -- This data currently corresponds to definitions in 
@@ -264,7 +266,6 @@ INSERT INTO prop_type (prop_type_id, prop_type_name) VALUES (2, 'Long');
 INSERT INTO prop_type (prop_type_id, prop_type_name) VALUES (3, 'Date');
 INSERT INTO prop_type (prop_type_id, prop_type_name) VALUES (4, 'Boolean');
 INSERT INTO prop_type (prop_type_id, prop_type_name) VALUES (5, 'Principal');
-
 
 -- root resource
 
@@ -282,7 +283,6 @@ INSERT INTO VORTEX_RESOURCE (
     properties_modified_by,
     modified_by,
     resource_owner,
-    content_language,
     content_type,
     character_encoding,
     is_collection,
@@ -304,7 +304,6 @@ VALUES (
     'vortex@localhost',
     'vortex@localhost',
     NULL,
-    'application/x-vortex-collection',
     NULL,
     'Y',
     NULL,
@@ -322,7 +321,34 @@ SELECT next value for extra_prop_entry_seq_pk,
        'title',
        '/',
        null,
-       null
+       null,
+       'N'
+from vortex_resource where uri = '/';
+
+-- Insert publish-date prop for root resource
+insert into extra_prop_entry
+SELECT next value for extra_prop_entry_seq_pk,
+       resource_id,
+       3,
+       null,
+       'publish-date',
+       current_timestamp,
+       null,
+       null,
+       'N'
+from vortex_resource where uri = '/';
+
+-- Insert published prop for root resource
+INSERT INTO extra_prop_entry
+SELECT next value for extra_prop_entry_seq_pk,
+       resource_id,
+       4,
+       null,
+       'published',
+       'true',
+       null,
+       null,
+       'N'
 from vortex_resource where uri = '/';
 
 
@@ -338,18 +364,18 @@ INSERT INTO ACL_ENTRY (
     granted_date)
 VALUES (
     next value for acl_entry_seq_pk,
-    1000,
+    current value for vortex_resource_seq_pk,
     1,
     'pseudo:all',
     'Y',
     'vortex@localhost',
     current_timestamp
-);    
+);
 
 
--- (pseudo:owner, all)
+-- (vortex@localhost, all)
 
-INSERT INTO ACL_ENTRY (
+insert into ACL_ENTRY (
     acl_entry_id,
     resource_id,
     action_type_id,
@@ -357,15 +383,36 @@ INSERT INTO ACL_ENTRY (
     is_user,
     granted_by_user_name,
     granted_date)
-VALUES (
+values (
     next value for acl_entry_seq_pk,
-    --nextval('acl_entry_seq_pk'),
-    1000,
-    --currval('vortex_resource_seq_pk'),
+    current value for vortex_resource_seq_pk,
     3,
-    'pseudo:owner',
+    'vortex@localhost',
     'Y',
     'vortex@localhost',
     current_timestamp
-);    
+);
+
+-----------------------------------------------------------------------------
+-- deleted_resource (trash can)
+-----------------------------------------------------------------------------
+
+DROP SEQUENCE deleted_resource_seq_pk IF EXISTS;
+
+CREATE SEQUENCE deleted_resource_seq_pk AS INTEGER START WITH 1000;
+
+DROP TABLE deleted_resource IF EXISTS CASCADE;
+
+CREATE TABLE deleted_resource
+(
+  id INT NOT NULL,
+  resource_trash_uri VARCHAR (2048) NOT NULL,
+  parent_id INT NOT NULL,
+  deleted_by VARCHAR(64) NOT NULL,
+  deleted_time TIMESTAMP NOT NULL,
+  was_inherited_acl CHAR(1) default 'N' not null
+);
+
+ALTER TABLE deleted_resource
+  ADD CONSTRAINT deleted_resource_PK PRIMARY KEY (id);
 

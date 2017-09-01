@@ -4,7 +4,7 @@
     "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 
 <mapper namespace="vtk.repository.store.db">
-  
+
   <sql id="nextVortexResourceId">
     next value for vortex_resource_seq_pk
   </sql>
@@ -25,12 +25,24 @@
     next value for changelog_entry_seq_pk
   </sql>
 
+  <sql id="nextDeletedResourceId">
+    next value for deleted_resource_seq_pk
+  </sql>
+
   <sql id="nextTempTableSessionId">
     next value for vortex_tmp_session_id_seq
   </sql>
   
   <sql id="destinationUriCopy">
-    <!-- XXX write sql -->
+    #{destUri} || substring(uri, length(#{srcUri}) + 1)
+  </sql>
+
+  <sql id="nextContentRevisionID">
+    next value for simple_content_revision_seq_pk
+  </sql>
+
+  <sql id="nextRevisionAclEntryId">
+    next value for revision_acl_entry_seq_pk
   </sql>
 
   <sql id="nextVortexCommentId">
@@ -38,7 +50,31 @@
   </sql>
 
   <sql id="destinationDescendantUriMove">
-    <!-- XXX write sql -->
+    #{destUri} || substring(uri, length(#{srcUri}) + 1)
+  </sql>
+
+  <sql id="trashCanUri">
+    #{trashCanID} || substring(uri, #{uriTrimLength})
+  </sql>
+
+  <sql id="recoverUri">
+    #{parentUri} || substring(uri, #{uriTrimLength})
+  </sql>
+
+  <update id="updateAclInheritedFromByPreviousResourceId" parameterType="java.util.Map">
+    update vortex_resource
+     set acl_inherited_from = r.resource_id
+      from vortex_resource r
+       where (vortex_resource.uri = #{uri} or vortex_resource.uri like #{uriWildcard} escape '@')
+        and r.prev_resource_id = vortex_resource.acl_inherited_from
+  </update>
+
+  <sql id="insertCommentContent">
+    #{content}
+  </sql>
+
+  <sql id="updateCommentContent">
+    content = #{content}
   </sql>
 
   <sql id="listCommentsLimitPrepend">
@@ -46,7 +82,16 @@
   </sql>
   
   <sql id="listCommentsLimitAppend">
-    <!-- XXX write sql -->
+    limit #{max}
+  </sql>
+
+  <sql id="limitPrepend">
+    <!-- By default, nothing is prepend to query for limiting. -->
+  </sql>
+
+  <sql id="limitAppend">
+    <!--  Default (supported by at least PostgreSQL, MySQL and HSQLDB) -->
+    LIMIT #{limit} OFFSET 0
   </sql>
 
 </mapper>

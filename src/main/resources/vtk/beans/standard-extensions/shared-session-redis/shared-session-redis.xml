@@ -70,7 +70,7 @@
     <property name="redisKeyNamespace" value="${redis.namespace}" />
   </bean>
 
-  <!-- Override bean from 'vtk/beans/vhost/tags/tags.xml', use Redis for tags reporting cache.
+  <!-- Override bean from 'vtk/beans/web/tags/tags.xml', use Redis for tags reporting cache.
        This may not be the appropriate place for override, as it has nothing to do with user sessions.
        Consider moving to separate extension when common Redis-client setup is factored out of this extension.
   -->
