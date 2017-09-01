@@ -58,6 +58,7 @@ import vtk.repository.search.query.UriSetQuery;
 import vtk.util.text.Json.MapContainer;
 
 public class PreviousLocationsResolver {
+    private final int URI_DEPTH_LIMIT = 15;
     // Resolve latest time stamps on the set of ancestor paths, 
     // or only on the resources found? (Requires an extra index search):
     private boolean pathTimestamps = true;
@@ -109,7 +110,7 @@ public class PreviousLocationsResolver {
             int recursion) throws Exception {
         Set<RelocatedResource> result = new HashSet<>();
         if (recursion == 0) return result;
-        if (uri.getDepth() > 10) return result;
+        if (uri.getDepth() > URI_DEPTH_LIMIT) return result;
         seen.add(uri);
         try {
             Resource resource = repo.get()
