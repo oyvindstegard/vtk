@@ -124,9 +124,6 @@
           <property name="parameterName" value="tag" />
           <property name="propertyTypeDefinition" ref="tagsPropDef" />
         </bean>
-        <bean parent="queryStringParser">
-          <property name="queryString" value="(type IN article AND published-date &lt;= {$currentTime}) OR type NOT IN article" />
-        </bean>
       </list>
     </property>
     <property name="searchSorting" ref="tags.searchSorting" />
