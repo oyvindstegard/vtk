@@ -78,18 +78,17 @@ public class QueryFunction extends Function {
 
         QueryBuilder builder = searcher.builder()
             .query(Objects.requireNonNull(input.get("q")).toString());
-        
+
         Optional.ofNullable(input.get("select"))
             .ifPresent(sel -> builder.select(String.valueOf(sel)));
         Optional.ofNullable(input.get("sort"))
             .ifPresent(sort -> builder.sorting(String.valueOf(sort)));
         Optional.ofNullable(input.get("offset"))
-            .ifPresent(offset -> builder.sorting(String.valueOf(offset)));
+            .ifPresent(offset -> builder.offset(Integer.parseInt(String.valueOf(offset))));
         Optional.ofNullable(input.get("limit"))
-            .ifPresent(limit -> builder.sorting(String.valueOf(limit)));
+            .ifPresent(limit -> builder.limit(Integer.parseInt(String.valueOf(limit))));
         
         Query query = builder.build();
-        
         boolean flattenNamespaces = Optional.ofNullable(input.get("flatten-namespaces"))
                 .map(String::valueOf)
                 .map(Boolean::valueOf)
