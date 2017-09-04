@@ -224,6 +224,27 @@
             </dependency>
           </dependencies>
         </plugin>
+        <plugin>
+          <groupId>org.codehaus.gmavenplus</groupId>
+          <artifactId>gmavenplus-plugin</artifactId>
+          <version>1.5</version>
+          <dependencies>
+            <dependency>
+              <groupId>org.codehaus.groovy</groupId>
+              <artifactId>groovy</artifactId>
+              <version>${groovy.version}</version>
+              <scope>runtime</scope>
+              <classifier>indy</classifier>
+            </dependency>
+            <dependency>
+              <groupId>org.codehaus.groovy</groupId>
+              <artifactId>groovy-ant</artifactId>
+              <version>${groovy.version}</version>
+              <scope>runtime</scope>
+              <classifier>indy</classifier>
+            </dependency>
+          </dependencies>
+        </plugin>
       </plugins>
     </pluginManagement>
 
@@ -334,7 +355,6 @@
       <plugin>
         <groupId>org.codehaus.gmavenplus</groupId>
         <artifactId>gmavenplus-plugin</artifactId>
-        <version>1.5</version>
         <executions>
           <execution>
             <id>add-hostname-property</id>
@@ -368,23 +388,41 @@
               </scripts>
             </configuration>
           </execution>
+          <execution>
+            <id>create-test-folders</id>
+            <phase>pre-integration-test</phase>
+            <goals>
+              <goal>execute</goal>
+            </goals>
+            <configuration>
+              <scripts>
+                <script><![CDATA[
+                def testFolder = "${project.build.directory}/vtk-test"
+                new File(testFolder).mkdir()
+                new File("${testFolder}/index").mkdir()
+                new File("${testFolder}/data").mkdir()
+                new File("${testFolder}/trash").mkdir()
+                new File("${testFolder}/revisions").mkdir()
+                ]]></script>
+              </scripts>
+            </configuration>
+          </execution>
+          <execution>
+            <id>delete-test-folders</id>
+            <phase>post-integration-test</phase>
+            <goals>
+              <goal>execute</goal>
+            </goals>
+            <configuration>
+              <scripts>
+                <script><![CDATA[
+                def testFolder = "${project.build.directory}/vtk-test"
+                new File(testFolder).deleteDir()
+                ]]></script>
+              </scripts>
+            </configuration>
+          </execution>
         </executions>
-        <dependencies>
-          <dependency>
-            <groupId>org.codehaus.groovy</groupId>
-            <artifactId>groovy</artifactId>
-            <version>${groovy.version}</version>
-            <scope>runtime</scope>
-            <classifier>indy</classifier>
-          </dependency>
-          <dependency>
-            <groupId>org.codehaus.groovy</groupId>
-            <artifactId>groovy-ant</artifactId>
-            <version>${groovy.version}</version>
-            <scope>runtime</scope>
-            <classifier>indy</classifier>
-          </dependency>
-        </dependencies>
       </plugin>
 
       <!-- Build info: provide various bits of build info as properties.  -->
@@ -500,12 +538,9 @@
           <useFile>false</useFile>
           <forkCount>2</forkCount>
           <reuseForks>true</reuseForks>
-          <systemProperties>
-            <property>
-              <name>log4j.configurationFile</name>
-              <value>log4j2.test.xml</value>
-            </property>
-          </systemProperties>
+          <systemPropertyVariables>
+            <log4j.configurationFile>log4j2.test.xml</log4j.configurationFile>
+          </systemPropertyVariables>
           <excludes>
             <exclude>**/*IntegrationTest.java</exclude>
             <exclude>**/*IntegrationTests.java</exclude>
@@ -528,12 +563,10 @@
         </executions>
         <configuration>
           <skip>${test.integration.skip}</skip>
-          <systemProperties>
-            <property>
-              <name>log4j.configurationFile</name>
-              <value>log4j2.test.xml</value>
-            </property>
-          </systemProperties>
+          <systemPropertyVariables>
+            <buildDirectory>${project.build.directory}</buildDirectory>
+            <log4j.configurationFile>log4j2.test.xml</log4j.configurationFile>
+          </systemPropertyVariables>
           <includes>
             <include>**/*IntegrationTest.java</include>
             <include>**/*IntegrationTests.java</include>
