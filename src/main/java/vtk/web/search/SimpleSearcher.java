@@ -221,11 +221,11 @@ public final class SimpleSearcher {
             return this;
         }
         
-		public QueryBuilder addFilterQuery(String filterQuery) {
-			Objects.requireNonNull(filterQuery);
-			filterQueries.add(parserFactory.getParser().parse(filterQuery));
-			return this;
-		}
+        public QueryBuilder addFilterQuery(String filterQuery) {
+            Objects.requireNonNull(filterQuery);
+            filterQueries.add(parserFactory.getParser().parse(filterQuery));
+            return this;
+        }
 
         public QueryBuilder limit(int limit) {
             if (limit <= 0 || limit > 1000) {
@@ -245,8 +245,13 @@ public final class SimpleSearcher {
         
         public QueryBuilder sorting(String sorting) {
             Objects.requireNonNull(sorting);
-            this.sorting = sortingFactory.parser().parse(sorting);
-            return this;
+            try {
+                this.sorting = sortingFactory.parser().parse(sorting);
+                return this;
+            }
+            catch (RuntimeException e) {
+                throw new IllegalArgumentException("Invalid sort string: " + sorting, e);
+            }
         }
         
         public QueryBuilder select(String select) {
