@@ -64,7 +64,7 @@ public class CurrentMonthQueryStringProcessor extends ParameterizedQueryStringPr
         Date end = currentMonth.getTime();
         query = query.replace("[1]", String.valueOf(start.getTime())).replace("[2]", String.valueOf(end.getTime()));
 
-        return Optional.of(queryParser.parse(query));
+        return Optional.of(getParser().parse(query));
     }
 
     @Required

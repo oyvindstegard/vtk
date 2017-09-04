@@ -77,7 +77,7 @@ public class DateAndSearchTypeQueryStringProcessor extends ParameterizedQueryStr
         query = query.replace("[1]", String.valueOf(trimDate.getTime())).replace("[2]",
                 String.valueOf(cal.getTime().getTime()));
 
-        return Optional.of(queryParser.parse(query));
+        return Optional.of(getParser().parse(query));
     }
 
     @Required

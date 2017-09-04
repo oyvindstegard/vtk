@@ -43,11 +43,11 @@ import vtk.repository.search.query.Query;
 
 public class ParsedQueryBuilder implements SearchComponentQueryBuilder {
     protected String queryString;
-    protected QueryParser queryParser;
+    private QueryParserFactory queryParserFactory;
 
     @Override
     public Optional<Query> build(Resource base, HttpServletRequest request) {
-        return Optional.of(queryParser.parse(queryString));
+        return Optional.of(getParser().parse(queryString));
     }
 
     @Required
@@ -57,8 +57,10 @@ public class ParsedQueryBuilder implements SearchComponentQueryBuilder {
 
     @Required
     public void setQueryParserFactory(QueryParserFactory queryParserFactory) {
-        this.queryParser = queryParserFactory.getParser();
+        this.queryParserFactory = queryParserFactory;
     }
 
-
+    protected QueryParser getParser() {
+        return queryParserFactory.getParser();
+    }
 }
