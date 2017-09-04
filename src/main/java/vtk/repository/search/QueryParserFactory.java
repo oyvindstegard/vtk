@@ -36,6 +36,13 @@ package vtk.repository.search;
  */
 public interface QueryParserFactory {
 
+    /**
+     * Obtain a {@code QueryParser} instance.
+     *
+     * <p>The returned instance is not safe for use by multiple threads concurrently.
+     *
+     * @return a new {@code QueryParser} instance.
+     */
     public QueryParser getParser();
 
 }

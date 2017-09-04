@@ -50,7 +50,8 @@ public class ParameterizedQueryStringProcessor extends ParsedQueryBuilder {
                 query = query.replace(replacement.getKey(), replacement.getValue());
             }
         }
-        return Optional.of(queryParser.parse(query));
+
+        return Optional.of(getParser().parse(query));
     }
 
     public void setReplacements(Map<String, String> replacements) {

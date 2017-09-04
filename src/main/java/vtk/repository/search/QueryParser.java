@@ -33,6 +33,11 @@ package vtk.repository.search;
 import vtk.repository.search.query.Query;
 
 
+/**
+ * A parser which can generate repository {@link Query} trees from textual input.
+ *
+ * <p>Thread safety depends on impl.
+ */
 public interface QueryParser {
 
     public Query parse(String query);
