@@ -39,6 +39,8 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Required;
 
 import vtk.repository.AuthorizationException;
@@ -60,6 +62,7 @@ import vtk.web.service.Service;
 import vtk.web.service.URL;
 
 public class EventComponent extends ViewRenderingDecoratorComponent {
+    private static Logger logger = LoggerFactory.getLogger(EventComponent.class);
 
     private static final String PARAMETER_URI = "uri";
     private static final String PARAMETER_URI_DESC = "Uri to the event folder. This is a required parameter.";
@@ -219,7 +222,7 @@ public class EventComponent extends ViewRenderingDecoratorComponent {
             for (ListingEntry entry : events.getEntries()) {
 
                 PropertySet ps = entry.getPropertySet();
-
+                
                 Property sprop = ps.getProperty(Namespace.STRUCTURED_RESOURCE_NAMESPACE, "start-date");
                 if (sprop == null) {
                     sprop = ps.getProperty(Namespace.DEFAULT_NAMESPACE, "start-date");
@@ -341,6 +344,7 @@ public class EventComponent extends ViewRenderingDecoratorComponent {
             conf.put("type", "groupedByDayEvents");
         }
         model.put("conf", conf);
+        logger.debug("Populated model: {}", model);
     }
 
     boolean parameterHasValue(String param, String includeParamValue, DecoratorRequest request) {
@@ -441,6 +445,12 @@ public class EventComponent extends ViewRenderingDecoratorComponent {
 
         public boolean getShowTime() {
             return showTime;
+        }
+        
+        @Override
+        public String toString() {
+            return getClass().getSimpleName() + "(" + propertySet + ","
+                    + date + "," + showTime + ")";
         }
     }
 
