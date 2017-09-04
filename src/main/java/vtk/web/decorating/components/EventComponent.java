@@ -212,8 +212,9 @@ public class EventComponent extends ViewRenderingDecoratorComponent {
         if (eventsTitle) {
             model.put("eventsTitle", resource.getTitle());
         }
-
+        
         Listing events = search.execute(request.getServletRequest(), resource, 1, maxEvents, 0);
+        logger.debug("Executed search: {}, hits: {}", search, events.getTotalHits());
 
         if (showOnlyOngoing) {
             Calendar startDate, now = Calendar.getInstance();
