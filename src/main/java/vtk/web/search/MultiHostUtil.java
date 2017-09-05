@@ -154,8 +154,9 @@ public class MultiHostUtil {
             throw new IllegalArgumentException(prop.getDefinition().getName() + " is not of type IMAGE_REF");
         }
 
-        boolean useThumbnailService = addThumbnailForNoneAbsoluteRefs
-                && prop.getDefinition().getName().equals(PropertyType.PICTURE_PROP_NAME);
+        if (!prop.getDefinition().getName().equals(PropertyType.PICTURE_PROP_NAME)) {
+            addThumbnailForNoneAbsoluteRefs = false;
+        }
 
         Value[] vals;
         if (prop.getDefinition().isMultiple()) {
@@ -166,7 +167,8 @@ public class MultiHostUtil {
 
         Value[] resolvedVals = new Value[vals.length];
         for (int i = 0; i < vals.length; i++) {
-            String resolvedRef = resolveImageRef(vals[i].getStringValue(), multiHostUrl, useThumbnailService);
+            String resolvedRef = resolveImageRef(vals[i].getStringValue(), multiHostUrl,
+                    addThumbnailForNoneAbsoluteRefs);
             resolvedVals[i] = new Value(resolvedRef, Type.IMAGE_REF);
         }
 
@@ -195,15 +197,15 @@ public class MultiHostUtil {
             throw new IllegalArgumentException(prop.getDefinition().getName() + " is not of type IMAGE_REF");
         }
 
-        boolean thumbnailService = addThumbnailForNoneAbsoluteRefs
-                && prop.getDefinition().getName().equals(PropertyType.PICTURE_PROP_NAME);
+        if (!prop.getDefinition().getName().equals(PropertyType.PICTURE_PROP_NAME)) {
+            addThumbnailForNoneAbsoluteRefs = false;
+        }
 
         // XXX this will fail for multi-value props
-        return resolveImageRef(prop.getStringValue(), multiHostUrl, thumbnailService);
+        return resolveImageRef(prop.getStringValue(), multiHostUrl, addThumbnailForNoneAbsoluteRefs);
     }
 
-    private static String resolveImageRef(String ref, Property multiHostUrl,
-            boolean thumbnailService) {
+    private static String resolveImageRef(String ref, Property multiHostUrl, boolean addThumbnailForNoneAbsoluteRefs) {
 
         if (multiHostUrl == null) {
             // Nothing to resolve against
@@ -212,12 +214,14 @@ public class MultiHostUtil {
 
         URL remoteResource = URL.parse(multiHostUrl.getStringValue());
         URL remoteRelative = remoteResource.relativeURL(ref);
-        if (thumbnailService) {
-            remoteRelative.setParameter("vrtx", "thumbnail");
+
+        if (remoteRelative.getHost() != null && remoteResource.getHost() != null) {
+            if (addThumbnailForNoneAbsoluteRefs && remoteResource.getHost().equals(remoteRelative.getHost())) {
+                remoteRelative.setParameter("vrtx", "thumbnail");
+            }
         }
 
         return remoteRelative.toString();
     }
-
 
 }
