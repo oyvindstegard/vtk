@@ -91,4 +91,8 @@ public class QueryPartsSearchComponent extends QuerySearchComponent {
         this.queryBuilders = queryBuilders;
     }
 
+    @Override
+    public String toString() {
+        return getClass().getSimpleName() + "(" + queryBuilders + ")";
+    }
 }

@@ -152,7 +152,8 @@ public class CollectionListingSearchComponent extends QueryPartsSearchComponent 
             Repository repository = RequestContext.getRequestContext(request).getRepository();
             result = repository.search(token, search);
         }
-        logger.debug("Executed query: {}, hits: {}", query, result.getTotalHits());
+        logger.debug("Executed query: {}, multihost: {}, hits: {}", 
+                query, isMultiHostSearch, result.getTotalHits());
         return result;
     }
 
