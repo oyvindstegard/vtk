@@ -152,7 +152,7 @@
     </property>
     <property name="handler">
       <bean class="org.springframework.web.servlet.mvc.ParameterizableViewController">
-        <property name="viewName" value="saml.metadata"/>
+        <property name="viewName" value="saml.metadataView"/>
       </bean>
     </property>
     <property name="attributes">
@@ -182,7 +182,7 @@
   <bean id="saml.lostPostHandler" class="vtk.security.web.saml.LostPostHandler"
         init-method="init">
     <property name="workingDirectory" value="${saml.lostPost.directory}" />
-    <property name="viewName" value="saml.lostPost" />
+    <property name="viewName" value="saml.lostPost.view" />
     <property name="redirectURI" value="${saml.lostPost.URI}" />
     <property name="savedStateTimeout" value="${saml.lostPost.timeoutSeconds}" />
     <property name="limitPerAddress" value="100" />
