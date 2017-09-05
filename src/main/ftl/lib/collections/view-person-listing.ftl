@@ -50,7 +50,7 @@
         <#local imageAlt = imageAlt + " " + firstName + " " + surname />
 	<tr class="vrtx-person-${personNr}">
           <td class="vrtx-person-listing-name">
-            <#if src?has_content>
+            <#if thumbnail?has_content>
               <a class="vrtx-image" href="${personEntry.url}"><img src="${thumbnail}" alt="${imageAlt}" /></a>
             </#if>
             <#if surname?has_content >
