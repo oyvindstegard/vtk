@@ -1191,8 +1191,9 @@ VrtxAdmin.prototype.addSearch = function addSearch() {
           title: vrtxAdm.escapeHtml(splitted[0]),
           filename: filename,
           uri: uri,
-          resourceType: splitted[2],
-          published: splitted[3]
+          isCollection: splitted[2],
+          resourceType: splitted[3],
+          published: splitted[4]
         }
       },
       highlight : function(value, term) {
@@ -1209,7 +1210,7 @@ VrtxAdmin.prototype.addSearch = function addSearch() {
           }
         }
 
-        return '<div class="vrtx-autocomplete-search-info ' + value.resourceType + (value.published == "false" ? " unpublished" : "") + '">' +
+        return '<div class="vrtx-autocomplete-search-info ' + (value.isCollection == "true" ? "collection" : value.resourceType) + (value.published == "false" ? " unpublished" : "") + '">' +
                  '<span class="vrtx-autocomplete-search-title">' + value.title + '</span>' +
                  (value.title !== value.filename ? '<span class="vrtx-autocomplete-search-filename">' + value.filename + '</span>' : '') +
                  (value.filename !== value.uri ? '<span class="vrtx-autocomplete-search-uri">' + value.uri + '</span>' : '') +
@@ -1224,9 +1225,9 @@ VrtxAdmin.prototype.addSearch = function addSearch() {
       var splitted = formatted.replace(/([^\\]);/g, '$1\u000B').split('\u000B');
 
       var uri = splitted[1].replace(/\\;/, ";");
-      var resourceType = splitted[2];
-      var unpublished = splitted[3];
-      if(resourceType === "collection") {
+      var isCollection = splitted[2] == "true";
+      
+      if(isCollection) {
         location.pathname = uri + "/";
       } else {
         location.pathname = uri;
