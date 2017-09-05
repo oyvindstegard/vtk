@@ -1,0 +1,107 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-3.1.xsd">
+
+  <bean id="queryParserFactory"
+        class="vtk.repository.search.QueryParserFactoryImpl">
+    <property name="resourceTypeTree" ref="resourceTypeTree" />
+  </bean>
+
+  <bean id="sortingParserFactory"
+        class="vtk.repository.search.SortingParserFactoryImpl">
+    <constructor-arg name="resourceTypeTree" ref="resourceTypeTree" />
+  </bean>
+
+  <bean id="SORT_ORDER.ASC" class="vtk.repository.search.SortField.Direction"
+        factory-method="valueOf">
+    <constructor-arg value="ASC" />
+  </bean>
+
+  <bean id="SORT_ORDER.DESC" class="vtk.repository.search.SortField.Direction"
+        factory-method="valueOf">
+    <constructor-arg value="DESC" />
+  </bean>
+
+  <bean id="searchParser" class="vtk.web.search.SearchParser">
+    <constructor-arg name="parserFactory" ref="queryParserFactory" />
+    <constructor-arg name="sortingFactory" ref="sortingParserFactory" />
+    <constructor-arg name="queryProcessor" ref="queryStringPreProcessor" />
+  </bean>
+
+  <bean id="queryStringPreProcessor"
+        class="vtk.repository.search.preprocessor.QueryStringPreProcessorImpl">
+    <property name="expressionEvaluators">
+      <list>
+        <bean class="vtk.repository.search.preprocessor.CurrentDepthExpressionEvaluator" />
+
+        <!-- Wrap CurrentFolderExpressionEvaluator to get escaped output -->
+        <bean class="vtk.repository.search.preprocessor.OutputEscapingExpressionEvaluatorWrapper">
+          <property name="wrappedEvaluator">
+            <bean class="vtk.repository.search.preprocessor.CurrentFolderExpressionEvaluator" />
+          </property>
+        </bean>        
+
+        <bean class="vtk.repository.search.preprocessor.CurrentTimeExpressionEvaluator" />
+        
+        <bean class="vtk.repository.search.preprocessor.CurrentDateExpressionEvaluator">
+           <property name="variableName" value="currentDate" />
+        </bean>
+      </list>
+    </property>
+  </bean>
+  
+  <!-- Factory for building Lucene queries. -->
+  <bean id="queryBuilder" class="vtk.repository.search.query.LuceneQueryBuilder">
+    <property name="documentMapper" ref="documentMapper"/>
+    <property name="queryAuthorizationFilterFactory" ref="queryAuthorizationFilterFactory"/>
+    <property name="publishedPropDef" ref="publishedPropDef" />
+    <property name="unpublishedCollectionPropDef" ref="unpublishedCollectionPropDef" />
+    <property name="hiddenPropDef" ref="hiddenPropDef" />
+    <property name="resourceTypeTree" ref="resourceTypeTree" />
+  </bean>
+  
+  <bean id="queryAuthorizationFilterFactory"
+        class="vtk.repository.search.query.security.CachingQueryAuthorizationFilterFactory">
+    <property name="principalManager" ref="principalManager"/>
+    <property name="tokenManager" ref="tokenManager"/>
+    <property name="roleManager" ref="roleManager"/>
+  </bean>
+
+  <bean parent="metrics.gaugeRegistration">
+    <property name="arguments">
+      <list>
+        <value>repository.query.authorizationFilterCache.hitRatio</value>
+        <value>context.getBean('queryAuthorizationFilterFactory').hitRatio()</value>
+      </list>
+    </property>
+  </bean>
+
+  <!-- Searcher implementation (wrapped in dispatcher) -->
+  <bean id="systemIndexSearcher" class="vtk.repository.search.SearchDispatcher">
+    <property name="maxConcurrentQueries" value="${indexMaxConcurrentQueries}" />
+    <property name="incrementalUpdater" ref="repository.index.incrementalUpdater"/>
+    <property name="changeLogDao" ref="repository.changeLogDAO"/>
+    <property name="loggerId" value="${repository.index.updateLoggerId}"/>
+    <property name="loggerType" value="3"/>
+    <property name="metricRegistry" ref="metrics.registry"/>
+    <property name="searcher">
+      <bean class="vtk.repository.search.LuceneSearcher">
+        <property name="indexAccessor" ref="systemIndexAccessor"/>
+        <property name="documentMapper" ref="documentMapper"/>
+        <property name="queryBuilder" ref="queryBuilder"/>
+        <property name="resultCacheSize" value="${indexResultCacheSize}" />
+      </bean>
+    </property>
+  </bean>
+
+  <bean parent="metrics.gaugeRegistration">
+    <property name="arguments">
+      <list>
+        <value>repository.query.luceneResultCache.hitRatio</value>
+        <value>context.getBean('systemIndexSearcher').searcher.resultCache?.hitRatio()</value>
+      </list>
+    </property>
+  </bean>
+
+</beans>

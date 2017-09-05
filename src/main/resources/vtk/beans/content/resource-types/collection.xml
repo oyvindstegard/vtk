@@ -49,6 +49,26 @@
     </property>
   </bean>
 
+  <bean id="unpublishedCollectionPropDef" class="vtk.repository.resourcetype.PropertyTypeDefinitionImpl"
+        parent="abstractPropDef">
+    <property name="namespace" ref="DEFAULT_NAMESPACE" />
+    <property name="name" value="unpublishedCollection" />
+    <property name="inheritable" value="true" />
+    <property name="type" value="BOOLEAN" />
+    <property name="protectionLevel" ref="PROTECTION_LEVEL_ACL_WRITE" />
+    <property name="mandatory" value="false" />
+    <property name="vocabulary">
+      <bean class="vtk.repository.resourcetype.ValueVocabulary">
+        <constructor-arg value="BOOLEAN" />
+        <property name="values">
+          <list>
+            <ref bean="VALUE_TRUE" />
+          </list>
+        </property>
+      </bean>
+    </property>
+  </bean>
+
   <bean id="displayAggregationPropDef" class="vtk.repository.resourcetype.PropertyTypeDefinitionImpl"
     parent="abstractPropDef">
     <property name="name" value="display-aggregation" />
@@ -153,19 +173,6 @@
         </entry>
       </map>
     </property>
-  </bean>
-
-  <bean id="aggregationResolver" class="vtk.web.search.collectionlisting.CollectionListingAggregationResolver"
-    parent="repositoryAware">
-    <property name="multiHostSearcher" ref="multiHostSearcher" />
-    <property name="limit" value="${aggregation.limit}" />
-    <property name="maxRecursiveDepth" value="${aggregation.maxRecursiveDepth}" />
-    <property name="displayAggregationPropDef" ref="displayAggregationPropDef" />
-    <property name="aggregationPropDef" ref="aggregationPropDef" />
-    <property name="displayManuallyApprovedPropDef" ref="displayManuallyApprovedPropDef" />
-    <property name="manuallyApprovedPropDef" ref="manuallyApprovedResourcesPropDef" />
-    <property name="viewService" ref="viewService" />
-    <property name="canonicalUrlConstructor" ref="canonicalUrlConstructor" />
   </bean>
 
   <bean id="navigationTitlePropDef" class="vtk.repository.resourcetype.PropertyTypeDefinitionImpl" parent="abstractPropDef">

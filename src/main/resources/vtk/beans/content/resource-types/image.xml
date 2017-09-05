@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="utf-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-3.1.xsd">
+
+  <!-- Image resource -->
+
+  <bean id="imageResourceTypeDefinition" parent="primaryResourceType">
+    <property name="name" value="image" />
+    <property name="namespace" ref="DEFAULT_NAMESPACE" />
+    <property name="parentTypeDefinition" ref="fileResourceTypeDefinition" />
+    <property name="assertions">
+      <list>
+        <ref bean="contentTypeMatchesImage" />
+      </list>
+    </property>
+    <property name="propertyTypeDefinitions">
+      <list>
+        <ref bean="photographerPropDef" />
+        <ref bean="imageHtmlDescriptionPropDef" />
+      </list>
+    </property>
+    <property name="mixinTypeDefinitions">
+      <list>
+        <ref bean="mediaMixinResourceTypeDef" />
+      </list>
+    </property>
+  </bean>
+
+  <bean id="imageHtmlDescriptionPropDef" class="vtk.repository.resourcetype.PropertyTypeDefinitionImpl"
+    parent="abstractPropDef">
+    <property name="name" value="image-description" />
+    <property name="type" value="HTML" />
+    <property name="protectionLevel" ref="PROTECTION_LEVEL_ACL_WRITE" />
+    <property name="mandatory" value="false" />
+  </bean>
+
+  <bean id="resourceTypeIsImage" class="vtk.web.service.RepositoryAssertionWrapper">
+    <constructor-arg name="assertion">
+      <bean class="vtk.repository.resourcetype.ResourceTypeAssertion" 
+            parent="repositoryAware">
+        <property name="resourceTypeDefinition" ref="imageResourceTypeDefinition" />
+      </bean>
+    </constructor-arg>
+  </bean>
+
+</beans>

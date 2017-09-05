@@ -370,24 +370,4 @@
     <property name="arguments" value="vtk.i18n.publish.publish" />
   </bean>
 
-  <bean id="unpublishedCollectionPropDef" class="vtk.repository.resourcetype.PropertyTypeDefinitionImpl"
-    parent="abstractPropDef">
-    <property name="namespace" ref="DEFAULT_NAMESPACE" />
-    <property name="name" value="unpublishedCollection" />
-    <property name="inheritable" value="true" />
-    <property name="type" value="BOOLEAN" />
-    <property name="protectionLevel" ref="PROTECTION_LEVEL_ACL_WRITE" />
-    <property name="mandatory" value="false" />
-    <property name="vocabulary">
-      <bean class="vtk.repository.resourcetype.ValueVocabulary">
-        <constructor-arg value="BOOLEAN" />
-        <property name="values">
-          <list>
-            <ref bean="VALUE_TRUE" />
-          </list>
-        </property>
-      </bean>
-    </property>
-  </bean>
-
 </beans>

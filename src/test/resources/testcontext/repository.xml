@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-3.1.xsd">
+
+  <import resource="classpath:/vtk/beans/backend/indexing.xml" />
+  <import resource="classpath:/vtk/beans/content/init.xml" />
+
+  <bean id="repository.ContentStore" class="vtk.repository.store.mem.MemoryContentStore"/>
+
+  <!-- Main repository instance. -->
+  <bean id="repository" class="vtk.repository.RepositoryImpl" destroy-method="destroy">
+    <property name="id" value="${repositoryID}" />
+    <property name="tokenManager" ref="tokenManager" />
+    <property name="authorizationManager" ref="authorizationManager" />
+    <property name="dao" ref="repository.sqlMapDao" />
+    <property name="revisionStore" ref="${repository.revisionStore}" />
+    <property name="commentDAO" ref="${repository.commentDao}" />
+    <property name="contentStore" ref="repository.ContentStore" />
+    <property name="contentRepresentationRegistry" ref="contentRepresentationRegistry" />
+    <property name="repositoryResourceHelper" ref="repositoryResourceHelper" />
+    <property name="maxResourceChildren" value="${repository.maxResourceChildren}" />
+    <property name="permanentDeleteOverdueLimitInDays" value="${repository.permanentDeleteOverdueLimitInDays}" />
+    <property name="searcher" ref="systemIndexSearcher" />
+    <property name="resourceTypeTree" ref="resourceTypeTree" />
+    <property name="tempDir" value="${repository.tempDir}" />
+    <property name="transactionManager" ref="repository.transactionManager"/>
+    <property name="typeHandlerHooksRegistry" ref="repository.typeHandlerHooksRegistry" />
+  </bean>
+
+  <bean id="repositoryContextInitializer" class="vtk.web.RepositoryContextInitializer" />
+
+  <bean id="viewServiceResourceAwareLocaleResolver"
+        class="vtk.web.servlet.ResourceAwareLocaleResolver" parent="repositoryAware">
+    <property name="defaultLocale" value="${view.defaultLocale}" />
+    <property name="trustedToken" ref="trustedToken" />
+  </bean>
+
+</beans>

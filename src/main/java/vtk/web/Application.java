@@ -218,7 +218,7 @@ public class Application  {
     }
 
     protected List<String> mainXml() {
-        return Collections.singletonList("classpath:/vtk/beans/vhost/main.xml");
+        return Collections.singletonList("classpath:/vtk/beans/main.xml");
     }
 
     protected List<String> extensions() {

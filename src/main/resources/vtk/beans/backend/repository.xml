@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-3.1.xsd">
+
+  <!-- Main repository instance. -->
+  <bean id="repository.internal" class="vtk.repository.RepositoryImpl" destroy-method="destroy">
+    <property name="id" value="${repositoryID}" />
+    <property name="tokenManager" ref="tokenManager" />
+    <property name="authorizationManager" ref="authorizationManager" />
+    <property name="dao" ref="${repositoryBackend}" />
+    <property name="revisionStore" ref="${repository.revisionStore}" />
+    <property name="commentDAO" ref="${repository.commentDao}" />
+    <property name="contentStore" ref="${repository.contentStore}" />
+    <property name="contentRepresentationRegistry" ref="contentRepresentationRegistry" />
+    <property name="repositoryResourceHelper" ref="repositoryResourceHelper" />
+    <property name="maxResourceChildren" value="${repository.maxResourceChildren}" />
+    <property name="permanentDeleteOverdueLimitInDays" value="${repository.permanentDeleteOverdueLimitInDays}" />
+    <property name="searcher" ref="systemIndexSearcher" />
+    <property name="resourceTypeTree" ref="resourceTypeTree" />
+    <property name="tempDir" value="${repository.tempDir}" />
+    <property name="transactionManager" ref="repository.transactionManager"/>
+    <property name="typeHandlerHooksRegistry" ref="repository.typeHandlerHooksRegistry" />
+  </bean>
+
+  <!-- Repository lock and cache control wrapper -->
+  <bean id="repository" class="vtk.repository.LockingCacheControlRepositoryWrapper">
+    <property name="wrappedRepository" ref="repository.internal" />
+    <property name="cache" ref="repository.cache" />
+    <property name="tempDir" value="${upload.tempDir}" />
+    <property name="tokenManager" ref="tokenManager" />
+  </bean>
+
+  <bean parent="metrics.gaugeRegistration">
+    <property name="arguments">
+      <list>
+        <value>repository.nslocks.size</value>
+        <value>context.getBean("repository").lockManager.locks.size()</value>
+      </list>
+    </property>
+  </bean>
+
+</beans>

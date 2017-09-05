@@ -1,0 +1,101 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-3.1.xsd">
+
+  <!-- Factory to create new index searchers. This factory warms up Lucene
+  internal caching before the index searcher is made available for use.
+  Configure common or general queries and sortings to warm up useful parts. -->
+  <bean id="searcherFactory" class="vtk.repository.index.WarmupSearcherFactory">
+    <property name="luceneQueryBuilder" ref="queryBuilder" />
+    <property name="queryParserFactory" ref="queryParserFactory" />
+    <property name="sortingParserFactory" ref="sortingParserFactory" />
+    <property name="warmupSearchSpecs">
+      <list>
+        <value>(uri = /* OR type IN collection) AND depth = 3, lastModified DESC\,uri, 2500</value>
+        <value>navigation:hidden !EXISTS, title ASC, 5000</value>
+        <value>type IN structured-article OR type IN structured-event, publish-date DESC, 2500</value>
+        <value>acl EXISTS, null</value>
+      </list>
+    </property>
+  </bean>
+
+  <!-- Document mapper -->
+  <bean id="documentMapper" class="vtk.repository.index.mapping.DocumentMapper">
+    <property name="resourceTypeTree" ref="resourceTypeTree"/>
+    <property name="principalFactory" ref="principalFactory" />
+    <property name="valueFactory" ref="valueFactory" />
+    <property name="locale" value="${view.defaultLocale}" />
+  </bean>
+
+  <!-- Primary Lucene index accessor instance. Manages low-level access. -->
+  <bean id="systemIndexAccessor" class="vtk.repository.index.IndexManager">
+    <property name="storageRootPath" value="${indexStorageRootPath}"/>
+    <property name="storageId" value="property_index"/>
+    <property name="maxLockAcquireTimeOnShutdown" value="20"/>
+    <property name="searcherFactory" ref="searcherFactory"/>
+  </bean>
+
+  <!-- Property set index based on primary Lucene index accessor instance.  -->
+  <bean id="systemIndex" class="vtk.repository.index.PropertySetIndexImpl">
+    <property name="indexAccessor" ref="systemIndexAccessor"/>
+    <property name="documentMapper" ref="documentMapper"/>
+  </bean>
+
+  <!-- A Lucene index accessor (secondary instance, batch indexing tuned) -->
+  <bean id="secondarySystemIndexAccessor" class="vtk.repository.index.IndexManager">
+    <property name="storageRootPath" value="${indexStorageRootPath}"/>
+    <property name="storageId" value="property_index.secondary"/>
+    <property name="batchIndexingMode" value="true"/>
+    <property name="maxLockAcquireTimeOnShutdown" value="20"/>
+  </bean>
+
+  <!-- Secondary property set index instance. Not part of clustering. -->
+  <bean id="secondarySystemIndex" class="vtk.repository.index.PropertySetIndexImpl">
+    <property name="indexAccessor" ref="secondarySystemIndexAccessor"/>
+    <property name="documentMapper" ref="documentMapper"/>
+    <property name="closeAfterInit" value="true"/>
+  </bean>
+
+  <!-- High level system index operation manager, primary index with secondary scratch index. -->
+  <bean id="systemIndexOperationManager" class="vtk.repository.index.management.IndexOperationManagerImpl">
+    <property name="index" ref="systemIndex"/>
+    <property name="secondaryIndex" ref="secondarySystemIndex"/>
+    <property name="indexDao" ref="repository.indexDao"/>
+    <property name="tempDir" value="${repository.tempDir}"/>
+    <property name="autoReindex" value="${repository.index.autoReindex}"/>
+  </bean>
+  <!-- High level system index operation manager, only for the secondary index -->
+  <bean id="secondarySystemIndexOperationManager" class="vtk.repository.index.management.IndexOperationManagerImpl">
+    <property name="index" ref="secondarySystemIndex"/>
+    <property name="indexDao" ref="repository.indexDao"/>
+    <property name="tempDir" value="${repository.tempDir}"/>
+    <property name="autoReindex" value="NEVER"/>
+  </bean>
+
+  <!-- Perform incremental updates on property set index from resource changes. -->
+  <bean id="repository.index.incrementalUpdater" class="vtk.repository.index.update.IncrementalUpdater">
+    <property name="index" ref="systemIndex"/>
+    <property name="indexDao" ref="repository.indexDao"/>
+    <property name="changeLogDao" ref="repository.changeLogDAO"/>
+    <property name="loggerId" value="${repository.index.updateLoggerId}"/>
+    <property name="loggerType" value="3" />
+    <property name="maxChangesPerUpdate" value="${repository.index.updateBatchsize}" />
+    <property name="updateIntervalSeconds" value="${repository.index.updateIntervalSeconds}" />
+    <property name="transactionManager" ref="repository.transactionManager"/>
+  </bean>
+
+  <!-- Set up incremental index updates from repository changes -->
+  <!-- Event database dumper for new system index (logger id = 1 and logger type = 3)  -->
+  <bean id="repository.index.eventDumper" class="vtk.repository.ProcessedContentEventDumperAll">
+    <property name="changeLogDAO" ref="repository.changeLogDAO"/>
+    <property name="repository" ref="repository"/>
+    <property name="loggerIds">
+      <bean class="vtk.context.CSVListFactoryBean">
+        <property name="csvList" value="${repository.index.loggerIds}"/>
+      </bean>
+    </property>
+    <property name="loggerType" value="3" />
+  </bean>
+
+</beans>

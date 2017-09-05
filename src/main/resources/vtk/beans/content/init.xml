@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-3.1.xsd">
+
+  <import resource="security.xml" />
+  <import resource="html-util.xml" />
+  <import resource="resource-types/main.xml" />
+  <import resource="repository.xml" />
+  <import resource="query.xml" />
+  <import resource="schema-registry.xml" />
+  <import resource="structured-resources-management.xml" />
+  <import resource="structured-resources.xml" />
+  <import resource="resource-wrapper.xml" />
+  <import resource="cache.xml" />
+
+  <!-- System task manager -->
+  <import resource="scheduling.xml" />
+</beans>

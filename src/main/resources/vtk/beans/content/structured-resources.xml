@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="utf-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-3.1.xsd">
+
+  <bean id="structuredResources.typeAssertion" 
+        class="vtk.repository.resourcetype.ResourceTypeAssertion" parent="repositoryAware">
+    <property name="resourceTypeDefinition" ref="json.managedObjectResourceType" />
+  </bean>
+
+  <bean id="resourceTypeIsPerson" class="vtk.web.service.RepositoryAssertionWrapper">
+    <constructor-arg name="assertion">
+      <bean class="vtk.repository.resourcetype.ResourceTypeAssertion" parent="repositoryAware">
+        <property name="resourceType" value="person" />
+      </bean>
+    </constructor-arg>
+  </bean>
+
+  <bean id="invalidUidMessageProvider" class="vtk.web.referencedata.provider.InvalidUidMessageProvider">
+    <property name="modelName" value="tabMessage" />
+    <property name="localizationKey" value="preview.invalid.uid" />
+    <property name="resourceTypeTree" ref="resourceTypeTree" />
+    <property name="principalFactory" ref="principalFactory" />
+  </bean>
+
+
+  <bean id="structuredResources.componentNamespace" class="java.lang.String">
+    <constructor-arg type="java.lang.String" value="json" />
+  </bean>
+
+  <bean id="structuredResources.fieldSelectComponent" class="vtk.resourcemanagement.view.StructuredResourceFieldComponent">
+    <property name="namespace" ref="structuredResources.componentNamespace" />
+    <property name="name" value="field" />
+    <property name="resourceModelKey" value="structured-resource" />
+  </bean>
+
+  <!-- TODO move out of VTK: -->
+  <bean id="resourceTypeIsOrganizationalUnit" class="vtk.web.service.RepositoryAssertionWrapper">
+    <constructor-arg name="assertion">
+      <bean class="vtk.repository.resourcetype.ResourceTypeAssertion" parent="repositoryAware">
+        <property name="resourceType" value="organizational-unit" />
+      </bean>
+    </constructor-arg>
+  </bean>
+
+  <!-- TODO move out of VTK: -->
+  <bean id="resourceTypeIsOrganizationalUnitPublications" class="vtk.web.service.RepositoryAssertionWrapper">
+    <constructor-arg name="assertion">
+      <bean class="vtk.repository.resourcetype.ResourceTypeAssertion"
+            parent="repositoryAware">
+        <property name="resourceType" value="unit-publications" />
+      </bean>
+    </constructor-arg>
+  </bean>
+
+  <!-- TODO move out of VTK: -->
+  <bean id="resourceTypeIsProject" class="vtk.web.service.RepositoryAssertionWrapper">
+    <constructor-arg name="assertion">
+      <bean class="vtk.repository.resourcetype.ResourceTypeAssertion"
+            parent="repositoryAware">
+        <property name="resourceType" value="structured-project" />
+      </bean>
+    </constructor-arg>
+  </bean>
+
+  <!-- ### SHARED TEXT ### -->
+  <bean id="sharedTextResolver" class="vtk.resourcemanagement.studies.SharedTextResolver">
+    <property name="repository" ref="repository" />
+    <property name="resourceTypeTree" ref="resourceTypeTree" />
+    <property name="safeHtmlFilter" ref="sharedTextResolver.filter" />
+    <property name="htmlParser" ref="decorating.htmlParser" />
+    <property name="localeResolver" ref="viewServiceResourceAwareLocaleResolver" />
+  </bean>
+
+  <bean id="sharedTextResolver.filter" class="vtk.text.html.SimpleHtmlPageFilter">
+    <property name="illegalElements" ref="safeHtml.illegalElementSet" />
+    <property name="checkValidElements" value="false" />
+  </bean>
+
+</beans>
