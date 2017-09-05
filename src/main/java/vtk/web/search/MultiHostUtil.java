@@ -36,7 +36,6 @@ import org.slf4j.LoggerFactory;
 import vtk.repository.IllegalOperationException;
 import vtk.repository.MultiHostSearcher;
 import vtk.repository.Namespace;
-import vtk.repository.Path;
 import vtk.repository.Property;
 import vtk.repository.PropertySet;
 import vtk.repository.resourcetype.PropertyType;
@@ -155,15 +154,34 @@ public class MultiHostUtil {
             throw new IllegalArgumentException(prop.getDefinition().getName() + " is not of type IMAGE_REF");
         }
 
-        String ref = resolveImageRef(prop, multiHostUrl, addThumbnailForNoneAbsoluteRefs);
-        Value newValue = new Value(ref, Type.IMAGE_REF);
-        prop.setValue(newValue);
+        boolean useThumbnailService = addThumbnailForNoneAbsoluteRefs
+                && prop.getDefinition().getName().equals(PropertyType.PICTURE_PROP_NAME);
+
+        Value[] vals;
+        if (prop.getDefinition().isMultiple()) {
+            vals = prop.getValues();
+        } else {
+            vals = new Value[]{prop.getValue()};
+        }
+
+        Value[] resolvedVals = new Value[vals.length];
+        for (int i = 0; i < vals.length; i++) {
+            String resolvedRef = resolveImageRef(vals[i].getStringValue(), multiHostUrl, useThumbnailService);
+            resolvedVals[i] = new Value(resolvedRef, Type.IMAGE_REF);
+        }
+
+        if (prop.getDefinition().isMultiple()) {
+            prop.setValues(resolvedVals);
+        } else {
+            prop.setValue(resolvedVals[0]);
+        }
 
         return prop;
     }
 
     /**
      * Resolve URI Property to {@code String}.
+     *
      *
      * @param prop to be resolved
      * @param multiHostUrl Required to resolve {@code prop}
@@ -177,59 +195,29 @@ public class MultiHostUtil {
             throw new IllegalArgumentException(prop.getDefinition().getName() + " is not of type IMAGE_REF");
         }
 
-        return resolveImageRef(prop, multiHostUrl, addThumbnailForNoneAbsoluteRefs);
+        boolean thumbnailService = addThumbnailForNoneAbsoluteRefs
+                && prop.getDefinition().getName().equals(PropertyType.PICTURE_PROP_NAME);
+
+        // XXX this will fail for multi-value props
+        return resolveImageRef(prop.getStringValue(), multiHostUrl, thumbnailService);
     }
 
-    private static String resolveImageRef(Property prop, Property multiHostUrl,
-            boolean addThumbnailForNoneAbsoluteRefs) {
-        String ret = prop.getStringValue();
+    private static String resolveImageRef(String ref, Property multiHostUrl,
+            boolean thumbnailService) {
 
-        // Don't do anything if ref is complete url
-        if (!isValidUrl(ret) && multiHostUrl != null) {
-            URL url = URL.parse(multiHostUrl.getStringValue());
-
-            // Is it a valid path?
-            Path path = getAsPath(ret);
-            if (path == null && url != null) {
-                // Assume relative path
-                try {
-                    Path resourceParentPath = url.getPath().getParent();
-                    path = resourceParentPath.expand(ret);
-                } catch (Exception e) {
-                    // Ignore. Logger??
-                }
-            }
-
-            if (path != null && url != null) {
-                url.setPath(path).toString();
-                // Display thumbnail if addThumbnailForNoneAbsoluteRefs is true and if IMAGE_REF is a picture
-                if (addThumbnailForNoneAbsoluteRefs
-                        && prop.getDefinition().getName().equals(PropertyType.PICTURE_PROP_NAME)) {
-                    url.addParameter("vrtx", "thumbnail");
-                }
-                ret = url.toString();
-            }
+        if (multiHostUrl == null) {
+            // Nothing to resolve against
+            return ref;
         }
 
-        return ret;
+        URL remoteResource = URL.parse(multiHostUrl.getStringValue());
+        URL remoteRelative = remoteResource.relativeURL(ref);
+        if (thumbnailService) {
+            remoteRelative.setParameter("vrtx", "thumbnail");
+        }
+
+        return remoteRelative.toString();
     }
 
-    private static boolean isValidUrl(String imageUrl) {
-        try {
-            vtk.web.service.URL.parse(imageUrl);
-        } catch (Exception e) {
-            // Ignore, invalid url
-        }
-        return false;
-    }
-
-    private static Path getAsPath(String pathString) {
-        try {
-            return Path.fromString(pathString);
-        } catch (IllegalArgumentException iae) {
-            // Ignore, invalid path ref
-        }
-        return null;
-    }
 
 }
