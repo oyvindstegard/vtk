@@ -242,7 +242,7 @@ public class FeedImageInlineFilter extends AbstractServletFilter {
             Repository repo = requestContext.getRepository();
             String token = requestContext.getSecurityToken();
             
-            URL requestURL = requestContext.getRequestURL();
+            URL requestURL = new URL(requestContext.getRequestURL());
             URL url;
             if (ref.startsWith("//") && 
                     ref.startsWith(requestURL.setPath(Path.ROOT).protocolRelativeURL())) {
