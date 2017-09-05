@@ -105,7 +105,7 @@
   </bean>
   
   <bean id="calendarEventlisting.specificDateFeedHandler" parent="eventListing.calendarSpecificDateHandler">
-    <property name="viewName" value="calendarEventlisting.specificDateFeedView" />
+    <property name="viewName" value="eventListingCalendar.feedView" />
   </bean>
   
 
