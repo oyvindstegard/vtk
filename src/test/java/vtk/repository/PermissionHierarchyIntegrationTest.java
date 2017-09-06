@@ -1,21 +1,21 @@
 /* Copyright (c) 2008, University of Oslo, Norway
  * All rights reserved.
- * 
+ *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are
  * met:
- * 
+ *
  *  * Redistributions of source code must retain the above copyright
  *    notice, this list of conditions and the following disclaimer.
- * 
+ *
  *  * Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 
+ *
  *  * Neither the name of the University of Oslo nor the names of its
  *    contributors may be used to endorse or promote products derived from
  *    this software without specific prior written permission.
- *      
+ *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS
  * IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED
  * TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A
@@ -30,43 +30,31 @@
  */
 package vtk.repository;
 
-import java.util.Locale;
-
-import static org.junit.Assert.*;
+import java.util.List;
+import org.junit.Before;
 import org.junit.Test;
 
-import org.springframework.context.ApplicationContext;
-import org.springframework.context.support.ResourceBundleMessageSource;
-import vtk.security.Principal;
-import vtk.security.Principal.Type;
-import vtk.security.PrincipalFactory;
-import vtk.testing.TestBeanContext;
-import vtk.text.html.HtmlUtil;
+import static org.assertj.core.api.Assertions.assertThat;
 
-public class CommonApplicationContextTestIntegration extends TestBeanContext {
+public class PermissionHierarchyIntegrationTest extends RepositoryFixture {
+
+    private Repository repository;
+
+    @Before
+    public void setUp() throws Exception {
+        repository = getRepository(
+                new RepositoryArchive("/permissions", "permissions.jar")
+        );
+    }
 
     @Test
-    public void testCommonConfiguration() {
-        ApplicationContext ctx = getApplicationContext(new String[] {});
-
-        checkForBeanInConfig(ctx, "defaultMessageSource");
-        ResourceBundleMessageSource resourceBundleMessageSource = (ResourceBundleMessageSource) ctx
-                .getBean("defaultMessageSource");
-        String message = resourceBundleMessageSource.getMessage("title.admin", new String[] { "testfolder" },
-                new Locale("en"));
-        assertEquals("Managing: testfolder", message);
-
-        checkForBeanInConfig(ctx, "htmlUtil");
-        HtmlUtil htmlUtil = (HtmlUtil) ctx.getBean("htmlUtil");
-        String html = "<html><body>TEST</body></html>";
-        assertEquals("TEST", htmlUtil.flatten(html));
-
-        checkForBeanInConfig(ctx, "principalFactory");
-        PrincipalFactory principalFactory = (PrincipalFactory) ctx.getBean("principalFactory");
-        Principal principal = principalFactory.getPrincipal(PrincipalFactory.NAME_ALL, Type.PSEUDO);
-        assertNotNull("No principal returned", principal);
-        assertEquals("Wrong principal returned", principal, PrincipalFactory.ALL);
-
+    public void retrieve() throws Exception {
+        Resource root = repository.retrieve(null, Path.ROOT, true);
+        assertThat(root).isNotNull();
+        List<Property> properties = root.getProperties();
+        assertThat(properties).isNotEmpty();
+        assertThat(root.getAcl()).isNotNull()
+                .withFailMessage("Root object has no acl associated with it");
     }
 
 }

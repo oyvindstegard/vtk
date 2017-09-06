@@ -30,7 +30,7 @@
   </sql>
 
   <sql id="nextTempTableSessionId">
-    vortex_tmp_session_id_seq.nextval from dual
+    select vortex_tmp_session_id_seq.nextval from dual
   </sql>
 
   <sql id="destinationUriCopy">
@@ -38,7 +38,7 @@
   </sql>
 
   <sql id="nextContentRevisionID">
-    simple_content_revision_seq_pk.nextval from dual
+    select simple_content_revision_seq_pk.nextval from dual
   </sql>
 
   <sql id="nextRevisionAclEntryId">

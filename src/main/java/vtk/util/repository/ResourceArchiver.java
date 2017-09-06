@@ -173,7 +173,9 @@ public class ResourceArchiver {
 
     public void expandArchive(String token, InputStream source, Path base, Map<String, Object> properties,
             EventListener listener) throws Exception {
-
+        if (base.isRoot()) {
+            throw new IllegalArgumentException("Cannot expand to the root");
+        }
         if (listener == null) {
             listener = NULL_LISTENER;
         }

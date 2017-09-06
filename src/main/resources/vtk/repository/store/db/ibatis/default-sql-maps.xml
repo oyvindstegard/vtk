@@ -925,7 +925,7 @@
 
 
   <select id="nextRevisionID" resultType="Long">
-    select <include refid="nextContentRevisionID" />
+    <include refid="nextContentRevisionID" />
   </select>
 
   <insert id="insertRevision" parameterType="java.util.Map">
@@ -979,7 +979,7 @@
 
   <!-- System index DAO statement section -->
   <select id="nextTempTableSessionId" resultType="java.lang.Integer">
-    select <include refid="nextTempTableSessionId" />
+    <include refid="nextTempTableSessionId" />
   </select>
   
   <insert id="insertUriIntoTempTable" parameterType="java.util.Map">

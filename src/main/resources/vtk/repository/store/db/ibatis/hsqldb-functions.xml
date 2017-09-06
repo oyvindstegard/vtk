@@ -30,7 +30,7 @@
   </sql>
 
   <sql id="nextTempTableSessionId">
-    next value for vortex_tmp_session_id_seq
+    call next value for vortex_tmp_session_id_seq
   </sql>
   
   <sql id="destinationUriCopy">
@@ -38,7 +38,7 @@
   </sql>
 
   <sql id="nextContentRevisionID">
-    next value for simple_content_revision_seq_pk
+    call next value for simple_content_revision_seq_pk
   </sql>
 
   <sql id="nextRevisionAclEntryId">

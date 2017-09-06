@@ -1,21 +1,21 @@
-/* Copyright (c) 2008, University of Oslo, Norway
+/* Copyright (c) 2017, University of Oslo, Norway
  * All rights reserved.
- * 
+ *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are
  * met:
- * 
+ *
  *  * Redistributions of source code must retain the above copyright
  *    notice, this list of conditions and the following disclaimer.
- * 
+ *
  *  * Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 
+ *
  *  * Neither the name of the University of Oslo nor the names of its
  *    contributors may be used to endorse or promote products derived from
  *    this software without specific prior written permission.
- *      
+ *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS
  * IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED
  * TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A
@@ -28,40 +28,52 @@
  * NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package vtk.repository;
+package vtk.security.token;
 
-import java.util.ArrayList;
-import java.util.List;
+import vtk.security.Principal;
+import vtk.security.web.AuthenticationHandler;
 
-import static org.junit.Assert.*;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.UUID;
 
-import org.springframework.context.ApplicationContext;
-import org.springframework.context.support.ClassPathXmlApplicationContext;
+public class TestTokenManager implements TokenManager {
+    private final Map<String, Principal> principalMap = new HashMap<>();
 
-public abstract class AbstractBeanContextTestIntegration {
-
-    private final static String configBasePath = "classpath:/testcontext/";
-
-    static {
-        System.setProperty("org.apache.commons.logging.Log", "org.apache.commons.logging.impl.Log4JLogger");
-        System.setProperty("log4j.configuration", "log4j.test.xml");
+    @Override
+    public Principal getPrincipal(String token) {
+        return principalMap.get(token);
     }
 
-    protected ApplicationContext getApplicationContext(String... configFiles) {
+    @Override
+    public String newToken(Principal principal, AuthenticationHandler authenticationHandler) {
+        String token = generateID();
+        principalMap.put(token, principal);
+        return token;
+    }
 
-        List<String> configLocations = new ArrayList<>();
+    @Override
+    public void removeToken(String token) {
+        principalMap.remove(token);
+    }
 
-        configLocations.add("classpath:integrationTestContext.xml");
+    @Override
+    public String getAuthenticationHandlerID(String token) {
+        return "test";
+    }
 
-        for (String configFile : configFiles) {
-            configLocations.add(configBasePath + configFile);
+    @Override
+    public String getRegisteredToken(Principal principal) {
+        if (this.principalMap.containsValue(principal)) {
+            for (String token: this.principalMap.keySet()) {
+                if (this.principalMap.get(token).equals(principal))
+                    return token;
+            }
         }
-
-        return new ClassPathXmlApplicationContext(configLocations.toArray(new String[configLocations.size()]));
+        return null;
     }
 
-    protected void checkForBeanInConfig(ApplicationContext ctx, String beanDef) {
-        assertTrue("Expected bean not found: " + beanDef, ctx.containsBean(beanDef));
+    private String generateID() {
+        return UUID.randomUUID().toString();
     }
-
 }

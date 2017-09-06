@@ -5,7 +5,7 @@
   <import resource="classpath:/vtk/beans/backend/indexing.xml" />
   <import resource="classpath:/vtk/beans/content/init.xml" />
 
-  <bean id="repository.ContentStore" class="vtk.repository.store.mem.MemoryContentStore"/>
+  <bean id="tokenManager" class="vtk.security.token.TestTokenManager" />
 
   <!-- Main repository instance. -->
   <bean id="repository" class="vtk.repository.RepositoryImpl" destroy-method="destroy">
@@ -15,7 +15,7 @@
     <property name="dao" ref="repository.sqlMapDao" />
     <property name="revisionStore" ref="${repository.revisionStore}" />
     <property name="commentDAO" ref="${repository.commentDao}" />
-    <property name="contentStore" ref="repository.ContentStore" />
+    <property name="contentStore" ref="${repository.contentStore}" />
     <property name="contentRepresentationRegistry" ref="contentRepresentationRegistry" />
     <property name="repositoryResourceHelper" ref="repositoryResourceHelper" />
     <property name="maxResourceChildren" value="${repository.maxResourceChildren}" />
