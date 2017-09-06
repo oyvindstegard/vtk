@@ -40,7 +40,7 @@
     <property name="valueFormatter">
       <bean class="vtk.repository.resourcetype.MessageSourceValueFormatter">
         <constructor-arg value="BOOLEAN"/>
-        <constructor-arg value="vtk.beans.vhost.resource-types.mixins.properties.plaintext-edit"/>
+        <constructor-arg value="vtk.beans.content.resource-types.mixins.properties.plaintext-edit"/>
       </bean>
     </property>
     <property name="vocabulary">

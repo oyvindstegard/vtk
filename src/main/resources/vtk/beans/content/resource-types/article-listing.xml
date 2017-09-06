@@ -46,7 +46,7 @@
     <property name="valueFormatter">
       <bean class="vtk.repository.resourcetype.MessageSourceValueFormatter">
         <constructor-arg value="STRING" />
-        <constructor-arg value="vtk.beans.vhost.resource-types.properties.article-listing-sorting" />
+        <constructor-arg value="vtk.beans.content.resource-types.properties.article-listing-sorting" />
       </bean>
     </property>
     <property name="vocabulary">
@@ -79,7 +79,7 @@
     <property name="valueFormatter">
       <bean class="vtk.repository.resourcetype.MessageSourceValueFormatter">
         <constructor-arg value="STRING" />
-        <constructor-arg value="vtk.beans.vhost.resource-types.properties.article-listing-view" />
+        <constructor-arg value="vtk.beans.content.resource-types.properties.article-listing-view" />
       </bean>
     </property>
     <property name="vocabulary">

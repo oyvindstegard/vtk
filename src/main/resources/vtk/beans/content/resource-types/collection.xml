@@ -225,7 +225,7 @@
 
   <bean id="collection.collection-type.messageSourceValueFormatter"
         class="vtk.repository.resourcetype.MessageSourceValueFormatter">
-    <constructor-arg value="vtk.beans.vhost.resource-types.properties.collection-type" />
+    <constructor-arg value="vtk.beans.content.resource-types.properties.collection-type" />
     <property name="keyPrefix" value="collection-type.value."/>
   </bean>
 
@@ -295,7 +295,7 @@
     <property name="valueFormatter">
       <bean class="vtk.repository.resourcetype.MessageSourceValueFormatter">
         <constructor-arg value="STRING" />
-        <constructor-arg value="vtk.beans.vhost.resource-types.properties.collection-listing-recursive-listing" />
+        <constructor-arg value="vtk.beans.content.resource-types.properties.collection-listing-recursive-listing" />
       </bean>
     </property>
     <property name="vocabulary">
@@ -346,7 +346,7 @@
     <property name="valueFormatter">
       <bean class="vtk.repository.resourcetype.MessageSourceValueFormatter">
         <constructor-arg value="INT" />
-        <constructor-arg value="vtk.beans.vhost.resource-types.properties.collection-page" />
+        <constructor-arg value="vtk.beans.content.resource-types.properties.collection-page" />
       </bean>
     </property>
     <property name="vocabulary">
@@ -377,7 +377,7 @@
     <property name="valueFormatter">
       <bean class="vtk.repository.resourcetype.MessageSourceValueFormatter">
         <constructor-arg value="STRING" />
-        <constructor-arg value="vtk.beans.vhost.resource-types.properties.collection-sorting" />
+        <constructor-arg value="vtk.beans.content.resource-types.properties.collection-sorting" />
       </bean>
     </property>
     <property name="vocabulary">

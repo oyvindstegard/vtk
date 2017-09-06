@@ -59,7 +59,7 @@
     <property name="valueFormatter">
       <bean class="vtk.repository.resourcetype.MessageSourceValueFormatter">
         <constructor-arg value="INT" />
-        <constructor-arg value="vtk.beans.vhost.resource-types.properties.number-of-result-sets" />
+        <constructor-arg value="vtk.beans.content.resource-types.properties.number-of-result-sets" />
       </bean>
     </property>
     <property name="vocabulary">

@@ -29,7 +29,7 @@
     <property name="valueFormatter">
       <bean class="vtk.repository.resourcetype.MessageSourceValueFormatter">
         <constructor-arg value="BOOLEAN"/>
-        <constructor-arg value="vtk.beans.vhost.resource-types.mixins.properties.show-subfolder-menu"/>
+        <constructor-arg value="vtk.beans.content.resource-types.mixins.properties.show-subfolder-menu"/>
       </bean>
     </property>
     <property name="vocabulary">

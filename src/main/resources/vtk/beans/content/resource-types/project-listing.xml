@@ -32,7 +32,7 @@
     <property name="valueFormatter">
       <bean class="vtk.repository.resourcetype.MessageSourceValueFormatter">
         <constructor-arg value="STRING" />
-        <constructor-arg value="vtk.beans.vhost.resource-types.properties.project-listing-display-type" />
+        <constructor-arg value="vtk.beans.content.resource-types.properties.project-listing-display-type" />
       </bean>
     </property>
     <property name="vocabulary">

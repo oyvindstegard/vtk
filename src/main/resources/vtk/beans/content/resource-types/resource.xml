@@ -84,7 +84,7 @@
     <property name="valueFormatter">
       <bean class="vtk.repository.resourcetype.MessageSourceValueFormatter">
         <constructor-arg value="BOOLEAN"/>
-        <constructor-arg value="vtk.beans.vhost.resource-types.properties.commentsEnabled"/>
+        <constructor-arg value="vtk.beans.content.resource-types.properties.commentsEnabled"/>
       </bean>
     </property>
     <property name="vocabulary">
@@ -262,7 +262,7 @@
     <property name="inheritable" value="true" />
     <property name="valueFormatter">
       <bean class="vtk.repository.resourcetype.MessageSourceValueFormatter">
-        <constructor-arg value="vtk.beans.vhost.resource-types.properties.content-locale"/>
+        <constructor-arg value="vtk.beans.content.resource-types.properties.content-locale"/>
       </bean>
     </property>
     <property name="vocabulary">
@@ -450,7 +450,7 @@
     <property name="valueFormatter">
       <bean class="vtk.repository.resourcetype.MessageSourceValueFormatter">
         <constructor-arg value="BOOLEAN"/>
-        <constructor-arg value="vtk.beans.vhost.resource-types.properties.linkRepairEnabled"/>
+        <constructor-arg value="vtk.beans.content.resource-types.properties.linkRepairEnabled"/>
       </bean>
     </property>
     <property name="vocabulary">

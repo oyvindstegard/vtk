@@ -34,7 +34,7 @@
     <property name="valueFormatter">
       <bean class="vtk.repository.resourcetype.MessageSourceValueFormatter">
         <constructor-arg value="BOOLEAN"/>
-        <constructor-arg value="vtk.beans.vhost.resource-types.mixins.properties.navigation-hidden"/>
+        <constructor-arg value="vtk.beans.content.resource-types.mixins.properties.navigation-hidden"/>
       </bean>
     </property>
     <property name="vocabulary">
@@ -68,7 +68,7 @@
     <property name="valueFormatter">
       <bean class="vtk.repository.resourcetype.MessageSourceValueFormatter">
         <constructor-arg value="BOOLEAN"/>
-        <constructor-arg value="vtk.beans.vhost.resource-types.mixins.properties.navigation-sortdescending"/>
+        <constructor-arg value="vtk.beans.content.resource-types.mixins.properties.navigation-sortdescending"/>
       </bean>
     </property>
     <property name="vocabulary">
@@ -102,7 +102,7 @@
     <property name="valueFormatter">
       <bean class="vtk.repository.resourcetype.MessageSourceValueFormatter">
         <constructor-arg value="INT"/>
-        <constructor-arg value="vtk.beans.vhost.resource-types.mixins.properties.navigation-importance"/>
+        <constructor-arg value="vtk.beans.content.resource-types.mixins.properties.navigation-importance"/>
       </bean>
     </property>
     <property name="vocabulary">
