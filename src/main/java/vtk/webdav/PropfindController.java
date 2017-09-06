@@ -166,6 +166,8 @@ public class PropfindController extends AbstractWebdavController
             this.childAuthorizeWhitelistProperties.put(WebdavConstants.DAV_NAMESPACE, davProps);
         }
         davProps.addAll(DAV_PROPERTIES);
+        logger.info("Property namespaces in child authorization white-list: {}", 
+                childAuthorizeWhitelistProperties);
     }
 
 
@@ -303,26 +305,34 @@ public class PropfindController extends AbstractWebdavController
             // No need to do extra authorize when depth is 0 or wildcard.
             return;
         }
-        
         boolean authorize = false;
         for (Element e: requestedProps) {
-            Set<String> whitelistProps = this.childAuthorizeWhitelistProperties.get(e.getNamespace());
+            Set<String> whitelistProps = this.childAuthorizeWhitelistProperties.get(e.getNamespace());            
             if (whitelistProps == null) {
+                logger.debug("Requested property '{}:{}' triggers authorization of child resources",
+                        e.getNamespaceURI(), e.getName());
+
                 authorize = true;
                 break;
             }
             if (!whitelistProps.contains(e.getName())) {
+                logger.debug("Requested property '{}:{}' triggers authorization of child resources",
+                        e.getNamespaceURI(), e.getName());
                 authorize = true;
                 break;
             }
         }
-        if (authorize) {
+        if (authorize) {            
             RequestContext requestContext = RequestContext.getRequestContext(request);
             Repository repo = requestContext.getRepository();
             Principal principal = requestContext.getPrincipal();
             for (Resource r: resources) {
                 if (!repo.authorize(principal, r.getAcl(), Privilege.READ_PROCESSED)) {
-                    throw new AuthorizationException();
+                    String msg = "Principal " 
+                            + principal + " does not sufficient privileges on "
+                            + r + " (at least " + Privilege.READ_PROCESSED + " required)";
+                    logger.debug(msg);
+                    throw new AuthorizationException(msg);
                 }
             }
         }
