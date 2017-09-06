@@ -125,6 +125,11 @@
       </list>
     </property>
     <property name="handler" ref="displayEmbedResource" />
+    <property name="attributes">
+      <map>
+        <entry key="x-prevent-decorating" value="true" />
+      </map>
+    </property>
   </bean>
 
   <bean id="displayEmbedResource" class="vtk.web.display.media.DisplayEmbedMediaController">
