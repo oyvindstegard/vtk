@@ -69,7 +69,7 @@ public class StructuredResourceSpringAdapter implements InitializingBean, Applic
             registerParsedResourceDescriptions(parser.parse());
             typeDefinitionFileStore.add(sourceFile);
         } else {
-            logger.warn("Resource not found: " + sourceFile.getURI());
+            logger.warn("Resource not found: " + sourceFile.getDescription());
         }
     }
 
