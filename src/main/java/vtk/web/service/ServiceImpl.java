@@ -73,9 +73,6 @@ import vtk.web.servlet.FilterFactory;
  *
  */
 public class ServiceImpl implements Service, BeanNameAware {
-    // FIXME: Cache for all assertions, don't use directly!
-    private volatile List<WebAssertion> allAssertions;
-
     private AuthenticationChallenge authenticationChallenge;
     private Object handler;
     private List<WebAssertion> assertions = new ArrayList<>();
@@ -96,20 +93,17 @@ public class ServiceImpl implements Service, BeanNameAware {
 
     @Override
     public List<WebAssertion> getAllAssertions() {
-        if (this.allAssertions == null) {
-            synchronized (this) {
-                if (this.allAssertions != null) {
-                    return this.allAssertions;
-                }
-                this.allAssertions = new ArrayList<>();
-                if (this.parent != null) {
-                    this.allAssertions.addAll(parent.getAllAssertions());
-                }
-                this.allAssertions.addAll(this.assertions);
-            }
+        Service cur = this;
+        List<Service> path = new ArrayList<>();
+        while (cur != null) {
+            path.add(0, cur);
+            cur = cur.getParent();
         }
-        
-        return this.allAssertions;
+        List<WebAssertion> assertions = new ArrayList<>();
+        for (Service s: path) {
+            assertions.addAll(s.getAssertions());
+        }
+        return assertions;
     }
 
     public void setHandler(Object handler) {
