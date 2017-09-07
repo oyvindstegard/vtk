@@ -239,8 +239,11 @@ public class ManuallyApproveResourcesSearcher {
                 alreadyApproved, result, repository, token, localHostURL);
         for (PropertySet ps : alreadyApprovedMissingSource) {
             URL url = getPropertySetURL(ps, localHostURL);
-            String source = url.relativeURL(url.getPath().getParent().toString()).toString();
-            ManuallyApproveResource m = mapPropertySetToManuallyApprovedResource(ps, localHostURL, source, true);
+            Path path = url.getPath();
+            String source = (path.isRoot()) ? url.toString()
+                    : url.relativeURL(path.getParent().toString()).toString();
+            ManuallyApproveResource m = mapPropertySetToManuallyApprovedResource(
+                    ps, localHostURL, source, true);
             result.add(m);
         }
 
