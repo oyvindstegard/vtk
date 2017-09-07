@@ -114,6 +114,8 @@
     <property name="transformerManager" ref="transformerManager" />
     <property name="includeContentLanguageHeader" value="true" />
     <property name="staticAttributes" ref="xslTransformerParameterMap" />
+    <property name="linkConstructor" ref="linkConstructor" />
+
     <property name="referenceDataProviders">
       <list>
         <ref bean="xmlSearcher.referenceDataProvider" />
@@ -133,7 +135,7 @@
     <property name="sourceMap">
       <map>
         <!--entry key="Searcher" value-ref="xmlSearcher" /-->
-        <entry key="LinkConstructor" value-ref="linkConstructor" />
+        <!--entry key="LinkConstructor" value-ref="linkConstructor" /-->
         <entry key="PropertyAccessor" value-ref="propertyAccessor" />
       </map>
     </property>
@@ -142,6 +144,7 @@
   <bean id="transformRssView" class="vtk.web.view.xslt.ResourceXsltView">
     <property name="transformerManager" ref="rssTransformerManager" />
     <property name="staticAttributes" ref="xslTransformerParameterMap" />
+    <property name="linkConstructor" ref="linkConstructor" />
     <property name="referenceDataProviders">
       <list>
         <ref bean="xmlSearcher.referenceDataProvider" />

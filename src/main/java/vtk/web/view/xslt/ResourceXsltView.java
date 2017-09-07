@@ -57,6 +57,8 @@ import vtk.repository.Resource;
 import vtk.util.repository.LocaleHelper;
 import vtk.web.InvalidModelException;
 import vtk.web.referencedata.ReferenceDataProvider;
+import vtk.web.service.URL;
+import vtk.web.view.LinkConstructor;
 import vtk.xml.AbstractPathBasedURIResolver;
 import vtk.xml.TransformerManager;
 
@@ -117,6 +119,8 @@ public class ResourceXsltView extends AbstractView implements InitializingBean {
     
     private boolean includeContentLanguageHeader = false;
     
+    private LinkConstructor linkConstructor;
+    
     public void setReferenceDataProviders(
         ReferenceDataProvider[] referenceDataProviders) {
         this.referenceDataProviders = referenceDataProviders;
@@ -135,6 +139,9 @@ public class ResourceXsltView extends AbstractView implements InitializingBean {
         this.includeContentLanguageHeader = includeContentLanguageHeader;
     }
     
+    public void setLinkConstructor(LinkConstructor linkConstructor) {
+        this.linkConstructor = linkConstructor;
+    }
 
     public final void afterPropertiesSet() throws Exception {
         if (this.transformerManager == null) {
@@ -142,6 +149,19 @@ public class ResourceXsltView extends AbstractView implements InitializingBean {
                 "Property 'transformerManager' must be set");
         }
     }
+    
+    public static class RequestLinkConstructor {
+        private HttpServletRequest request;
+        private LinkConstructor linkConstructor;
+        private RequestLinkConstructor(HttpServletRequest request, LinkConstructor linkConstructor) {
+            this.request = request;
+            this.linkConstructor = linkConstructor;
+        }
+        public URL construct(Object arg, String parametersCSV, String serviceName) {
+            return linkConstructor.construct(request, arg, parametersCSV, serviceName);
+        }
+    }
+    
 
 
     @Override
@@ -199,6 +219,10 @@ public class ResourceXsltView extends AbstractView implements InitializingBean {
         transformer.setParameter(
             PARAMETER_NAMESPACE + "RequestContext",
             new org.springframework.web.servlet.support.RequestContext(request));
+        
+        transformer.setParameter(
+                PARAMETER_NAMESPACE + "LinkConstructor",
+                new RequestLinkConstructor(request, linkConstructor));
 
         if (this.staticAttributes != null) {
             for (String key: this.staticAttributes.keySet()) {
