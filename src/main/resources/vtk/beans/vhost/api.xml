@@ -106,7 +106,7 @@
       <list>
         <ref bean="fileAssertion" />
         <ref bean="api.jsonAcceptAssertion" />
-        <ref bean="api.jsonContentTypeAssertion" />
+        <ref bean="json.contentTypeAssertion" />
         <bean class="vtk.web.service.RequestMethodAssertion">
           <property name="method" value="GET" />
         </bean>
