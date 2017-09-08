@@ -4,7 +4,7 @@ const gulp = require('gulp');
 const watch = require('gulp-watch');
 const sequence = require('run-sequence');
 const util = require('gulp-util')
-const minifyCss = require('gulp-clean-css');
+const minifyCss = require('gulp-csso');
 const minifyJs = require('gulp-uglify');
 const jshint = require('gulp-jshint');
 const sass = require('gulp-sass');
@@ -60,7 +60,7 @@ gulp.task('theme-compile-editor-structured-resources-sass', function () {
 
 gulp.task('theme-copy-css', function () {
     return gulp.src(['themes/**/*.css'])
-        .pipe(gulpif(config.production, minifyCss({inline: ['none'], rebase: false})))
+        .pipe(gulpif(config.production, minifyCss()))
         .pipe(gulp.dest(TARGET + '/themes'));
 });
 
