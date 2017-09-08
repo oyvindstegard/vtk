@@ -31,38 +31,22 @@
 package vtk.repository.search;
 
 import java.io.IOException;
-import java.util.ArrayList;
+import java.util.Optional;
 
 import org.apache.lucene.document.Document;
 import org.apache.lucene.document.DocumentStoredFieldVisitor;
-import org.apache.lucene.index.AtomicReader;
-import org.apache.lucene.index.AtomicReaderContext;
-import org.apache.lucene.index.DocsEnum;
-import org.apache.lucene.index.FieldInfo;
-import org.apache.lucene.index.FieldInfo.DocValuesType;
-import org.apache.lucene.index.FieldInfos;
-import org.apache.lucene.index.Fields;
-import org.apache.lucene.index.IndexReader;
-import org.apache.lucene.index.MultiDocValues;
-import org.apache.lucene.index.MultiFields;
-import org.apache.lucene.index.NumericDocValues;
-import org.apache.lucene.index.SortedDocValues;
-import org.apache.lucene.index.Terms;
-import org.apache.lucene.index.TermsEnum;
-import org.apache.lucene.search.DocIdSet;
-import org.apache.lucene.search.DocIdSetIterator;
-import org.apache.lucene.search.Filter;
+import org.apache.lucene.index.LeafReaderContext;
+import org.apache.lucene.search.Collector;
+import org.apache.lucene.search.ConstantScoreQuery;
 import org.apache.lucene.search.IndexSearcher;
 import org.apache.lucene.search.ScoreDoc;
+import org.apache.lucene.search.SimpleCollector;
 import org.apache.lucene.search.TopDocs;
-import org.apache.lucene.search.TotalHitCountCollector;
-import org.apache.lucene.util.Bits;
-import org.apache.lucene.util.FixedBitSet;
+import org.apache.lucene.search.TopFieldDocs;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.BeanInitializationException;
-import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Required;
+import vtk.repository.PropertySet;
 
 import vtk.repository.index.IndexManager;
 import vtk.repository.index.mapping.DocumentMapper;
@@ -74,16 +58,13 @@ import vtk.repository.search.query.Query;
 /**
  * Implementation of {@link vtk.repository.search.Searcher} based on Lucene.
  */
-public class LuceneSearcher implements Searcher, InitializingBean {
+public class LuceneSearcher implements Searcher {
 
     private final Logger logger = LoggerFactory.getLogger(LuceneSearcher.class);
 
     private IndexManager indexAccessor;
     private DocumentMapper documentMapper;
     private LuceneQueryBuilder queryBuilder;
-
-    private int resultCacheSize = LuceneResultCache.DEFAULT_MAX_ITEMS;
-    private LuceneResultCache resultCache;
 
     private long totalQueryTimeWarnThreshold = 15000; // Warning threshold in milliseconds
 
@@ -99,17 +80,6 @@ public class LuceneSearcher implements Searcher, InitializingBean {
     private int luceneSearchLimit = 60000;
 
     @Override
-    public void afterPropertiesSet() throws BeanInitializationException {
-        if (luceneSearchLimit <= 0) {
-            throw new BeanInitializationException(
-                    "Property 'luceneSearchLimit' must be an integer greater than zero.");
-        }
-        if (resultCacheSize > 0) {
-            resultCache = new LuceneResultCache(resultCacheSize);
-        }
-    }
-
-    @Override
     public ResultSet execute(String token, Search search) throws QueryException {
         final Query query = search.getQuery();
         final Sorting sorting = search.getSorting();
@@ -120,59 +90,52 @@ public class LuceneSearcher implements Searcher, InitializingBean {
         IndexSearcher searcher = null;
         try {
 
-            searcher = this.indexAccessor.getIndexSearcher();
+            searcher = indexAccessor.getIndexSearcher();
 
-            // Build Lucene query
             org.apache.lucene.search.Query luceneQuery
-                    = this.queryBuilder.buildQuery(query, searcher);
+                    = queryBuilder.buildQuery(query, searcher);
 
-            // Should include ACL filter combined with any other necessary filters ..
-            org.apache.lucene.search.Filter luceneFilter
-                    = this.queryBuilder.buildSearchFilter(token, search, searcher);
+            logger.debug("Built user Lucene query '{}' from user VTK query:\n{}\n",
+                            luceneQuery,
+                            query != null ? query.accept(new ToStringVisitor(true), null) : "null");
 
-            // Build Lucene sorting
-            org.apache.lucene.search.Sort luceneSort
-                    = this.queryBuilder.buildSort(sorting);
-
-            if (logger.isDebugEnabled()) {
-                logger.debug("Built Lucene query '" + luceneQuery
-                        + "' from query:\n"
-                        + query.accept(new ToStringVisitor(true), null) + "\n");
-
-                logger.debug("Built Lucene sorting '" + luceneSort
-                        + "' from sorting '" + sorting + "'");
-
-                logger.debug("Built Lucene filter: " + luceneFilter);
+            Optional<org.apache.lucene.search.Query> filterQuery =
+                    queryBuilder.buildSearchFilterQuery(token, search);
+            if (filterQuery.isPresent()) {
+                luceneQuery = queryBuilder.combineQueryWithFilter(luceneQuery, filterQuery.get());
+                logger.debug("Built Lucene filter query: '{}'", filterQuery.get());
+            } else {
+                logger.debug("No filter query for search.");
             }
+
+            Optional<org.apache.lucene.search.Sort> luceneSort = queryBuilder.buildSort(sorting);
+            if (luceneSort.isPresent()) {
+                logger.debug("Built Lucene sorting '{}' from VTK sorting '{}'",
+                      luceneSort.get(), sorting);
+            } else {
+                logger.debug("No sorting specified in search");
+            }
+
+            logger.debug("Combined and final Lucene query: '{}'", luceneQuery);
 
             if (clientLimit <= 0) {
                 // Client is not interested in actual search results, just provide total hits
-                int totalHits = countQueryTotalHits(searcher, luceneQuery, luceneFilter);
+                int totalHits = searcher.count(luceneQuery);
                 ResultSetImpl rs = new ResultSetImpl(0);
                 rs.setTotalHits(totalHits);
                 return rs;
             }
 
             int need = clientCursor + clientLimit;
-            int searchLimit = Math.min(this.luceneSearchLimit, need);
+            int searchLimit = Math.min(luceneSearchLimit, need);
 
             long totalTime = 0, startTime, endTime;
-            TopDocs topDocs;
             startTime = System.currentTimeMillis();
-            // Use result caching only for anon searches for now.
-            // It will also work for authenticated queries, but a larger cache 
-            // size will then likely be necessary to counteract more varations in filters.
-            if (token == null && resultCache != null) {
-                topDocs = resultCache.doCachedTopDocsQuery(searcher, luceneQuery, luceneFilter, luceneSort, searchLimit);
-            } else {
-                topDocs = doTopDocsQuery(searcher, luceneQuery, luceneFilter, luceneSort, searchLimit);
-            }
+            TopDocs topDocs = doTopDocsQuery(searcher, luceneQuery, luceneSort.orElse(null), searchLimit, null);
             endTime = System.currentTimeMillis();
+
             if (logger.isDebugEnabled()) {
-                logger.debug("Filtered lucene query took " + (endTime - startTime) + "ms");
-                if (resultCache != null) {
-                    logger.debug("Result cache hit ratio: " + resultCache.hitRatio());
-                }
+                logger.debug("Lucene query took " + (endTime - startTime) + "ms");
             }
 
             totalTime += (endTime - startTime);
@@ -203,7 +166,8 @@ public class LuceneSearcher implements Searcher, InitializingBean {
             } else {
                 rs = new ResultSetImpl(0);
             }
-            rs.setTotalHits(topDocs.totalHits);
+            // XXX change total hits number in ResultSet from int to long
+            rs.setTotalHits((int)topDocs.totalHits);
 
             if (totalTime > this.totalQueryTimeWarnThreshold) {
                 // Logger a warning, query took too long to complete.
@@ -235,121 +199,89 @@ public class LuceneSearcher implements Searcher, InitializingBean {
      * Execute regular query finding top-N docs with or without a specific result set sorting.
      * @param searcher
      * @param query
-     * @param filter
      * @param sort
      * @param limit
+     * @param after find results after doc, only relevant when sorting results, may be {@code null}
      * @return
      * @throws IOException
      */
     private TopDocs doTopDocsQuery(IndexSearcher searcher,
-            org.apache.lucene.search.Query query,
-            org.apache.lucene.search.Filter filter,
-            org.apache.lucene.search.Sort sort,
-            int limit)
+            org.apache.lucene.search.Query query, org.apache.lucene.search.Sort sort,
+            int limit, ScoreDoc after)
             throws IOException {
 
+
         if (sort != null) {
-            return searcher.search(query, filter, limit, sort);
+            return searcher.searchAfter(after, query, limit, sort, false, false);
+        } else {
+            if (!(query instanceof ConstantScoreQuery)) {
+                query = new ConstantScoreQuery(query);
+            }
+            return searcher.search(query, limit);
         }
-
-        return searcher.search(query, filter, limit);
-    }
-
-    /**
-     * Just count number of documents matching provided query and filter.
-     * @param searcher
-     * @param query
-     * @param filter
-     * @return
-     * @throws IOException
-     */
-    private int countQueryTotalHits(IndexSearcher searcher,
-            org.apache.lucene.search.Query query,
-            org.apache.lucene.search.Filter filter) throws IOException {
-
-        TotalHitCountCollector collector = new TotalHitCountCollector();
-        searcher.search(query, filter, collector);
-        return collector.getTotalHits();
     }
 
     @Override
     public void iterateMatching(String token, Search search, MatchCallback callback) throws QueryException {
-
-        if (search.getLimit() <= 0) {
-            return;  // Nothing to do
-        }
+        final Query query = search.getQuery();
+        final Sorting sorting = search.getSorting();
+        final int clientLimit = search.getLimit();
+        final int clientCursor = search.getCursor();
+        final PropertySelect selectedProperties = search.getPropertySelect();
 
         IndexSearcher searcher = null;
         try {
-            searcher = this.indexAccessor.getIndexSearcher();
 
-            // Build iteration filter (may be null)
-            Filter iterationFilter = this.queryBuilder.buildIterationFilter(
-                    token, search, searcher);
+            searcher = indexAccessor.getIndexSearcher();
 
-            // Build Lucene sorting (may be null)
-            org.apache.lucene.search.Sort luceneSort
-                    = this.queryBuilder.buildSort(search.getSorting());
+            org.apache.lucene.search.Query luceneQuery
+                    = queryBuilder.buildQuery(query, searcher);
 
             if (logger.isDebugEnabled()) {
-                final Query q = search.getQuery();
-                logger.debug("Built Lucene iteration filter '" + iterationFilter
-                        + "' from query:\n"
-                        + (q != null ? q.accept(new ToStringVisitor(true), null) : "null") + "\n");
-
-                logger.debug("Built Lucene sorting '" + luceneSort
-                        + "' from sorting '" + search.getSorting() + "'");
+                logger.debug("Built user Lucene query '{}' from user VTK query:\n{}\n",
+                        luceneQuery,
+                        query != null ? query.accept(new ToStringVisitor(true), null) : "null");
             }
 
-            if (luceneSort != null) {
-                org.apache.lucene.search.SortField[] sf = luceneSort.getSort();
-                if (sf.length != 1) {
-                    throw new UnsupportedOperationException("Only ONE sort field supported for iteration: " + search.getSorting());
-                }
-
-                DocValuesType dvt = docValuesType(sf[0].getField(), searcher.getIndexReader());
-                if (dvt != null) {
-                    switch (dvt) {
-                        case SORTED:
-                            iterateOnSortedDocValuesField(sf[0],
-                                    iterationFilter,
-                                    searcher.getIndexReader(),
-                                    search.getPropertySelect(), search.getCursor(), search.getLimit(),
-                                    callback);
-                            return;
-                        case NUMERIC:
-                            iterateOnNumericDocValuesField(sf[0],
-                                    iterationFilter,
-                                    searcher.getIndexReader(),
-                                    search.getPropertySelect(), search.getCursor(), search.getLimit(),
-                                    callback);
-                            return;
-                        default:
-                            return; // Ordered iteration not supported for doc value type
-                    }
-                } else {
-                    if (sf[0].getReverse()) {
-                        throw new UnsupportedOperationException("Only ascending sort supported for iteration on field : " + search.getSorting());
-                    }
-                    // Ordered iteration on index field (for non-docvalue fields)
-                    iterateOnIndexField(luceneSort.getSort()[0].getField(),
-                            iterationFilter,
-                            searcher.getIndexReader(),
-                            search.getPropertySelect(), search.getCursor(), search.getLimit(),
-                            callback);
-                }
+            Optional<org.apache.lucene.search.Query> filterQuery
+                    =                    queryBuilder.buildSearchFilterQuery(token, search);
+            if (filterQuery.isPresent()) {
+                luceneQuery = queryBuilder.combineQueryWithFilter(luceneQuery, filterQuery.get());
+                logger.debug("Built Lucene filter query: '{}'", filterQuery.get());
             } else {
-                // Index doc order iteration (unordered)
-                iterate(iterationFilter,
-                        searcher.getIndexReader(),
-                        search.getPropertySelect(), search.getCursor(), search.getLimit(),
-                        callback);
+                logger.debug("No filter query for search.");
             }
-        } catch (Exception e) {
-            if (e instanceof RuntimeException) {
-                throw (RuntimeException) e;
+
+            Optional<org.apache.lucene.search.Sort> luceneSort = queryBuilder.buildSort(sorting);
+            if (luceneSort.isPresent()) {
+                logger.debug("Built Lucene sorting '{}' from VTK sorting '{}'",
+                      luceneSort.get(), sorting);
+            } else {
+                logger.debug("No sorting specified in search");
             }
-            throw new QueryException("Exception while performing match iteration on index", e);
+
+            logger.debug("Combined and final Lucene query: '{}'", luceneQuery);
+
+            if (clientLimit <= 0) {
+                return;
+            }
+
+            if (luceneSort.isPresent()) {
+                doSortedIteration(searcher, callback, luceneQuery, luceneSort.get(), clientCursor, clientLimit, selectedProperties);
+            } else {
+                Collector collector = new MatchCallbackInvokingCollector(callback, selectedProperties, clientCursor, clientLimit);
+                searcher.search(luceneQuery, collector);
+            }
+        } catch (ClientIterationAbort e) {
+            if (e.getCause() == null) {
+                // Controlled iteration abort through MatchCallback
+                return;
+            }
+            throw new QueryException("Client threw exception during match iteration", e.getCause());
+
+        } catch (IOException io) {
+            logger.warn("IOException while performing query on index", io);
+            throw new QueryException("IOException while performing query on index", io);
         } finally {
             try {
                 this.indexAccessor.releaseIndexSearcher(searcher);
@@ -357,321 +289,108 @@ public class LuceneSearcher implements Searcher, InitializingBean {
                 logger.warn("IOException while releasing index searcher", io);
             }
         }
+
     }
 
-    private DocValuesType docValuesType(String field, IndexReader reader) {
-        FieldInfos s = MultiFields.getMergedFieldInfos(reader);
-        FieldInfo fieldInfo = s.fieldInfo(field);
-        if (fieldInfo != null) {
-            return fieldInfo.getDocValuesType();
+    private class ClientIterationAbort extends RuntimeException {
+
+        private static final long serialVersionUID = -2227548724212657996L;
+
+        ClientIterationAbort() {
         }
-        return null;
+
+        ClientIterationAbort(Exception cause) {
+            super(cause);
+        }
+
     }
 
-    /**
-     * Iterator all docs matching filter in index document order. Filter may be
-     * <code>null></code>, in which case all non-deleted docs are iterated.
-     */
-    private void iterate(org.apache.lucene.search.Filter iterationFilter,
-            IndexReader reader,
-            PropertySelect propertySelect,
-            int cursor,
-            int limit,
-            MatchCallback callback) throws Exception {
+    private void doSortedIteration(IndexSearcher searcher, MatchCallback clientCallback,
+            org.apache.lucene.search.Query query, org.apache.lucene.search.Sort sort,
+            int clientCursor, int clientLimit, PropertySelect selectedProperties) throws IOException {
 
-        int matchDocCounter = 0;
-        int callbackCounter = 0;
-        for (AtomicReaderContext arc : reader.leaves()) {
-            final AtomicReader segment = arc.reader();
-            final Bits liveDocs = segment.getLiveDocs();
-            if (iterationFilter != null) {
-                DocIdSet matchedDocs = iterationFilter.getDocIdSet(arc, liveDocs);
-                if (matchedDocs != null) {
-                    DocIdSetIterator disi = matchedDocs.iterator();
-                    if (disi != null) {
-                        int docId;
-                        while ((docId = disi.nextDoc()) != DocIdSetIterator.NO_MORE_DOCS) {
-                            if (matchDocCounter++ < cursor) {
-                                continue;
-                            }
-
-                            DocumentStoredFieldVisitor visitor = documentMapper.newStoredFieldVisitor(propertySelect);
-                            segment.document(docId, visitor);
-                            LazyMappedPropertySet ps = documentMapper.getPropertySet(visitor.getDocument());
-                            boolean continueIteration = callback.matching(ps);
-                            if (++callbackCounter == limit || !continueIteration) {
-                                return;
-                            }
-                        }
-                    }
-                }
-            } else { // No iteration filter
-                for (int i = 0; i < segment.maxDoc(); i++) {
-                    if (liveDocs != null && !liveDocs.get(i)) {
-                        continue;
-                    }
-                    if (matchDocCounter++ < cursor) {
-                        continue;
-                    }
-                    DocumentStoredFieldVisitor visitor = documentMapper.newStoredFieldVisitor(propertySelect);
-                    segment.document(i, visitor);
-                    LazyMappedPropertySet ps = documentMapper.getPropertySet(visitor.getDocument());
-                    boolean continueIteration = callback.matching(ps);
-                    if (++callbackCounter == limit || !continueIteration) {
-                        return;
-                    }
-                }
-            }
-        }
-    }
-
-    // Iterating *without limits* on number of docs *and* requiring globally sorted order
-    // (unlimited "sorted scrolling")
-    // is somewhat in conflict with the Lucene segment model, where each segment
-    // is completely independent and has its own doc-id and ordinal spaces. So
-    // a global merge/sort in memory is necessary, because a pre-sorted global view simply
-    // does not exist. This method may use considerable amounts of memory depending on number
-    // of docs in index and number of docs matching query.
-    private void iterateOnNumericDocValuesField(org.apache.lucene.search.SortField sortField,
-            org.apache.lucene.search.Filter iterationFilter,
-            IndexReader reader,
-            PropertySelect propertySelect,
-            int cursor,
-            int limit,
-            MatchCallback callback) throws Exception {
-
-        final int reverseMultiplier = sortField.getReverse() ? -1 : 1;
-
-        final class DocNumber implements Comparable<DocNumber> {
-            final int docId;
-            final long n;
-            DocNumber(int docId, long n) {
-                this.docId = docId;
-                this.n = n;
-            }
-            @Override
-            public int compareTo(DocNumber o) {
-                int cmp = n < o.n ? -1 : (n > o.n ? 1 : 0);
-                if (cmp == 0) {
-                    cmp = docId < o.docId ? -1 : (docId > o.docId ? 1 : 0);
-                }
-                return cmp * reverseMultiplier;
-            }
-        }
-
-        int docCount = reader.getDocCount(sortField.getField());
-        final ArrayList<DocNumber> globalDocList = new ArrayList<>(Math.min(500000,docCount > 0 ? docCount : 500000));
-        for (AtomicReaderContext arc : reader.leaves()) {
-            AtomicReader segment = arc.reader();
-            final NumericDocValues ndv = segment.getNumericDocValues(sortField.getField());
-            if (iterationFilter != null) {
-                DocIdSet matched = iterationFilter.getDocIdSet(arc, segment.getLiveDocs());
-                if (matched != null) {
-                    DocIdSetIterator disi = matched.iterator();
-                    if (disi != null) {
-                        int segmentDocId;
-                        while ((segmentDocId = disi.nextDoc()) != DocIdSetIterator.NO_MORE_DOCS) {
-                            long n = ndv != null ? ndv.get(segmentDocId) : -1;
-                            globalDocList.add(new DocNumber(arc.docBase + segmentDocId, n));
-                        }
-                    }
-                }
-            } else {
-                Bits liveDocs = segment.getLiveDocs();
-                final int maxDoc = segment.maxDoc();
-                for (int segmentDocId = 0; segmentDocId < maxDoc; segmentDocId++) {
-                    if (liveDocs != null && !liveDocs.get(segmentDocId)) {
-                        continue;
-                    }
-                    long n = ndv != null ? ndv.get(segmentDocId) : -1;
-                    globalDocList.add(new DocNumber(arc.docBase + segmentDocId, n));
-                }
-            }
-        }
-
-        globalDocList.sort(null);
-
-        int callbackCounter = 0;
-        for (int i=0; i<globalDocList.size(); i++) {
-            DocNumber doc = globalDocList.get(i);
-            globalDocList.set(i, null); // help gc
-            if (i < cursor) {
-                continue;
-            }
-
-            DocumentStoredFieldVisitor visitor = documentMapper.newStoredFieldVisitor(propertySelect);
-            reader.document(doc.docId, visitor);
-            LazyMappedPropertySet ps = documentMapper.getPropertySet(visitor.getDocument());
-            boolean continueIteration = callback.matching(ps);
-            if (++callbackCounter == limit || !continueIteration) {
-                return;
-            }
-        }
-    }
-
-    // Iterating *without limits* on number of docs *and* requiring globally sorted order (unlimited "sorted scrolling")
-    // is somewhat in conflict with the Lucene segment model, where each segment
-    // is completely independent and has its own doc-id and ordinal spaces. So
-    // a global merge/sort in memory is necessary..
-    private void iterateOnSortedDocValuesField(org.apache.lucene.search.SortField sortField,
-            org.apache.lucene.search.Filter iterationFilter,
-            IndexReader reader,
-            PropertySelect propertySelect,
-            int cursor,
-            int limit,
-            MatchCallback callback) throws Exception {
-
-        // Slightly naive approach for global sorted iteration is implemented here. Could probably be done
-        // more efficient with use of Lucene internals, but iterating is meant
-        // for heavier queries where higher latency must be acceptable.
-        final int reverseMultiplier = sortField.getReverse() ? -1 : 1;
-
-        final class DocOrd implements Comparable<DocOrd> {
-            final int docId;
-            final int ord;
-            DocOrd(int docId, int ord) {
-                this.docId = docId;
-                this.ord = ord;
-            }
-            @Override
-            public int compareTo(DocOrd o) {
-                int cmp = ord < o.ord ? -1 : (ord > o.ord ? 1 : 0);
-                // Stabilize order with fallback for doc ids
-                if (cmp == 0) {
-                    cmp = docId < o.docId ? -1 : (docId > o.docId ? 1 : 0);
-                }
-                return cmp * reverseMultiplier;
-            }
-        }
-
-        final int docCount = reader.getDocCount(sortField.getField());
-        final ArrayList<DocOrd> globalDocList = new ArrayList<>(Math.min(500000, docCount > 0 ? docCount : 500000));
-        SortedDocValues sdv = MultiDocValues.getSortedValues(reader, sortField.getField());  // Map from segment to global ords, this is costly
-        for (AtomicReaderContext arc : reader.leaves()) {
-            AtomicReader segment = arc.reader();
-
-            if (iterationFilter != null) {
-                DocIdSet matched = iterationFilter.getDocIdSet(arc, segment.getLiveDocs());
-                if (matched != null) {
-                    DocIdSetIterator disi = matched.iterator();
-                    if (disi != null) {
-                        int segmentDocId;
-                        while ((segmentDocId = disi.nextDoc()) != DocIdSetIterator.NO_MORE_DOCS) {
-                            int globalOrdinal = sdv != null ? sdv.getOrd(arc.docBase + segmentDocId) : -1;
-                            globalDocList.add(new DocOrd(arc.docBase + segmentDocId, globalOrdinal));
-                        }
-                    }
-                }
-            } else {
-                Bits liveDocs = segment.getLiveDocs();
-                final int maxDoc = segment.maxDoc();
-                for (int segmentDocId = 0; segmentDocId < maxDoc; segmentDocId++) {
-                    if (liveDocs != null && !liveDocs.get(segmentDocId)) {
-                        continue;
-                    }
-                    int ordinal = sdv != null ? sdv.getOrd(arc.docBase + segmentDocId) : -1;
-                    globalDocList.add(new DocOrd(arc.docBase + segmentDocId, ordinal));
-                }
-            }
-        }
-        sdv = null; // help gc
-
-        globalDocList.sort(null);
-
-        int callbackCounter = 0;
-        for (int i=0; i<globalDocList.size(); i++) {
-            final DocOrd orderedDoc = globalDocList.get(i);
-            globalDocList.set(i, null); // help gc
-            if (i < cursor) {
-                continue;
-            }
-
-            DocumentStoredFieldVisitor visitor = documentMapper.newStoredFieldVisitor(propertySelect);
-            reader.document(orderedDoc.docId, visitor);
-            LazyMappedPropertySet ps = documentMapper.getPropertySet(visitor.getDocument());
-            boolean continueIteration = callback.matching(ps);
-            if (++callbackCounter == limit || !continueIteration) {
-                return;
-            }
-        }
-    }
-
-    /**
-     * Iteration all docs with given field in lexicographic order. Filter may be
-     * null.
-     *
-     * <p>For indexed fields without doc values. Iteration will not include
-     * docs missing the field.
-     */
-    private void iterateOnIndexField(final String field,
-            org.apache.lucene.search.Filter iterationFilter,
-            IndexReader reader,
-            PropertySelect propertySelect,
-            int cursor,
-            int limit,
-            MatchCallback callback) throws Exception {
-
-        final Bits acceptDocs = matchingLiveDocs(reader, iterationFilter);
-
-        // We'll need global ordering on the ordinary index field values across all segments
-        final Fields fields = MultiFields.getFields(reader);
-        if (fields == null) {
-            return;
-        }
-
-        Terms terms = fields.terms(field);
-        if (terms == null) {
-            return;
-        }
-
-        TermsEnum te = terms.iterator(null);
-
-        int matchDocCounter = 0;
-        int callbackCounter = 0;
-        DocsEnum de = null;
-        while (te.next() != null) {
-            de = te.docs(acceptDocs, de, DocsEnum.FLAG_NONE);
-            int docId;
-            while ((docId = de.nextDoc()) != DocIdSetIterator.NO_MORE_DOCS) {
-                if (matchDocCounter++ < cursor) {
+        ScoreDoc last = null;
+        long matchDocCount = 0;
+        long totalHits = 0;
+        int callbackCount = 0;
+        do {
+            // Operate with page size of 1000 when iterating sorted results
+            TopFieldDocs tfd = (TopFieldDocs) doTopDocsQuery(searcher, query, sort, 1000, last);
+            ScoreDoc[] scoreDocs = tfd.scoreDocs;
+            totalHits = tfd.totalHits;
+            last = scoreDocs.length > 0 ? scoreDocs[scoreDocs.length-1] : null;
+            for (int i=0; i<scoreDocs.length; i++) {
+                if (matchDocCount++ < clientCursor) {
                     continue;
                 }
-                DocumentStoredFieldVisitor visitor = documentMapper.newStoredFieldVisitor(propertySelect);
-                reader.document(docId, visitor);
-                LazyMappedPropertySet ps = documentMapper.getPropertySet(visitor.getDocument());
-                boolean continueIteration = callback.matching(ps);
-                if (++callbackCounter == limit || !continueIteration) {
-                    return;
+                if (callbackCount++ >= clientLimit) {
+                    throw new ClientIterationAbort();
+                }
+
+                DocumentStoredFieldVisitor fieldVisitor = documentMapper.newStoredFieldVisitor(selectedProperties);
+                searcher.doc(scoreDocs[i].doc, fieldVisitor);
+                PropertySet propSet = documentMapper.getPropertySet(fieldVisitor.getDocument());
+
+                try {
+                    if (!clientCallback.matching(propSet)) {
+                        throw new ClientIterationAbort();
+                    }
+                } catch (Exception e) {
+                    throw new ClientIterationAbort(e);
                 }
             }
-        }
+        } while (last != null && matchDocCount < totalHits);
     }
 
-    // Get all docs matched by the filter (deleted docs are taken into account).
-    // If filter is null, then all non-deleted docs will be present in returned bits.
-    private Bits matchingLiveDocs(IndexReader reader, Filter filter) throws IOException {
-        if (filter == null) {
-            return MultiFields.getLiveDocs(reader);
+    private class MatchCallbackInvokingCollector extends SimpleCollector {
+
+        final MatchCallback clientCallback;
+        final PropertySelect selectedProperties;
+        final int clientCursor, clientLimit;
+        LeafReaderContext context;
+        int callbackCount = 0;
+        int matchDocCount = 0;
+
+        MatchCallbackInvokingCollector(MatchCallback clientCallback, PropertySelect selectedProperties,
+                int clientCursor, int clientLimit) {
+            this.clientCallback = clientCallback;
+            this.selectedProperties = selectedProperties;
+            this.clientCursor = clientCursor;
+            this.clientLimit = clientLimit;
         }
 
-        final FixedBitSet fbs = new FixedBitSet(reader.maxDoc());
+        @Override
+        protected void doSetNextReader(LeafReaderContext context) throws IOException {
+            this.context = context;
+        }
 
-        for (AtomicReaderContext arc : reader.leaves()) {
-            final AtomicReader segment = arc.reader();
-            final Bits liveDocs = segment.getLiveDocs();
-            final DocIdSet matchedDocs = filter.getDocIdSet(arc, liveDocs);
-            if (matchedDocs != null) {
-                DocIdSetIterator disi = matchedDocs.iterator();
-                if (disi != null) {
-                    int docId;
-                    while ((docId = disi.nextDoc()) != DocIdSetIterator.NO_MORE_DOCS) {
-                        fbs.set(docId + arc.docBase);
-                    }
+        @Override
+        public void collect(int doc) throws IOException {
+            if (matchDocCount++ < clientCursor) {
+                return;
+            }
+            if (callbackCount++ >= clientLimit) {
+                throw new ClientIterationAbort();
+            }
+
+            DocumentStoredFieldVisitor fieldVisitor = documentMapper.newStoredFieldVisitor(selectedProperties);
+            context.reader().document(doc, fieldVisitor);
+            PropertySet properSet = documentMapper.getPropertySet(fieldVisitor.getDocument());
+
+            try {
+                if (!clientCallback.matching(properSet)) {
+                    throw new ClientIterationAbort();
                 }
+            } catch (Exception e) {
+                throw new ClientIterationAbort(e);
             }
         }
 
-        return fbs;
+        @Override
+        public boolean needsScores() {
+            return false;
+        }
+
     }
 
     @Required
@@ -690,21 +409,10 @@ public class LuceneSearcher implements Searcher, InitializingBean {
     }
 
     public void setLuceneSearchLimit(int luceneSearchLimit) {
+        if (luceneSearchLimit <= 0) {
+            throw new IllegalArgumentException("Property 'luceneSearchLimit' must be > 0");
+        }
         this.luceneSearchLimit = luceneSearchLimit;
-    }
-
-    /**
-     * Set size of internal search result cache. Default value is
-     * {@link LuceneResultCache#DEFAULT_MAX_ITEMS}.
-     *
-     * <p>
-     * The cache only applies to unauthenticated queries.
-     *
-     * @param maxItems maximum number of cached results, or -1 to disable result
-     * caching.
-     */
-    public void setResultCacheSize(int maxItems) {
-        this.resultCacheSize = maxItems;
     }
 
     public void setTotalQueryTimeWarnThreshold(long totalQueryTimeWarnThreshold) {

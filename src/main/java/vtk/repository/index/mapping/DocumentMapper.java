@@ -165,13 +165,12 @@ public class DocumentMapper implements InitializingBean, ApplicationListener<Typ
             throws DocumentMappingException {
         
         final Document doc = new Document();
-        final List<IndexableField> fields = doc.getFields();
 
         // Resource meta fields
-        resourceFields.addResourceFields(fields, propSet);
+        resourceFields.addResourceFields(doc, propSet);
         
         // ACL fields
-        aclFields.addAclFields(fields, propSet, acl);
+        aclFields.addAclFields(doc, propSet, acl);
         
         final ResourceTypeDefinition def =
                 this.resourceTypeTree.getResourceTypeDefinitionByName(propSet.getResourceType());
@@ -199,27 +198,31 @@ public class DocumentMapper implements InitializingBean, ApplicationListener<Typ
             case JSON:
                 // Add any indexable JSON value attributes (both as lowercase
                 // and regular), sorting field(s) and stored field(s)
-                propertyFields.addJsonPropertyFields(fields, property);
+                propertyFields.addJsonPropertyFields(doc, property);
                 break;
 
             case STRING:
                 if (!property.getDefinition().isMultiple()) {
-                    propertyFields.addSortField(fields, property);
+                    propertyFields.addSortField(doc, property);
                 }
             
             case HTML:
                 // Add lowercase version of search field for STRING and HTML
                 // types
-                propertyFields.addPropertyFields(fields, property, true);
+                propertyFields.addPropertyFields(doc, property, true);
 
             default:
                 // Create searchable and stored index fields of value(s)
-                propertyFields.addPropertyFields(fields, property, false);
+                propertyFields.addPropertyFields(doc, property, false);
             }
         }
 
+        // Populate document field names meta field
+        Fields.addFieldNamesMetaField(doc);
+
         return doc;
     }
+
 
     /**
      * Obtain a {@link StoredFieldVisitor} from a {@link PropertySelect}. Can

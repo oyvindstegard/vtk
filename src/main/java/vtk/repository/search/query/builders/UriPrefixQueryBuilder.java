@@ -31,23 +31,16 @@
 package vtk.repository.search.query.builders;
 
 
-import java.util.ArrayList;
-import java.util.List;
 import org.apache.lucene.index.Term;
-import org.apache.lucene.queries.TermFilter;
-import org.apache.lucene.queries.TermsFilter;
 import org.apache.lucene.search.BooleanClause;
 import org.apache.lucene.search.BooleanQuery;
-import org.apache.lucene.search.ConstantScoreQuery;
-import org.apache.lucene.search.Filter;
 import org.apache.lucene.search.Query;
-import org.apache.lucene.search.QueryWrapperFilter;
 import org.apache.lucene.search.TermQuery;
 import vtk.repository.index.mapping.ResourceFields;
+import vtk.repository.search.query.LuceneQueryBuilder;
 import vtk.repository.search.query.QueryBuilder;
 import vtk.repository.search.query.QueryBuilderException;
 import vtk.repository.search.query.UriPrefixQuery;
-import vtk.repository.search.query.filter.FilterFactory;
 
 /**
  * 
@@ -63,19 +56,19 @@ public class UriPrefixQueryBuilder implements QueryBuilder {
     
     @Override
     public Query buildQuery() throws QueryBuilderException {
-        
-        Filter filter;
+
+        Query q = new TermQuery(new Term(ResourceFields.URI_ANCESTORS_FIELD_NAME, upQuery.getUri()));
+;
         if (upQuery.isIncludeSelf()) {
-            filter = new TermsFilter(new Term(ResourceFields.URI_FIELD_NAME, upQuery.getUri()),
-                                     new Term(ResourceFields.URI_ANCESTORS_FIELD_NAME, upQuery.getUri()));
-        } else {
-            filter = new TermFilter(new Term(ResourceFields.URI_ANCESTORS_FIELD_NAME, upQuery.getUri()));
+            q = new BooleanQuery.Builder().add(q, BooleanClause.Occur.SHOULD)
+                    .add(new TermQuery(new Term(ResourceFields.URI_FIELD_NAME, upQuery.getUri())), BooleanClause.Occur.SHOULD)
+                    .build();
         }
         
         if (upQuery.isInverted()) {
-            filter = FilterFactory.inversionFilter(filter);
+            q = LuceneQueryBuilder.invert(q);
         }
 
-        return new ConstantScoreQuery(filter);
+        return q;
     }
 }

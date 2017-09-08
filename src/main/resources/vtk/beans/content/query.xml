@@ -54,27 +54,17 @@
   <!-- Factory for building Lucene queries. -->
   <bean id="queryBuilder" class="vtk.repository.search.query.LuceneQueryBuilder">
     <property name="documentMapper" ref="documentMapper"/>
-    <property name="queryAuthorizationFilterFactory" ref="queryAuthorizationFilterFactory"/>
+    <property name="authorizationFilterQueryFactory" ref="query.authorizationFilterQueryFactory"/>
     <property name="publishedPropDef" ref="publishedPropDef" />
     <property name="unpublishedCollectionPropDef" ref="unpublishedCollectionPropDef" />
-    <property name="hiddenPropDef" ref="hiddenPropDef" />
     <property name="resourceTypeTree" ref="resourceTypeTree" />
   </bean>
   
-  <bean id="queryAuthorizationFilterFactory"
-        class="vtk.repository.search.query.security.CachingQueryAuthorizationFilterFactory">
+  <bean id="query.authorizationFilterQueryFactory"
+        class="vtk.repository.search.query.security.SimpleAuthorizationFilterQueryFactory">
     <property name="principalManager" ref="principalManager"/>
     <property name="tokenManager" ref="tokenManager"/>
     <property name="roleManager" ref="roleManager"/>
-  </bean>
-
-  <bean parent="metrics.gaugeRegistration">
-    <property name="arguments">
-      <list>
-        <value>repository.query.authorizationFilterCache.hitRatio</value>
-        <value>context.getBean('queryAuthorizationFilterFactory').hitRatio()</value>
-      </list>
-    </property>
   </bean>
 
   <!-- Searcher implementation (wrapped in dispatcher) -->
@@ -90,17 +80,7 @@
         <property name="indexAccessor" ref="systemIndexAccessor"/>
         <property name="documentMapper" ref="documentMapper"/>
         <property name="queryBuilder" ref="queryBuilder"/>
-        <property name="resultCacheSize" value="${indexResultCacheSize}" />
       </bean>
-    </property>
-  </bean>
-
-  <bean parent="metrics.gaugeRegistration">
-    <property name="arguments">
-      <list>
-        <value>repository.query.luceneResultCache.hitRatio</value>
-        <value>context.getBean('systemIndexSearcher').searcher.resultCache?.hitRatio()</value>
-      </list>
     </property>
   </bean>
 

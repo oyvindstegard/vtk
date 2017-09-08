@@ -30,9 +30,7 @@
  */
 package vtk.repository.search.query.builders;
 
-import org.apache.lucene.search.NumericRangeQuery;
 import org.apache.lucene.search.Query;
-import org.apache.lucene.search.TermRangeQuery;
 import vtk.repository.index.mapping.PropertyFields;
 import vtk.repository.resourcetype.PropertyType;
 import vtk.repository.resourcetype.PropertyTypeDefinition;
@@ -42,17 +40,16 @@ import vtk.repository.search.query.QueryBuilderException;
 
 /**
  * 
- * @author oyviste
  */
 public class PropertyRangeQueryBuilder implements QueryBuilder {
 
     private final PropertyRangeQuery prq;
-    private final PropertyFields fvm;
+    private final PropertyFields pf;
     private final PropertyTypeDefinition def;
     
     public PropertyRangeQueryBuilder(PropertyRangeQuery prq, PropertyTypeDefinition def, PropertyFields fvm) {
         this.prq = prq;
-        this.fvm = fvm;
+        this.pf = fvm;
         this.def = def;
     }
 
@@ -75,55 +72,14 @@ public class PropertyRangeQueryBuilder implements QueryBuilder {
         } else {
             valueType = def.getType();
             fieldName = PropertyFields.propertyFieldName(def, false);
+            if (valueType == PropertyType.Type.JSON) {
+                throw new QueryBuilderException("Cannot range query on JSON type without complex attribute specifier");
+            }
         }
-        
-        switch (valueType) {
-        case STRING:
-        case HTML:
-        case JSON:
-        case IMAGE_REF:
-        case BOOLEAN:
-        case PRINCIPAL:
-            return stringRangeQuery(fieldName, fromValue, toValue, inclusive);
-            
-        case DATE:
-        case TIMESTAMP:
-            return dateRangeQuery(fieldName, fromValue, toValue, inclusive);
-            
-        case INT:
-            return intRangeQuery(fieldName, fromValue, toValue, inclusive);
-            
-        case LONG:
-            return longRangeQuery(fieldName, fromValue, toValue, inclusive);
-            
-        default:
-            throw new QueryBuilderException("Unknown or unsupported value type " + valueType);
-            
-        }
+    
+        // TODO Consider using sort-field for string term ranges, for consistency with sorting order.
 
+        return pf.propertyFieldRangeQuery(fieldName, fromValue, toValue, inclusive, inclusive, valueType, false);
     }
     
-    // TODO Considering using sort-field for string term range, for consistency with sorting order.
-    //      (Will then need to encode terms as collation keys.)
-    private Query stringRangeQuery(String fieldName, String fromValue, String toValue, boolean inclusive) {
-        return TermRangeQuery.newStringRange(fieldName, fromValue, toValue, inclusive, inclusive);
-    }
-    
-    private Query dateRangeQuery(String fieldName, String fromValue, String toValue, boolean inclusive) {
-        Long fromLong = fromValue != null ? fvm.parseDate(fromValue) : null;
-        Long toLong = toValue != null ? fvm.parseDate(toValue) : null;
-        return NumericRangeQuery.newLongRange(fieldName, fromLong, toLong, inclusive, inclusive);
-    }
-    
-    private Query intRangeQuery(String fieldName, String fromValue, String toValue, boolean inclusive) {
-        Integer fromInt = fromValue != null ? Integer.parseInt(fromValue) : null;
-        Integer toInt = toValue != null ? Integer.parseInt(toValue) : null;
-        return NumericRangeQuery.newIntRange(fieldName, fromInt, toInt, inclusive, inclusive);
-    }
-
-    private Query longRangeQuery(String fieldName, String fromValue, String toValue, boolean inclusive) {
-        Long fromLong = fromValue != null ? Long.parseLong(fromValue) : null;
-        Long toLong = toValue != null ? Long.parseLong(toValue) : null;
-        return NumericRangeQuery.newLongRange(fieldName, fromLong, toLong, inclusive, inclusive);
-    }
 }

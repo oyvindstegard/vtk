@@ -38,19 +38,16 @@ import java.util.Optional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.apache.lucene.document.Document;
-import org.apache.lucene.index.AtomicReader;
-import org.apache.lucene.index.AtomicReaderContext;
-import org.apache.lucene.index.DocsEnum;
-import org.apache.lucene.index.IndexReader;
+
 import org.apache.lucene.index.IndexWriter;
 import org.apache.lucene.index.IndexableField;
+import org.apache.lucene.index.LeafReaderContext;
+import org.apache.lucene.index.PostingsEnum;
 import org.apache.lucene.index.Term;
 import org.apache.lucene.index.Terms;
 import org.apache.lucene.index.TermsEnum;
-import org.apache.lucene.search.DocIdSetIterator;
 import org.apache.lucene.search.IndexSearcher;
 import org.apache.lucene.util.Bits;
-import org.apache.lucene.util.BytesRef;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Required;
 
@@ -66,7 +63,7 @@ import vtk.repository.index.mapping.DocumentMappingException;
 import vtk.repository.index.mapping.ResourceFields;
 
 /**
- * <code>PropertySet</code> index using Lucene.
+ * Higher level repository resource index management API implemented with Lucene.
  */
 public class PropertySetIndexImpl implements PropertySetIndex, ClusterAware, InitializingBean {
 
@@ -102,6 +99,7 @@ public class PropertySetIndexImpl implements PropertySetIndex, ClusterAware, Ini
         }
     }
 
+    @Override
     public boolean isApplicationLevelCompatible() throws IndexException {
         try {
             return IndexManager.APPLICATION_COMPATIBILITY_LEVEL == index.getApplicationCompatibilityLevel();
@@ -155,7 +153,7 @@ public class PropertySetIndexImpl implements PropertySetIndex, ClusterAware, Ini
             Term uriTerm = new Term(ResourceFields.URI_FIELD_NAME, 
                                         propertySet.getURI().toString());
 
-            IndexWriter writer = this.index.getIndexWriter();
+            IndexWriter writer = index.getIndexWriter();
             
             writer.deleteDocuments(uriTerm);
             
@@ -170,7 +168,7 @@ public class PropertySetIndexImpl implements PropertySetIndex, ClusterAware, Ini
         checkWriteAccess();
         
         try {
-            IndexWriter writer = this.index.getIndexWriter();
+            IndexWriter writer = index.getIndexWriter();
             writer.deleteDocuments(new Term(ResourceFields.URI_FIELD_NAME, rootUri.toString()), 
                                    new Term(ResourceFields.URI_ANCESTORS_FIELD_NAME, rootUri.toString()));
 
@@ -185,7 +183,7 @@ public class PropertySetIndexImpl implements PropertySetIndex, ClusterAware, Ini
         
         try {
             Term uriTerm = new Term(ResourceFields.URI_FIELD_NAME, uri.toString());
-            this.index.getIndexWriter().deleteDocuments(uriTerm);
+            index.getIndexWriter().deleteDocuments(uriTerm);
         } catch (IOException io) {
             throw new IndexException(io);
         }
@@ -193,47 +191,38 @@ public class PropertySetIndexImpl implements PropertySetIndex, ClusterAware, Ini
 
     @Override
     public int countAllInstances() throws IndexException {
-        
-        // Count all docs with URI field that are not deleted
-        IndexSearcher searcher = null;
+        IndexSearcher searcher =  null;
         try {
-            int count=0;
             searcher = index.getIndexSearcher();
-            IndexReader topLevel = searcher.getIndexReader();
-            for (AtomicReaderContext arc: topLevel.leaves()) {
-                final AtomicReader ar = arc.reader();
-                final Bits liveDocs = ar.getLiveDocs();
-                Terms terms = ar.terms(ResourceFields.URI_FIELD_NAME);
-                if (terms == null) {
-                    continue;
-                }
-                TermsEnum te = terms.iterator(null);
-                DocsEnum de = null;
-                BytesRef termText;
-                while ((termText = te.next()) != null) {
-                    de = te.docs(liveDocs, de, DocsEnum.FLAG_NONE);
-                    while (de.nextDoc() != DocIdSetIterator.NO_MORE_DOCS) {
-                        ++count;
-                        if (logger.isDebugEnabled()) {
-                            logger.debug("Count = " + count 
-                                    + ", PropertySet URI = " + termText.utf8ToString());
+            int count=0;
+            for (LeafReaderContext ctx: searcher.getTopReaderContext().leaves()) {
+                Terms terms = ctx.reader().terms(ResourceFields.URI_FIELD_NAME);
+                if (terms != null) {
+                    Bits liveDocs = ctx.reader().getLiveDocs();
+                    PostingsEnum pe = null;
+                    TermsEnum te = terms.iterator();
+                    while (te.next() != null) {
+                        pe = te.postings(pe, PostingsEnum.NONE);
+                        int doc;
+                        while ((doc = pe.nextDoc()) != PostingsEnum.NO_MORE_DOCS) {
+                            if (liveDocs == null || liveDocs.get(doc)) {
+                                ++count;
+                            }
                         }
                     }
                 }
             }
-            
-            return count;
 
+            return count;
         } catch (IOException io) {
             throw new IndexException(io);
-        }
-        finally {
-            if (searcher != null) {
-                try {
+        } finally {
+            try {
+                if (searcher != null) {
                     index.releaseIndexSearcher(searcher);
-                } catch (IOException io) {
-                    throw new IndexException(io);
                 }
+            } catch (IOException io) {
+                throw new IndexException("IOException while releasing searcher", io);
             }
         }
     }
@@ -340,20 +329,15 @@ public class PropertySetIndexImpl implements PropertySetIndex, ClusterAware, Ini
 
         try {
             PropertySetIndexImpl indexImpl = (PropertySetIndexImpl) propSetIndex;
-            IndexManager otherIndex = indexImpl.index;
+            IndexManager otherIndexManager = indexImpl.index;
+            IndexManager thisIndexManager = index;
 
             if (logger.isDebugEnabled()) {
                 logger.debug("Adding all contents of index '" + indexImpl.getId() + "' to '"
                         + this.getId() + "' (this index)");
             }
-            
-            IndexWriter indexWriter = index.getIndexWriter();
-            indexWriter.addIndexes(otherIndex.getIndexSearcher().getIndexReader());
-            
-            if (logger.isDebugEnabled()){
-                logger.debug("Optimizing index ..");
-            }
-            indexWriter.forceMerge(1, true);
+
+            thisIndexManager.addAll(otherIndexManager, true);
 
         } catch (IOException io) {
             throw new IndexException(io);

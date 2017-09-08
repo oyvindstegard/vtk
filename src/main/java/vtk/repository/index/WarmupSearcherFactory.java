@@ -35,9 +35,11 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 
 import org.apache.lucene.index.IndexReader;
-import org.apache.lucene.search.Filter;
+import org.apache.lucene.search.BooleanClause;
+import org.apache.lucene.search.BooleanQuery;
 import org.apache.lucene.search.IndexSearcher;
 import org.apache.lucene.search.Query;
 import org.apache.lucene.search.SearcherFactory;
@@ -77,10 +79,8 @@ public class WarmupSearcherFactory extends SearcherFactory implements Initializi
     }
     
     @Override
-    public IndexSearcher newSearcher(IndexReader reader) throws IOException {
-        IndexSearcher searcher = super.newSearcher(reader);
-        warmSearcher(searcher);
-        return searcher;
+    public IndexSearcher newSearcher(IndexReader reader, IndexReader previous) throws IOException {
+        return warmSearcher(super.newSearcher(reader, previous));
     }
     
     private List<Search> buildWarmupSearches(List<String> searchSpecs) throws Exception {
@@ -123,18 +123,23 @@ public class WarmupSearcherFactory extends SearcherFactory implements Initializi
         return searches;
     }
     
-    private void warmSearcher(IndexSearcher searcher) throws IOException {
+    private IndexSearcher warmSearcher(IndexSearcher searcher) throws IOException {
         for (Search search : warmupSearches) {
             Query luceneQuery = luceneQueryBuilder.buildQuery(search.getQuery(), searcher);
-            Sort luceneSorting = luceneQueryBuilder.buildSort(search.getSorting());
-            Filter luceneFilter = luceneQueryBuilder.buildSearchFilter(null, search, searcher);
+            Optional<Sort> luceneSorting = luceneQueryBuilder.buildSort(search.getSorting());
+            Optional<Query> filter = luceneQueryBuilder.buildSearchFilterQuery(null, search);
             int limit = search.getLimit();
+
+            Query mainQ = luceneQuery;
+            if (filter.isPresent()) {
+                mainQ = luceneQueryBuilder.combineQueryWithFilter(luceneQuery, filter.get());
+            }
             
             TopDocs docs;
-            if (luceneSorting != null) {
-                docs = searcher.search(luceneQuery, luceneFilter, limit, luceneSorting);
+            if (luceneSorting.isPresent()) {
+                docs = searcher.search(mainQ, limit, luceneSorting.get());
             } else {
-                docs = searcher.search(luceneQuery, luceneFilter, limit);
+                docs = searcher.search(mainQ, limit);
             }
             if (logger.isDebugEnabled()) {
                 logger.debug("Search " + search + " matched " + docs.scoreDocs.length + " docs.");
@@ -144,6 +149,7 @@ public class WarmupSearcherFactory extends SearcherFactory implements Initializi
                 searcher.doc(docs.scoreDocs[i].doc);
             }
         }
+        return searcher;
     }
 
     @Required

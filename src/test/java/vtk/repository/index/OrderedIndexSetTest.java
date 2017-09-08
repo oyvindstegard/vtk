@@ -33,6 +33,9 @@ package vtk.repository.index;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import org.junit.After;
 import org.junit.Before;
@@ -63,11 +66,10 @@ public class OrderedIndexSetTest {
      * Test of add method, of class OrderedIndexSet.
      */
     @Test
-    public void testAdd() throws IOException {
-        index.add("/a");
-        index.add("/b");
-        index.add("/c");
-        index.commit();
+    public void testAdd() {
+        assertTrue(index.add("/a"));
+        assertTrue(index.add("/b"));
+        assertTrue(index.add("/c"));
         assertEquals(3, index.size());
     }
 
@@ -75,14 +77,76 @@ public class OrderedIndexSetTest {
      * Test of add method, of class OrderedIndexSet.
      */
     @Test
-    public void testAddDuplicates() throws IOException {
-        index.add("/a");
-        index.add("/a");
-        index.add("/a");
-        index.add("/b");
-        index.add("/c");
-        index.add("/c");
-        index.commit();
+    public void testAddValue() {
+        index.addValue("/a");
+        index.addValue("/b");
+        index.addValue("/c");
+        index.addValue("/c");
+        assertEquals(3, index.size());
+        assertTrue(index.contains("/a"));
+        assertTrue(index.contains("/b"));
+        assertTrue(index.contains("/c"));
+        assertFalse(index.contains("/d"));
+    }
+
+    @Test
+    public void testAddAll() {
+        final Collection<String> set = Arrays.asList(new String[]{"/a", "/b", "/c"});
+        final Collection<String> subSet = Arrays.asList(new String[]{"/a", "/b"});
+        final Collection<String> superSet = Arrays.asList(new String[]{"/a", "/b", "/c", "/d"});
+
+        assertTrue(index.addAll(set));
+        assertEquals(3, index.size());
+
+        assertFalse(index.addAll(set));
+        assertFalse(index.addAll(subSet));
+
+        assertTrue(index.addAll(superSet));
+        assertEquals(4, index.size());
+    }
+
+    @Test
+    public void testRetainAll() {
+        final Collection<String> set = Arrays.asList(new String[]{"/a", "/b", "/c", "/d"});
+        final Collection<String> subSet = Arrays.asList(new String[]{"/a", "/b"});
+
+        assertTrue(index.addAll(set));
+        assertTrue(index.retainAll(subSet));
+        assertEquals(2, index.size());
+        assertTrue(index.containsAll(subSet));
+    }
+
+    @Test
+    public void testRetainAll_disjoint() {
+        final Collection<String> set = Arrays.asList(new String[]{"/a", "/b", "/c", "/d"});
+        final Collection<String> disjointSet = Arrays.asList(new String[]{"/x", "/y"});
+
+        assertTrue(index.addAll(set));
+        assertTrue(index.retainAll(disjointSet));
+        assertEquals(0, index.size()); // empty intersection and thus nothing to retain
+    }
+
+    @Test
+    public void testRetainAll_emptySet() {
+        final Collection<String> set = Arrays.asList(new String[]{"/a", "/b", "/c", "/d"});
+
+        assertTrue(index.addAll(set));
+        assertTrue(index.retainAll(Collections.emptySet()));
+        assertEquals(0, index.size()); // empty intersection and thus nothing to retain
+    }
+
+    /**
+     * Test of add method, of class OrderedIndexSet.
+     */
+    @Test
+    public void testAddDuplicates() {
+        assertTrue(index.add("/a"));
+        assertFalse(index.add("/a"));
+        assertFalse(index.add("/a"));
+        assertTrue(index.add("/b"));
+        assertTrue(index.add("/c"));
+        assertFalse(index.add("/c"));
+
         assertTrue(index.contains("/a"));
         assertTrue(index.contains("/b"));
         assertTrue(index.contains("/c"));
@@ -90,46 +154,65 @@ public class OrderedIndexSetTest {
     }
 
     @Test
-    public void testMultipleCommits() throws IOException {
+    public void testMultipleCommits() {
         // Tests that all index segments are considered for read ops
         index.add("/a");
         index.add("/b");
         index.add("/c");
-        index.commit();
+        // force read:
+        index.contains("/somehting");
+
+        // add more
         index.add("/d");
         index.add("/e");
         index.add("/f");
-        index.commit();
+
         assertTrue(index.contains("/f"));
     }
 
     /**
      * Test of remove method, of class OrderedIndexSet.
-     * @throws java.io.IOException
      */
     @Test
-    public void testRemove() throws IOException {
-        index.add("/a");
-        index.add("/b");
-        index.add("/c");
-        index.remove("/a");
-        index.commit();
+    public void testRemove() {
+        assertTrue(index.add("/a"));
+        assertTrue(index.add("/b"));
+        assertTrue(index.add("/c"));
+        assertTrue(index.remove("/a"));
+
         assertEquals(2, index.size());
         index.remove("/b");
-        index.commit();
+
         assertEquals(1, index.size());
         index.remove("Something not existing");
     }
 
+    /**
+     * Test of removeAll method, of class OrderedIndexSet.
+     */
     @Test
-    public void testClear() throws IOException {
+    public void testRemoveAll() {
+        final Collection<String> set = Arrays.asList(new String[]{"/a", "/b", "/c", "/d"});
+        final Collection<String> disjointSet = Arrays.asList(new String[]{"/x", "/y"});
+        final Collection<String> subSet = Arrays.asList(new String[]{"/a", "/b"});
+
+        assertTrue(index.addAll(set));
+        assertFalse(index.removeAll(Collections.emptySet()));
+        assertFalse(index.removeAll(disjointSet));
+        assertEquals(4, index.size());
+        assertTrue(index.removeAll(subSet));
+        assertEquals(2, index.size());
+    }
+
+    @Test
+    public void testClear() {
         index.add("/a");
         index.add("/b");
         index.add("/c");
-        index.commit();
+
         assertEquals(3, index.size());
         index.clear();
-        index.commit();
+
         assertTrue(index.isEmpty());
     }
 
@@ -137,13 +220,17 @@ public class OrderedIndexSetTest {
      * Test of size method, of class OrderedIndexSet.
      */
     @Test
-    public void testSizeAndEmpty() throws IOException {
+    public void testSizeAndEmpty() {
         assertTrue(index.isEmpty());
         index.add("/a");
         index.add("/b");
         index.add("/c");
-        index.commit();
+
         assertEquals(3, index.size());
+
+        index.remove("/a");
+        assertEquals(2, index.size());
+
         assertFalse(index.isEmpty());
     }
 
@@ -151,11 +238,11 @@ public class OrderedIndexSetTest {
      * Test of contains method, of class OrderedIndexSet.
      */
     @Test
-    public void testContains() throws IOException {
+    public void testContains() {
         index.add("/a");
         index.add("/b");
         index.add("/c");
-        index.commit();
+
         assertTrue(index.contains("/a"));
         assertTrue(index.contains("/b"));
         assertTrue(index.contains("/c"));
@@ -165,23 +252,10 @@ public class OrderedIndexSetTest {
     }
 
     /**
-     * Test of commit method, of class OrderedIndexSet.
-     */
-    @Test
-    public void testCommit() throws IOException {
-        index.add("/a");
-        index.add("/b");
-        index.add("/c");
-        assertEquals(0, index.size()); // Check not available before commit
-        index.commit();
-        assertEquals(3, index.size());
-    }
-
-    /**
      * Test of close method, of class OrderedIndexSet.
      */
     @Test
-    public void testClose() throws IOException {
+    public void testClose() {
         index.close();
         assertFalse(index.indexDir().exists());
     }
@@ -192,14 +266,13 @@ public class OrderedIndexSetTest {
      * <p>Tests lexicographic ordering and value set.
      */
     @Test
-    public void testIterator() throws IOException {
+    public void testIterator() {
         final List<String> values = new ArrayList<>();
         for (char c = 'Z'; c >= 'A'; c--) {
             values.add("Value " + c);
         }
-        index.addAll(values);
-        index.addAll(values); // Test duplicates consolidation
-        index.commit();
+        assertTrue(index.addAll(values));
+        assertFalse(index.addAll(values)); // Test duplicates consolidation
 
         int i=values.size()-1;
         for (String indexValue: index) {
@@ -209,12 +282,18 @@ public class OrderedIndexSetTest {
             assertEquals(indexValue, values.get(i--));
         }
 
-        // Multiple segments
         for (char c = '9'; c >= '0'; c--) {
             values.add("Value " + c);
         }
-        index.addAll(values);
+        assertTrue(index.addAll(values));
+
+        // Attempt provication of multiple segments w/deleted docs
         index.commit();
+        assertTrue(index.add("delete-me"));
+        index.commit();
+        assertTrue(index.remove("delete-me"));
+        index.commit();
+
         i=values.size()-1;
         for (String indexValue: index) {
             if (i < 0) {

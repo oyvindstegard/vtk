@@ -31,15 +31,12 @@
 package vtk.repository.search.query.builders;
 
 import org.apache.lucene.index.Term;
-import org.apache.lucene.search.ConstantScoreQuery;
 import org.apache.lucene.search.Query;
-import org.apache.lucene.search.QueryWrapperFilter;
 import org.apache.lucene.search.TermQuery;
 import vtk.repository.index.mapping.AclFields;
-import vtk.repository.index.mapping.DocumentMapper;
+import vtk.repository.search.query.LuceneQueryBuilder;
 import vtk.repository.search.query.QueryBuilder;
 import vtk.repository.search.query.QueryBuilderException;
-import vtk.repository.search.query.filter.FilterFactory;
 
 /**
  * Used both for building ACLExistsQuery and ACLInheritedFromQuery.
@@ -64,15 +61,9 @@ public class ACLInheritedFromQueryBuilder implements QueryBuilder {
         Term aclInheritedFromTerm = new Term(AclFields.INHERITED_FROM_FIELD_NAME, 
                                                 String.valueOf(this.resourceId));
             
-        Query query = new TermQuery(aclInheritedFromTerm);
-        
-        if (this.invert) {
-            query = new ConstantScoreQuery(
-                    FilterFactory.inversionFilter(
-                            new QueryWrapperFilter(query)));
-        }
+        Query q = new TermQuery(aclInheritedFromTerm);
 
-        return query;
+        return invert ? LuceneQueryBuilder.invert(q) : q;
     }
 
 }

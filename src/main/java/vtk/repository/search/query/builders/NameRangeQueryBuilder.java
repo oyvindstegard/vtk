@@ -30,10 +30,7 @@
  */
 package vtk.repository.search.query.builders;
 
-import org.apache.lucene.search.ConstantScoreQuery;
 import org.apache.lucene.search.Query;
-import org.apache.lucene.search.TermRangeFilter;
-import org.apache.lucene.util.BytesRef;
 import vtk.repository.index.mapping.ResourceFields;
 
 import vtk.repository.search.query.NameRangeQuery;
@@ -42,21 +39,17 @@ import vtk.repository.search.query.QueryBuilder;
 public class NameRangeQueryBuilder implements QueryBuilder {
 
     private NameRangeQuery nrq;
+    private final ResourceFields rf;
     
-    public NameRangeQueryBuilder(NameRangeQuery nrq) {
+    public NameRangeQueryBuilder(NameRangeQuery nrq, ResourceFields rf) {
         this.nrq = nrq;
+        this.rf = rf;
     }
 
     @Override
     public Query buildQuery() {
-        String from = this.nrq.getFromTerm();
-        String to = this.nrq.getToTerm();
-
-        TermRangeFilter trFilter = new TermRangeFilter(ResourceFields.NAME_FIELD_NAME,
-                new BytesRef(from), new BytesRef(to), this.nrq.isInclusive(), this.nrq.isInclusive());
-
-        return new ConstantScoreQuery(trFilter);
-        
+        return rf.typedFieldRangeQuery(ResourceFields.NAME_FIELD_NAME, nrq.getFromTerm(), nrq.getToTerm(),
+                nrq.isInclusive(), nrq.isInclusive(), String.class, false);
     }
 
 }

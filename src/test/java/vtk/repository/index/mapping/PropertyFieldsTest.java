@@ -1,4 +1,4 @@
-/* Copyright (c) 2014, University of Oslo, Norway
+/* Copyright (c) 2014-2017, University of Oslo, Norway
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -30,15 +30,18 @@
  */
 package vtk.repository.index.mapping;
 
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import org.apache.lucene.document.DateTools;
+import org.apache.lucene.document.Document;
 import org.apache.lucene.index.IndexableField;
-import org.jmock.auto.Mock;
-import org.jmock.integration.junit4.JUnitRuleMockery;
+import org.apache.lucene.search.Query;
 
 import vtk.repository.Namespace;
 import vtk.repository.Property;
@@ -50,11 +53,12 @@ import vtk.repository.resourcetype.ValueFormatter;
 import static vtk.repository.resourcetype.PropertyType.Type;
 
 import static org.junit.Assert.*;
-import org.junit.Before;
-import org.junit.Rule;
 import org.junit.Test;
+import vtk.repository.resourcetype.PropertyType;
 import vtk.repository.resourcetype.PropertyTypeDefinition;
 import vtk.repository.resourcetype.ValueFactory;
+import vtk.repository.resourcetype.ValueFactoryImpl;
+import vtk.testing.mocktypes.MockPrincipalFactory;
 import vtk.util.text.Json;
 
 /**
@@ -62,18 +66,14 @@ import vtk.util.text.Json;
  */
 public class PropertyFieldsTest {
 
-    private PropertyFields pf;
+    private final PropertyFields pf;
 
-    @Mock
-    private ValueFactory valueFactory;
+    private final ValueFactory valueFactory;
 
-    @Rule
-    public JUnitRuleMockery context = new JUnitRuleMockery();
-
-    @Before
-    public void setUp() {
-        // Currently no tests trigger internal use of ValueFactory in PropertFields, but
-        // need non-null mocked value for construction.
+    public PropertyFieldsTest() {
+        ValueFactoryImpl vf = new ValueFactoryImpl();
+        vf.setPrincipalFactory(new MockPrincipalFactory());
+        valueFactory = vf;
         pf = new PropertyFields(Locale.getDefault(), valueFactory);
     }
 
@@ -112,6 +112,123 @@ public class PropertyFieldsTest {
 
     private Property getStringProperty(Namespace namespace, String name) {
         return getTypedProperty(namespace, name, Type.STRING);
+    }
+
+    @Test
+    public void dateValueIndexFieldEncoding() {
+
+        String[] dateFormats = new String[]{"Long-format",
+            "yyyy-MM-dd HH:mm:ss Z", "yyyy-MM-dd HH:mm:ss",
+            "yyyy-MM-dd HH:mm", "yyyy-MM-dd HH", "yyyy-MM-dd"};
+
+        Date now = new Date();
+        String[] dateStrings = new String[]{Long.toString(now.getTime()),
+            "2005-10-10 14:22:00 +0100", "2005-10-10 14:22:00",
+            "2005-10-10 14:22", "2005-10-10 14", "2005-10-10"};
+
+        for (int i = 0; i < dateStrings.length; i++) {
+            try {
+                pf.propertyFieldQuery("someDate", dateStrings[i],
+                        PropertyType.Type.TIMESTAMP, false);
+            } catch (Exception e) {
+                fail("Failed to encode index field value for date format '" + dateFormats[i]
+                        + "', date string '" + dateStrings[i] + "':"
+                        + e.getMessage());
+            }
+        }
+    }
+
+    @Test
+    public void storedFields() {
+
+        IndexableField stringField = pf.makeFields("string", "bâr", Fields.FieldSpec.STORED).get(0);
+        IndexableField intField = pf.makeFields("int", 1024, Fields.FieldSpec.STORED).get(0);
+        IndexableField longField = pf.makeFields("long", Long.MAX_VALUE, Fields.FieldSpec.STORED).get(0);
+
+        assertEquals("string", stringField.name());
+        assertEquals("int", intField.name());
+        assertEquals("long", longField.name());
+
+        assertEquals("bâr", stringField.stringValue());
+        assertNull(stringField.binaryValue());
+        assertNull(stringField.numericValue());
+
+        assertEquals(1024, intField.numericValue().intValue());
+        assertEquals("1024", intField.stringValue());
+        assertNull(intField.binaryValue());
+
+        assertEquals(Long.MAX_VALUE, longField.numericValue().longValue());
+        assertEquals(Long.toString(Long.MAX_VALUE), longField.stringValue());
+        assertNull(longField.binaryValue());
+
+        Value stringValue = pf.valueFromField(Type.STRING, stringField);
+        assertEquals("bâr", stringValue.getStringValue());
+
+        Value intValue = pf.valueFromField(Type.INT, intField);
+        assertEquals(1024, intValue.getIntValue());
+
+        Value longValue = pf.valueFromField(Type.LONG, longField);
+        assertEquals(Long.MAX_VALUE, longValue.getLongValue());
+    }
+
+
+    @Test
+    public void dateFields() {
+        final long nowTime = new Date().getTime();
+        List<IndexableField> fields = pf.makeFields("date", new Date(nowTime), Fields.FieldSpec.INDEXED_STORED);
+
+        assertEquals(2, fields.size());
+        boolean haveStored = false;
+        boolean haveIndexed = false;
+        for (IndexableField f : fields) {
+            if (f.fieldType().stored()) {
+                long fieldValue = f.numericValue().longValue();
+                assertEquals(nowTime, fieldValue);
+                haveStored = true;
+            }
+            if (!f.fieldType().stored()) {
+                long fieldValue = f.numericValue().longValue();
+                assertEquals(DateTools.round(nowTime, DateTools.Resolution.SECOND), fieldValue);
+                haveIndexed = true;
+            }
+        }
+        if (! (haveIndexed && haveStored)) {
+            fail("Expected one indexed and one stored field");
+        }
+    }
+
+    @Test
+    public void isLowercaseField() {
+        assertFalse(PropertyFields.isLowercaseField("p_foo"));
+        assertFalse(PropertyFields.isLowercaseField("p_bar:foo"));
+        assertTrue(PropertyFields.isLowercaseField("p_l_bar:foo"));
+        assertFalse(PropertyFields.isLowercaseField(ResourceFields.NAME_FIELD_NAME));
+        assertTrue(PropertyFields.isLowercaseField(ResourceFields.NAME_LC_FIELD_NAME));
+        assertFalse(PropertyFields.isLowercaseField("what:ever"));
+    }
+
+    @Test
+    public void multithreadedDateValueIndexFieldEncoding() {
+
+        Thread[] threads = new Thread[10];
+        for (int i = 0; i < threads.length; i++) {
+            threads[i] = new Thread(new Runnable() {
+                @Override
+                public void run() {
+                    dateValueIndexFieldEncoding();
+                }
+            });
+        }
+        for (Thread thread : threads) {
+            thread.start();
+        }
+        for (Thread thread : threads) {
+            try {
+                thread.join();
+            } catch (InterruptedException ie) {
+                fail("Interrupted while waiting for test threads to finish.");
+            }
+        }
     }
 
     @Test
@@ -218,9 +335,10 @@ public class PropertyFieldsTest {
         
         Property prop = getTypedProperty(Namespace.DEFAULT_NAMESPACE, "hrefs", Type.JSON, propDefMetadata);
         prop.setJSONValue(Json.parseToContainer(hrefsJson).asObject());
-        
-        List<IndexableField> fields = new ArrayList<>();
-        pf.addJsonPropertyFields(fields, prop);
+
+        Document doc = new Document();
+        List<IndexableField> fields = doc.getFields();
+        pf.addJsonPropertyFields(doc, prop);
         assertEquals(18, fields.size());
         
         assertHasIndexableFieldWithValue(fields, "p_hrefs@size", 2);
@@ -271,8 +389,9 @@ public class PropertyFieldsTest {
 
         prop.setJSONValue(jsonData);
 
-        List<IndexableField> fields = new ArrayList<>();
-        pf.addJsonPropertyFields(fields, prop);
+        Document doc = new Document();
+        List<IndexableField> fields = doc.getFields();
+        pf.addJsonPropertyFields(doc, prop);
 
         assertEquals(1, fields.size());
         IndexableField storedField = fields.get(0);
@@ -291,8 +410,9 @@ public class PropertyFieldsTest {
         jsonData.put("baz", Arrays.asList(new String[]{"a", "b", "c"}));
         prop.setJSONValue(jsonData);
 
-        List<IndexableField> fields = new ArrayList<>();
-        pf.addJsonPropertyFields(fields, prop);
+        Document doc = new Document();
+        List<IndexableField> fields = doc.getFields();
+        pf.addJsonPropertyFields(doc, prop);
 
         assertEquals(13, fields.size());
 
@@ -440,4 +560,233 @@ public class PropertyFieldsTest {
         assertEquals("foo", name);
     }
 
+    @Test
+    public void propertyFieldQuery_exactMatch_stringLowercase() {
+        Query q;
+        q = pf.propertyFieldQuery("p_l_a", "B", PropertyType.Type.STRING, true);
+        assertEquals("p_l_a:b", q.toString());
+        q = pf.propertyFieldQuery("p_l_a", "B@UIO.NO", PropertyType.Type.PRINCIPAL, true);
+        assertEquals("p_l_a:b@uio.no", q.toString());
+    }
+
+    @Test
+    public void propertyFieldQuery_exactMatch_string() {
+        Query q;
+        q = pf.propertyFieldQuery("p_a", "b", PropertyType.Type.STRING, false);
+        assertEquals("p_a:b", q.toString());
+        q = pf.propertyFieldQuery("p_a", "b@uio.no", PropertyType.Type.PRINCIPAL, false);
+        assertEquals("p_a:b@uio.no", q.toString());
+    }
+
+    @Test
+    public void propertyFieldQuery_exactMatch_int() {
+        Query q;
+        q = pf.propertyFieldQuery("p_a", "1", PropertyType.Type.INT, false);
+        assertEquals("p_a:[1 TO 1]", q.toString());
+        q = pf.propertyFieldQuery("p_a", 1, PropertyType.Type.INT, false);
+        assertEquals("p_a:[1 TO 1]", q.toString());
+    }
+
+    @Test
+    public void propertyFieldQuery_exactMatch_long() {
+        Query q;
+        q = pf.propertyFieldQuery("p_a", "1", PropertyType.Type.LONG, false);
+        assertEquals("p_a:[1 TO 1]", q.toString());
+        q = pf.propertyFieldQuery("p_a", 1L, PropertyType.Type.LONG, false);
+        assertEquals("p_a:[1 TO 1]", q.toString());
+    }
+
+    @Test
+    public void propertyFieldQuery_exactMatch_boolean() {
+        Query q;
+        q = pf.propertyFieldQuery("p_a", "true", PropertyType.Type.BOOLEAN, false);
+        assertEquals("p_a:true", q.toString());
+        q = pf.propertyFieldQuery("p_a", "false", PropertyType.Type.BOOLEAN, false);
+        assertEquals("p_a:false", q.toString());
+    }
+
+    @Test
+    public void propertyFieldQuery_exactMatch_date() {
+        Query q;
+        Date date = Date.from(Instant.parse("2017-12-05T00:00:00.00Z"));
+        long millisEpoch = date.getTime();
+
+        q = pf.propertyFieldQuery("p_a", date, PropertyType.Type.DATE, false);
+        assertEquals("p_a:[" + millisEpoch + " TO " + millisEpoch + "]", q.toString());
+        q = pf.propertyFieldQuery("p_a", date, PropertyType.Type.TIMESTAMP, false);
+        assertEquals("p_a:[" + millisEpoch + " TO " + millisEpoch + "]", q.toString());
+
+        q = pf.propertyFieldQuery("p_a", "2017-12-05 00:00:00 +0000", PropertyType.Type.DATE, false);
+        assertEquals("p_a:[" + millisEpoch + " TO " + millisEpoch + "]", q.toString());
+        q = pf.propertyFieldQuery("p_a", "2017-12-05 00:00:00 +0000", PropertyType.Type.TIMESTAMP, false);
+        assertEquals("p_a:[" + millisEpoch + " TO " + millisEpoch + "]", q.toString());
+
+        q = pf.propertyFieldQuery("p_a", millisEpoch, PropertyType.Type.TIMESTAMP, false);
+        assertEquals("p_a:[" + millisEpoch + " TO " + millisEpoch + "]", q.toString());
+        q = pf.propertyFieldQuery("p_a", Long.toString(millisEpoch), PropertyType.Type.TIMESTAMP, false);
+        assertEquals("p_a:[" + millisEpoch + " TO " + millisEpoch + "]", q.toString());
+    }
+
+
+    @Test
+    public void propertyFieldQuery_range_string() {
+        Query q;
+
+        q = pf.propertyFieldRangeQuery("p_a", "b", "c", true, true, PropertyType.Type.STRING, false);
+        assertEquals("p_a:[b TO c]", q.toString());
+
+        q = pf.propertyFieldRangeQuery("p_a", "b", "c", false, false, PropertyType.Type.STRING, false);
+        assertEquals("p_a:{b TO c}", q.toString());
+
+        q = pf.propertyFieldRangeQuery("p_a", "b", "c", true, false, PropertyType.Type.STRING, false);
+        assertEquals("p_a:[b TO c}", q.toString());
+
+        q = pf.propertyFieldRangeQuery("p_a", "b", "c", false, true, PropertyType.Type.STRING, false);
+        assertEquals("p_a:{b TO c]", q.toString());
+    }
+
+    @Test
+    public void propertyFieldQuery_range_string_unbounded() {
+        Query q;
+
+        q = pf.propertyFieldRangeQuery("p_a", null, null, true, true, PropertyType.Type.STRING, false);
+        assertEquals("p_a:[* TO *]", q.toString());
+
+        q = pf.propertyFieldRangeQuery("p_a", "b", null, false, true, PropertyType.Type.STRING, false);
+        assertEquals("p_a:{b TO *]", q.toString());
+
+        q = pf.propertyFieldRangeQuery("p_a", null, "c", true, false, PropertyType.Type.STRING, false);
+        assertEquals("p_a:[* TO c}", q.toString());
+
+    }
+
+    @Test
+    public void propertyFieldQuery_range_int() {
+        Query q;
+
+        q = pf.propertyFieldRangeQuery("p_a", 0, 1000, true, true, PropertyType.Type.INT, false);
+        assertEquals("p_a:[0 TO 1000]", q.toString());
+
+        q = pf.propertyFieldRangeQuery("p_a", 0, 1000, false, false, PropertyType.Type.INT, false);
+        assertEquals("p_a:[1 TO 999]", q.toString());
+
+        q = pf.propertyFieldRangeQuery("p_a", 0, 1000, true, false, PropertyType.Type.INT, false);
+        assertEquals("p_a:[0 TO 999]", q.toString());
+
+        q = pf.propertyFieldRangeQuery("p_a", 0, 1000, false, true, PropertyType.Type.INT, false);
+        assertEquals("p_a:[1 TO 1000]", q.toString());
+
+        // Test parseing when bounds are string objects
+        q = pf.propertyFieldRangeQuery("p_a", "0", "1000", false, false, PropertyType.Type.INT, false);
+        assertEquals("p_a:[1 TO 999]", q.toString());
+
+    }
+
+    @Test
+    public void propertyFieldQuery_range_int_unbounded() {
+        Query q;
+
+        q = pf.propertyFieldRangeQuery("p_a", 0, null, true, true, PropertyType.Type.INT, false);
+        assertEquals("p_a:[0 TO "  + Integer.MAX_VALUE + "]", q.toString());
+
+        q = pf.propertyFieldRangeQuery("p_a", null, 1000, true, true, PropertyType.Type.INT, false);
+        assertEquals("p_a:[" + Integer.MIN_VALUE + " TO 1000]", q.toString());
+
+        q = pf.propertyFieldRangeQuery("p_a", null, null, true, true, PropertyType.Type.INT, false);
+        assertEquals("p_a:[" + Integer.MIN_VALUE + " TO " + Integer.MAX_VALUE + "]", q.toString());
+
+    }
+
+    @Test
+    public void propertyFieldQuery_range_long() {
+        Query q;
+
+        q = pf.propertyFieldRangeQuery("p_a", 0L, 1000L, true, true, PropertyType.Type.LONG, false);
+        assertEquals("p_a:[0 TO 1000]", q.toString());
+
+        q = pf.propertyFieldRangeQuery("p_a", 0L, 1000L, false, false, PropertyType.Type.LONG, false);
+        assertEquals("p_a:[1 TO 999]", q.toString());
+
+        q = pf.propertyFieldRangeQuery("p_a", 0L, 1000L, true, false, PropertyType.Type.LONG, false);
+        assertEquals("p_a:[0 TO 999]", q.toString());
+
+        q = pf.propertyFieldRangeQuery("p_a", 0L, 1000L, false, true, PropertyType.Type.LONG, false);
+        assertEquals("p_a:[1 TO 1000]", q.toString());
+
+        // Test parseing when bounds are string objects
+        q = pf.propertyFieldRangeQuery("p_a", "0", Long.toString(Long.MAX_VALUE), false, false, PropertyType.Type.LONG, false);
+        assertEquals("p_a:[1 TO "+ (Long.MAX_VALUE-1)+"]", q.toString());
+
+    }
+
+    @Test
+    public void propertyFieldQuery_range_long_unbounded() {
+        Query q;
+
+        q = pf.propertyFieldRangeQuery("p_a", 0, null, true, true, PropertyType.Type.LONG, false);
+        assertEquals("p_a:[0 TO "  + Long.MAX_VALUE + "]", q.toString());
+
+        q = pf.propertyFieldRangeQuery("p_a", null, 1000, true, true, PropertyType.Type.LONG, false);
+        assertEquals("p_a:[" + Long.MIN_VALUE + " TO 1000]", q.toString());
+
+        q = pf.propertyFieldRangeQuery("p_a", null, null, true, true, PropertyType.Type.LONG, false);
+        assertEquals("p_a:[" + Long.MIN_VALUE + " TO " + Long.MAX_VALUE + "]", q.toString());
+
+    }
+
+    @Test
+    public void propertyFieldQuery_range_dateTimestamp() {
+        Date from = Date.from(Instant.parse("2017-12-05T00:00:00.00Z"));
+        Date to = Date.from(Instant.parse("2017-12-31T22:59:59.00Z"));
+
+        Query q;
+        q = pf.propertyFieldRangeQuery("p_a", from, to, true, true, PropertyType.Type.DATE, false);
+        assertEquals("p_a:["+from.getTime()+" TO "+to.getTime()+"]", q.toString());
+
+        q = pf.propertyFieldRangeQuery("p_a", from, to, false, true, PropertyType.Type.DATE, false);
+        assertEquals("p_a:["+(from.getTime()+1000) +" TO "+to.getTime()+"]", q.toString());
+
+        q = pf.propertyFieldRangeQuery("p_a", from, to, true, false, PropertyType.Type.DATE, false);
+        assertEquals("p_a:["+from.getTime()+" TO "+(to.getTime()-1000)+"]", q.toString());
+
+        q = pf.propertyFieldRangeQuery("p_a", from, to, false, false, PropertyType.Type.DATE, false);
+        assertEquals("p_a:["+(from.getTime()+1000)+" TO "+(to.getTime()-1000)+"]", q.toString());
+
+        q = pf.propertyFieldRangeQuery("p_a", from, to, true, true, PropertyType.Type.TIMESTAMP, false);
+        assertEquals("p_a:["+from.getTime()+" TO "+to.getTime()+"]", q.toString());
+
+        q = pf.propertyFieldRangeQuery("p_a", from, to, false, true, PropertyType.Type.TIMESTAMP, false);
+        assertEquals("p_a:["+(from.getTime()+1000) +" TO "+to.getTime()+"]", q.toString());
+
+        q = pf.propertyFieldRangeQuery("p_a", from, to, true, false, PropertyType.Type.TIMESTAMP, false);
+        assertEquals("p_a:["+from.getTime()+" TO "+(to.getTime()-1000)+"]", q.toString());
+
+        q = pf.propertyFieldRangeQuery("p_a", from, to, false, false, PropertyType.Type.TIMESTAMP, false);
+        assertEquals("p_a:["+(from.getTime()+1000)+" TO "+(to.getTime()-1000)+"]", q.toString());
+    }
+
+    @Test
+    public void propertyFieldQuery_range_dateTimestamp_unbounded() {
+        Date from = Date.from(Instant.parse("2017-12-05T00:00:00.00Z"));
+        Date to = Date.from(Instant.parse("2017-12-31T22:59:59.00Z"));
+        Query q;
+
+        q = pf.propertyFieldRangeQuery("p_a", from, null, true, true, PropertyType.Type.DATE, false);
+        assertEquals("p_a:[" + from.getTime() + " TO "  + Long.MAX_VALUE + "]", q.toString());
+
+        q = pf.propertyFieldRangeQuery("p_a", null, to, true, true, PropertyType.Type.DATE, false);
+        assertEquals("p_a:[" + Long.MIN_VALUE + " TO "+to.getTime()+"]", q.toString());
+
+        q = pf.propertyFieldRangeQuery("p_a", null, null, true, true, PropertyType.Type.DATE, false);
+        assertEquals("p_a:[" + Long.MIN_VALUE + " TO " + Long.MAX_VALUE + "]", q.toString());
+
+        q = pf.propertyFieldRangeQuery("p_a", from, null, true, true, PropertyType.Type.TIMESTAMP, false);
+        assertEquals("p_a:[" + from.getTime() + " TO "  + Long.MAX_VALUE + "]", q.toString());
+
+        q = pf.propertyFieldRangeQuery("p_a", null, to, true, true, PropertyType.Type.TIMESTAMP, false);
+        assertEquals("p_a:[" + Long.MIN_VALUE + " TO "+to.getTime()+"]", q.toString());
+
+        q = pf.propertyFieldRangeQuery("p_a", null, null, true, true, PropertyType.Type.TIMESTAMP, false);
+        assertEquals("p_a:[" + Long.MIN_VALUE + " TO " + Long.MAX_VALUE + "]", q.toString());
+    }
 }

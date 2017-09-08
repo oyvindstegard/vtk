@@ -98,35 +98,35 @@ public class ResourceFields extends Fields {
         this.resourceTypeMapper = new ResourceTypeMapper(resourceTypeTree);
     }
 
-    void addResourceFields(final List<IndexableField> fields, PropertySetImpl propSet) {
+    void addResourceFields(final Document doc, PropertySetImpl propSet) {
         // URI
-        fields.addAll(makeFields(URI_FIELD_NAME, propSet.getURI().toString(), INDEXED_STORED));
-        fields.add(makeStringSortField(URI_SORT_FIELD_NAME, propSet.getURI().toString()));
+        addAll(doc, makeFields(URI_FIELD_NAME, propSet.getURI().toString(), INDEXED_STORED));
+        doc.add(makeStringSortField(URI_SORT_FIELD_NAME, propSet.getURI().toString()));
 
         // URI depth (not stored, but indexed for use in searches)
         int uriDepth = propSet.getURI().getDepth();
-        fields.addAll(makeFields(URI_DEPTH_FIELD_NAME, uriDepth, INDEXED_WITH_DOCVALUE));
+        addAll(doc, makeFields(URI_DEPTH_FIELD_NAME, uriDepth, INDEXED_WITH_DOCVALUE));
 
         // Ancestor URIs (system field used for hierarchical URI namespace queries)
         for (String ancestor : getPathAncestorStrings(propSet.getURI())) {
-            fields.addAll(makeFields(URI_ANCESTORS_FIELD_NAME, ancestor, INDEXED));
+            addAll(doc, makeFields(URI_ANCESTORS_FIELD_NAME, ancestor, INDEXED));
         }
 
         // URI name
-        fields.addAll(makeFields(NAME_FIELD_NAME, propSet.getName(), INDEXED));
-        fields.addAll(makeFields(NAME_LC_FIELD_NAME, propSet.getName(), INDEXED_LOWERCASE));
-        fields.add(makeStringSortField(NAME_SORT_FIELD_NAME, propSet.getName()));
+        addAll(doc, makeFields(NAME_FIELD_NAME, propSet.getName(), INDEXED));
+        addAll(doc, makeFields(NAME_LC_FIELD_NAME, propSet.getName(), INDEXED_LOWERCASE));
+        doc.add(makeStringSortField(NAME_SORT_FIELD_NAME, propSet.getName()));
 
         // Resource type fields
-        fields.addAll(makeFields(RESOURCETYPE_NAME_FIELD_NAME, propSet.getResourceType(), INDEXED_WITH_DOCVALUE));
-        fields.addAll(makeFields(RESOURCETYPE_PATH_FIELD_NAME, resourceTypeMapper.resourceTypePath(propSet.getResourceType()), STORED));
+        addAll(doc, makeFields(RESOURCETYPE_NAME_FIELD_NAME, propSet.getResourceType(), INDEXED_WITH_DOCVALUE));
+        addAll(doc, makeFields(RESOURCETYPE_PATH_FIELD_NAME, resourceTypeMapper.resourceTypePath(propSet.getResourceType()), STORED));
         for (String ancestorType: resourceTypeTree.flattenedAncestors(propSet.getResourceType())) {
-            fields.addAll(makeFields(RESOURCETYPES_FIELD_NAME, ancestorType, INDEXED));
+            addAll(doc, makeFields(RESOURCETYPES_FIELD_NAME, ancestorType, INDEXED));
         }
-        fields.addAll(makeFields(RESOURCETYPES_FIELD_NAME, propSet.getResourceType(), INDEXED)); // Include leaf type in types field
+        addAll(doc, makeFields(RESOURCETYPES_FIELD_NAME, propSet.getResourceType(), INDEXED)); // Include leaf type in types field
 
         // ID (system field, stored and indexed, but only as a string type)
-        fields.addAll(makeFields(ID_FIELD_NAME, Integer.toString(propSet.getNumericId()), INDEXED_STORED));
+        addAll(doc, makeFields(ID_FIELD_NAME, Integer.toString(propSet.getNumericId()), INDEXED_STORED));
     }
     
     public String resolveResourceType(String resourceTypePath) {

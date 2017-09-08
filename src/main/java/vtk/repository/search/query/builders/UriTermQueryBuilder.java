@@ -31,25 +31,20 @@
 package vtk.repository.search.query.builders;
 
 import org.apache.lucene.index.Term;
-import org.apache.lucene.queries.TermFilter;
-import org.apache.lucene.search.ConstantScoreQuery;
-import org.apache.lucene.search.Filter;
 import org.apache.lucene.search.TermQuery;
 import vtk.repository.index.mapping.ResourceFields;
+import vtk.repository.search.query.LuceneQueryBuilder;
 import vtk.repository.search.query.QueryBuilder;
 import vtk.repository.search.query.QueryBuilderException;
 import vtk.repository.search.query.TermOperator;
 import vtk.repository.search.query.UriTermQuery;
-import vtk.repository.search.query.filter.FilterFactory;
 
 /**
  * 
- * @author oyviste
- *
  */
 public class UriTermQueryBuilder implements QueryBuilder {
 
-    private UriTermQuery query;
+    private final UriTermQuery query;
 
     public UriTermQueryBuilder(UriTermQuery query) {
         this.query = query;
@@ -61,18 +56,16 @@ public class UriTermQueryBuilder implements QueryBuilder {
         
         TermOperator operator = this.query.getOperator();
 
-        if (TermOperator.EQ.equals(operator)) {
-            // URI equality
-            return new TermQuery(new Term(ResourceFields.URI_FIELD_NAME, uri));
-        } 
+        TermQuery tq = new TermQuery(new Term(ResourceFields.URI_FIELD_NAME, uri));
 
-        if (TermOperator.NE.equals(operator)) {
-            // URI NOT equal
-            Term t = new Term(ResourceFields.URI_FIELD_NAME, uri);
-            Filter f = FilterFactory.inversionFilter(new TermFilter(t));
-            return new ConstantScoreQuery(f);
+        if (operator == TermOperator.EQ) {
+            return tq;
         }
-        
+
+        if (operator == TermOperator.NE) {
+            return LuceneQueryBuilder.invert(tq);
+        }
+
         throw new QueryBuilderException("Operator '" + operator + "' not legal for UriTermQuery.");
     }
 

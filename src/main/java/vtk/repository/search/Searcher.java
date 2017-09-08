@@ -71,24 +71,10 @@ public interface Searcher {
      * Execute an iteration of all property sets that match the criteria in the
      * provided <code>Search</code>.  There are no limits on the number of matching
      * PropertySet instances that can be included in the iteration.
-     * 
-     * Note however that the following limitations do apply:
-     * <ul>
-     *   <li>For some fields, only ascending sort is supported. An exception
-     * will be thrown if this happens.
-     * 
-     *   <li>If sorting on a field, then ONLY docs which have the property/field
-     *       are included in the matching iteration. If you want to make sure you
-     *       get all docs for which your query matches, then sort on a property/field
-     *       which is guaranteed to be present in all docs, or don't sort at all
-     *       (Search.setSorting(null)).
-     * </ul>
-     * 
-     * <em>
-     * It is most efficient to remove the sorting criterium from <code>Search</code> 
-     * unless it is specifically required !
-     * </em>
-     * 
+     *
+     * <p>For best performance, sorting requirements should be dropped when
+     * using this method.
+     *
      * <p>Since an iteration can potentially load a lot of documents, client code
      * should take care to set a proper field/property-selector in <code>Search</code> for
      * better efficiency.
@@ -99,10 +85,10 @@ public interface Searcher {
      * the thread executing the search, but this callback API provides no way to
      * check the recency of the search results afterwords.
      *
-     * @param token
+     * @param token repository security token
      * @param search A <code>Search</code> instance, encapsulating all aspects
      *        of the index search. The search query itself may be null, in which case
-     *        everything will match.
+     *        nothing will match.
      * 
      * @param callback a provided <code>MatchCallback</code> that will be
      *        used to process matching results.

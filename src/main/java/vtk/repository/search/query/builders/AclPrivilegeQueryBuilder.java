@@ -33,24 +33,24 @@ package vtk.repository.search.query.builders;
 
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
+import java.util.stream.Collectors;
 import org.apache.lucene.index.Term;
-import org.apache.lucene.queries.BooleanFilter;
-import org.apache.lucene.queries.FilterClause;
-import org.apache.lucene.queries.TermsFilter;
 import org.apache.lucene.search.BooleanClause;
-import org.apache.lucene.search.ConstantScoreQuery;
-import org.apache.lucene.search.FieldValueFilter;
-import org.apache.lucene.search.Filter;
+import org.apache.lucene.search.BooleanQuery;
 import org.apache.lucene.search.Query;
+import org.apache.lucene.search.TermInSetQuery;
+import org.apache.lucene.search.TermQuery;
 import org.apache.lucene.util.BytesRef;
 import vtk.repository.AuthorizationManager;
 import vtk.repository.Privilege;
 import vtk.repository.index.mapping.AclFields;
+import vtk.repository.index.mapping.Fields;
 import vtk.repository.search.query.AclPrivilegeQuery;
+import vtk.repository.search.query.LuceneQueryBuilder;
 import vtk.repository.search.query.QueryBuilder;
 import vtk.repository.search.query.QueryBuilderException;
-import vtk.repository.search.query.filter.FilterFactory;
 import vtk.security.Principal;
 
 /**
@@ -70,35 +70,28 @@ public class AclPrivilegeQueryBuilder implements QueryBuilder {
         final Privilege action = query.getPrivilege();
         final String uid = query.getQualifiedName();
         
-        Filter f;
+        Query q;
         final List<String> searchFields = fieldsFor(action, query.isIncludeSuperPrivileges());
         if (uid != null) {
+            final BooleanClause.Occur occur = query.isInverted() ? BooleanClause.Occur.MUST_NOT : BooleanClause.Occur.SHOULD;
+            // Search for specific uid in all privilege fields
             BytesRef termValue = new BytesRef(uid);
-            List<Term> terms = new ArrayList<Term>(searchFields.size());
+            BooleanQuery.Builder b = new BooleanQuery.Builder();
             for (String field: searchFields) {
-                terms.add(new Term(field, termValue));
+                b.add(new TermQuery(new Term(field, termValue)), occur);
             }
-            
-            f = new TermsFilter(terms);
-            if (query.isInverted()) {
-                f = FilterFactory.inversionFilter(f);
-            }
+            q = b.build();
+
         } else {
-            // Principal wildcard
-            BooleanFilter bf = new BooleanFilter();
-            BooleanClause.Occur occur;
+            // Wildcard uid, exists for set of privilege fields
+            Collection<BytesRef> terms = searchFields.stream().map(s -> new BytesRef(s)).collect(Collectors.toList());
+            q = new TermInSetQuery(Fields.FIELD_NAMES_METAFIELD, terms);
             if (query.isInverted()) {
-                occur = BooleanClause.Occur.MUST;
-            } else {
-                occur = BooleanClause.Occur.SHOULD;
+                q = LuceneQueryBuilder.invert(q);
             }
-            for (String field: searchFields) {
-                bf.add(new FilterClause(new FieldValueFilter(field, query.isInverted()), occur));
-            }
-            f = bf;
         }
         
-        return new ConstantScoreQuery(f);
+        return q;
     }
     
     // Provide list of search fields for a privilege or null-wildcard 

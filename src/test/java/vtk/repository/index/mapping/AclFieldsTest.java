@@ -36,6 +36,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Set;
+import org.apache.lucene.document.Document;
 import org.apache.lucene.index.IndexableField;
 import org.junit.Before;
 import org.junit.Test;
@@ -75,12 +76,12 @@ public class AclFieldsTest {
     @Test
     public void emptyAcl() {
         
-        List<IndexableField> fields = new ArrayList<IndexableField>();
+        Document doc = new Document();
         
-        aclFields.addAclFields(fields, ps, Acl.EMPTY_ACL);
+        aclFields.addAclFields(doc, ps, Acl.EMPTY_ACL);
         
-        assertEquals(1, fields.size());
-        IndexableField field = fields.get(0);
+        assertEquals(1, doc.getFields().size());
+        IndexableField field = doc.getFields().get(0);
         
         assertEquals(AclFields.INHERITED_FROM_FIELD_NAME, field.name());
         assertEquals(String.valueOf(ps.getAclInheritedFrom()), field.stringValue());
@@ -91,9 +92,10 @@ public class AclFieldsTest {
     public void readForAll() {
 
         Acl acl = makeAcl(Privilege.READ, PrincipalFactory.ALL);
-        List<IndexableField> fields = new ArrayList<IndexableField>();
+        Document doc = new Document();
+        List<IndexableField> fields = doc.getFields();
         
-        aclFields.addAclFields(fields, ps, acl);
+        aclFields.addAclFields(doc, ps, acl);
         
         assertEquals(3, fields.size());
         IndexableField field = fields.get(0);
@@ -111,9 +113,10 @@ public class AclFieldsTest {
         Acl acl = makeAcl(Privilege.READ, PrincipalFactory.ALL, 
                 Privilege.ALL, user("vortex@localhost"));
         
-        List<IndexableField> fields = new ArrayList<IndexableField>();
+        Document doc = new Document();
+        List<IndexableField> fields = doc.getFields();
         
-        aclFields.addAclFields(fields, ps, acl);
+        aclFields.addAclFields(doc, ps, acl);
         
         Acl aclFromFields = aclFields.fromFields(fields);
         assertEquals(4, fields.size());
@@ -129,8 +132,9 @@ public class AclFieldsTest {
                 Privilege.READ_WRITE, user("foo@uio.no"), user("bar@uio.no"), user("baz@uio.no"),
                 group("foogroup@netgroups.uio.no"), group("bargroup@netgroups.uio.no"));
                 
-        List<IndexableField> fields = new ArrayList<IndexableField>();
-        aclFields.addAclFields(fields, ps, acl);
+        Document doc = new Document();
+        List<IndexableField> fields = doc.getFields();
+        aclFields.addAclFields(doc, ps, acl);
         
         Acl aclFromFields = aclFields.fromFields(fields);
         assertEquals(acl, aclFromFields);
@@ -140,9 +144,10 @@ public class AclFieldsTest {
     public void principalTypeIsCorrect() {
         Acl acl = makeAcl(Privilege.ALL, user("root@localhost"), 
                 Privilege.READ_WRITE, group("system-users@localhost"));
-                
-        List<IndexableField> fields = new ArrayList<IndexableField>();
-        aclFields.addAclFields(fields, ps, acl);
+
+        Document doc = new Document();
+        List<IndexableField> fields = doc.getFields();
+        aclFields.addAclFields(doc, ps, acl);
         
         Acl aclFromFields = aclFields.fromFields(fields);
         
@@ -176,14 +181,15 @@ public class AclFieldsTest {
                 Privilege.READ_WRITE_UNPUBLISHED, group("writers@netgroups.uio.no"),
                 Privilege.READ_WRITE, group("editors@netgroups.uio.no"),
                 Privilege.ADD_COMMENT, user("nobody@localhost"));
-        
-        List<IndexableField> fields = new ArrayList<IndexableField>();
-        aclFields.addAclFields(fields, ps, acl);
+
+        Document doc = new Document();
+        List<IndexableField> fields = doc.getFields();
+        aclFields.addAclFields(doc, ps, acl);
         assertEquals(acl, aclFields.fromFields(fields));
         
         assertEquals(10, fields.size());
         
-        Set<String> principalIds = new HashSet<String>();
+        Set<String> principalIds = new HashSet<>();
         for (IndexableField f: fields) {
             if (f.name().equals(AclFields.AGGREGATED_READ_FIELD_NAME)) {
                 principalIds.add(f.stringValue());
@@ -204,13 +210,14 @@ public class AclFieldsTest {
                 Privilege.READ_WRITE, group("editors@netgroups.uio.no"),
                 Privilege.ADD_COMMENT, user("nobody@localhost"),
                 Privilege.READ, PrincipalFactory.ALL);
-        
-        List<IndexableField> fields = new ArrayList<IndexableField>();
-        aclFields.addAclFields(fields, ps, acl);
+
+        Document doc = new Document();
+        List<IndexableField> fields = doc.getFields();
+        aclFields.addAclFields(doc, ps, acl);
         
         assertEquals(acl, aclFields.fromFields(fields));
 
-        Set<String> principalIds = new HashSet<String>();
+        Set<String> principalIds = new HashSet<>();
         for (IndexableField f: fields) {
             if (f.name().equals(AclFields.AGGREGATED_READ_FIELD_NAME)) {
                 principalIds.add(f.stringValue());

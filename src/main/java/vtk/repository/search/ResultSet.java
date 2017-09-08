@@ -34,10 +34,8 @@ import java.time.Instant;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Optional;
-import vtk.repository.Acl;
 
 import vtk.repository.PropertySet;
-import vtk.repository.Resource;
 
 /**
  * Contains the result set of a repository query.
@@ -53,6 +51,9 @@ import vtk.repository.Resource;
  * which then encapsulates all aspects. Then consolidate with iteration-API, so the
  * same result class is used in both places. (Iteration-API uses the Searcher.MatchingResult interface
  * for similar purpose.)
+ *
+ * XXX Lucene 7 operaties with total hits in the long range, so at least the
+ * method {@link #getTotalHits() } should be changed to return a long instead.
  */
 public interface ResultSet extends Iterable<PropertySet> {
 

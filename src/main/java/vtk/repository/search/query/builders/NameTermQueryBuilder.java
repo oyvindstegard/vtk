@@ -30,31 +30,26 @@
  */
 package vtk.repository.search.query.builders;
 
-import org.apache.lucene.index.Term;
-import org.apache.lucene.queries.TermFilter;
-import org.apache.lucene.search.ConstantScoreQuery;
-import org.apache.lucene.search.TermQuery;
-import org.apache.lucene.search.TermRangeFilter;
-import org.apache.lucene.util.BytesRef;
+import org.apache.lucene.search.Query;
 import vtk.repository.index.mapping.ResourceFields;
+import vtk.repository.search.query.LuceneQueryBuilder;
 
 import vtk.repository.search.query.NameTermQuery;
 import vtk.repository.search.query.QueryBuilder;
 import vtk.repository.search.query.QueryBuilderException;
 import vtk.repository.search.query.TermOperator;
-import vtk.repository.search.query.filter.FilterFactory;
 
 /**
  * 
- * @author oyviste
- *
  */
 public class NameTermQueryBuilder implements QueryBuilder {
 
-    private NameTermQuery ntq;
+    private final NameTermQuery ntq;
+    private final ResourceFields rf;
     
-    public NameTermQueryBuilder(NameTermQuery q) {
+    public NameTermQueryBuilder(NameTermQuery q, ResourceFields rf) {
         this.ntq = q;
+        this.rf = rf;
     }
     
     @Override
@@ -63,23 +58,13 @@ public class NameTermQueryBuilder implements QueryBuilder {
         TermOperator op = this.ntq.getOperator();
 
         if (op == TermOperator.EQ || op == TermOperator.NE) {
-            Term t = new Term(ResourceFields.NAME_FIELD_NAME, term);
-                
-            if (op == TermOperator.EQ) {
-                return new TermQuery(t);
-            } else {
-                return new ConstantScoreQuery(FilterFactory.inversionFilter(new TermFilter(t)));
-            }
+            Query q = rf.typedFieldQuery(ResourceFields.NAME_FIELD_NAME, term, String.class, false);
+            return op == TermOperator.EQ ? q : LuceneQueryBuilder.invert(q);
         }
 
         if (op == TermOperator.EQ_IGNORECASE || op == TermOperator.NE_IGNORECASE) {
-            Term t = new Term(ResourceFields.NAME_LC_FIELD_NAME, term.toLowerCase());
-            
-            if (op == TermOperator.EQ_IGNORECASE) {
-                return new TermQuery(t);
-            } else {
-                return new ConstantScoreQuery(FilterFactory.inversionFilter(new TermFilter(t)));
-            }
+            Query q = rf.typedFieldQuery(ResourceFields.NAME_LC_FIELD_NAME, term, String.class, true);
+            return op == TermOperator.EQ_IGNORECASE ? q : LuceneQueryBuilder.invert(q);
         }
 
         boolean includeLower = false;
@@ -102,16 +87,11 @@ public class NameTermQueryBuilder implements QueryBuilder {
             upperTerm = term;
             includeLower = true;
         } else {
-            throw new QueryBuilderException("Unknown term operator"); 
+            throw new QueryBuilderException("Unknown term operator: " + op);
         }
-        
-        TermRangeFilter trFilter = new TermRangeFilter(ResourceFields.NAME_FIELD_NAME,
-                                        new BytesRef(lowerTerm),
-                                        new BytesRef(upperTerm),
-                                        includeLower,
-                                        includeUpper);
 
-        return new ConstantScoreQuery(trFilter);
+        return rf.typedFieldRangeQuery(ResourceFields.NAME_FIELD_NAME, lowerTerm, upperTerm,
+                includeLower, includeUpper, String.class, false);
     }
 
 }

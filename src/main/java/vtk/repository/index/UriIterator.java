@@ -32,61 +32,74 @@
 package vtk.repository.index;
 
 import java.io.IOException;
-import org.apache.lucene.index.AtomicReader;
-import org.apache.lucene.index.DocsEnum;
-import org.apache.lucene.index.SlowCompositeReaderWrapper;
+import org.apache.lucene.index.IndexReader;
+import org.apache.lucene.index.MultiFields;
+import org.apache.lucene.index.PostingsEnum;
+
 import org.apache.lucene.index.Terms;
 import org.apache.lucene.index.TermsEnum;
-import org.apache.lucene.search.DocIdSetIterator;
 import org.apache.lucene.search.IndexSearcher;
+import org.apache.lucene.util.Bits;
 import vtk.repository.Path;
 import vtk.repository.index.mapping.ResourceFields;
 
 /**
- * Ordered iteratin on all URIs of property sets present in index
+ * Ordered iteration on all URIs of property sets present in index
  */
 public class UriIterator implements CloseableIterator<Path> {
 
     private final IndexManager index;
     private final IndexSearcher searcher;
-    private final AtomicReader reader;
-    private TermsEnum te;
-    private DocsEnum de;
+    
+    private final Terms terms;
+    private final Bits liveDocs;
+    private TermsEnum te = null;
+    private PostingsEnum pe = null;
     private Path next;
     
     public UriIterator(IndexManager index) throws IOException {
         this.index = index;
-        searcher = index.getIndexSearcher();
-        // We need this to get global lexicographic term ordering across all index segments:
-        reader = SlowCompositeReaderWrapper.wrap(searcher.getIndexReader());
-        next = nextUri();
+        this.searcher = index.getIndexSearcher();
+
+        IndexReader reader = searcher.getIndexReader();
+        this.terms = MultiFields.getTerms(reader, ResourceFields.URI_FIELD_NAME);
+        this.liveDocs = MultiFields.getLiveDocs(reader);
+
+        this.next = nextUri();
     }
     
     private Path nextUri() throws IOException {
         if (te == null) {
-            Terms terms = reader.terms(ResourceFields.URI_FIELD_NAME);
             if (terms == null) {
                 return null;
             }
-            te = terms.iterator(null);
+            te = terms.iterator();
+        }
+        if (te.next() == null) {
+            return null;
+        }
+
+        pe = te.postings(pe, PostingsEnum.NONE);
+        while (!hasLiveDoc(pe, liveDocs)) {
             if (te.next() == null) {
                 return null;
             }
+            pe = te.postings(pe, PostingsEnum.NONE);
         }
-        if (de == null) {
-            de = te.docs(reader.getLiveDocs(), de, DocsEnum.FLAG_NONE);
-        }
-        while (de.nextDoc() == DocIdSetIterator.NO_MORE_DOCS) {
-            if (te.next() == null) {
-                return null;
-            } else {
-                de = te.docs(reader.getLiveDocs(), de, DocsEnum.FLAG_NONE);
-            }
-        } 
         
         return Path.fromString(te.term().utf8ToString());
     }
-    
+
+    private boolean hasLiveDoc(PostingsEnum pe, Bits liveDocs) throws IOException {
+        int docId;
+        while ((docId = pe.nextDoc()) != PostingsEnum.NO_MORE_DOCS) {
+            if (liveDocs == null || liveDocs.get(docId)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     @Override
     public void close() throws Exception {
         index.releaseIndexSearcher(searcher);
@@ -104,14 +117,14 @@ public class UriIterator implements CloseableIterator<Path> {
         }
 
         Path retVal = next;
-        
+
         // Advance to next
         try {
             next = nextUri();
         } catch (IOException io) {
             next = null;
         }
-        
+
         // Return current
         return retVal;
     }

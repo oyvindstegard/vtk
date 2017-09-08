@@ -31,22 +31,20 @@
 package vtk.repository.search.query.builders;
 
 import org.apache.lucene.index.Term;
-import org.apache.lucene.search.ConstantScoreQuery;
-import org.apache.lucene.search.Filter;
 import org.apache.lucene.search.Query;
+import org.apache.lucene.search.WildcardQuery;
 import vtk.repository.index.mapping.PropertyFields;
+import vtk.repository.resourcetype.PropertyType;
 import vtk.repository.resourcetype.PropertyType.Type;
 import vtk.repository.resourcetype.PropertyTypeDefinition;
+import vtk.repository.search.query.LuceneQueryBuilder;
 import vtk.repository.search.query.PropertyWildcardQuery;
 import vtk.repository.search.query.QueryBuilder;
 import vtk.repository.search.query.QueryBuilderException;
 import vtk.repository.search.query.TermOperator;
-import vtk.repository.search.query.filter.FilterFactory;
 
 /**
  * 
- * @author oyviste
- *
  */
 public class PropertyWildcardQueryBuilder implements QueryBuilder {
 
@@ -61,36 +59,37 @@ public class PropertyWildcardQueryBuilder implements QueryBuilder {
     @Override
     public Query buildQuery() throws QueryBuilderException {
         
-        String wildcard = this.query.getTerm();
-
-        if (! (def.getType() == Type.PRINCIPAL ||
-                def.getType() == Type.STRING ||
-                def.getType() == Type.HTML ||
-                def.getType() == Type.JSON)) {
-             throw new QueryBuilderException("Wildcard queries are only supported for "
-                 + "property types PRINCIPAL, STRING, HTML and JSON w/attribute specifier. "
-                 + "Use range queries for dates and numbers.");
-         }
-
+        String wildcard = query.getTerm();
+        PropertyType.Type valueType = def.getType();
         TermOperator op = query.getOperator();
 
         boolean ignorecase = (op == TermOperator.EQ_IGNORECASE || op == TermOperator.NE_IGNORECASE);
         boolean invert = (op == TermOperator.NE || op == TermOperator.NE_IGNORECASE);
         
         String fieldName = PropertyFields.propertyFieldName(def, ignorecase);
-        if (def.getType() == Type.JSON && query.complexValueAttributeSpecifier().isPresent()) {
-            fieldName = PropertyFields.jsonFieldName(def,
-                    query.complexValueAttributeSpecifier().get(), ignorecase);
+        if (valueType == Type.JSON) {
+            if (! query.complexValueAttributeSpecifier().isPresent()) {
+                throw new QueryBuilderException("Wildcard query on JSON fields requires complex attribute specifier");
+            }
+
+            fieldName = PropertyFields.jsonFieldName(def, query.complexValueAttributeSpecifier().get(), ignorecase);
+            valueType = PropertyFields.jsonFieldDataType(def, query.complexValueAttributeSpecifier().get());
         }
+
+        if (! (valueType == Type.PRINCIPAL ||
+                valueType == Type.STRING ||
+                valueType == Type.HTML ||
+                valueType == Type.JSON ||
+                valueType == Type.IMAGE_REF)) {
+             throw new QueryBuilderException("Wildcard queries are only supported for "
+                 + "property types PRINCIPAL, STRING, HTML, IMAGE_REF and JSON w/attribute specifier. "
+                 + "Use range queries for dates and numberic properties");
+         }
 
         Term wTerm = new Term(fieldName, (ignorecase ? wildcard.toLowerCase() : wildcard));
+        WildcardQuery wq = new WildcardQuery(wTerm);
 
-        Filter filter = FilterFactory.wildcardFilter(wTerm);
-        if (invert) {
-            filter = FilterFactory.inversionFilter(filter);
-        }
-        
-        return new ConstantScoreQuery(filter);
+        return invert ? LuceneQueryBuilder.invert(wq) : wq;
     }
 
 }

@@ -33,19 +33,19 @@ package vtk.repository.index;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.Predicate;
 
 import org.apache.lucene.document.Document;
 import org.apache.lucene.document.DocumentStoredFieldVisitor;
-import org.apache.lucene.index.AtomicReader;
-import org.apache.lucene.index.AtomicReaderContext;
 import org.apache.lucene.index.FieldInfo;
+import org.apache.lucene.index.LeafReaderContext;
 import org.apache.lucene.index.StoredFieldVisitor;
 import org.apache.lucene.index.Term;
-import org.apache.lucene.queries.TermFilter;
-import org.apache.lucene.search.DocIdSet;
-import org.apache.lucene.search.DocIdSetIterator;
+import org.apache.lucene.search.Collector;
 import org.apache.lucene.search.IndexSearcher;
-import org.apache.lucene.util.Bits;
+import org.apache.lucene.search.LeafCollector;
+import org.apache.lucene.search.Scorer;
+import org.apache.lucene.search.TermQuery;
 import vtk.repository.Acl;
 
 import vtk.repository.Path;
@@ -75,8 +75,7 @@ class PropertySetIndexRandomAccessorImpl implements PropertySetIndexRandomAccess
 
         Term term = new Term(ResourceFields.URI_FIELD_NAME, uri.toString());
         try {
-            List<Document> docs = lookupDocs(term, (String fieldName) -> false);
-            return docs.size();
+            return searcher.count(new TermQuery(term));
         } catch (IOException io) {
             throw new IndexException(io);
         }
@@ -119,20 +118,20 @@ class PropertySetIndexRandomAccessorImpl implements PropertySetIndexRandomAccess
     public PropertySetInternalData getPropertySetInternalData(final Path uri) throws IndexException {
 
         try {
-            LoadFieldCallback lfc = (String fieldName) -> {
-                if (ResourceFields.URI_FIELD_NAME.equals(fieldName)
-                        || ResourceFields.RESOURCETYPE_PATH_FIELD_NAME.equals(fieldName)
-                        || ResourceFields.ID_FIELD_NAME.equals(fieldName)) {
+            Predicate<String> lfp = fn -> {
+                if (ResourceFields.URI_FIELD_NAME.equals(fn)
+                        || ResourceFields.RESOURCETYPE_PATH_FIELD_NAME.equals(fn)
+                        || ResourceFields.ID_FIELD_NAME.equals(fn)) {
                     return true;
                 }
-                if (fieldName.startsWith(AclFields.ACL_FIELD_PREFIX)) {
+                if (fn.startsWith(AclFields.ACL_FIELD_PREFIX)) {
                     return true;
                 }
 
                 return false;
             };
             
-            List<Document> docs = lookupDocs(new Term(ResourceFields.URI_FIELD_NAME, uri.toString()), lfc);
+            List<Document> docs = lookupDocs(new Term(ResourceFields.URI_FIELD_NAME, uri.toString()), lfp);
             if (docs.isEmpty()) return null;
 
             Document doc = docs.get(0); // Just pick first in case of duplicates
@@ -174,44 +173,41 @@ class PropertySetIndexRandomAccessorImpl implements PropertySetIndexRandomAccess
         
     }
     
-    private static interface LoadFieldCallback {
-        boolean loadField(String fieldName);
-    }
-    
-    private List<Document> lookupDocs(Term term, final LoadFieldCallback lfc) throws IOException {
-        final List<Document> documents = new ArrayList<>();
-        final TermFilter tf = new TermFilter(term);
-        try {
-            for (AtomicReaderContext arc : searcher.getIndexReader().leaves()) {
-                AtomicReader ar = arc.reader();
-                Bits liveDocs = ar.getLiveDocs();
-                DocIdSet docSet = tf.getDocIdSet(arc, liveDocs);
-                if (docSet != null) {
-                    DocIdSetIterator disi = docSet.iterator();
-                    if (disi != null) {
-                        int docId;
-                        while ((docId = disi.nextDoc()) != DocIdSetIterator.NO_MORE_DOCS) {
-                            DocumentStoredFieldVisitor fv
-                                    = new DocumentStoredFieldVisitor() {
-                                @Override
-                                public StoredFieldVisitor.Status needsField(FieldInfo fieldInfo) throws IOException {
-                                    if (lfc == null || lfc.loadField(fieldInfo.name)) {
-                                        return StoredFieldVisitor.Status.YES;
-                                    }
-                                    return StoredFieldVisitor.Status.NO;
-                                }
-                            };
-                            ar.document(docId, fv);
-                            documents.add(fv.getDocument());
-                        }
+    private List<Document> lookupDocs(Term term, final Predicate<String> lfc) throws IOException {
+
+        final List<Document> results = new ArrayList<>();
+        final TermQuery tq = new TermQuery(term);
+
+        searcher.search(tq, new Collector(){
+            @Override
+            public LeafCollector getLeafCollector(final LeafReaderContext context) throws IOException {
+                return new LeafCollector() {
+                    @Override
+                    public void setScorer(Scorer scorer) throws IOException {
                     }
-                }
+                    @Override
+                    public void collect(int doc) throws IOException {
+                        DocumentStoredFieldVisitor visitor = new DocumentStoredFieldVisitor() {
+                            @Override
+                            public StoredFieldVisitor.Status needsField(FieldInfo fi) throws IOException {
+                                if (lfc == null || lfc.test(fi.name)) {
+                                    return Status.YES;
+                                }
+                                return Status.NO;
+                            }
+                        };
+                        context.reader().document(doc, visitor);
+                        results.add(visitor.getDocument());
+                    }
+                };
             }
-        } catch (IOException io) {
-            throw new IndexException(io);
-        }
-        
-        return documents;
+            @Override
+            public boolean needsScores() {
+                return false;
+            }
+        });
+
+        return results;
     }
     
     @Override

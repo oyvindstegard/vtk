@@ -36,15 +36,13 @@ import static vtk.repository.search.query.TermOperator.IN;
 import static vtk.repository.search.query.TermOperator.NI;
 
 import org.apache.lucene.index.Term;
-import org.apache.lucene.queries.TermFilter;
-import org.apache.lucene.search.ConstantScoreQuery;
-import org.apache.lucene.search.Filter;
 import org.apache.lucene.search.Query;
+import org.apache.lucene.search.TermQuery;
 import vtk.repository.index.mapping.ResourceFields;
+import vtk.repository.search.query.LuceneQueryBuilder;
 import vtk.repository.search.query.QueryBuilder;
 import vtk.repository.search.query.QueryBuilderException;
 import vtk.repository.search.query.TermOperator;
-import vtk.repository.search.query.filter.FilterFactory;
 
 public class TypeTermQueryBuilder implements QueryBuilder {
 
@@ -75,14 +73,13 @@ public class TypeTermQueryBuilder implements QueryBuilder {
             fieldName = ResourceFields.RESOURCETYPES_FIELD_NAME;
         }
 
-        Term indexTerm = new Term(fieldName, this.term.toString());
-        Filter filter = new TermFilter(indexTerm);
-        
+        Query q = new TermQuery(new Term(fieldName, term.toString()));
+
         if (op == NE || op == NI) {
-            filter = FilterFactory.inversionFilter(filter);
+            q = LuceneQueryBuilder.invert(q);
         }
 
-        return new ConstantScoreQuery(filter);
+        return q;
     }
 
 }

@@ -1,4 +1,4 @@
-/* Copyright (c) 2006, University of Oslo, Norway
+/* Copyright (c) 2006-2017, University of Oslo, Norway
  * All rights reserved.
  * 
  * Redistribution and use in source and binary forms, with or without
@@ -32,14 +32,15 @@ package vtk.repository.search.query.builders;
 
 import java.util.ArrayList;
 import java.util.List;
-import org.apache.lucene.index.Term;
-import org.apache.lucene.queries.TermsFilter;
+import java.util.stream.Collectors;
 
 import org.apache.lucene.search.BooleanClause;
 import org.apache.lucene.search.BooleanClause.Occur;
 import org.apache.lucene.search.BooleanQuery;
-import org.apache.lucene.search.ConstantScoreQuery;
 import org.apache.lucene.search.IndexSearcher;
+import org.apache.lucene.search.MatchAllDocsQuery;
+import org.apache.lucene.search.TermInSetQuery;
+import org.apache.lucene.util.BytesRef;
 import vtk.repository.index.mapping.ResourceFields;
 import vtk.repository.search.query.AbstractMultipleQuery;
 import vtk.repository.search.query.AndQuery;
@@ -52,17 +53,19 @@ import vtk.repository.search.query.UriPrefixQuery;
 import vtk.repository.search.query.UriSetQuery;
 import vtk.repository.search.query.UriTermQuery;
 
-
+/**
+ * Handles recursive building of a query tree with some rewrites along the way.
+ */
 public class QueryTreeBuilder implements QueryBuilder {
 
     private final AbstractMultipleQuery query;
-    private final LuceneQueryBuilder factory;
+    private final LuceneQueryBuilder mainBuilder;
     private final IndexSearcher searcher;
     
-    public QueryTreeBuilder(LuceneQueryBuilder factory, 
+    public QueryTreeBuilder(LuceneQueryBuilder mainBuilder,
             IndexSearcher searcher, AbstractMultipleQuery query) {
         this.query = query;
-        this.factory = factory;
+        this.mainBuilder = mainBuilder;
         this.searcher = searcher;
     }
 
@@ -70,12 +73,11 @@ public class QueryTreeBuilder implements QueryBuilder {
     public org.apache.lucene.search.Query buildQuery() {
         return buildInternal(this.query);
     }
-    
+
     private org.apache.lucene.search.Query buildInternal(Query query) {
-        Occur occur = null;
-        
+        final Occur occur;
         if (query instanceof AndQuery) {
-            occur = BooleanClause.Occur.MUST;
+            occur = BooleanClause.Occur.FILTER;
         } else if (query instanceof OrQuery) {
             org.apache.lucene.search.Query optimized = maybeOptimizeUriQueryClauses((OrQuery)query);
             if (optimized != null) {
@@ -84,22 +86,51 @@ public class QueryTreeBuilder implements QueryBuilder {
             
             occur = BooleanClause.Occur.SHOULD;
         } else {
-            return this.factory.buildQuery(query, searcher);
+            return this.mainBuilder.buildQuery(query, searcher);
         }
 
         AbstractMultipleQuery multipleQuery = (AbstractMultipleQuery)query;
         List<Query> subQueries = multipleQuery.getQueries();
         
-        BooleanQuery bq = new BooleanQuery(true);
+        BooleanQuery.Builder builder = new BooleanQuery.Builder();
         for (Query q: subQueries) {
-            bq.add(buildInternal(q), occur);
+            builder.add(buildInternal(q), occur);
         }
-        
-        return bq;
+
+        return maybeRewriteInvertedClauses(builder.build(), occur);
+    }
+
+    // Possibly unwrap inverted queries following the pattern "#... #(-some:query #*:*)", into "#... -some:query"
+    // This can weed out some unnecessary match-all-docs clauses in the query tree
+    private org.apache.lucene.search.Query maybeRewriteInvertedClauses(BooleanQuery bq, BooleanClause.Occur occur) {
+        if (occur == Occur.SHOULD) {
+            return bq;
+        }
+
+        BooleanQuery.Builder rewriteBuilder = new BooleanQuery.Builder();
+        for (BooleanClause bc : bq) {
+            if (bc.getQuery() instanceof BooleanQuery) {
+                BooleanQuery subQuery = (BooleanQuery)bc.getQuery();
+                if (subQuery.clauses().size() == 2
+                        && subQuery.clauses().get(0).isProhibited()
+                        && subQuery.clauses().get(1).getQuery() instanceof MatchAllDocsQuery) {
+
+                    rewriteBuilder.add(subQuery.clauses().get(0).getQuery(), BooleanClause.Occur.MUST_NOT);
+                                                                          // ^^^^^^^^^^^^^^^^^^^^^^^^^^^^ Yoda says so.
+                    continue;
+                }
+            }
+            rewriteBuilder.add(bc);
+        }
+
+        // Note that rewritten BooleanQuery at this stage may be purely negative (only prohibited clauses),
+        // which will not match any documents, however LuceneQueryBuilder does a final fixup
+        // of those cases at the top level.
+        return rewriteBuilder.build();
     }
     
-    // Check if we can optimize a set of URI queries by collapsing to a single term filter
-    // instead of one term filter per boolean clause.
+    // Check if we can optimize a set of URI queries by collapsing into TermInSetQuery instances
+    // instead of one term query per boolean clause.
     private org.apache.lucene.search.Query maybeOptimizeUriQueryClauses(OrQuery orQuery) {
         List<String> uriTerms = null;
         List<String> uriPrefixTerms = null;
@@ -134,23 +165,28 @@ public class QueryTreeBuilder implements QueryBuilder {
             }
         }
         
-        List<Term> terms = new ArrayList<>();
+        TermInSetQuery uriSetQuery = null;
+        TermInSetQuery uriPrefixSetQuery = null;
         
         if (uriTerms != null) {
-            for (String uri: uriTerms) {
-                terms.add(new Term(ResourceFields.URI_FIELD_NAME, uri));
-            }
+            List<BytesRef> indexTerms = uriTerms.stream().map(s -> new BytesRef(s)).collect(Collectors.toList());
+            uriSetQuery = new TermInSetQuery(ResourceFields.URI_FIELD_NAME, indexTerms);
         }
         if (uriPrefixTerms != null) {
-            for (String uriPrefix: uriPrefixTerms) {
-                terms.add(new Term(ResourceFields.URI_ANCESTORS_FIELD_NAME, uriPrefix));
-            }
-        }
-        if (terms.isEmpty()) {
-            return null; // Terms filter does not handle zero terms.
+            List<BytesRef> indexTerms = uriPrefixTerms.stream().map(s -> new BytesRef(s)).collect(Collectors.toList());
+            uriPrefixSetQuery = new TermInSetQuery(ResourceFields.URI_ANCESTORS_FIELD_NAME, indexTerms);
         }
 
-        return new ConstantScoreQuery(new TermsFilter(terms));
+        if (uriSetQuery != null && uriPrefixSetQuery != null) {
+            return new BooleanQuery.Builder().add(uriSetQuery, Occur.SHOULD)
+                                             .add(uriPrefixSetQuery, Occur.SHOULD).build();
+        } else if (uriSetQuery != null) {
+            return uriSetQuery;
+        } else if (uriPrefixSetQuery != null) {
+            return uriPrefixSetQuery;
+        }
+
+        return null;
     }
     
     

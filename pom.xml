@@ -24,7 +24,7 @@
     <java.version>1.8</java.version>
     <spring.version>4.3.12.RELEASE</spring.version>
     <spring.boot.version>1.5.8.RELEASE</spring.boot.version>
-    <lucene.version>4.10.4</lucene.version>
+    <lucene.version>7.1.0</lucene.version>
     <akka.version>2.4.18</akka.version>
     <jetty.version>9.4.6.v20170531</jetty.version>
     <flexmark.version>0.28.2</flexmark.version>

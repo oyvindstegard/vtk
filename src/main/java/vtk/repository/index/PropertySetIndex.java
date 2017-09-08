@@ -199,8 +199,11 @@ public interface PropertySetIndex {
      * Merge the contents of another <code>PropertySetIndex</code> into this index.
      * It is implementation dependent whether this method removes duplicate
      * URIs resulting from the merge, or not.
-     * 
-     * @param index
+     *
+     * <p>The provided {@code PropertySetIndex} must not be in a closed state, but it will
+     * closed automatically after the merge has completed.
+     *
+     * @param index the other index to merge into this one
      */
     public void addIndexContents(PropertySetIndex index) throws IndexException;
     

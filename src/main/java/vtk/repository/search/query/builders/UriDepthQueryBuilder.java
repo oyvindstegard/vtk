@@ -30,12 +30,8 @@
  */
 package vtk.repository.search.query.builders;
 
-import org.apache.lucene.index.Term;
 import org.apache.lucene.search.Query;
-import org.apache.lucene.search.TermQuery;
-import vtk.repository.index.mapping.PropertyFields;
 import vtk.repository.index.mapping.ResourceFields;
-import vtk.repository.resourcetype.PropertyType;
 import vtk.repository.search.query.QueryBuilder;
 import vtk.repository.search.query.QueryBuilderException;
 import vtk.repository.search.query.UriDepthQuery;
@@ -46,21 +42,34 @@ import vtk.repository.search.query.UriDepthQuery;
  */
 public class UriDepthQueryBuilder implements QueryBuilder {
 
-    private UriDepthQuery query;
-    private PropertyFields fvm;
+    private final UriDepthQuery query;
+    private final ResourceFields rf;
     
-    public UriDepthQueryBuilder(UriDepthQuery query, PropertyFields fvm) {
+    public UriDepthQueryBuilder(UriDepthQuery query, ResourceFields fvm) {
         this.query = query;
-        this.fvm = fvm;
+        this.rf = fvm;
     }
     
     @Override
     public Query buildQuery() throws QueryBuilderException {
         
-        Term queryTerm = fvm.queryTerm(ResourceFields.URI_DEPTH_FIELD_NAME, 
-                query.getDepth(), PropertyType.Type.INT, false);
-        
-        return new TermQuery(queryTerm);
+        boolean inclusive = false;
+        switch (query.getOperator()) {
+            case EQ:
+                return rf.typedFieldQuery(ResourceFields.URI_DEPTH_FIELD_NAME, query.getDepth(), Integer.class, false);
+            case GE:
+                inclusive = true;
+            case GT:
+                return rf.typedFieldRangeQuery(ResourceFields.URI_DEPTH_FIELD_NAME, query.getDepth(), null, inclusive, true, Integer.class, false);
+                
+            case LE:
+                inclusive = true;
+            case LT:
+                return rf.typedFieldRangeQuery(ResourceFields.URI_DEPTH_FIELD_NAME, null, query.getDepth(), true, inclusive, Integer.class, false);
+            default:
+                throw new QueryBuilderException("Unsupported operator URI depth: " + query.getOperator());
+        }
+
     }
 
 }

@@ -30,22 +30,21 @@
  */
 package vtk.repository.search.query.builders;
 
-import java.util.ArrayList;
 import java.util.List;
-import java.util.Set;
+import java.util.stream.Collectors;
 
-import org.apache.lucene.index.Term;
-import org.apache.lucene.queries.TermsFilter;
-import org.apache.lucene.search.ConstantScoreQuery;
+import org.apache.lucene.search.Query;
+import org.apache.lucene.search.TermInSetQuery;
+import org.apache.lucene.util.BytesRef;
 import vtk.repository.index.mapping.ResourceFields;
+import vtk.repository.search.query.LuceneQueryBuilder;
 import vtk.repository.search.query.QueryBuilder;
 import vtk.repository.search.query.QueryBuilderException;
 import vtk.repository.search.query.UriSetQuery;
-import vtk.repository.search.query.filter.FilterFactory;
 
 public class UriSetQueryBuilder implements QueryBuilder {
 
-    private UriSetQuery usQuery;
+    private final UriSetQuery usQuery;
     
     public UriSetQueryBuilder(UriSetQuery query) {
         this.usQuery = query;
@@ -54,18 +53,15 @@ public class UriSetQueryBuilder implements QueryBuilder {
     @Override
     public org.apache.lucene.search.Query buildQuery() throws QueryBuilderException {
 
-        Set<String> uris = this.usQuery.getUris();
-        List<Term> terms = new ArrayList<Term>(uris.size());
-        for (String uri: uris) {
-            terms.add(new Term(ResourceFields.URI_FIELD_NAME, uri));
-        }
-        TermsFilter tf = new TermsFilter(terms);
+        List<BytesRef> indexTerms = usQuery.getUris().stream()
+                .map(s -> new BytesRef(s)).collect(Collectors.toList());
+        Query q = new TermInSetQuery(ResourceFields.URI_FIELD_NAME, indexTerms);
 
         switch (usQuery.getOperator()) {
         case IN:
-            return new ConstantScoreQuery(tf);
+            return q;
         case NI:
-            return new ConstantScoreQuery(FilterFactory.inversionFilter(tf));
+            return LuceneQueryBuilder.invert(q);
         default:
             throw new QueryBuilderException(
                         "Operator '" + usQuery.getOperator() + "' not legal for UriSetQuery.");

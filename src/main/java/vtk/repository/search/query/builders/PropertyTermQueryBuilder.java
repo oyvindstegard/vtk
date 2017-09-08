@@ -30,19 +30,15 @@
  */
 package vtk.repository.search.query.builders;
 
-import org.apache.lucene.index.Term;
-import org.apache.lucene.queries.TermFilter;
-import org.apache.lucene.search.ConstantScoreQuery;
-import org.apache.lucene.search.Filter;
 import org.apache.lucene.search.Query;
 import vtk.repository.index.mapping.PropertyFields;
 import vtk.repository.resourcetype.PropertyType;
 import vtk.repository.resourcetype.PropertyTypeDefinition;
+import vtk.repository.search.query.LuceneQueryBuilder;
 import vtk.repository.search.query.PropertyTermQuery;
 import vtk.repository.search.query.QueryBuilder;
 import vtk.repository.search.query.QueryBuilderException;
 import vtk.repository.search.query.TermOperator;
-import vtk.repository.search.query.filter.FilterFactory;
 
 /**
  * Builds property value term queries.
@@ -87,16 +83,15 @@ public class PropertyTermQueryBuilder implements QueryBuilder {
             fieldName = PropertyFields.propertyFieldName(def, lowercase);
         }
 
-        Term term = pf.queryTerm(fieldName, fieldValue, valueType, lowercase);
-        Filter filter = new TermFilter(term);
-        
+        Query q = pf.propertyFieldQuery(fieldName, fieldValue, valueType, lowercase);
+
         if (op == TermOperator.NE || op == TermOperator.NE_IGNORECASE) {
-            filter = FilterFactory.inversionFilter(filter);
+            q = LuceneQueryBuilder.invert(q);
         } else if (op != TermOperator.EQ && op != TermOperator.EQ_IGNORECASE) {
             throw new QueryBuilderException("Term operator " + op + " not supported by this builder.");
         }
         
-        return new ConstantScoreQuery(filter);
+        return q;
     }
 
 }

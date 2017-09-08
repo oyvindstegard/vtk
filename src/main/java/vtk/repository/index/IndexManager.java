@@ -1,4 +1,4 @@
-/* Copyright (c) 2014???2015, University of Oslo, Norway
+/* Copyright (c) 2014-2017, University of Oslo, Norway
  * All rights reserved.
  * 
  * Redistribution and use in source and binary forms, with or without
@@ -54,13 +54,14 @@ import org.apache.lucene.search.SearcherFactory;
 import org.apache.lucene.search.SearcherManager;
 import org.apache.lucene.store.Directory;
 import org.apache.lucene.store.FSDirectory;
+import org.apache.lucene.store.FSLockFactory;
 import org.apache.lucene.store.IOContext;
 import org.apache.lucene.store.IndexInput;
 import org.apache.lucene.store.IndexOutput;
 import org.apache.lucene.store.LockObtainFailedException;
 import org.apache.lucene.store.RAMDirectory;
 import org.apache.lucene.store.SimpleFSLockFactory;
-import org.apache.lucene.util.Version;
+import org.apache.lucene.store.SleepingLockWrapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.DisposableBean;
@@ -79,12 +80,6 @@ import vtk.util.threads.Mutex;
  *   <li>Index storage details.
  *   <li>Optional mutex-locking for exclusive write access between threads that modify
  * the index.
- * </ul>
- * 
- * <p>Configurable properties:
- * <ul>
- *   <li><code>indexPath</code> - absolute path to file system directory where index should be created.
- *   <li>TODO complete me.
  * </ul>
  */
 public class IndexManager implements DisposableBean {
@@ -107,7 +102,7 @@ public class IndexManager implements DisposableBean {
      * To get the written application level of an opened index, use {@link #getApplicationCompatibilityLevel()
      * }.
      */
-    public static final int APPLICATION_COMPATIBILITY_LEVEL = 3;
+    public static final int APPLICATION_COMPATIBILITY_LEVEL = 7;
 
     private static final String APPLICATION_META_FILE = "vrtxmeta";
     
@@ -329,6 +324,42 @@ public class IndexManager implements DisposableBean {
     }
 
     /**
+     * Adds/merges all documents of another Lucene index into this one.
+     *
+     * <p>Note that the other index will be reopened in read-only-mode before merge
+     * and closed afterwards.
+     *
+     * <p>This method automatically commits the result after merge and optional optimization
+     * has completed.
+     * 
+     * @param other the other Lucene index from which to copy all documents
+     * @param optimize {@code true} to force merge this index to one segment after adding documents of other index
+     * @throws IOException
+     */
+    public synchronized void addAll(IndexManager other, boolean optimize) throws IOException {
+        if (other == this) {
+            throw new IllegalArgumentException("Cannot add self");
+        }
+        if (isClosed()) {
+            throw new IOException("Index is closed");
+        }
+        if (isReadOnly()) {
+            throw new IOException("Index is opened in read-only-mode and nothing can be added to it");
+        }
+
+        other.reopen(true);
+
+        writer.addIndexes(other.directory);
+        other.close();
+
+        if (optimize){
+            writer.forceMerge(1, true);
+        }
+
+        writer.commit();
+    }
+
+    /**
      * Obtain an index searcher.
      * 
      * You should release the obtained searcher after use in a finally block, by calling
@@ -377,15 +408,17 @@ public class IndexManager implements DisposableBean {
     
     /** Check index filesystem-lock, force-unlock if requested. */
     private void checkIndexLock(Directory directory) throws IOException {
-        if (IndexWriter.isLocked(directory)) {
-            // See if we should try to force-unlock it
+        try {
+            directory.obtainLock(IndexWriter.WRITE_LOCK_NAME).close();
+        } catch (LockObtainFailedException e) {
             logger.warn("Index directory '{}' is write locked", storageId);
             if (forceUnlock) {
                 if (!useSimpleLockFactory) {
                     throw new IOException("Force unlocking is only supported when using simple lock factory");
                 }
+
                 logger.warn("Forcing unlock");
-                IndexWriter.unlock(directory);
+                directory.deleteFile(IndexWriter.WRITE_LOCK_NAME);
             } else {
                 throw new IOException("Index directory '"+storageId+"' is locked");
             }
@@ -394,8 +427,9 @@ public class IndexManager implements DisposableBean {
     
     private void initIndex(Directory directory, boolean createNew) throws IOException {
         if (!DirectoryReader.indexExists(directory) || createNew) {
-            IndexWriterConfig conf = newIndexWriterConfig();
-            conf.setOpenMode(IndexWriterConfig.OpenMode.CREATE);
+
+            IndexWriterConfig conf = newIndexWriterConfig()
+                    .setOpenMode(IndexWriterConfig.OpenMode.CREATE);
             try {
                 new IndexWriter(directory, conf).close();
             } catch (IndexFormatTooNewException | IndexFormatTooOldException e) {
@@ -407,8 +441,8 @@ public class IndexManager implements DisposableBean {
                         directory.deleteFile(filename);
                     }
                 }
-                conf = newIndexWriterConfig(); // Cannot share IW config instances across writer instances
-                conf.setOpenMode(IndexWriterConfig.OpenMode.CREATE);
+                // Cannot share IW config instances across writer instances
+                conf = newIndexWriterConfig().setOpenMode(IndexWriterConfig.OpenMode.CREATE);
                 new IndexWriter(directory, conf).close();
             }
             writeApplicationCompatLevel(directory);
@@ -489,7 +523,14 @@ public class IndexManager implements DisposableBean {
     
     private Directory makeDirectory(File path) throws IOException {
         if (path != null) {
-            return FSDirectory.open(path, useSimpleLockFactory ? new SimpleFSLockFactory() : null);
+            Directory dir = FSDirectory.open(path.toPath(), useSimpleLockFactory ?
+                    SimpleFSLockFactory.INSTANCE : FSLockFactory.getDefault());
+
+            if (writeLockTimeoutSeconds > 0) {
+                dir = new SleepingLockWrapper(dir, writeLockTimeoutSeconds*1000);
+            }
+
+            return dir;
         } else {
             logger.warn("No storage path provided, using volatile memory index.");
             return new RAMDirectory();
@@ -498,15 +539,14 @@ public class IndexManager implements DisposableBean {
 
     
     private IndexWriterConfig newIndexWriterConfig() {
-        IndexWriterConfig cfg = new IndexWriterConfig(Version.LATEST, new KeywordAnalyzer());
-        
-        cfg.setMaxThreadStates(1); // We have at most one writing thread
-        
+//        IndexWriterConfig cfg = new IndexWriterConfig(Version.LATEST, new KeywordAnalyzer());
+        IndexWriterConfig cfg = new IndexWriterConfig(new KeywordAnalyzer())
+                                            .setCommitOnClose(true);
+
+
         // Disable stored field compression, because it hurts performance
         // badly for our usage patterns:
-         cfg.setCodec(new Lucene410CodecWithNoFieldCompression());
-        
-        cfg.setWriteLockTimeout(writeLockTimeoutSeconds*1000);
+        //        cfg.setCodec(new Lucene410CodecWithNoFieldCompression());
 
         if (keepOldCommits > 0) {
             cfg.setIndexDeletionPolicy(new IndexDeletionPolicy() {
@@ -537,23 +577,41 @@ public class IndexManager implements DisposableBean {
     /**
      * Execute a thorough low-level index check. Can be time consuming.
      * 
-     * This method should only be called with mutex lock acquired, to ensure
-     * directory is not modified while check is running. 
-     * @return <code>true</code> if no problems were found with the index, <code>false</code>
-     * if problems were detected. Details of any problems are not available, but
-     * a rebuild is likely wise to do if this method returns <code>false</code>.
+     * <p>This method should only be called with mutex lock acquired, to ensure
+     * directory is not modified while check is running.
+     *
+     * <p>Index will be temporarily switched to read-only-mode while check is in
+     * progress. Searches can continue uninterrupted.
+     *
+     * @return <code>true</code> if no low level problem issues were discovered, <code>false</code>
+     * otherwise. Details of any problems are not available, but
+     * a rebuild is likely wise to do if this method returns <code>false</code> or throws
+     * an exception..
      * @throws IOException in case of errors during check or if index is closed.
      * Assume the index is corrupt if this occurs for any other reason than index
      * being closed.
      */
-    public boolean checkIndex() throws IOException {
-        if (isClosed()) {
-            throw new IOException("Index is closed");
+    public synchronized boolean checkIndex() throws IOException {
+        final boolean wasReadOnly = isReadOnly();
+        final boolean wasOpen = !isClosed();
+
+        // Must reopen read-only while check is in progress
+        try {
+            if (!isReadOnly()) {
+                reopen(true);
+            }
+            CheckIndex.Status status;
+            try (CheckIndex ci = new CheckIndex(directory)) {
+                status = ci.checkIndex();
+            }
+            return status.clean;
+        } finally {
+            if (wasOpen) {
+                reopen(wasReadOnly);
+            } else {
+                close();
+            }
         }
-        
-        CheckIndex ci = new CheckIndex(directory);
-        CheckIndex.Status status = ci.checkIndex();
-        return status.clean;
     }
     
     
@@ -562,6 +620,7 @@ public class IndexManager implements DisposableBean {
      * before doing any write or life cycle operations on index. This locking
      * records no thread ownership and is present merely as a tool for the
      * caller to ensure low level exclusive index access.
+     * @return  {@code true} if lock was acquired
      */
     public boolean lockAcquire() {
         if (this.lock.lock()) {

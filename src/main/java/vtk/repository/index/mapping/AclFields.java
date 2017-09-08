@@ -74,22 +74,22 @@ public class AclFields extends Fields {
         this.principalFactory = pf;
     }
     
-    void addAclFields(final List<IndexableField> fields, PropertySetImpl propSet, Acl acl) {
+    void addAclFields(final Document doc, PropertySetImpl propSet, Acl acl) {
         for (Privilege action: acl.getActions()) {
             Set<Principal> principals = acl.getPrincipalSet(action);
             for (Principal p: principals) {
                 String fieldName = aceFieldName(action, p.getType());
-                fields.add(new StringField(fieldName, p.getQualifiedName(), Field.Store.YES));
+                doc.add(new StringField(fieldName, p.getQualifiedName(), Field.Store.YES));
             }
         }
         
         // Aggregate read field used for security filtering
         for (Principal p: aggregatePrincipalsForRead(acl)) {
-            fields.add(new StringField(AGGREGATED_READ_FIELD_NAME, p.getQualifiedName(), Field.Store.NO));
+            doc.add(new StringField(AGGREGATED_READ_FIELD_NAME, p.getQualifiedName(), Field.Store.NO));
         }
         
         // ACL inherited from field, index as string identifier
-        fields.add(new StringField(INHERITED_FROM_FIELD_NAME, 
+        doc.add(new StringField(INHERITED_FROM_FIELD_NAME,
                 Integer.toString(propSet.getAclInheritedFrom()), Field.Store.YES));
     }
 

@@ -31,14 +31,12 @@
 
 package vtk.repository.search.query.builders;
 
-import org.apache.lucene.search.ConstantScoreQuery;
-import org.apache.lucene.search.Filter;
 import org.apache.lucene.search.IndexSearcher;
 import org.apache.lucene.search.Query;
+import vtk.repository.search.query.LuceneQueryBuilder;
 import vtk.repository.search.query.QueryBuilder;
 import vtk.repository.search.query.QueryBuilderException;
-import vtk.repository.search.query.filter.FilterFactory;
-import vtk.repository.search.query.security.QueryAuthorizationFilterFactory;
+import vtk.repository.search.query.security.AuthorizationFilterQueryFactory;
 
 /**
  *
@@ -46,10 +44,10 @@ import vtk.repository.search.query.security.QueryAuthorizationFilterFactory;
 public class ACLReadForAllQueryBuilder implements QueryBuilder {
 
     private final boolean inverted;
-    private final QueryAuthorizationFilterFactory qff;
+    private final AuthorizationFilterQueryFactory qff;
     private final IndexSearcher searcher;
     
-    public ACLReadForAllQueryBuilder(boolean inverted, QueryAuthorizationFilterFactory qff, IndexSearcher searcher) {
+    public ACLReadForAllQueryBuilder(boolean inverted, AuthorizationFilterQueryFactory qff, IndexSearcher searcher) {
         this.inverted = inverted;
         this.qff = qff;
         this.searcher = searcher;
@@ -57,11 +55,9 @@ public class ACLReadForAllQueryBuilder implements QueryBuilder {
     
     @Override
     public Query buildQuery() throws QueryBuilderException {
-        Filter f = this.qff.readForAllFilter(this.searcher);
-        if (this.inverted) {
-            f = FilterFactory.inversionFilter(f);
-        }
-        return new ConstantScoreQuery(f);
+        
+        return inverted ? LuceneQueryBuilder.invert(qff.readForAllFilterQuery()) : qff.readForAllFilterQuery();
+
     }
 
 }

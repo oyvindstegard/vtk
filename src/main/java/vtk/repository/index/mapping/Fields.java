@@ -40,19 +40,22 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
+import java.util.stream.Collectors;
 import org.apache.lucene.document.DateTools;
+import org.apache.lucene.document.Document;
 import org.apache.lucene.document.Field;
-import org.apache.lucene.document.IntField;
-import org.apache.lucene.document.LongField;
+import org.apache.lucene.document.IntPoint;
+import org.apache.lucene.document.LongPoint;
 import org.apache.lucene.document.NumericDocValuesField;
 import org.apache.lucene.document.SortedDocValuesField;
 import org.apache.lucene.document.StoredField;
 import org.apache.lucene.document.StringField;
 import org.apache.lucene.index.IndexableField;
 import org.apache.lucene.index.Term;
+import org.apache.lucene.search.Query;
+import org.apache.lucene.search.TermQuery;
+import org.apache.lucene.search.TermRangeQuery;
 import org.apache.lucene.util.BytesRef;
-import org.apache.lucene.util.BytesRefBuilder;
-import org.apache.lucene.util.NumericUtils;
 import vtk.repository.resourcetype.ValueFormatException;
 import vtk.util.cache.ArrayStackCache;
 import vtk.util.cache.ReusableObjectCache;
@@ -65,7 +68,27 @@ public abstract class Fields {
     /* Common field prefixes */
     public static final String LOWERCASE_FIELD_PREFIX = "l_";
     public static final String SORT_FIELD_PREFIX = "s_";
-            
+
+    /**
+     * A special meta field which shall index the names of all application level fields that exist
+     * in a document.
+     *
+     * <p>Used for efficient EXISTS-type queries and is automatically populated
+     * at indexing time.
+     */
+    public static final String FIELD_NAMES_METAFIELD = "doc_field_names";
+
+    /**
+     * Populates field names metafield based on list of document fields.
+     * @param doc doc to add metafield to
+     */
+    public static void addFieldNamesMetaField(final Document doc) {
+        addAll(doc, doc.getFields().stream()
+                        .map(f -> f.name())
+                        .distinct()
+                        .map(fieldname -> new StringField(Fields.FIELD_NAMES_METAFIELD, fieldname, Field.Store.NO))
+                        .collect(Collectors.toList()));
+    }
     
     // Note that order (complex towards simpler format) is important here.
     public static final String[] SUPPORTED_DATE_FORMATS = {
@@ -128,6 +151,17 @@ public abstract class Fields {
     }
 
     /**
+     * Add all provided files to a document.
+     * @param doc
+     * @param fields
+     */
+    public static void addAll(Document doc, List<IndexableField> fields) {
+        for (IndexableField f: fields) {
+            doc.add(f);
+        }
+    }
+
+    /**
      * Create special field used only for sorting string values in a localized
      * fashion. The field value will be encoded as a collation key using the
      * configured default locale, and it will be stored in index as doc value.
@@ -164,7 +198,7 @@ public abstract class Fields {
         long longValue = value.getTime();
         if (isIndex(spec)) {
             long indexValue = DateTools.round(longValue, DateTools.Resolution.SECOND);
-            fields.add(new LongField(fieldName, indexValue, Field.Store.NO));
+            fields.add(new LongPoint(fieldName, indexValue));
             if (isDocvalue(spec)) {
                 fields.add(new NumericDocValuesField(fieldName, longValue));
             }
@@ -185,7 +219,7 @@ public abstract class Fields {
     public List<IndexableField> makeFields(String fieldName, long value, FieldSpec spec) {
         List<IndexableField> fields = new ArrayList<>(3);
         if (isIndex(spec)) {
-            fields.add(new LongField(fieldName, value, Field.Store.NO));
+            fields.add(new LongPoint(fieldName, value));
             if (isDocvalue(spec)) {
                 fields.add(new NumericDocValuesField(fieldName, value));
             }
@@ -199,7 +233,7 @@ public abstract class Fields {
     public List<IndexableField> makeFields(String fieldName, int value, FieldSpec spec) {
         List<IndexableField> fields = new ArrayList<>(3);
         if (isIndex(spec)) {
-            fields.add(new IntField(fieldName, value, Field.Store.NO));
+            fields.add(new IntPoint(fieldName, value));
             if (isDocvalue(spec)) {
                 fields.add(new NumericDocValuesField(fieldName, value));
             }
@@ -242,41 +276,89 @@ public abstract class Fields {
 
         return value.toLowerCase();
     }
-    
+
     /**
-     * Create a (possibly encoded) query term for the given value object with the
-     * given value type, optionally lowercasing. (Lowercasing is only applicable
-     * to string value types.)
-     * 
+     * Factory method for creating exact match queries on typed fields.
      * @param fieldName
-     * @param value
+     * @param val
      * @param basicType
      * @param lowercase
-     * @return 
+     * @return
      */
-    public Term queryTerm(String fieldName, Object value, 
-                    Class basicType, boolean lowercase) {
+    public Query typedFieldQuery(String fieldName, Object val, Class basicType, boolean lowercase) {
         if (basicType == String.class) {
             if (lowercase) {
-                return new Term(fieldName, lowercase(value.toString(), locale));
+                return new TermQuery(new Term(fieldName, lowercase(val.toString(), locale)));
             }
-            return new Term(fieldName, value.toString());
-            
+            return new TermQuery(new Term(fieldName, val.toString()));
+
         } else if (basicType == java.util.Date.class) {
-            return new Term(fieldName, dateValueToIndexTerm(value));
-            
+            return LongPoint.newExactQuery(fieldName, parseDate(val));
+
         } else if (basicType == java.lang.Integer.class) {
-            return new Term(fieldName, integerValueToIndexTerm(value));
-            
+            return IntPoint.newExactQuery(fieldName, parseInt(val));
+
         } else if (basicType == java.lang.Long.class) {
-            return new Term(fieldName, longValueToIndexTerm(value));
-            
-        } else if (basicType == java.lang.Boolean.class) {
-            boolean booleanValue = "true".equals(value) 
-                    || (value instanceof Boolean) && ((Boolean)value);
-            return new Term(fieldName, booleanValue ? "true" : "false");
+            return LongPoint.newExactQuery(fieldName, parseLong(val));
+
         } else {
-            return new Term(fieldName, value.toString());
+            return new TermQuery(new Term(fieldName, val.toString()));
+        }
+    }
+
+    /**
+     * Factory method for creating range queries on typed fields.
+     * @param fieldName
+     * @param lowerVal
+     * @param upperVal
+     * @param includeLower
+     * @param includeUpper
+     * @param basicType
+     * @param lowercase
+     * @return
+     */
+    public Query typedFieldRangeQuery(String fieldName, Object lowerVal, Object upperVal,
+            boolean includeLower, boolean includeUpper, Class basicType, boolean lowercase) {
+
+        if (basicType == java.util.Date.class) {
+
+            long lowerTerm = lowerVal == null ? Long.MIN_VALUE : parseDate(lowerVal);
+            long upperTerm = upperVal == null ? Long.MAX_VALUE : parseDate(upperVal);
+
+            // Timestamps are always rounded to nearest second, and LongPoint values are milliseconds
+            if (!includeUpper) upperTerm = Math.addExact(upperTerm, -1000);
+            if (!includeLower) lowerTerm = Math.addExact(lowerTerm, 1000);
+
+            return LongPoint.newRangeQuery(fieldName, lowerTerm, upperTerm);
+
+        } else if (basicType == java.lang.Long.class) {
+
+            long lowerTerm = lowerVal == null ? Long.MIN_VALUE : parseLong(lowerVal);
+            long upperTerm = upperVal == null ? Long.MAX_VALUE : parseLong(upperVal);
+
+            if (!includeUpper) upperTerm = Math.addExact(upperTerm, -1);
+            if (!includeLower) lowerTerm = Math.addExact(lowerTerm, 1);
+
+            return LongPoint.newRangeQuery(fieldName, lowerTerm, upperTerm);
+
+        } else if (basicType == java.lang.Integer.class) {
+
+            int lowerTerm = lowerVal == null ? Integer.MIN_VALUE : parseInt(lowerVal);
+            int upperTerm = upperVal == null ? Integer.MAX_VALUE : parseInt(upperVal);
+            if (!includeLower) lowerTerm = Math.addExact(lowerTerm, 1);
+            if (!includeUpper) upperTerm = Math.addExact(upperTerm, -1);
+
+            return IntPoint.newRangeQuery(fieldName, lowerTerm, upperTerm);
+
+        } else {
+            String lowerTerm = lowerVal != null ? lowerVal.toString() : null;
+            String upperTerm = upperVal != null ? upperVal.toString() : null;
+            if (lowercase) {
+                lowerTerm = lowerTerm != null ? lowercase(lowerTerm, locale) : null;
+                upperTerm = upperTerm != null ? lowercase(upperTerm, locale) : null;
+            }
+
+            return TermRangeQuery.newStringRange(fieldName, lowerTerm, upperTerm, includeLower, includeUpper);
         }
     }
     
@@ -333,20 +415,10 @@ public abstract class Fields {
         return DateTools.round(longValue, DateTools.Resolution.SECOND);
     }
     
-    private BytesRef dateValueToIndexTerm(Object value) {
-        long longValue = parseDate(value);
-        
-        // Finally, create encoded index field representation of the parsed
-        // date.
-        BytesRefBuilder bytes = new BytesRefBuilder();
-        NumericUtils.longToPrefixCoded(longValue, 0, bytes);
-        return bytes.get();
-    }
-    
-    private BytesRef integerValueToIndexTerm(Object value) {
+    private int parseInt(Object value) {
         final Integer intValue;
-        if (value.getClass() == Integer.class) {
-            intValue = (Integer) value;
+        if (value instanceof Number) {
+            intValue = ((Number)value).intValue();
         } else {
             try {
                 // Validate and encode
@@ -356,15 +428,13 @@ public abstract class Fields {
                         + "to index field value representation: " + nfe.getMessage());
             }
         }
-        BytesRefBuilder bytes = new BytesRefBuilder();
-        NumericUtils.intToPrefixCoded(intValue, 0, bytes);
-        return bytes.get();
+        return intValue;
     }
     
-    private BytesRef longValueToIndexTerm(Object value) {
+    private long parseLong(Object value) {
         final Long longValue;
-        if (value.getClass() == Long.class) {
-            longValue = (Long)value;
+        if (value instanceof Number) {
+            longValue = ((Number)value).longValue();
         } else {
             try {
                 // Validate and encode
@@ -374,9 +444,7 @@ public abstract class Fields {
                         + "to index field value representation: " + nfe.getMessage());
             }
         }
-        BytesRefBuilder bytes = new BytesRefBuilder();
-        NumericUtils.longToPrefixCoded(longValue, 0, bytes);
-        return bytes.get();
+        return longValue;
     }
 
 }

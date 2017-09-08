@@ -43,11 +43,12 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import org.apache.lucene.document.Document;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.apache.lucene.index.IndexableField;
-import org.apache.lucene.index.Term;
+import org.apache.lucene.search.Query;
 
 import vtk.repository.Namespace;
 import vtk.repository.Property;
@@ -80,7 +81,7 @@ public class PropertyFields extends Fields {
         this.valueFactory = vf;
     }
 
-    void addSortField(final List<IndexableField> fields, Property property) {
+    void addSortField(final Document doc, Property property) {
         if (property.getDefinition().getType() != Type.STRING) {
             throw new IllegalArgumentException("Explicit sorting fields can only be created for STRING properties");
         }
@@ -88,7 +89,7 @@ public class PropertyFields extends Fields {
             throw new IllegalArgumentException("Sorting fields cannot be created for multi-value properties");
         }
         String fieldName = sortFieldName(property.getDefinition());
-        fields.add(makeStringSortField(fieldName, property.getStringValue()));
+        doc.add(makeStringSortField(fieldName, property.getStringValue()));
     }
 
     /**
@@ -97,7 +98,7 @@ public class PropertyFields extends Fields {
      * @param lowercase if <code>true</code>, then lowercase the value as apporpriate.
      * <em>When lowercased, fields for storing will not be created.</em>
      */
-    void addPropertyFields(final List<IndexableField> fields, Property property, boolean lowercase) throws DocumentMappingException {
+    void addPropertyFields(final Document doc, Property property, boolean lowercase) throws DocumentMappingException {
         PropertyTypeDefinition def = property.getDefinition();
         if (def == null) {
             throw new DocumentMappingException("Cannot create index field for property with null definition");
@@ -111,10 +112,10 @@ public class PropertyFields extends Fields {
         }
         if (def.isMultiple()) {
             for (Value v: property.getValues()) {
-                fields.addAll(valueFields(fieldName, v, spec));
+                addAll(doc, valueFields(fieldName, v, spec));
             }
         } else {
-            fields.addAll(valueFields(fieldName, property.getValue(), spec));
+            addAll(doc, valueFields(fieldName, property.getValue(), spec));
         }
     }
     
@@ -167,7 +168,7 @@ public class PropertyFields extends Fields {
      * @param fields list of fields to add to
      * @return
      */
-    void addJsonPropertyFields(final List<IndexableField> fields, Property prop) {
+    void addJsonPropertyFields(final Document doc, Property prop) {
         PropertyTypeDefinition def = prop.getDefinition();
         if (def == null || def.getType() != Type.JSON) {
             throw new DocumentMappingException("Cannot create indexed JSON fields for property with no definition or non-JSON type");
@@ -184,7 +185,7 @@ public class PropertyFields extends Fields {
         // Stored RAW JSON values
         String propertyFieldName = propertyFieldName(def);
         for (Value v: jsonPropValues) {
-            fields.addAll(valueFields(propertyFieldName, v, STORED));
+            addAll(doc, valueFields(propertyFieldName, v, STORED));
         }
 
         Map<String, Object> metadata = def.getMetadata();
@@ -217,19 +218,19 @@ public class PropertyFields extends Fields {
                     }
                     
                     // Indexed fields
-                    fields.addAll(objectFields(indexFieldName, indexFieldValue, dataType, INDEXED));
+                    addAll(doc, objectFields(indexFieldName, indexFieldValue, dataType, INDEXED));
 
                     // Lowercased fields for STRING and HTML
                     if (dataType == Type.STRING || dataType == Type.HTML) {
                         String lcFieldName = jsonFieldName(def, jsonDottedField, true);
-                        fields.addAll(objectFields(lcFieldName, indexFieldValue, dataType, INDEXED_LOWERCASE));
+                        addAll(doc, objectFields(lcFieldName, indexFieldValue, dataType, INDEXED_LOWERCASE));
                     }
                 }
                 // Sort field if single value STRING type
                 if (dataType == Type.STRING && values.size() == 1) {
                     final String stringValue = values.get(0).toString();
                     if (stringValue.length() <= Property.MAX_STRING_LENGTH) {
-                        fields.add(makeStringSortField(jsonSortFieldName(def, jsonDottedField), stringValue));
+                        doc.add(makeStringSortField(jsonSortFieldName(def, jsonDottedField), stringValue));
                     }
                 }
             }
@@ -267,40 +268,88 @@ public class PropertyFields extends Fields {
     }
 
     /**
-     * Create a suitably encoded query term from a value with a given {@link PropertyType.Type type}.
+     * Create a suitably encoded query from a property value with a given {@link PropertyType.Type type}.
      * 
      * <p>The value object should either be a parseable string or an instance of
      * one of the basic types supported by
      * {@link Fields#queryTerm(java.lang.String, java.lang.Object, java.lang.Class, boolean) Fields.queryTerm}.
-     * 
+     *
      * @param fieldName
      * @param value
      * @param type
      * @param lowercase
-     * @return 
+     * @return a Lucene query for exact match on property value
      */
-    public Term queryTerm(String fieldName, Object value, PropertyType.Type type, boolean lowercase) {
+    public Query propertyFieldQuery(String fieldName, Object value, PropertyType.Type type, boolean lowercase) {
         switch (type) {
         case BOOLEAN:
-            return super.queryTerm(fieldName, value, Boolean.class, lowercase);
-            
+            return super.typedFieldQuery(fieldName, value, java.lang.Boolean.class, lowercase);
+
         case DATE:
         case TIMESTAMP:
-            return super.queryTerm(fieldName, value, java.util.Date.class, lowercase);
-            
+            return super.typedFieldQuery(fieldName, value, java.util.Date.class, lowercase);
+
         case LONG:
-            return super.queryTerm(fieldName, value, Long.class, lowercase);
-            
+            return super.typedFieldQuery(fieldName, value, java.lang.Long.class, lowercase);
+
         case INT:
-            return super.queryTerm(fieldName, value, Integer.class, lowercase);
-            
+            return super.typedFieldQuery(fieldName, value, java.lang.Integer.class, lowercase);
+
         case BINARY:
-            throw new UnsupportedOperationException("Cannot make query term from a binary value");
-            
+            throw new UnsupportedOperationException("Cannot exact match query from a binary value");
+
         default:
-            return super.queryTerm(fieldName, value, String.class, lowercase);
-            
+            return super.typedFieldQuery(fieldName, value, String.class, lowercase);
         }
+    }
+
+    /**
+     * Create a suitably encoded range query from property values with a given {@link PropertyType.Type type}.
+     *
+     * <p>The value object should either be a parseable string or an instance of
+     * one of the basic types supported by
+     * {@link Fields#queryTerm(java.lang.String, java.lang.Object, java.lang.Class, boolean) Fields.queryTerm}.
+     *
+     * @param fieldName
+     * @param lowerVal
+     * @param upperVal
+     * @param includeLower
+     * @param includeUpper
+     * @param type
+     * @param lowercase
+     * @return a Lucene query matching a range of property values
+     */
+    public Query propertyFieldRangeQuery(String fieldName, Object lowerVal, Object upperVal,
+            boolean includeLower, boolean includeUpper, PropertyType.Type type, boolean lowercase) {
+
+        final Class basicType;
+
+        switch (type) {
+        case BOOLEAN:
+            basicType = java.lang.Boolean.class;
+            break;
+
+        case DATE:
+        case TIMESTAMP:
+            basicType = java.util.Date.class;
+            break;
+
+        case LONG:
+            basicType = java.lang.Long.class;
+            break;
+
+        case INT:
+            basicType = java.lang.Integer.class;
+            break;
+
+        case BINARY:
+            throw new IllegalArgumentException("Cannot range query on a binary value");
+
+        default:
+            basicType = java.lang.String.class;
+        }
+
+        return super.typedFieldRangeQuery(fieldName, lowerVal, upperVal, includeLower, includeUpper, basicType, lowercase);
     }
     
     private List<IndexableField> valueFields(String fieldName, Value v, FieldSpec spec) {

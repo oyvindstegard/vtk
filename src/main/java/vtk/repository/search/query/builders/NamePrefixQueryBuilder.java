@@ -31,16 +31,14 @@
 package vtk.repository.search.query.builders;
 
 import org.apache.lucene.index.Term;
-import org.apache.lucene.search.ConstantScoreQuery;
-import org.apache.lucene.search.Filter;
-import org.apache.lucene.search.PrefixFilter;
+import org.apache.lucene.search.PrefixQuery;
 import org.apache.lucene.search.Query;
 import vtk.repository.index.mapping.ResourceFields;
+import vtk.repository.search.query.LuceneQueryBuilder;
 
 import vtk.repository.search.query.NamePrefixQuery;
 import vtk.repository.search.query.QueryBuilder;
 import vtk.repository.search.query.QueryBuilderException;
-import vtk.repository.search.query.filter.FilterFactory;
 
 /**
  * Prefix-query on resource name.
@@ -85,14 +83,9 @@ public class NamePrefixQueryBuilder implements QueryBuilder {
         } else {
             prefixTerm = new Term(ResourceFields.NAME_FIELD_NAME, prefix);
         }
-        
-        Filter filter = new PrefixFilter(prefixTerm);
-        
-        if (invert) {
-            filter = FilterFactory.inversionFilter(filter);
-        }
 
-        return new ConstantScoreQuery(filter);
+        Query q = new PrefixQuery(prefixTerm);
+        return invert ? LuceneQueryBuilder.invert(q) : q;
     }
 
 }

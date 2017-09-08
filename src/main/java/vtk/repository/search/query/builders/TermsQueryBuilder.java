@@ -31,25 +31,15 @@
 
 package vtk.repository.search.query.builders;
 
-import java.util.ArrayList;
 import java.util.List;
-import org.apache.lucene.document.DateTools;
-import org.apache.lucene.document.Field;
-import org.apache.lucene.document.IntField;
-import org.apache.lucene.document.LongField;
-import org.apache.lucene.document.StringField;
-import org.apache.lucene.index.Term;
-import org.apache.lucene.queries.TermsFilter;
-import org.apache.lucene.search.ConstantScoreQuery;
-import org.apache.lucene.search.Filter;
+import java.util.stream.Collectors;
+import org.apache.lucene.search.BooleanClause;
+import org.apache.lucene.search.BooleanQuery;
 import org.apache.lucene.search.Query;
-import vtk.repository.index.mapping.PropertyFields;
-import vtk.repository.resourcetype.PropertyType;
-import vtk.repository.resourcetype.Value;
+import org.apache.lucene.search.TermInSetQuery;
+import org.apache.lucene.util.BytesRef;
 import vtk.repository.search.query.QueryBuilder;
 import vtk.repository.search.query.QueryBuilderException;
-import vtk.repository.search.query.TermOperator;
-import vtk.repository.search.query.filter.FilterFactory;
 
 /**
  * Build query on set of terms with optional inversion.
@@ -57,33 +47,26 @@ import vtk.repository.search.query.filter.FilterFactory;
 public class TermsQueryBuilder implements QueryBuilder {
 
     private final String field;
-    private final List<?> terms;
-    private final PropertyType.Type valueType;
+    private final List<String> terms;
     private final boolean invert;
-    private final PropertyFields fvm;
     
-    public TermsQueryBuilder(String field, List<?> terms, PropertyType.Type valueType, 
-            TermOperator op, PropertyFields fvm) {
+    public TermsQueryBuilder(String field, List<String> terms, boolean invert) {
         this.field = field;
         this.terms = terms;
-        this.valueType = valueType;
-        this.invert = op == TermOperator.NI;
-        this.fvm = fvm;
+        this.invert = invert;
     }
     
     @Override
     public Query buildQuery() throws QueryBuilderException {
-        List<Term> indexTerms = new ArrayList<Term>(terms.size());
-        for (Object termValue: terms) {
-            indexTerms.add(fvm.queryTerm(field, termValue, valueType, false));
-        }
-        
-        Filter searchFilter = new TermsFilter(indexTerms);
+        List<BytesRef> indexTerms = terms.stream().map(s -> new BytesRef(s)).collect(Collectors.toList());
+
+        Query q = new TermInSetQuery(field, indexTerms);
+
         if (invert) {
-            searchFilter = FilterFactory.inversionFilter(searchFilter);
+            q = new BooleanQuery.Builder().add(q, BooleanClause.Occur.MUST_NOT).build();
         }
-        
-        return new ConstantScoreQuery(searchFilter);
+
+        return q;
     }
     
 }

@@ -41,6 +41,9 @@ package vtk.repository.search.query;
  * <p>All implementations should also generate {@link Object#toString() } representations
  * which reflects all configurable aspects of the query clause.
  *
+ * <p>TODO should consolidate use of TermOperator.NE vs "inverted" booleans (same thing) on query types
+ * implementing this interface.
+ *
  */
 public interface Query extends java.io.Serializable {
 

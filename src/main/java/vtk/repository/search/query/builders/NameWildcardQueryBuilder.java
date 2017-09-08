@@ -31,21 +31,17 @@
 package vtk.repository.search.query.builders;
 
 import org.apache.lucene.index.Term;
-import org.apache.lucene.search.ConstantScoreQuery;
-import org.apache.lucene.search.Filter;
 import org.apache.lucene.search.Query;
 import org.apache.lucene.search.WildcardQuery;
 import vtk.repository.index.mapping.ResourceFields;
+import vtk.repository.search.query.LuceneQueryBuilder;
 
 import vtk.repository.search.query.NameWildcardQuery;
 import vtk.repository.search.query.QueryBuilder;
 import vtk.repository.search.query.QueryBuilderException;
-import vtk.repository.search.query.filter.FilterFactory;
 
 /**
  * 
- * @author oyviste
- *
  */
 public class NameWildcardQueryBuilder implements QueryBuilder {
 
@@ -78,27 +74,16 @@ public class NameWildcardQueryBuilder implements QueryBuilder {
                 throw new QueryBuilderException("Unsupported term operator: " + query.getOperator());
         }
 
-        if (wildcard.indexOf(WildcardQuery.WILDCARD_CHAR) == -1
-                && wildcard.indexOf(WildcardQuery.WILDCARD_STRING) == -1) {
-            throw new QueryBuilderException("The search term '" 
-                    + wildcard + "' does not have any wildcard characters (?,*) !");
-        }
-
         Term wTerm;
         if (ignoreCase) {
             wTerm = new Term(ResourceFields.NAME_LC_FIELD_NAME, wildcard.toLowerCase());
         } else {
             wTerm = new Term(ResourceFields.NAME_FIELD_NAME, wildcard);
         }
-        
-        Filter filter = FilterFactory.wildcardFilter(wTerm);
 
-        if (inverted) {
-            filter = FilterFactory.inversionFilter(filter);
-        }
-        
-        return new ConstantScoreQuery(filter);
-        
+        Query q = new WildcardQuery(wTerm);
+
+        return inverted ? LuceneQueryBuilder.invert(q) : q;
     }
 
 }

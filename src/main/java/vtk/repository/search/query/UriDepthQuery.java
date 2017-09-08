@@ -30,6 +30,8 @@
  */
 package vtk.repository.search.query;
 
+import java.util.Objects;
+
 /**
  * Query for URI depth.
  * Only equals is supported and therefore the assumed operator.
@@ -39,13 +41,23 @@ public class UriDepthQuery implements UriQuery {
     private static final long serialVersionUID = 6017693254620277196L;
 
     private final int depth;
+    private final TermOperator op;
     
     public UriDepthQuery(int depth) {
+        this(depth, TermOperator.EQ);
+    }
+
+    public UriDepthQuery(int depth, TermOperator op) {
         this.depth = depth;
+        this.op = op;
     }
     
     public int getDepth() {
         return this.depth;
+    }
+
+    public TermOperator getOperator() {
+        return this.op;
     }
     
     @Override
@@ -55,13 +67,14 @@ public class UriDepthQuery implements UriQuery {
 
     @Override
     public String toString() {
-        return "UriDepthQuery{" + "depth=" + depth + '}';
+        return "UriDepthQuery{" + "depth " + op.name() + " " + depth + '}';
     }
 
     @Override
     public int hashCode() {
-        int hash = 3;
-        hash = 79 * hash + this.depth;
+        int hash = 7;
+        hash = 47 * hash + this.depth;
+        hash = 47 * hash + Objects.hashCode(this.op);
         return hash;
     }
 
@@ -80,8 +93,12 @@ public class UriDepthQuery implements UriQuery {
         if (this.depth != other.depth) {
             return false;
         }
+        if (this.op != other.op) {
+            return false;
+        }
         return true;
     }
+
 
     
 }

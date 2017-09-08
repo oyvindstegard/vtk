@@ -216,9 +216,9 @@ public class ConsistencyCheck {
                 
                 try {
                     // Add to set of valid index property set URIs
-                    databaseUriSet.add(currentUri.toString());
-                } catch (IOException io) {
-                    throw new ConsistencyCheckException("IOException while running consistency check", io);
+                    databaseUriSet.addValue(currentUri.toString());
+                } catch (Exception e) {
+                    throw new ConsistencyCheckException("Exception while running consistency check", e);
                 }
                 
                 // Progress logging
@@ -235,8 +235,6 @@ public class ConsistencyCheck {
         
         this.indexDao.orderedPropertySetIteration(handler);
 
-        databaseUriSet.commit();
-        
         // Need to make a complete pass over index URIs to detect dangling inconsistencies
         LOG.info("Checking for dangling property sets in index ..");
         while (indexUriIterator.hasNext()) {

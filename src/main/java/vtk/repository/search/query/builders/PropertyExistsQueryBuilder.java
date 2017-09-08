@@ -32,11 +32,19 @@ package vtk.repository.search.query.builders;
 
 
 
+import org.apache.lucene.index.Term;
+import org.apache.lucene.search.AutomatonQuery;
 import org.apache.lucene.search.ConstantScoreQuery;
-import org.apache.lucene.search.FieldValueFilter;
+import org.apache.lucene.search.Query;
+import org.apache.lucene.search.TermQuery;
+import org.apache.lucene.util.automaton.Automata;
+import org.apache.lucene.util.automaton.Automaton;
+import vtk.repository.index.mapping.Fields;
 import vtk.repository.index.mapping.PropertyFields;
+import vtk.repository.resourcetype.PropertyType;
 import vtk.repository.resourcetype.PropertyType.Type;
 import vtk.repository.resourcetype.PropertyTypeDefinition;
+import vtk.repository.search.query.LuceneQueryBuilder;
 import vtk.repository.search.query.PropertyExistsQuery;
 import vtk.repository.search.query.QueryBuilder;
 import vtk.repository.search.query.QueryBuilderException;
@@ -49,21 +57,29 @@ public class PropertyExistsQueryBuilder implements QueryBuilder {
 
     private final PropertyExistsQuery query;
     private final PropertyTypeDefinition def;
+    private final PropertyFields pf;
 
-    public PropertyExistsQueryBuilder(PropertyExistsQuery query, PropertyTypeDefinition def) {
+    public PropertyExistsQueryBuilder(PropertyExistsQuery query, PropertyTypeDefinition def, PropertyFields pf) {
         this.query = query;
         this.def = def;
+        this.pf = pf;
     }
 
     @Override
     public org.apache.lucene.search.Query buildQuery() throws QueryBuilderException {
+
+        // Only field name matters for exists queries
         
         String fieldName = PropertyFields.propertyFieldName(def, false);
         if (def.getType() == Type.JSON && query.complexValueAttributeSpecifier().isPresent()) {
             fieldName = PropertyFields.jsonFieldName(def, query.complexValueAttributeSpecifier().get(), false);
         }
-        
-        return new ConstantScoreQuery(new FieldValueFilter(fieldName, query.isInverted()));
 
+        Query q = new TermQuery(new Term(Fields.FIELD_NAMES_METAFIELD, fieldName));
+        if (query.isInverted()) {
+            q = LuceneQueryBuilder.invert(q);
+        }
+
+        return q;
     }
 }

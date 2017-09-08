@@ -32,60 +32,59 @@ package vtk.repository.search.query.security;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 
 import org.apache.lucene.index.Term;
-import org.apache.lucene.queries.TermFilter;
-import org.apache.lucene.queries.TermsFilter;
-import org.apache.lucene.search.Filter;
-import org.apache.lucene.search.IndexSearcher;
+import org.apache.lucene.search.Query;
+import org.apache.lucene.search.TermInSetQuery;
+import org.apache.lucene.search.TermQuery;
 import org.apache.lucene.util.BytesRef;
 import vtk.repository.index.mapping.AclFields;
 import vtk.security.Principal;
 import vtk.security.PrincipalFactory;
 
 /**
- * Simple query authorization filter factory which generates filters, but does
- * no caching at all.
+ * Generate authorization filter queries.
  */
-public class SimpleQueryAuthorizationFilterFactory extends
+public class SimpleAuthorizationFilterQueryFactory extends
         AbstractQueryAuthorizationFilterFactory {
 
-    protected static final Filter ACL_READ_FOR_ALL_FILTER = 
-            new TermFilter(new Term(AclFields.AGGREGATED_READ_FIELD_NAME, PrincipalFactory.NAME_ALL));
+    public static final Query ACL_READ_FOR_ALL_FILTER_QUERY =
+            new TermQuery(new Term(AclFields.AGGREGATED_READ_FIELD_NAME, PrincipalFactory.NAME_ALL));
     
     @Override
-    public Filter authorizationQueryFilter(String token, IndexSearcher searcher) {
+    public Optional<Query> authorizationFilterQuery(String token) {
 
         if (token == null) {
             // Use a filter which only allows read-for-all documents
-            return ACL_READ_FOR_ALL_FILTER;
+            return Optional.of(ACL_READ_FOR_ALL_FILTER_QUERY);
         }
 
         Principal principal = getPrincipal(token);
 
         if (principal == null) {
             // Invalid token (no mapping to principal), return read-for-all only filter
-            return ACL_READ_FOR_ALL_FILTER;
+            return Optional.of(ACL_READ_FOR_ALL_FILTER_QUERY);
         }
 
         if (isAuthorizedByRole(principal)) {
-            return null; // No filter (root-level user)
+            return Optional.empty(); // No filter (root-level user)
         }
         
         // Get member groups
         Set<Principal> memberGroups = getPrincipalMemberGroups(principal);
         
         // Build filter for principal and member groups
-        return buildACLReadFilter(principal, memberGroups);
+        return Optional.of(buildACLReadFilter(principal, memberGroups));
     }
 
     @Override
-    public Filter readForAllFilter(IndexSearcher searcher) {
-        return ACL_READ_FOR_ALL_FILTER;
+    public Query readForAllFilterQuery() {
+        return ACL_READ_FOR_ALL_FILTER_QUERY;
     }
     
-    private Filter buildACLReadFilter(Principal principal, Set<Principal> memberGroups) {
+    private Query buildACLReadFilter(Principal principal, Set<Principal> memberGroups) {
     
         List<BytesRef> termValues = new ArrayList<>(memberGroups.size()+2);
         for (Principal group: memberGroups) {
@@ -97,8 +96,8 @@ public class SimpleQueryAuthorizationFilterFactory extends
         
         // Add principal executing the query
         termValues.add(new BytesRef(principal.getQualifiedName()));
-        
-        return new TermsFilter(AclFields.AGGREGATED_READ_FIELD_NAME, termValues);
+
+        return new TermInSetQuery(AclFields.AGGREGATED_READ_FIELD_NAME, termValues);
     }
     
 }

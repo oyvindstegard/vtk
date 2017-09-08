@@ -31,23 +31,20 @@
 package vtk.repository.search.query.builders;
 
 import org.apache.lucene.index.Term;
-import org.apache.lucene.search.ConstantScoreQuery;
-import org.apache.lucene.search.Filter;
-import org.apache.lucene.search.PrefixFilter;
+import org.apache.lucene.search.PrefixQuery;
 import org.apache.lucene.search.Query;
 import vtk.repository.index.mapping.PropertyFields;
+import vtk.repository.resourcetype.PropertyType;
 import vtk.repository.resourcetype.PropertyType.Type;
 import vtk.repository.resourcetype.PropertyTypeDefinition;
+import vtk.repository.search.query.LuceneQueryBuilder;
 import vtk.repository.search.query.PropertyPrefixQuery;
 import vtk.repository.search.query.QueryBuilder;
 import vtk.repository.search.query.QueryBuilderException;
 import vtk.repository.search.query.TermOperator;
-import vtk.repository.search.query.filter.FilterFactory;
 
 /**
  * 
- * @author oyviste
- *
  */
 public class PropertyPrefixQueryBuilder implements QueryBuilder {
 
@@ -61,40 +58,41 @@ public class PropertyPrefixQueryBuilder implements QueryBuilder {
 
     @Override
     public Query buildQuery() throws QueryBuilderException {
-        String term = this.ppq.getTerm();
+        String termValue = this.ppq.getTerm();
         
-        if (!(def.getType() == Type.PRINCIPAL ||
-                def.getType() == Type.STRING ||
-                def.getType() == Type.HTML ||
-                def.getType() == Type.JSON)) {
-            throw new QueryBuilderException("Prefix queries are only supported for "
-                    + "property types PRINCIPAL, STRING, HTML and JSON w/attribute specifier."
-                    + "Use range queries for dates and numbers.");
-        }
-
+        PropertyType.Type valueType = def.getType();
         TermOperator op = ppq.getOperator();
 
         boolean inverted = (op == TermOperator.NE || op == TermOperator.NE_IGNORECASE);
         boolean ignorecase = (op == TermOperator.NE_IGNORECASE || op == TermOperator.EQ_IGNORECASE);
 
         if (ignorecase) {
-            term = term.toLowerCase();
+            termValue = termValue.toLowerCase();
         }
 
         String fieldName = PropertyFields.propertyFieldName(def, ignorecase);
-        if (def.getType() == Type.JSON && this.ppq.complexValueAttributeSpecifier().isPresent()) {
+        if (valueType == Type.JSON) {
+            if (! ppq.complexValueAttributeSpecifier().isPresent()) {
+                throw new QueryBuilderException("Wildcard query on JSON fields requires complex attribute specifier");
+            }
+
             fieldName = PropertyFields.jsonFieldName(
                     def, ppq.complexValueAttributeSpecifier().get(), ignorecase);
+            valueType = PropertyFields.jsonFieldDataType(def, ppq.complexValueAttributeSpecifier().get());
         }
 
-        Filter filter = new PrefixFilter(new Term(fieldName, term));
-
-        if (inverted) {
-            filter = FilterFactory.inversionFilter(filter);
+        if (!(valueType == Type.PRINCIPAL ||
+                valueType == Type.STRING ||
+                valueType == Type.HTML ||
+                valueType == Type.JSON)) {
+            throw new QueryBuilderException("Prefix queries are only supported for "
+                    + "property types PRINCIPAL, STRING, HTML and JSON w/attribute specifier."
+                    + "Use range queries for dates and numbers.");
         }
-        
-        return new ConstantScoreQuery(filter);
-        
+
+        Query q = new PrefixQuery(new Term(fieldName, termValue));
+
+        return inverted ? LuceneQueryBuilder.invert(q) : q;
     }
 
 }

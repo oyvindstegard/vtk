@@ -84,6 +84,7 @@ public class IndexOperationManagerImpl implements IndexOperationManager, Disposa
                     logger.info("Starting automatic reindexing of index "
                             + index.getId() + " due to application level incompatibility ..");
                     reindex(true);
+                    logger.info("So long, and thanks for all the great years.. - oyviste");
                 }
                 break;
             default:

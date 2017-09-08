@@ -30,12 +30,13 @@
  */
 package vtk.repository.search.query.security;
 
+import java.util.Optional;
 import java.util.Set;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.apache.lucene.search.Filter;
 import org.apache.lucene.search.IndexSearcher;
+import org.apache.lucene.search.Query;
 import org.springframework.beans.factory.annotation.Required;
 import vtk.security.Principal;
 import vtk.security.PrincipalManager;
@@ -47,7 +48,7 @@ import vtk.security.token.TokenManager;
  * from token.
  */
 public abstract class AbstractQueryAuthorizationFilterFactory implements 
-                                                QueryAuthorizationFilterFactory {
+                                                AuthorizationFilterQueryFactory {
 
     Logger logger = LoggerFactory.getLogger(AbstractQueryAuthorizationFilterFactory.class);
     
@@ -57,7 +58,7 @@ public abstract class AbstractQueryAuthorizationFilterFactory implements
     
     
     @Override
-    public abstract Filter authorizationQueryFilter(String token, IndexSearcher searcher);
+    public abstract Optional<Query> authorizationFilterQuery(String token);
     
     protected Principal getPrincipal(String token) {
         return this.tokenManager.getPrincipal(token);
@@ -77,12 +78,10 @@ public abstract class AbstractQueryAuthorizationFilterFactory implements
         this.principalManager = principalManager;
     }
 
-
     @Required
     public void setTokenManager(TokenManager tokenManager) {
         this.tokenManager = tokenManager;
     }
-
 
     @Required
     public void setRoleManager(RoleManager roleManager) {
