@@ -32,6 +32,7 @@ package vtk.web.actions.create;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 import javax.servlet.http.HttpServletRequest;
 
@@ -60,13 +61,14 @@ public class ListCollectionsProvider {
 
     private static Logger logger = LoggerFactory.getLogger(ListCollectionsProvider.class);
 
-    public List<Resource> buildSearchAndPopulateResources(Path uri, String token) {
+    public List<Resource> buildSearchAndPopulateResources(Optional<Path> uri, String token) {
         AndQuery mainQuery = new AndQuery();
-        if (uri.equals("")) {
+        if (!uri.isPresent()) {
             mainQuery.add(new UriDepthQuery(0));
-        } else {
-            mainQuery.add(new UriPrefixQuery(uri.toString()));
-            mainQuery.add(new UriDepthQuery(uri.getDepth() + 1));
+        }
+        else {
+            mainQuery.add(new UriPrefixQuery(uri.get().toString()));
+            mainQuery.add(new UriDepthQuery(uri.get().getDepth() + 1));
         }
         mainQuery.add(new TypeTermQuery("collection", TermOperator.IN));
         Search search = new Search();
@@ -82,7 +84,8 @@ public class ListCollectionsProvider {
             try {
                 Resource r = this.repository.retrieve(token, result.getURI(), true);
                 items.add(r);
-            } catch (Exception e) {
+            }
+            catch (Exception e) {
                 logger.error("Exception " + e.getMessage());
             }
         }

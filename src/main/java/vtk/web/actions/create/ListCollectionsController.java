@@ -36,6 +36,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -49,6 +50,7 @@ import vtk.repository.Repository;
 import vtk.repository.Resource;
 import vtk.repository.resourcetype.PropertyTypeDefinition;
 import vtk.security.Principal;
+import vtk.util.Result;
 import vtk.util.text.Json;
 import vtk.util.text.JsonStreamer;
 import vtk.web.JSONTreeHelper;
@@ -71,21 +73,23 @@ public class ListCollectionsController implements HttpRequestHandler {
     @Override
     public void handleRequest(HttpServletRequest request, HttpServletResponse response) 
             throws IOException {
-        Path uri = null;
-        try {
-            uri = Path.fromString(request.getParameter("uri"));
-        }
-        catch (Exception e) {
-            badRequest(e, response);
-            return;
-        }
-        if (uri == null) {
-            return;
-        }
         
-        String token = RequestContext.getRequestContext(request).getSecurityToken();
-        List<Resource> resources = provider.buildSearchAndPopulateResources(uri, token);
-        writeResults(resources, request, response, token);
+        String input = Optional.ofNullable(request.getParameter("uri"))
+           .flatMap(str -> {
+               if ("".equals(str.trim())) return Optional.of("/");
+               return Optional.of(str);
+           })
+           .orElse("/");
+
+        Result<Path> uri = Result.attempt(() -> Path.fromString(input));
+        if (uri.failure.isPresent()) {
+            badRequest(uri.failure.get(), response);
+        }
+        else {
+            String token = RequestContext.getRequestContext(request).getSecurityToken();
+            List<Resource> resources = provider.buildSearchAndPopulateResources(uri.toOptional(), token);
+            writeResults(resources, request, response, token);
+        }
     }
     
 
