@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<suppressions xmlns="https://jeremylong.github.io/DependencyCheck/dependency-suppression.1.1.xsd">
+  <suppress>
+    <notes><![CDATA[
+    file name: lucene-analyzers-icu-4.10.4.jar
+    ]]></notes>
+    <gav regex="true">^org\.apache\.lucene:lucene-analyzers-icu:.*$</gav>
+    <cpe>cpe:/a:icu_project:international_components_for_unicode</cpe>
+  </suppress>
+</suppressions>
+
