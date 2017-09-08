@@ -35,6 +35,8 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
+import java.util.Optional;
+
 import org.junit.Before;
 import org.junit.Test;
 
@@ -111,5 +113,13 @@ public class ResultTest {
         string = string.flatMap(str -> Result.success("NaN"));
         integer = string.flatMap(str -> Result.attempt(() -> Integer.parseInt(str)));
         assertTrue(integer.failure.isPresent());
+    }
+
+    @Test
+    public void testToOptional() {
+        Result<Integer> integer = Result.success(-537);
+        assertEquals(integer.toOptional(), Optional.of(-537));
+        Result<Integer> failure = Result.attempt(() -> Integer.parseInt("NaN"));
+        assertEquals(failure.toOptional(), Optional.empty());
     }
 }
