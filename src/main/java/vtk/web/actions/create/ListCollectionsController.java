@@ -42,8 +42,7 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.json.simple.JSONObject;
 import org.springframework.beans.factory.annotation.Required;
-import org.springframework.web.servlet.ModelAndView;
-import org.springframework.web.servlet.mvc.Controller;
+import org.springframework.web.HttpRequestHandler;
 
 import vtk.repository.Path;
 import vtk.repository.Repository;
@@ -58,7 +57,7 @@ import vtk.web.service.Service;
 import vtk.web.service.ServiceUnlinkableException;
 import vtk.web.service.URL;
 
-public class ListCollectionsController implements Controller {
+public class ListCollectionsController implements HttpRequestHandler {
 
     private ListCollectionsProvider provider;
     private Service service;
@@ -70,27 +69,28 @@ public class ListCollectionsController implements Controller {
     private final static String PARAMETER_REPORT_TYPE = "report-type";
 
     @Override
-    public ModelAndView handleRequest(HttpServletRequest request, HttpServletResponse response) throws Exception {
-        String uri = null;
+    public void handleRequest(HttpServletRequest request, HttpServletResponse response) 
+            throws IOException {
+        Path uri = null;
         try {
-            uri = request.getParameter("uri");
-        } catch (Exception e) {
+            uri = Path.fromString(request.getParameter("uri"));
+        }
+        catch (Exception e) {
             badRequest(e, response);
-            return null;
+            return;
         }
         if (uri == null) {
-            return null;
+            return;
         }
         
         String token = RequestContext.getRequestContext(request).getSecurityToken();
         List<Resource> resources = provider.buildSearchAndPopulateResources(uri, token);
         writeResults(resources, request, response, token);
-        return null;
     }
     
 
     private void writeResults(List<Resource> resources, HttpServletRequest request, HttpServletResponse response,
-            String token) throws Exception {
+            String token) throws IOException {
 
         String buttonText = mapServiceParamToButtonText(request.getParameter(PARAMETER_SERVICE));
         Map<String, List<String>> uriParameters = getReportTypeParam(request.getParameter(PARAMETER_REPORT_TYPE));

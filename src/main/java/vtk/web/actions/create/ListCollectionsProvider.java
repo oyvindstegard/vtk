@@ -38,6 +38,7 @@ import javax.servlet.http.HttpServletRequest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Required;
+
 import vtk.repository.Path;
 import vtk.repository.PropertySet;
 import vtk.repository.Repository;
@@ -59,13 +60,13 @@ public class ListCollectionsProvider {
 
     private static Logger logger = LoggerFactory.getLogger(ListCollectionsProvider.class);
 
-    public List<Resource> buildSearchAndPopulateResources(String uri, String token) {
+    public List<Resource> buildSearchAndPopulateResources(Path uri, String token) {
         AndQuery mainQuery = new AndQuery();
         if (uri.equals("")) {
             mainQuery.add(new UriDepthQuery(0));
         } else {
-            mainQuery.add(new UriPrefixQuery(uri));
-            mainQuery.add(new UriDepthQuery(Path.fromString(uri).getDepth() + 1));
+            mainQuery.add(new UriPrefixQuery(uri.toString()));
+            mainQuery.add(new UriDepthQuery(uri.getDepth() + 1));
         }
         mainQuery.add(new TypeTermQuery("collection", TermOperator.IN));
         Search search = new Search();
@@ -75,7 +76,7 @@ public class ListCollectionsProvider {
         ResultSet rs = searcher.execute(token, search);
 
         List<PropertySet> results = rs.getAllResults();
-        List<Resource> items = new ArrayList<Resource>();
+        List<Resource> items = new ArrayList<>();
 
         for (PropertySet result : results) {
             try {
