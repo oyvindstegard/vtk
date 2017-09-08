@@ -2204,33 +2204,33 @@
   </bean>
 
 
-  <bean id="manage.permissionAssertion" class="vtk.web.service.AndAssertion">
+  <bean id="manage.permissionAssertion" class="vtk.web.service.OrAssertion">
     <property name="assertions">
       <list>
-        <bean class="vtk.web.service.OrAssertion">
+        <bean class="vtk.web.service.AndAssertion">
           <property name="assertions">
             <list>
+              <bean class="vtk.web.service.GroupMembershipAssertion">
+                <property name="principalManager" ref="principalManager" />
+                <property name="groups" ref="manage.allowedGroups" />
+              </bean>
               <bean parent="abstractResourcePrincipalPermissionAssertion">
                 <property name="requiresAuthentication" value="true" />
                 <property name="considerLocks" value="false" />
                 <property name="permission" value="READ" />
               </bean>
-              <bean parent="abstractResourcePrincipalPermissionAssertion">
-                <property name="requiresAuthentication" value="true" />
-                <property name="considerLocks" value="false" />
-                <property name="permission" value="READ_WRITE_UNPUBLISHED" />
-              </bean>
-              <bean parent="abstractResourcePrincipalPermissionAssertion">
-                <property name="requiresAuthentication" value="true" />
-                <property name="considerLocks" value="false" />
-                <property name="permission" value="ALL" />
-              </bean>
             </list>
           </property>
         </bean>
-        <bean class="vtk.web.service.GroupMembershipAssertion">
-          <property name="principalManager" ref="principalManager" />
-          <property name="groups" ref="manage.allowedGroups" />
+        <bean parent="abstractResourcePrincipalPermissionAssertion">
+          <property name="requiresAuthentication" value="true" />
+          <property name="considerLocks" value="false" />
+          <property name="permission" value="READ_WRITE_UNPUBLISHED" />
+        </bean>
+        <bean parent="abstractResourcePrincipalPermissionAssertion">
+          <property name="requiresAuthentication" value="true" />
+          <property name="considerLocks" value="false" />
+          <property name="permission" value="ALL" />
         </bean>
       </list>
     </property>
