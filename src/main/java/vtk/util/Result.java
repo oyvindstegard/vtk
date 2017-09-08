@@ -182,6 +182,15 @@ public final class Result<T> {
             return this;
         }
     }
+
+    /**
+     * Converts this result to an instance of {@link Optional}. 
+     * @return an optional with the result if this is a success, 
+     * otherwise {@link Optional#empty()}
+     */
+    public Optional<T> toOptional() {
+        return result;
+    }
     
     private Result(Optional<T> result, Optional<Throwable> failure) {
         this.result = result;
