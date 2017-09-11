@@ -37,6 +37,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 import javax.servlet.ServletOutputStream;
 import javax.servlet.ServletResponse;
@@ -44,14 +45,14 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpServletResponseWrapper;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import vtk.text.html.HtmlNodeFilter;
 import vtk.text.html.HtmlPageParser;
 
 public class DecoratingServletResponse extends HttpServletResponseWrapper {
-    private static Log logger = LogFactory.getLog(DecoratingServletResponse.class);
+    private static Logger logger = LoggerFactory.getLogger(DecoratingServletResponse.class);
     private HttpServletRequest request;
     private ServletResponse response;
     private DecorationResolver resolver;
@@ -84,23 +85,34 @@ public class DecoratingServletResponse extends HttpServletResponseWrapper {
 
     @Override
     public ServletOutputStream getOutputStream() throws IOException {
-        if (out != null) throw new IOException("Output stream already opened");
+        if (out != null) {
+            throw new IOException(
+                    request.getRequestURI() + ": Cannot re-open output stream");
+        }
         
         Map<String, Object> model = new HashMap<>();
         
         if (contentType != null && contentType.startsWith("text/html")) {
             DecorationDescriptor descriptor = resolver.resolve(request, this);
-            logger.debug("Descriptor[" + getStatus() + "]: " + descriptor);
+            logger.debug("Descriptor[{}, {}]: {}", 
+                    request.getRequestURI(), getStatus(), descriptor);
             List<Template> templates = descriptor.getTemplates();
 
-            if (descriptor.decorate() && templates != null && !templates.isEmpty()) {
-
+            if (descriptor.decorate()) {
+                
                 ServletOutputStream stream = response.getOutputStream();
-                for (int i = templates.size() - 1; i >= 0; i--) {
-                    Template template = templates.get(i);
-                    Map<String, Object> parameters = 
-                            descriptor.getParameters(template);
-                    stream = wrap(stream, template, model, parameters, descriptor.parse());
+                
+                if (templates.isEmpty()) {
+                    Map<String, Object> parameters = new HashMap<>();
+                    stream = wrap(stream, Optional.empty(), model, parameters, descriptor.parse());
+                }
+                else {
+                    for (int i = templates.size() - 1; i >= 0; i--) {
+                        Template template = templates.get(i);
+                        Map<String, Object> parameters = 
+                                descriptor.getParameters(template);
+                        stream = wrap(stream, Optional.of(template), model, parameters, descriptor.parse());
+                    }
                 }
                 this.out = stream;
                 return stream;
@@ -160,7 +172,8 @@ public class DecoratingServletResponse extends HttpServletResponseWrapper {
     }
     
     private DecoratingServletOutputStream wrap(ServletOutputStream stream, 
-            Template template, Map<String, Object> model, Map<String, Object> parameters, boolean filter) {
+            Optional<Template> template, Map<String, Object> model, 
+            Map<String, Object> parameters, boolean filter) {
         
         Charset encoding = Charset.forName(getCharacterEncoding());
         List<HtmlNodeFilter> filters = filter ? this.filters : Collections.emptyList();
