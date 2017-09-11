@@ -32,8 +32,6 @@ package vtk.webdav;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
-import java.util.HashMap;
-import java.util.Map;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -51,7 +49,6 @@ import vtk.repository.FailedDependencyException;
 import vtk.repository.IllegalOperationException;
 import vtk.repository.Lock;
 import vtk.repository.Path;
-import vtk.repository.ReadOnlyException;
 import vtk.repository.Repository;
 import vtk.repository.Repository.Depth;
 import vtk.repository.Resource;
