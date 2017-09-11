@@ -42,7 +42,7 @@ public abstract class TestBeanContext {
 
     private final static String configBasePath = "classpath:/testcontext/";
 
-    protected ApplicationContext getApplicationContext(String... configFiles) {
+    protected static ApplicationContext getApplicationContext(String... configFiles) {
 
         List<String> configLocations = new ArrayList<>();
 
@@ -55,7 +55,7 @@ public abstract class TestBeanContext {
         return new ClassPathXmlApplicationContext(configLocations.toArray(new String[configLocations.size()]));
     }
 
-    protected void checkForBeanInConfig(ApplicationContext ctx, String beanDef) {
+    protected static void checkForBeanInConfig(ApplicationContext ctx, String beanDef) {
         assertTrue("Expected bean not found: " + beanDef, ctx.containsBean(beanDef));
     }
 

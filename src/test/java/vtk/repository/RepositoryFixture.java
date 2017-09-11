@@ -42,8 +42,14 @@ import java.util.Collections;
 
 public abstract class RepositoryFixture extends TestBeanContext {
     private final static String fixturePath = "/fixtures/";
+    protected static final ApplicationContext applicationContext = getApplicationContext(
+            "repository.xml");
+    protected static final PrincipalFactory principalFactory =
+            (PrincipalFactory) applicationContext.getBean("principalFactory");
+    protected static final TokenManager tokenManager =
+            (TokenManager) applicationContext.getBean("tokenManager");
 
-    public static class RepositoryArchive {
+    protected static class RepositoryArchive {
         public final String path;
         public final String fileName;
 
@@ -53,23 +59,31 @@ public abstract class RepositoryFixture extends TestBeanContext {
         }
     }
 
-    protected Repository getRepository(RepositoryArchive... archiveFiles) throws Exception {
-        ApplicationContext ctx = getApplicationContext("repository.xml");
-        PrincipalFactory principalFactory = (PrincipalFactory) ctx.getBean("principalFactory");
-        TokenManager tokenManager = (TokenManager) ctx.getBean("tokenManager");
-        Repository repository = (Repository) ctx.getBean("repository");
-        ResourceArchiver archiver = (ResourceArchiver) ctx.getBean("repository.archiver");
+    protected static Repository getRepository(RepositoryArchive... archiveFiles) {
+        Repository repository = (Repository) applicationContext.getBean(
+                "repository");
+        ResourceArchiver archiver = (ResourceArchiver) applicationContext.getBean(
+                "repository.archiver");
 
-        String token = tokenManager.newToken(
-                principalFactory.getPrincipal(
-                        "root@localhost", Principal.Type.USER, false),
-                null
-        );
+        String token = newUserToken("root@localhost");
         for (RepositoryArchive archiveFile : archiveFiles) {
             Path path = Path.fromString(archiveFile.path);
-            InputStream stream = getClass().getResourceAsStream(fixturePath + archiveFile.fileName);
-            archiver.expandArchive(token, stream, path, Collections.emptyMap());
+            InputStream stream = RepositoryFixture.class.getResourceAsStream(
+                    fixturePath + archiveFile.fileName);
+            try {
+                archiver.expandArchive(token, stream, path, Collections.emptyMap());
+            } catch (Exception e) {
+                throw new RuntimeException(e);
+            }
         }
         return repository;
+    }
+
+    protected static String newUserToken(String username) {
+        return tokenManager.newToken(
+                principalFactory.getPrincipal(
+                        username, Principal.Type.USER, false),
+                null
+        );
     }
 }

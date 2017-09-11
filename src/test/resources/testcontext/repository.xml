@@ -12,7 +12,7 @@
     <property name="id" value="${repositoryID}" />
     <property name="tokenManager" ref="tokenManager" />
     <property name="authorizationManager" ref="authorizationManager" />
-    <property name="dao" ref="repository.sqlMapDao" />
+    <property name="dao" ref="${repositoryBackend}" />
     <property name="revisionStore" ref="${repository.revisionStore}" />
     <property name="commentDAO" ref="${repository.commentDao}" />
     <property name="contentStore" ref="${repository.contentStore}" />
