@@ -44,6 +44,7 @@ import org.jdom.JDOMException;
 import org.jdom.input.SAXBuilder;
 import org.jdom.output.Format;
 import org.jdom.output.XMLOutputter;
+import vtk.repository.AuthorizationException;
 
 import vtk.repository.ContentInputSources;
 import vtk.repository.FailedDependencyException;
@@ -88,7 +89,6 @@ public class LockController extends AbstractWebdavController {
         Repository repository = requestContext.getRepository();
         String token = requestContext.getSecurityToken();
         Path uri = requestContext.getResourceURI();
-        Map<String, Object> model = new HashMap<>();
         Resource resource;
         
         if (requestContext.getPrincipal() == null) {
@@ -180,53 +180,37 @@ public class LockController extends AbstractWebdavController {
                 this.logger.debug("Locking " + uri + " succeeded");
             }
 
-            writeResponse(request, response, resource);
+            writeSuccessResponse(request, response, resource);
         }
         catch (ResourceNotFoundException e) {
             if (this.logger.isDebugEnabled()) {
                 this.logger.debug("Got ResourceNotFoundException for URI " + uri);
             }
-            model.put(WebdavConstants.WEBDAVMODEL_ERROR, e);
-            model.put(WebdavConstants.WEBDAVMODEL_HTTP_STATUS_CODE, new Integer(
-                    HttpServletResponse.SC_NOT_FOUND));
 
+            responseBuilder(HttpServletResponse.SC_NOT_FOUND).writeTo(response);
         }
         catch (FailedDependencyException e) {
             if (this.logger.isDebugEnabled()) {
                 this.logger.debug("Got FailedDependencyException for URI " + uri, e);
             }
-            model.put(WebdavConstants.WEBDAVMODEL_ERROR, e);
-            model.put(WebdavConstants.WEBDAVMODEL_HTTP_STATUS_CODE, new Integer(
-                    HttpServletResponse.SC_PRECONDITION_FAILED));
 
+            responseBuilder(HttpServletResponse.SC_PRECONDITION_FAILED).writeTo(response);
         }
         catch (ResourceLockedException e) {
             if (this.logger.isDebugEnabled()) {
                 this.logger.debug("Got ResourceLockedException for URI " + uri, e);
             }
-            model.put(WebdavConstants.WEBDAVMODEL_ERROR, e);
-            model.put(WebdavConstants.WEBDAVMODEL_HTTP_STATUS_CODE, new Integer(
-                            HttpUtil.SC_LOCKED));
 
+            responseBuilder(HttpUtil.SC_LOCKED).writeTo(response);
         }
-        catch (IllegalOperationException e) {
+        catch (IllegalOperationException | AuthorizationException e) {
             if (this.logger.isDebugEnabled()) {
-                this.logger.debug("Got IllegalOperationException for URI " + uri, e);
+                this.logger.debug("Got " + e.getClass().getSimpleName() + " for URI " + uri, e);
             }
-            model.put(WebdavConstants.WEBDAVMODEL_ERROR, e);
-            model.put(WebdavConstants.WEBDAVMODEL_HTTP_STATUS_CODE, new Integer(
-                    HttpServletResponse.SC_FORBIDDEN));
 
+            responseBuilder(HttpServletResponse.SC_FORBIDDEN).writeTo(response);
         }
-        catch (ReadOnlyException e) {
-            if (this.logger.isDebugEnabled()) {
-                this.logger.debug("Got ReadOnlyException for URI " + uri, e);
-            }
-            model.put(WebdavConstants.WEBDAVMODEL_ERROR, e);
-            model.put(WebdavConstants.WEBDAVMODEL_HTTP_STATUS_CODE, new Integer(
-                    HttpServletResponse.SC_FORBIDDEN));
 
-        }
     }    
     
 
@@ -317,7 +301,7 @@ public class LockController extends AbstractWebdavController {
         return owner;
     }
     
-    private void writeResponse(HttpServletRequest request, HttpServletResponse response, 
+    private void writeSuccessResponse(HttpServletRequest request, HttpServletResponse response,
             Resource resource) throws IOException {
         Lock lock = resource.getLock();
         Element lockDiscovery = buildLockDiscovery(lock);
