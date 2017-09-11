@@ -65,10 +65,12 @@ class RepoInfoCommand implements VCommand {
 
         if (r.lock) {
             out.println()
-            out.println("lock:")
-            out.println("token: " + r.lock.lockToken)
-            out.println("principal: " + r.lock.principal)
-            out.println("timeout: " + r.lock.timeout)
+            out.println "lock:"
+            out.println "type: ${r.lock.type}"
+            out.println "token: ${r.lock.lockToken}"
+            out.println "principal: ${r.lock.principal}"
+            out.println "timeout: ${r.lock.timeout}"
+            out.println "owner info: ${r.lock.ownerInfo}"
         }
     }
 }
