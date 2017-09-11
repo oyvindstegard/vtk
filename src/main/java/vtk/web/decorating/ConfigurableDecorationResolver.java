@@ -538,7 +538,7 @@ public class ConfigurableDecorationResolver implements DecorationResolver, Initi
         }
         
         public List<Template> getTemplates() {
-            return this.templates;
+            return Collections.unmodifiableList(this.templates);
         }
         
         public Map<String, Object> getParameters(Template t) {

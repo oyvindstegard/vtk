@@ -39,6 +39,7 @@ import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 import javax.servlet.ServletOutputStream;
 import javax.servlet.WriteListener;
@@ -63,7 +64,7 @@ public class DecoratingServletOutputStream extends ServletOutputStream {
     private Map<String, Object> model;
     private Map<String, Object> templateParameters;
     private Charset encoding;
-    private Template template;
+    private Optional<Template> template;
     private HtmlPageParser htmlParser;
     private List<HtmlNodeFilter> filters;
     private boolean committed = false;
@@ -73,7 +74,7 @@ public class DecoratingServletOutputStream extends ServletOutputStream {
             Map<String, Object> model,
             Map<String, Object> templateParameters,
             Charset encoding,
-            Template template, 
+            Optional<Template> template, 
             HtmlPageParser htmlParser,
             List<HtmlNodeFilter> filters,
             long contentLimit) {
@@ -132,16 +133,21 @@ public class DecoratingServletOutputStream extends ServletOutputStream {
 
     private void decorate() throws Exception {
         if (limitExceeded) {
+            logger.debug("Response of {} is too large, not decorating", 
+                    request.getRequestURI());
             out.flush();
             return;
         }
         
         InputStream in = new ByteArrayInputStream(buffer.toByteArray());
         try {
+            logger.debug("Parsing HTML of {} using filters: {}", 
+                    request.getRequestURI(), filters);
             HtmlPage page = htmlParser.parse(in, encoding.toString(), filters);
-            if (template != null && !page.isFrameset()) {
-                logger.debug("Rendering template {}", template);
-                template.render(page, out, encoding, request, model, templateParameters);
+            if (template.isPresent() && !page.isFrameset()) {
+                logger.debug("Rendering response of {} using template: {}", 
+                        request.getRequestURI(), template);
+                template.get().render(page, out, encoding, request, model, templateParameters);
             }
             else {
                 String s = page.getStringRepresentation();
@@ -150,7 +156,8 @@ public class DecoratingServletOutputStream extends ServletOutputStream {
             out.flush();
         }
         catch (HtmlPageParserException e) {
-            logger.debug("Failed to parse response stream", e);
+            logger.debug("Failed to parse response stream of {}", 
+                    request.getRequestURI(), e);
             out.write(buffer.toByteArray());
             out.flush();
         }
