@@ -34,6 +34,8 @@ import java.io.Serializable;
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
 import java.net.URLEncoder;
+import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Iterator;
@@ -61,7 +63,7 @@ public class URL implements Serializable {
     private String host = null;
     private Integer port = null;
     private Path path = null;
-    private String characterEncoding = "utf-8";
+    private Charset characterEncoding = StandardCharsets.UTF_8;
     private Map<String, List<String>> parameters = new LinkedHashMap<>();
     private String ref = null;
     private boolean pathOnly = false;
@@ -452,12 +454,11 @@ public class URL implements Serializable {
      *            the character encoding
      * @return this URL
      */
-    public URL setCharacterEncoding(String characterEncoding) {
+    public URL setCharacterEncoding(Charset characterEncoding) {
         checkNotImmutable();
         if (characterEncoding == null) {
             throw new IllegalArgumentException("Character encoding must be specified");
         }
-        java.nio.charset.Charset.forName(characterEncoding);
         this.characterEncoding = characterEncoding;
         return this;
     }
@@ -576,12 +577,8 @@ public class URL implements Serializable {
                 }
             }
         }
-        try {
-            Path encodedPath = encode(this.path, this.characterEncoding);
-            url.append(encodedPath);
-        } catch (java.io.UnsupportedEncodingException e) {
-            // Ignore, this.characterEncoding is supposed to be valid.
-        }
+        Path encodedPath = encode(this.path, this.characterEncoding);
+        url.append(encodedPath);
         if (this.collection && !this.path.isRoot()) {
             url.append("/");
         }
@@ -589,17 +586,12 @@ public class URL implements Serializable {
     }
 
     public String getPathEncoded() {
-        try {
-            StringBuilder result = new StringBuilder();
-            result.append(encode(this.path, this.characterEncoding).toString());
-            if (this.collection && !this.path.isRoot()) {
-                result.append("/");
-            }
-            return result.toString();
-        } catch (java.io.UnsupportedEncodingException e) {
-            throw new IllegalStateException("Character encoding " + this.characterEncoding
-                    + " is not supported on this system");
+        StringBuilder result = new StringBuilder();
+        result.append(encode(this.path, this.characterEncoding).toString());
+        if (this.collection && !this.path.isRoot()) {
+            result.append("/");
         }
+        return result.toString();
     }
 
     /**
@@ -609,12 +601,8 @@ public class URL implements Serializable {
      */
     public String getPathRepresentation() {
         StringBuilder sb;
-        try {
-            Path encodedPath = encode(this.path, this.characterEncoding);
-            sb = new StringBuilder(encodedPath.toString());
-        } catch (java.io.UnsupportedEncodingException e) {
-            sb = new StringBuilder();
-        }
+        Path encodedPath = encode(this.path, this.characterEncoding);
+        sb = new StringBuilder(encodedPath.toString());
 
         if (this.collection && !this.path.isRoot()) {
             sb.append("/");
@@ -642,13 +630,7 @@ public class URL implements Serializable {
      * @return the generated URL
      */
     public static URL create(HttpServletRequest request) {
-        try {
-            return create(request, "utf-8");
-        } catch (UnsupportedEncodingException e) {
-            throw new IllegalStateException("UTF-8 encoding not supported on this system");
-        } catch (Exception e) {
-            throw new IllegalArgumentException("Unable to parse request URL: " + request.getRequestURL(), e);
-        }
+        return create(request, StandardCharsets.UTF_8);
     }
 
     /**
@@ -663,7 +645,7 @@ public class URL implements Serializable {
      * @throws UnsupportedEncodingException
      *             if an error occurred while parsing the URL
      */
-    public static URL create(HttpServletRequest request, String encoding) throws Exception {
+    public static URL create(HttpServletRequest request, Charset encoding) {
         URL url = parse(request.getRequestURL().toString(), encoding);
         if (request.isSecure()) {
             url.setProtocol(PROTOCOL_HTTPS);
@@ -672,16 +654,9 @@ public class URL implements Serializable {
 
         for (Map.Entry<String,String[]> entry: queryStringMap.entrySet()) {
             String key = entry.getKey();
-            try {
-                key = decode(key, encoding);
-            } catch (IllegalArgumentException e) {
-            }
+            key = decode(key, encoding);
             for (String value : entry.getValue()) {
-                try {
-                    url.addParameter(key, decode(value, encoding));
-                } catch (IllegalArgumentException e) {
-                    url.addParameter(key, value);
-                }
+                url.addParameter(key, decode(value, encoding));
             }
         }
         
@@ -704,15 +679,20 @@ public class URL implements Serializable {
         return parse(url, "utf-8");
     }
     
+    public static URL parse(String url, String encoding) {
+        Charset cs = Charset.forName(encoding);
+        return parse(url, cs);
+    }
+    
     /**
      * Parses a URL from a string representation. Also attempts to decode the
-     * URL using a supplied encoding and normlize path segments.
+     * URL using a supplied encoding and normalize path segments.
      * 
      * @param url the string representation
      * @param encoding the character encoding to use
      * @return the parsed URL
      */
-    public static URL parse(String url, String encoding) {
+    public static URL parse(String url, Charset encoding) {
         if (url == null) {
             throw new IllegalArgumentException("Argument is null");
         }
@@ -838,7 +818,6 @@ public class URL implements Serializable {
         Path resultPath = Path.ROOT;
         List<String> elements = p.getElements();
         for (int i = 1; i < elements.size(); i++) {
-            try {
             String decoded = decode(elements.get(i), encoding);
             if (i == elements.size() - 1) {
                 // Special case: remove last element if it is '%20'
@@ -847,9 +826,6 @@ public class URL implements Serializable {
                 }
             }
             resultPath = resultPath.expand(decoded);
-            } catch (UnsupportedEncodingException e) {
-                throw new IllegalArgumentException(e);
-            }
         }
 
         Integer portNumber = null;
@@ -874,11 +850,7 @@ public class URL implements Serializable {
         if (query.length() > 0) {
             for (Map.Entry<String, String[]> entry : splitQueryString(query.toString()).entrySet()) {
                 for (String value : entry.getValue()) {
-                    try {
-                        resultURL.addParameter(decode(entry.getKey()), decode(value, encoding));
-                    } catch (UnsupportedEncodingException e) {
-                        throw new IllegalArgumentException(e);
-                    }
+                    resultURL.addParameter(decode(entry.getKey()), decode(value, encoding));
                 }
             }
         }
@@ -1060,11 +1032,7 @@ public class URL implements Serializable {
      * @return the encoded path
      */
     public static Path encode(Path path) {
-        try {
-            return encode(path, "utf-8");
-        } catch (UnsupportedEncodingException e) {
-            throw new IllegalStateException("UTF-8 encoding not supported on this system");
-        }
+        return encode(path, StandardCharsets.UTF_8);
     }
 
     /**
@@ -1076,7 +1044,7 @@ public class URL implements Serializable {
      * @throws UnsupportedEncodingException
      *             if the specified encoding is not supported on this system
      */
-    public static Path encode(Path path, String encoding) throws UnsupportedEncodingException {
+    public static Path encode(Path path, Charset encoding) {
         Path result = Path.ROOT;
         for (String elem : path.getElements()) {
             if (!elem.equals("/")) {
@@ -1094,11 +1062,7 @@ public class URL implements Serializable {
      * @return a <code>String</code>
      */
     public static String encode(String value) {
-        try {
-            return encode(value, "utf-8");
-        } catch (UnsupportedEncodingException e) {
-            throw new IllegalStateException("UTF-8 encoding not supported on this system");
-        }
+        return encode(value, StandardCharsets.UTF_8);
     }
 
     /**
@@ -1111,10 +1075,16 @@ public class URL implements Serializable {
      *             if the specified character encoding is not supported on this
      *             system
      */
-    public static String encode(String value, String encoding) throws UnsupportedEncodingException {
-        String encoded = URLEncoder.encode(value, encoding);
-        // Force hex '%20' instead of '+' as space representation:
-        return TextUtils.replaceAll(encoded, "+", "%20");
+    public static String encode(String value, Charset encoding) {
+        try {
+            String encoded = URLEncoder.encode(value, encoding.name());
+            // Force hex '%20' instead of '+' as space representation:
+            return TextUtils.replaceAll(encoded, "+", "%20");
+        }
+        catch (UnsupportedEncodingException e) {
+            throw new IllegalStateException("Unable to encode value '" + value 
+                    + "' using encoding " + encoding, e);
+        }
     }
 
     /**
@@ -1125,11 +1095,7 @@ public class URL implements Serializable {
      * @return the encoded path
      */
     public static Path decode(Path path) {
-        try {
-            return decode(path, "utf-8");
-        } catch (UnsupportedEncodingException e) {
-            throw new IllegalStateException("UTF-8 encoding not supported on this system");
-        }
+        return decode(path, StandardCharsets.UTF_8);
     }
 
     /**
@@ -1139,7 +1105,7 @@ public class URL implements Serializable {
      *             if the specified character encoding is not supported on this
      *             system
      */
-    public static Path decode(Path path, String encoding) throws UnsupportedEncodingException {
+    public static Path decode(Path path, Charset encoding) {
         Path result = Path.ROOT;
         for (String elem : path.getElements()) {
             if (!elem.equals("/")) {
@@ -1157,11 +1123,7 @@ public class URL implements Serializable {
      * @return the decoded string
      */
     public static String decode(String value) {
-        try {
-            return decode(value, "utf-8");
-        } catch (UnsupportedEncodingException e) {
-            throw new IllegalStateException("UTF-8 encoding not supported on this system");
-        }
+        return decode(value, StandardCharsets.UTF_8);
     }
 
     /**
@@ -1174,8 +1136,14 @@ public class URL implements Serializable {
      *             if the specified character encoding is not supported on this
      *             system
      */
-    public static String decode(String value, String encoding) throws UnsupportedEncodingException {
-        return URLDecoder.decode(value, encoding);
+    public static String decode(String value, Charset encoding) {
+        try {
+            return URLDecoder.decode(value, encoding.toString());
+        }
+        catch (UnsupportedEncodingException e) {
+            throw new IllegalStateException(
+                    "Unable to decode " + value + " using encoding " + encoding, e);
+        }
     }
 
     /**

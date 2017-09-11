@@ -121,8 +121,8 @@ public class RequestEncodingTranslator extends AbstractServletFilter {
                 
             	URL url = URL.parse(parseString);
             	if (!URL.isEncoded(originalURL)) {
-            	    Path p = URL.encode(url.getPath(), fromEncoding.name());
-            	    url.setPath(URL.decode(p, toEncoding.name()));
+            	    Path p = URL.encode(url.getPath(), fromEncoding);
+            	    url.setPath(URL.decode(p, toEncoding));
                 }
                 this.requestURL = url;
                 if (logger.isDebugEnabled()) {

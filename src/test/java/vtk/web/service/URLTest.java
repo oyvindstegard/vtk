@@ -35,6 +35,7 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
+import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.Map;
 
@@ -353,7 +354,7 @@ public class URLTest {
     @Test
     public void createFromRequestWithNonstandardEncoding() throws Exception {
         HttpServletRequest r = new MockHttpServletRequest("GET", "/using/iso/8859/%F8");
-        URL url = URL.create(r, "iso8859-1");
+        URL url = URL.create(r, StandardCharsets.ISO_8859_1);
         assertEquals("/using/iso/8859/ø", url.getPath().toString());
     }
     
@@ -391,7 +392,7 @@ public class URLTest {
     
     @Test (expected = IllegalStateException.class)
     public void cannotMutateCharachterEncodingAfterSetImmutable () {
-        immutableUrl.setCharacterEncoding("utf-8");
+        immutableUrl.setCharacterEncoding(StandardCharsets.UTF_8);
     }
 
     @Test (expected = IllegalStateException.class)
