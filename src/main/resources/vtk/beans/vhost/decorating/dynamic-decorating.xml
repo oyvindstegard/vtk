@@ -113,6 +113,7 @@
         <ref bean="decorating.requestContextFunction" />
         <ref bean="decorating.componentAvailableFunction" />
         <ref bean="decorating.retrieveFunction" />
+        <ref bean="decorating.authorizeFunction" />
         <ref bean="decorating.serviceURLFunction" />
         <ref bean="decorating.queryFunction" />
       </set>
@@ -124,6 +125,15 @@
     <constructor-arg>
       <bean class="vtk.text.tl.Symbol">
         <constructor-arg value="retrieve" />
+      </bean>
+    </constructor-arg>
+  </bean>
+
+  <bean id="decorating.authorizeFunction"
+        class="vtk.web.decorating.tl.AuthorizeFunction">
+    <constructor-arg>
+      <bean class="vtk.text.tl.Symbol">
+        <constructor-arg value="authorize" />
       </bean>
     </constructor-arg>
   </bean>
