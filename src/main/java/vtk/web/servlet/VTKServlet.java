@@ -59,6 +59,7 @@ import vtk.security.AuthenticationException;
 import vtk.security.Principal;
 import vtk.security.web.SecurityInitializer;
 import vtk.util.Version;
+import vtk.web.InvalidRequestException;
 import vtk.web.RepositoryContextInitializer;
 import vtk.web.RequestContext;
 import vtk.web.RequestContextInitializer;
@@ -261,9 +262,8 @@ public class VTKServlet extends DispatcherServlet {
                         String headerName = key.toString().trim();
                         String headerValue = o.toString().trim();
                         this.globalHeaders.put(headerName, headerValue);
-                        }
                     }
-                    
+                }
             }
         }
         catch (NoSuchBeanDefinitionException e) { }
@@ -329,7 +329,13 @@ public class VTKServlet extends DispatcherServlet {
                return;
            }
 
-           this.requestContextInitializer.createContext(request);
+           try {
+               this.requestContextInitializer.createContext(request);
+           }
+           catch (InvalidRequestException e) {
+               response.sendError(HttpServletResponse.SC_BAD_REQUEST, e.getMessage());
+               return;
+           }
            response = new HeaderAwareResponseWrapper(response);
            FilterChain chain = new FilterChain("ContextualFilterChain", 
                    contextualServletFilters, (req, resp) -> {
