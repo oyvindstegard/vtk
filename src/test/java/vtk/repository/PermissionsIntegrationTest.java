@@ -137,7 +137,7 @@ public class PermissionsIntegrationTest extends RepositoryFixture {
                     token, readProcessedPath, true);
             assertThatThrownBy(
                     () ->  repository.retrieve(
-                    token, readProcessedPath, false)
+                            token, readProcessedPath, false)
             ).isInstanceOf(AuthorizationException.class);
 
         }
@@ -203,6 +203,181 @@ public class PermissionsIntegrationTest extends RepositoryFixture {
                     .findFirst();
             assertThat(comment.isPresent()).isTrue();
             repository.deleteComment(token, null, adminRightResource, comment.get());
+        }
+
+    }
+
+    public static class Copy {
+
+        @Test
+        public void can_only_copy_if_user_has_read_access_to_the_whole_subtree() throws Exception {
+            String token = newUserToken("vortex-test@uio.no");
+            Path cannotReadRootPath = Path.fromString(
+                    "/permissions/kopier/kopier-rettigheter/kilde-vortex-test-ikke-les" +
+                            "/vortex-test-ikke-les-rot"
+            );
+            Path cannotReadSubPath = Path.fromString(
+                    "/permissions/kopier/kopier-rettigheter/kilde-vortex-test-ikke-les" +
+                            "/vortex-test-ikke-les-lenger-ned"
+            );
+            Path targetPath = Path.fromString(
+                    "/permissions/kopier/kopier-rettigheter/maal-ok"
+            );
+
+            assertThatThrownBy(
+                    () -> repository.copy(
+                            token,
+                            null,
+                            cannotReadRootPath,
+                            targetPath.extend("vortex-test-ikke-les-rot"),
+                            false,
+                            false)
+            ).isInstanceOf(AuthorizationException.class);
+
+            assertThatThrownBy(
+                    () -> repository.copy(
+                            token,
+                            null,
+                            cannotReadSubPath,
+                            targetPath.extend("vortex-test-ikke-les-lenger-ned"),
+                            false,
+                            false)
+            ).isInstanceOf(AuthorizationException.class);
+        }
+
+        @Test
+        public void copy_requires_write_on_target_folder() throws Exception {
+            String token = newUserToken("vortex-test@uio.no");
+            Path copyMeNoACLPath = Path.fromString(
+                    "/permissions/kopier/kopier-rettigheter/kilde-ok/kopier-meg-ikke-acl"
+            );
+            Path sourcePath = Path.fromString(
+                    "/permissions/kopier/kopier-rettigheter/kilde-ok"
+            );
+            Path noWriteAccessPath = Path.fromString(
+                    "/permissions/kopier/kopier-rettigheter/maal-vortex-test-ikke-skriv"
+            );
+            Path writeAccessPath = Path.fromString(
+                    "/permissions/kopier/kopier-rettigheter/maal-ok"
+            );
+
+            assertThatThrownBy(
+                    () -> repository.copy(
+                            token,
+                            null,
+                            copyMeNoACLPath,
+                            noWriteAccessPath.extend("kopier-meg-ikke-acl"),
+                            false,
+                            false)
+            ).isInstanceOf(AuthorizationException.class);
+
+            Path sourceTarget = writeAccessPath.extend("kilde-ok");
+            repository.copy(
+                    token,
+                    null,
+                    sourcePath,
+                    sourceTarget,
+                    false,
+                    false
+            );
+
+            repository.delete(
+                    token, null, sourceTarget, false);
+        }
+    }
+
+    public static class Move {
+
+        @Test
+        public void move_requires_write_on_target_if_source_do_not_have_its_own_acl()
+                throws Exception {
+            String token = newUserToken("vortex-test@uio.no");
+            Path noReadPath = Path.fromString(
+                    "/permissions/flytt/ikke-acl-kilde/kilde-vortex-test-ikke-les"
+            );
+            Path moveMePath = Path.fromString(
+                    "/permissions/flytt/ikke-acl-kilde/kilde-ok/flytt-meg"
+            );
+            Path noWritePath = Path.fromString(
+                    "/permissions/flytt/ikke-acl-kilde/maal-vortex-test-ikke-skriv"
+            );
+            Path writePath = Path.fromString(
+                    "/permissions/flytt/ikke-acl-kilde/maal-ok"
+            );
+
+            assertThatThrownBy(
+                    () -> repository.retrieve(token, noReadPath, false)
+            ).isInstanceOf(AuthorizationException.class);
+
+            assertThatThrownBy(
+                    () -> repository.move(
+                            token,
+                            null,
+                            moveMePath,
+                            noWritePath.extend("flytt-meg"),
+                            false)
+            ).isInstanceOf(AuthorizationException.class);
+
+            repository.move(
+                    token,
+                    null,
+                    moveMePath,
+                    writePath.extend("flytt-meg"),
+                    false
+            );
+
+        }
+
+        @Test
+        public void move_require_admin_on_target_if_source_have_its_own_acl()
+                throws Exception {
+            String token = newUserToken("vortex-test@uio.no");
+            Path cannotMovePath = Path.fromString(
+                    "/permissions/flytt/har-acl-kilde/kilde-vortex-test-ikke-unbind"
+            );
+            Path sourcePath = Path.fromString(
+                    "/permissions/flytt/har-acl-kilde/kilde-ok"
+            );
+            Path hasAdminPath = Path.fromString(
+                    "/permissions/flytt/har-acl-kilde/maal-ok"
+            );
+            Path noAdminPath = Path.fromString(
+                    "/permissions/flytt/har-acl-kilde/maal-vortex-test-ikke-admin"
+            );
+
+            assertThatThrownBy(
+                    () -> repository.move(
+                            token,
+                            null,
+                            cannotMovePath,
+                            hasAdminPath.extend("cannot-move"),
+                            false)
+            ).isInstanceOf(AuthorizationException.class);
+
+            assertThatThrownBy(
+                    () -> repository.move(
+                            token,
+                            null,
+                            sourcePath.extend("flytt-meg-les-alt"),
+                            noAdminPath.extend("flytt-meg-les-alt"),
+                            false)
+            ).isInstanceOf(AuthorizationException.class);
+
+            String[] folderNames = {"flytt-meg-ikke-les", "flytt-meg-les-alt", "flytt-meg-les-noe"};
+            for (String folderName : folderNames) {
+                repository.move(
+                        token,
+                        null,
+                        sourcePath.extend(folderName),
+                        hasAdminPath.extend(folderName),
+                        false
+                );
+            }
+        }
+
+        @Test
+        public void name() throws Exception {
+
         }
 
     }
