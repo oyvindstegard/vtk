@@ -63,7 +63,8 @@ public class DecoratingServletOutputStream extends ServletOutputStream {
     private HttpServletRequest request;
     private Map<String, Object> model;
     private Map<String, Object> templateParameters;
-    private Charset encoding;
+    private Charset readEncoding;
+    private Charset writeEncoding;
     private Optional<Template> template;
     private HtmlPageParser htmlParser;
     private List<HtmlNodeFilter> filters;
@@ -73,7 +74,8 @@ public class DecoratingServletOutputStream extends ServletOutputStream {
             HttpServletRequest request,
             Map<String, Object> model,
             Map<String, Object> templateParameters,
-            Charset encoding,
+            Charset readEncoding,
+            Charset writeEncoding,
             Optional<Template> template, 
             HtmlPageParser htmlParser,
             List<HtmlNodeFilter> filters,
@@ -82,7 +84,8 @@ public class DecoratingServletOutputStream extends ServletOutputStream {
         this.model = model;
         this.templateParameters = templateParameters;
         this.out = out;
-        this.encoding = encoding;
+        this.readEncoding = readEncoding;
+        this.writeEncoding = writeEncoding;
         this.template = template;
         this.htmlParser = htmlParser;
         if (filters != null) {
@@ -141,17 +144,17 @@ public class DecoratingServletOutputStream extends ServletOutputStream {
         
         InputStream in = new ByteArrayInputStream(buffer.toByteArray());
         try {
-            logger.debug("Parsing HTML of {} using filters: {}", 
-                    request.getRequestURI(), filters);
-            HtmlPage page = htmlParser.parse(in, encoding.toString(), filters);
+            logger.debug("Parsing HTML of {} with encoding {} using filters: {}", 
+                    request.getRequestURI(), readEncoding, filters);
+            HtmlPage page = htmlParser.parse(in, readEncoding.toString(), filters);
             if (template.isPresent() && !page.isFrameset()) {
-                logger.debug("Rendering response of {} using template: {}", 
-                        request.getRequestURI(), template);
-                template.get().render(page, out, encoding, request, model, templateParameters);
+                logger.debug("Rendering response of {} with encoding {} using template: {}", 
+                        request.getRequestURI(), writeEncoding, template);
+                template.get().render(page, out, writeEncoding, request, model, templateParameters);
             }
             else {
                 String s = page.getStringRepresentation();
-                out.write(s.getBytes(encoding));
+                out.write(s.getBytes(readEncoding));
             }
             out.flush();
         }
