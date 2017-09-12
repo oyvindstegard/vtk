@@ -78,7 +78,7 @@ public class RequestURLDecoder extends AbstractServletFilter {
                 Charset characterEncoding) {
             super(request);
             try {
-                URL url = URL.create(request, characterEncoding);
+                URL url = URL.create(request, characterEncoding.toString());
                 if (url.isCollection() && !url.getPath().isRoot()) {
                     this.uri = url.getPath().toString() + "/";
                 }

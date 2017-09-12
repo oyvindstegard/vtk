@@ -30,14 +30,13 @@
  */
 package vtk.web.service.provider;
 
-import java.nio.charset.StandardCharsets;
+import java.io.UnsupportedEncodingException;
 import java.util.Locale;
 
 import javax.servlet.http.HttpServletRequest;
 
 import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Required;
-
 import vtk.repository.Resource;
 import vtk.util.repository.LocaleHelper;
 import vtk.web.service.URL;
@@ -51,7 +50,11 @@ public class TagsViewServiceNameProvider implements ServiceNameProvider {
 
         String tag = request.getParameter(TagsHelper.TAG_PARAMETER);
         if (!StringUtils.isBlank(tag)) {
-            tag = URL.decode(tag, StandardCharsets.UTF_8);
+            try {
+                tag = URL.decode(tag, "utf-8");
+            } catch (UnsupportedEncodingException e) {
+                // Don't break the entire service if uridecoding fails
+            }
         }
 
         String langParam = request.getParameter("lang");
