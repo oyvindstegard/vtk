@@ -198,8 +198,14 @@ public class RequestContextInitializer implements ContextInitializer, ServiceRes
     	URL url;
     	try {
     	    url = URL.create(request);
-    	} catch (Throwable t) {
-    	    throw new InvalidRequestException("Invalid request: " + request.getRequestURL(), t);
+    	    // Provoke URL parsing errors in an early stage:
+    	    if (request.getQueryString() != null)
+    	        request.getParameterMap();
+    	}
+    	catch (Throwable t) {
+    	    String msg = request.getRequestURL() + 
+    	            (request.getQueryString() != null ? request.getQueryString() : "");
+    	    throw new InvalidRequestException("Invalid request: " + msg);
     	}
     	Path uri = url.getPath();
         Resource resource = null;
