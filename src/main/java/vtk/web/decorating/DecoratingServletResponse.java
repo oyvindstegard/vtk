@@ -33,6 +33,7 @@ package vtk.web.decorating;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -52,6 +53,7 @@ import vtk.text.html.HtmlNodeFilter;
 import vtk.text.html.HtmlPageParser;
 
 public class DecoratingServletResponse extends HttpServletResponseWrapper {
+    private static final Charset outputEncoding = StandardCharsets.UTF_8;
     private static Logger logger = LoggerFactory.getLogger(DecoratingServletResponse.class);
     private HttpServletRequest request;
     private ServletResponse response;
@@ -61,7 +63,7 @@ public class DecoratingServletResponse extends HttpServletResponseWrapper {
     private ServletOutputStream out = null;
     private long maxSize;
     private String contentType = null;
-    
+    private Charset inputEncoding = outputEncoding;
     
     public DecoratingServletResponse(HttpServletRequest request, 
             HttpServletResponse response, DecorationResolver resolver,
@@ -86,13 +88,14 @@ public class DecoratingServletResponse extends HttpServletResponseWrapper {
     @Override
     public ServletOutputStream getOutputStream() throws IOException {
         if (out != null) {
-            throw new IOException(
-                    request.getRequestURI() + ": Cannot re-open output stream");
+            throw new IOException(request.getRequestURI() 
+                    + ": Cannot re-open output stream");
         }
         
         Map<String, Object> model = new HashMap<>();
         
         if (contentType != null && contentType.startsWith("text/html")) {
+            super.setContentType("text/html;charset=" + outputEncoding.name());
             DecorationDescriptor descriptor = resolver.resolve(request, this);
             logger.debug("Descriptor[{}, {}]: {}", 
                     request.getRequestURI(), getStatus(), descriptor);
@@ -104,14 +107,18 @@ public class DecoratingServletResponse extends HttpServletResponseWrapper {
                 
                 if (templates.isEmpty()) {
                     Map<String, Object> parameters = new HashMap<>();
-                    stream = wrap(stream, Optional.empty(), model, parameters, descriptor.parse());
+                    stream = wrap(stream, inputEncoding, 
+                            Optional.empty(), model, parameters, descriptor.parse());
                 }
                 else {
                     for (int i = templates.size() - 1; i >= 0; i--) {
+                        // Use character encoding of original response only for inner template:
+                        Charset readEncoding = i == 0 ? inputEncoding : outputEncoding;
                         Template template = templates.get(i);
                         Map<String, Object> parameters = 
                                 descriptor.getParameters(template);
-                        stream = wrap(stream, Optional.of(template), model, parameters, descriptor.parse());
+                        stream = wrap(stream, readEncoding, 
+                                Optional.of(template), model, parameters, descriptor.parse());
                     }
                 }
                 this.out = stream;
@@ -148,6 +155,7 @@ public class DecoratingServletResponse extends HttpServletResponseWrapper {
         }
         else if ("Content-Type".equalsIgnoreCase(name)) {
             setContentType(value);
+            return;
         }
         super.setHeader(name, value);
     }
@@ -156,10 +164,37 @@ public class DecoratingServletResponse extends HttpServletResponseWrapper {
     public void addHeader(String name, String value) {
         setHeader(name, value);
     }
-
+    
+    @Override
+    public String getCharacterEncoding() {
+        return outputEncoding.name();
+    }
+    
+    @Override
+    public String getContentType() {
+        return contentType;
+    }
+    
     @Override
     public void setContentType(String type) {
-        super.setContentType(type);
+        if (type.startsWith("text/html")) {
+            String charset = null;
+            int charsetIdx = type.indexOf(";charset=");
+            if (charsetIdx > 0 && charsetIdx+ 9 < type.length()) {
+                charset = type.substring(charsetIdx + 9).trim();
+                type = type.substring(0, charsetIdx);
+                try {
+                    inputEncoding = Charset.forName(charset);
+                }
+                catch (Throwable t) {
+                    logger.debug("Failed to set character encoding: {}, falling back to {}", 
+                            charset, inputEncoding);
+                }
+            }
+        }
+        else {
+            super.setContentType(type);
+        }
         contentType = type;
     }
     
@@ -172,13 +207,13 @@ public class DecoratingServletResponse extends HttpServletResponseWrapper {
     }
     
     private DecoratingServletOutputStream wrap(ServletOutputStream stream, 
-            Optional<Template> template, Map<String, Object> model, 
+            Charset readEncoding, Optional<Template> template, Map<String, Object> model, 
             Map<String, Object> parameters, boolean filter) {
         
-        Charset encoding = Charset.forName(getCharacterEncoding());
         List<HtmlNodeFilter> filters = filter ? this.filters : Collections.emptyList();
         return new DecoratingServletOutputStream(stream,
-                request, model, parameters, encoding, template, htmlParser, filters, maxSize);
+                request, model, parameters, readEncoding, outputEncoding, 
+                template, htmlParser, filters, maxSize);
     }
     
 }
