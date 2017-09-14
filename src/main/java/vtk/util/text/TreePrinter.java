@@ -201,7 +201,12 @@ public class TreePrinter {
                 b.append(ws(Math.min(0, format.nodeNamePrefix(siblingsFollowing).length()-1)));
             } else {
                 b.append(prefix);
-                b.append(ws(format.nodeNamePrefix(siblingsFollowing).length()));
+                if (siblingsFollowing) {
+                    b.append(format.verticalTreeLine());
+                    b.append(ws(format.nodeNamePrefix(siblingsFollowing).length()-1));
+                } else {
+                    b.append(ws(format.nodeNamePrefix(siblingsFollowing).length()));
+                }
             }
             b.append(format.attributePrefix());
             b.append(format.formatAttribute(a));

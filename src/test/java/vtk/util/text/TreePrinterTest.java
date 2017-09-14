@@ -74,6 +74,7 @@ public class TreePrinterTest {
                                 "   |  *--Other child of y\n" +
                                 "   |  \n" +
                                 "   *--z\n" +
+                                "   |   3000\n" +
                                 "   |\n" +
                                 "   *--y\n" +
                                 "   |\n" +
@@ -88,7 +89,7 @@ public class TreePrinterTest {
              .addChild("Child of y").addAttribute(1000).addAttribute(2000)
            .toParent().add("Other child of y")
         .toParent()
-        .add("z")
+        .add("z").addAttribute(3000)
         .add("y")
         .toRoot().addChild("fourth child")
         .toRoot().add("second root");
