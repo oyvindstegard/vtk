@@ -39,7 +39,7 @@ import static org.junit.Assert.*;
 import org.junit.Test;
 
 import vtk.repository.Path;
-import vtk.util.text.PathMappingConfig.ConfigEntry;
+import vtk.util.text.PathMappingConfig.Entry;
 
 
 public class PathMappingConfigTest {
@@ -67,7 +67,7 @@ public class PathMappingConfigTest {
         assertNotNull(config.get(Path.fromString("/")));
         assertNull(config.get(Path.fromString("/unknown")));
         
-        List<ConfigEntry<String>> entries = config.get(Path.fromString("/a"));
+        List<Entry<String>> entries = config.get(Path.fromString("/a"));
         assertEquals(2, entries.size());
         assertEquals("value-a", entries.get(0).value);
         assertEquals(0, entries.get(0).qualifiers.size());
@@ -117,7 +117,7 @@ public class PathMappingConfigTest {
         PathMappingConfig config = PathMappingConfig.strConfig(is);
         
         // For "/"
-        List<ConfigEntry<String>> entries = config.getMatchAncestor(Path.fromString("/"));
+        List<Entry<String>> entries = config.getMatchAncestor(Path.fromString("/"));
         assertEquals(3, entries.size());
         assertTrue(entries.get(0).exact);
         assertEquals("The Root Resource exactly", entries.get(0).value);

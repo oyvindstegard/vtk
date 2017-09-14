@@ -37,14 +37,14 @@ import java.io.InputStreamReader;
 import java.io.UncheckedIOException;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import java.util.Properties;
 import java.util.function.Function;
 
 import vtk.repository.Path;
+import vtk.util.text.TreePrinter.ModelBuilder;
 
 /**
  * Parser for path mapping style configuration files.
@@ -74,7 +74,7 @@ import vtk.repository.Path;
  * descendant paths. This makes a difference for
  * {@link #getMatchAncestor(vtk.repository.Path) getMatchAncestor},
  * which ignores exact rules on ancestor paths. The flag is also available
- * for each config entry as {@link ConfigEntry#isExact() }.
+ * for each config entry as {@link Entry#isExact() }.
  * <p>
  * After parsing, the configuration will be organized into a hierarchy
  * corresponding to the paths present, and it can be queried with
@@ -83,7 +83,7 @@ import vtk.repository.Path;
  * <p>
  * The same path may occur in configuration multiple times, but with different
  * set of qualifiers and values. A single path can map to zero or more
- * {@link ConfigEntry} instances, each with list of qualifier name-value-pairs,
+ * {@link Entry} instances, each with list of qualifier name-value-pairs,
  * a single VALUE and a flag indicating that exact path matching is desired.
  *
  * <p>A factory must be provided which can create configuration values from strings.
@@ -175,7 +175,7 @@ public class PathMappingConfig<T> {
      * @param path the path to look up config for
      * @return  list of config entries which apply exactly to the provided path
      */
-    public List<ConfigEntry<T>> get(Path path) {
+    public List<Entry<T>> get(Path path) {
         Node n = root;
         for (String name : path.getElements()) {
             if (name.equals("/")) {
@@ -200,9 +200,9 @@ public class PathMappingConfig<T> {
      * @return a list of config entries, or <code>null</code> if no entries
      * apply.
      */
-    public List<ConfigEntry<T>> getMatchAncestor(Path path) {
+    public List<Entry<T>> getMatchAncestor(Path path) {
         Node n = root;
-        List<ConfigEntry<T>> entries = getApplicableEntries(n, path);
+        List<Entry<T>> entries = getApplicableEntries(n, path);
         List<String> nodeNames = path.getElements();
         for (int i=1; i<nodeNames.size();i++) {
             n = n.children.get(nodeNames.get(i));
@@ -210,7 +210,7 @@ public class PathMappingConfig<T> {
                 break;
             }
 
-            List<ConfigEntry<T>> applicable = getApplicableEntries(n, path);
+            List<Entry<T>> applicable = getApplicableEntries(n, path);
             if (!applicable.isEmpty()) {
                 entries = applicable;
             }
@@ -226,10 +226,10 @@ public class PathMappingConfig<T> {
      * Node n must correspond to path p or an ancestor path of p
      * @return list of corresponding config entries, empty list if none.
      */
-    private List<ConfigEntry<T>> getApplicableEntries(Node n, Path p) {
-        List<ConfigEntry<T>> entries = new ArrayList<>();
+    private List<Entry<T>> getApplicableEntries(Node n, Path p) {
+        List<Entry<T>> entries = new ArrayList<>();
         if (n.entries == null) return entries;
-        for (ConfigEntry<T> e: n.entries) {
+        for (Entry<T> e: n.entries) {
             if (e.exact) {
                 if (p.equals(e.path)) {
                     entries.add(e);
@@ -348,24 +348,55 @@ public class PathMappingConfig<T> {
         }
 
         T value = valueFactory.apply(rhs);
-        n.entries.add(new ConfigEntry<>(qualifiers, value, exact, path));
+        n.entries.add(new Entry<>(qualifiers, value, exact, path));
     }
 
     private class Node {
 
-        private Map<String, Node> children = new HashMap<>();
-        private List<ConfigEntry<T>> entries = null;
+        private Map<String, Node> children = new LinkedHashMap<>();
+        private List<Entry<T>> entries = null;
 
         @Override
         public String toString() {
-            StringBuilder sb = new StringBuilder();
-            sb.append("(");
-            for (String s : this.children.keySet()) {
-                sb.append(s).append("=").append(this.children.get(s));
-                sb.append(",");
+            try {
+                TreePrinter tp = new TreePrinter();
+                return tp.render(getTreeModel());
+            } catch (Throwable t) {
+                System.err.println("T: " + t);
+                return "FUCK";
             }
-            sb.append(")");
-            return sb.toString();
+        }
+
+        private TreePrinter.Model getTreeModel() {
+            ModelBuilder builder = TreePrinter.newModelBuilder();
+            builder.add("/");
+            children.forEach((k,v) -> {
+                addChild(v, builder);
+            });
+
+            return builder.getModel();
+        }
+
+        private ModelBuilder addChild(Node n, ModelBuilder builder) {
+            boolean added = false;
+            if (n.entries != null) {
+                Path p = n.entries.iterator().next().path;
+                builder.addChild(p.toString());
+                for (Entry<?> e : n.entries) {
+                    builder.addAttribute(e);
+                }
+                added = true;
+            }
+
+            n.children.forEach((k,v) -> {
+                addChild(v, builder);
+            });
+
+            if (added) {
+                return builder.toParent();
+            } else {
+                return builder;
+            }
         }
 
     }
@@ -385,6 +416,11 @@ public class PathMappingConfig<T> {
         return result.toString();
     }
 
+    @Override
+    public String toString() {
+        return root.toString();
+    }
+
     /**
      * A config entry represents a single line in the configuration file. Note
      * multiple lines may have the same path mapping, and thus there can be
@@ -393,7 +429,7 @@ public class PathMappingConfig<T> {
      *
      * @param <T> value type of config entries
      */
-    public static final class ConfigEntry<T> {
+    public static final class Entry<T> {
 
         /**
          * List of qualifiers associated with the entry.
@@ -415,7 +451,7 @@ public class PathMappingConfig<T> {
          */
         public final Path path;
 
-        private ConfigEntry(List<Qualifier> qualifiers, T value, boolean exact, Path path) {
+        private Entry(List<Qualifier> qualifiers, T value, boolean exact, Path path) {
             this.qualifiers = Collections.unmodifiableList(qualifiers);
             this.value = value;
             this.exact = exact;
@@ -424,13 +460,9 @@ public class PathMappingConfig<T> {
 
         @Override
         public String toString() {
-            StringBuilder sb = new StringBuilder(this.getClass().getName());
-            sb.append(": predicates=").append(this.qualifiers);
-            sb.append(";value=").append(this.value);
-            sb.append(";exact=").append(this.exact);
-            sb.append(";path=").append(this.path);
-            return sb.toString();
+            return "Entry{" + "qualifiers=" + qualifiers + ", value=" + value + ", exact=" + exact + ", path=" + path + '}';
         }
+
     }
 
     /**
@@ -455,11 +487,9 @@ public class PathMappingConfig<T> {
 
         @Override
         public String toString() {
-            StringBuilder sb = new StringBuilder("Q{");
-            sb.append(this.name).append(":").append(this.value);
-            sb.append("}");
-            return sb.toString();
+            return name + ":" + value;
         }
+
     }
     
 }

@@ -53,7 +53,7 @@ import vtk.repository.resourcetype.ResourceTypeDefinition;
 import vtk.repository.resourcetype.Value;
 import vtk.util.repository.LocaleHelper;
 import vtk.util.text.PathMappingConfig;
-import vtk.util.text.PathMappingConfig.ConfigEntry;
+import vtk.util.text.PathMappingConfig.Entry;
 import vtk.util.text.PathMappingConfig.Qualifier;
 import vtk.util.text.SimpleTemplate;
 
@@ -150,7 +150,7 @@ public class TitleResolverImpl implements ApplicationListener<ContextRefreshedEv
             return renderTemplate(fallbackTemplate, resource);
         }
         
-        ConfigEntry<SimpleTemplate> entry = matchConfigForResource(resource);
+        Entry<SimpleTemplate> entry = matchConfigForResource(resource);
         if (entry == null) return renderTemplate(fallbackTemplate, resource);
         
         return renderTemplate(entry.value, resource);
@@ -191,11 +191,11 @@ public class TitleResolverImpl implements ApplicationListener<ContextRefreshedEv
         return prop;
     }
     
-    private ConfigEntry<SimpleTemplate> matchConfigForResource(Resource resource) {
+    private Entry<SimpleTemplate> matchConfigForResource(Resource resource) {
         
         Path path = resource.getURI();
         while (path != null) {
-            List<ConfigEntry<SimpleTemplate>> entries = this.config.getMatchAncestor(path);
+            List<Entry<SimpleTemplate>> entries = this.config.getMatchAncestor(path);
             if (entries == null || entries.isEmpty()) {
                 break;
             }
@@ -203,8 +203,8 @@ public class TitleResolverImpl implements ApplicationListener<ContextRefreshedEv
             // on the way up:
             path = entries.get(0).path;
             
-            List<ConfigEntry<SimpleTemplate>> candidates = new ArrayList<>();
-            for (ConfigEntry<SimpleTemplate> entry: entries) {
+            List<Entry<SimpleTemplate>> candidates = new ArrayList<>();
+            for (Entry<SimpleTemplate> entry: entries) {
                 if (entry.exact && !path.equals(resource.getURI())) {
                     // For exact entries, we don't apply URI namespace inheritance of rules.
                     continue;
@@ -224,7 +224,7 @@ public class TitleResolverImpl implements ApplicationListener<ContextRefreshedEv
             
             if (!candidates.isEmpty()) {
                 // Sort candidate list [stably], so that any exact entries come last
-                Collections.sort(candidates, (ConfigEntry o1, ConfigEntry o2) -> {
+                Collections.sort(candidates, (Entry o1, Entry o2) -> {
                     if (o1.exact && !o2.exact) return 1;
                     if (o2.exact && !o1.exact) return -1;
                     return 0;

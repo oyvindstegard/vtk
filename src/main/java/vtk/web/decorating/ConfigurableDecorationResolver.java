@@ -61,7 +61,7 @@ import vtk.repository.ResourceNotFoundException;
 import vtk.repository.TypeInfo;
 import vtk.repository.resourcetype.PropertyTypeDefinition;
 import vtk.util.text.PathMappingConfig;
-import vtk.util.text.PathMappingConfig.ConfigEntry;
+import vtk.util.text.PathMappingConfig.Entry;
 import vtk.util.text.PathMappingConfig.Qualifier;
 import vtk.web.RequestContext;
 import vtk.web.service.Service;
@@ -328,11 +328,11 @@ public class ConfigurableDecorationResolver implements DecorationResolver, Initi
         // first look for one that has "exact = true". 
         // Otherwise, just pick first one in top group.
         for (Path path: list) {
-            List<ConfigEntry<String>> entries = this.config.get(path);
-            Map<ConfigEntry<String>, Integer> score = new HashMap<>();
+            List<Entry<String>> entries = this.config.get(path);
+            Map<Entry<String>, Integer> score = new HashMap<>();
             
             if (entries != null) {
-                for (ConfigEntry entry: entries) {
+                for (Entry entry: entries) {
                     if (entry.exact) {
                         if (!uri.equals(path)) {
                             score.put(entry, -1);
@@ -363,8 +363,8 @@ public class ConfigurableDecorationResolver implements DecorationResolver, Initi
                     }
                 }
                 int highest = 0;
-                ConfigEntry<String> topEntry = null;
-                for (ConfigEntry<String> entry: score.keySet()) {
+                Entry<String> topEntry = null;
+                for (Entry<String> entry: score.keySet()) {
                     if (score.get(entry) >= highest) {
                         highest = score.get(entry);
                         topEntry = entry;
