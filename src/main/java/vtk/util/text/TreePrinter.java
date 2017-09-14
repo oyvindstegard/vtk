@@ -45,6 +45,7 @@ import java.util.Set;
 public class TreePrinter {
 
     private final Format format;
+    private static final String SYSTEM_NEWLINE = System.getProperty("line.separator");
 
     public TreePrinter() {
         this.format = new Format(){};
@@ -139,7 +140,7 @@ public class TreePrinter {
         }
 
         /**
-         * Space in number of lines before node attributes have been printed.
+         * Space in number of lines before node attributes are printed.
          */
         default int linesBeforeNodeAttributes() {
             return 0;
@@ -150,6 +151,10 @@ public class TreePrinter {
          */
         default int linesAfterNodeAttributes() {
             return 1;
+        }
+
+        default String lineSeparator() {
+            return SYSTEM_NEWLINE;
         }
 
     }
@@ -168,7 +173,7 @@ public class TreePrinter {
         }
         final String nodeString = nodeNamePrefix + format.formatNodeName(node.name());
 
-        b.append(prefix).append(nodeString).append('\n');
+        b.append(prefix).append(nodeString).append(format.lineSeparator());
 
         int indent = Math.min(nodeString.length()-1, format.maxLevelIndentation());
         indent = Math.max(1, indent);
@@ -190,7 +195,7 @@ public class TreePrinter {
                     b.append(format.verticalTreeLine());
                 }
             }
-            b.append('\n');
+            b.append(format.lineSeparator());
         }
 
         // Render node attributes
@@ -210,7 +215,7 @@ public class TreePrinter {
             }
             b.append(format.attributePrefix());
             b.append(format.formatAttribute(a));
-            b.append('\n');
+            b.append(format.lineSeparator());
         }
 
         for (int i = 0; i < format.linesAfterNodeAttributes(); i++) {
@@ -223,7 +228,7 @@ public class TreePrinter {
                     b.append(format.verticalTreeLine());
                 }
             }
-            b.append('\n');
+            b.append(format.lineSeparator());
         }
 
         for (Iterator<? extends Node> it = node.children().iterator(); it.hasNext();) {
@@ -244,6 +249,12 @@ public class TreePrinter {
         return new ModelBuilder();
     }
 
+    /**
+     * A model builder can be used instead of directly implementing the tree model interfaces
+     * in structured domain objects.
+     *
+     * <p>Obtain a new instance by calling {@link #newModelBuilder() }.
+     */
     public static final class ModelBuilder {
 
         private final List<NodeImpl> roots = new ArrayList<>();
@@ -341,7 +352,6 @@ public class TreePrinter {
         public Model getModel() {
             return new ModelImpl(roots);
         }
-        
     }
 
 

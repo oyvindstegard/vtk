@@ -64,6 +64,8 @@ import vtk.repository.resourcetype.ResourceTypeDefinition;
 import vtk.repository.resourcetype.event.DynamicTypeRegisteredEvent;
 import vtk.repository.resourcetype.event.DynamicTypeRegistrationComplete;
 import vtk.repository.resourcetype.event.StaticTypesInitializedEvent;
+import vtk.util.text.TreePrinter;
+import vtk.util.text.TreePrinter.ModelBuilder;
 
 
 /**
@@ -566,18 +568,6 @@ public class ResourceTypeTreeImpl implements ResourceTypeTree, InitializingBean,
         return null;
     }
 
-    @Override
-    public String getResourceTypeTreeAsString() {
-        StringBuilder sb = new StringBuilder();
-        printResourceTypes(sb, 0, this.rootResourceTypeDefinition);
-        sb.append("\n");
-        for (MixinResourceTypeDefinition mixin: this.mixinTypes) {
-            printResourceTypes(sb, 0, mixin);
-            sb.append("\n");
-        }
-        return sb.toString();
-    }
-
     /**
      * This method is only safe to call during context initialization.
      * @param def
@@ -750,116 +740,130 @@ public class ResourceTypeTreeImpl implements ResourceTypeTree, InitializingBean,
         logger.info("\n" + getResourceTypeTreeAsString());
     }
 
-    private void printResourceTypes(StringBuilder sb, int level,
-            ResourceTypeDefinition def) {
+    @Override
+    public String getResourceTypeTreeAsString() {
+        TreePrinter tp = new TreePrinter(new TreePrinter.Format() {
+            @Override
+            public int maxLevelIndentation() {
+                return 4;
+            }
+        });
+        return tp.render(getTreePrinterModel());
+    }
 
-        if (level > 0) {
-            for (int i = 1; i < level; i++)
-                sb.append("  ");
-            sb.append("|\n");
-            for (int i = 1; i < level; i++)
-                sb.append("  ");
-            sb.append("+--");
+    private TreePrinter.Model getTreePrinterModel() {
+        TreePrinter.ModelBuilder builder = TreePrinter.newModelBuilder();
+        buildResourceTypeTreeModel(rootResourceTypeDefinition, true, builder);
+        for (MixinResourceTypeDefinition mixin: this.mixinTypes) {
+            buildResourceTypeTreeModel(mixin, true, builder);
         }
-        sb.append(" ");
-        sb.append(def.getName());
+        return builder.getModel();
+    }
+
+    private void buildResourceTypeTreeModel(ResourceTypeDefinition def, boolean root, ModelBuilder b) {
+        StringBuilder nodeName = new StringBuilder(def.getName());
         if (def.getNamespace() != Namespace.DEFAULT_NAMESPACE) {
             Namespace ns = def.getNamespace();
-            sb.append(" [ns:").append(ns.getPrefix()).append(" = ")
+            nodeName.append(" [ns:").append(ns.getPrefix()).append(" = ")
               .append(ns.getUri()).append("]");
         }
         if (def instanceof MixinResourceTypeDefinition) {
-            sb.append(" (mixin)");
+            nodeName.append(" (mixin)");
         }
-        sb.append("\n");
-        
+        if (root) {
+            b.add(nodeName.toString());
+        } else {
+            b.addChild(nodeName.toString());
+        }
+
+        // Assertion attributes
         if (def instanceof PrimaryResourceTypeDefinition) {
             PrimaryResourceTypeDefinition pdef = (PrimaryResourceTypeDefinition) def;
             if (pdef.getAssertions() != null) {
                 for (Object a: pdef.getAssertions()) {
-                    for (int j = 0; j < level; j++)
-                        sb.append("  ");
-                    sb.append("  assertion: ").append(a).append('\n');
+                    b.addAttribute("assertion", a);
                 }
             }
         }
 
+        // Mixin attributes
         List<MixinResourceTypeDefinition> mixins = this.mixinTypeDefinitionMap.get(def);
         if (mixins != null) {
             for (MixinResourceTypeDefinition mixin: mixins) {
-                for (int j = 0; j < level; j++)
-                    sb.append("  ");
-                sb.append("  mixin: [");
-                sb.append(mixin.getNamespace()).append("] ");
-                sb.append(mixin.getName()).append("\n");
+                b.addAttribute("mixin", "[" + mixin.getNamespace() + "] " + mixin.getName());
             }
         }
 
+        // Prop def attributes
         PropertyTypeDefinition[] propDefs = def.getPropertyTypeDefinitions();
-        printPropertyDefinitions(sb, level, propDefs);
-        
+        if (propDefs != null) {
+            addPropertyTypeDefinitions(propDefs, b);
+        }
+
         List<PrimaryResourceTypeDefinition> children = this.parentChildMap.get(def);
 
         if (children != null) {
             for (PrimaryResourceTypeDefinition child: children) {
-                printResourceTypes(sb, level + 1, child);
+                buildResourceTypeTreeModel(child, false, b);
             }
+        }
+
+        if (!root) {
+            b.toParent();
         }
     }
 
-    private void printPropertyDefinitions(StringBuilder sb, int level, PropertyTypeDefinition[] propDefs) {
-        if (propDefs != null) {
-            for (PropertyTypeDefinition definition: propDefs) {
-                sb.append("  ");
-                for (int j = 0; j < level; j++) sb.append("  ");
-
-                if (definition.getNamespace() != Namespace.DEFAULT_NAMESPACE) {
-                    sb.append(definition.getNamespace().getPrefix()).append(":");
-                }
-                sb.append(definition.getName());
-                sb.append(" ");
-                
-                String type = definition.getType().toString();
-                sb.append(": ").append(type.toLowerCase());
-                if (definition.isMultiple())
-                    sb.append("[]");
-                sb.append(" ");
-                List<String> flags = new ArrayList<>();
-                if (definition.getProtectionLevel() == RepositoryAction.UNEDITABLE_ACTION) {
-                    flags.add("readonly");
-                }
-                if (definition.getPropertyEvaluator() instanceof LatePropertyEvaluator) {
-                    flags.add("evaluated_late");
-                }
-                else if (definition.getPropertyEvaluator() != null) {
-                    flags.add("evaluated");
-                }
-                if (definition instanceof OverridablePropertyTypeDefinition) {
-                    if (definition instanceof OverridablePropertyTypeDefinitionImpl) {
-                        flags.add("overridable");
-                    } else {
-                        flags.add("overriding");
-                    }
-                }
-                if (definition.isInheritable()) {
-                    flags.add("inheritable");
-                }
-                if (definition.getDefaultValue() != null) {
-                    flags.add("default=" + definition.getDefaultValue());
-                }
-                if (flags.size() > 0) {
-                    sb.append("(");
-                    for (int i = 0; i < flags.size(); i++) {
-                        if (i > 0) sb.append(",");
-                        sb.append(flags.get(i));
-                    }
-                    sb.append(")");
-                }
-                sb.append("\n");
+    private void addPropertyTypeDefinitions(PropertyTypeDefinition[] propDefs, ModelBuilder b) {
+        for (PropertyTypeDefinition definition : propDefs) {
+            StringBuilder sb = new StringBuilder();
+            if (definition.getNamespace() != Namespace.DEFAULT_NAMESPACE) {
+                sb.append(definition.getNamespace().getPrefix()).append(":");
             }
+            sb.append(definition.getName());
+            sb.append(" ");
+
+            String type = definition.getType().toString();
+            sb.append(": ").append(type.toLowerCase());
+            if (definition.isMultiple()) {
+                sb.append("[]");
+            }
+            sb.append(" ");
+            List<String> flags = new ArrayList<>();
+            if (definition.getProtectionLevel() == RepositoryAction.UNEDITABLE_ACTION) {
+                 flags.add("readonly");
+            }
+            if (definition.getPropertyEvaluator() instanceof LatePropertyEvaluator) {
+                flags.add("evaluated_late");
+            } else if (definition.getPropertyEvaluator() != null) {
+                flags.add("evaluated");
+            }
+            if (definition instanceof OverridablePropertyTypeDefinition) {
+                if (definition instanceof OverridablePropertyTypeDefinitionImpl) {
+                    flags.add("overridable");
+                } else {
+                    flags.add("overriding");
+                }
+            }
+            if (definition.isInheritable()) {
+                flags.add("inheritable");
+            }
+            if (definition.getDefaultValue() != null) {
+                flags.add("default=" + definition.getDefaultValue());
+            }
+            if (flags.size() > 0) {
+                sb.append("(");
+                for (int i = 0; i < flags.size(); i++) {
+                    if (i > 0) {
+                        sb.append(",");
+                    }
+                    sb.append(flags.get(i));
+                }
+                sb.append(")");
+            }
+            b.addAttribute(sb.toString());
         }
     }
-    
+
     @Override
     public void setApplicationContext(ApplicationContext applicationContext) {
         this.applicationContext = applicationContext;
