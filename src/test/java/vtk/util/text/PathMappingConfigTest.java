@@ -33,6 +33,7 @@ package vtk.util.text;
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 import java.util.List;
+import java.util.Properties;
 
 import static org.junit.Assert.*;
 import org.junit.Test;
@@ -61,21 +62,21 @@ public class PathMappingConfigTest {
     @Test
     public void get() throws Exception {
         InputStream is = new ByteArrayInputStream(TEST_CONFIG.getBytes("utf-8"));
-        PathMappingConfig config = new PathMappingConfig(is);
+        PathMappingConfig<String> config = PathMappingConfig.strConfig(is);
 
         assertNotNull(config.get(Path.fromString("/")));
         assertNull(config.get(Path.fromString("/unknown")));
         
-        List<ConfigEntry> entries = config.get(Path.fromString("/a"));
+        List<ConfigEntry<String>> entries = config.get(Path.fromString("/a"));
         assertEquals(2, entries.size());
-        assertEquals("value-a", entries.get(0).getValue());
-        assertEquals(0, entries.get(0).getQualifiers().size());
-        assertEquals("value-a2", entries.get(1).getValue());
-        assertEquals(2, entries.get(1).getQualifiers().size());
-        assertEquals("d", entries.get(1).getQualifiers().get(0).getName());
-        assertEquals("e", entries.get(1).getQualifiers().get(0).getValue());
-        assertEquals("f", entries.get(1).getQualifiers().get(1).getName());
-        assertEquals("g", entries.get(1).getQualifiers().get(1).getValue());
+        assertEquals("value-a", entries.get(0).value);
+        assertEquals(0, entries.get(0).qualifiers.size());
+        assertEquals("value-a2", entries.get(1).value);
+        assertEquals(2, entries.get(1).qualifiers.size());
+        assertEquals("d", entries.get(1).qualifiers.get(0).name);
+        assertEquals("e", entries.get(1).qualifiers.get(0).value);
+        assertEquals("f", entries.get(1).qualifiers.get(1).name);
+        assertEquals("g", entries.get(1).qualifiers.get(1).value);
 
         assertNotNull(config.get(Path.fromString("/c")));
         assertNull(config.get(Path.fromString("/c/d")));
@@ -83,18 +84,18 @@ public class PathMappingConfigTest {
         assertNull(config.get(Path.fromString("/c/d/e/f")));
 
         assertNotNull(config.get(Path.fromString("/c/d/e/f/g")));
-        assertTrue(config.get(Path.fromString("/c/d/e/f/g")).get(0).isExact());
+        assertTrue(config.get(Path.fromString("/c/d/e/f/g")).get(0).exact);
         assertNotNull(config.get(Path.fromString("/c/d/e/f/g/h")));
-        assertFalse(config.get(Path.fromString("/c/d/e/f/g/h")).get(0).isExact());
+        assertFalse(config.get(Path.fromString("/c/d/e/f/g/h")).get(0).exact);
 
         assertNull(config.get(Path.fromString("/c/d/e/f/g/h/i")));
         
         assertNotNull(config.get(Path.fromString("/x/y/z")));
-        assertTrue(config.get(Path.fromString("/x/y/z")).get(1).isExact());
+        assertTrue(config.get(Path.fromString("/x/y/z")).get(1).exact);
         
         entries = config.get(Path.fromString("/esc/rhs"));
         assertEquals(1, entries.size());
-        assertEquals("\\a\\b=", entries.get(0).getValue());
+        assertEquals("\\a\\b=", entries.get(0).value);
     }
     
     @Test
@@ -113,108 +114,139 @@ public class PathMappingConfigTest {
                 + "/a/b/c/d/ = Exactly ABCD\n";
 
         InputStream is = new ByteArrayInputStream(testConfig.getBytes("utf-8"));
-        PathMappingConfig config = new PathMappingConfig(is);
+        PathMappingConfig config = PathMappingConfig.strConfig(is);
         
         // For "/"
-        List<ConfigEntry> entries = config.getMatchAncestor(Path.fromString("/"));
+        List<ConfigEntry<String>> entries = config.getMatchAncestor(Path.fromString("/"));
         assertEquals(3, entries.size());
-        assertTrue(entries.get(0).isExact());
-        assertEquals("The Root Resource exactly", entries.get(0).getValue());
-        assertEquals(Path.ROOT, entries.get(0).getPath());
-        assertTrue(entries.get(0).getQualifiers().isEmpty());
+        assertTrue(entries.get(0).exact);
+        assertEquals("The Root Resource exactly", entries.get(0).value);
+        assertEquals(Path.ROOT, entries.get(0).path);
+        assertTrue(entries.get(0).qualifiers.isEmpty());
         
-        assertTrue(entries.get(1).isExact());
-        assertEquals("Full Moon", entries.get(1).getValue());
-        assertEquals(Path.ROOT, entries.get(1).getPath());
-        assertEquals(1, entries.get(1).getQualifiers().size());
-        assertEquals("lunarPhase", entries.get(1).getQualifiers().get(0).getName());
-        assertEquals("full moon", entries.get(1).getQualifiers().get(0).getValue());
+        assertTrue(entries.get(1).exact);
+        assertEquals("Full Moon", entries.get(1).value);
+        assertEquals(Path.ROOT, entries.get(1).path);
+        assertEquals(1, entries.get(1).qualifiers.size());
+        assertEquals("lunarPhase", entries.get(1).qualifiers.get(0).name);
+        assertEquals("full moon", entries.get(1).qualifiers.get(0).value);
 
-        assertFalse(entries.get(2).isExact());
-        assertEquals("Default", entries.get(2).getValue());
-        assertEquals(Path.ROOT, entries.get(2).getPath());
-        assertTrue(entries.get(2).getQualifiers().isEmpty());
+        assertFalse(entries.get(2).exact);
+        assertEquals("Default", entries.get(2).value);
+        assertEquals(Path.ROOT, entries.get(2).path);
+        assertTrue(entries.get(2).qualifiers.isEmpty());
         
         // For "/unknown"
         entries = config.getMatchAncestor(Path.fromString("/unknown"));
         assertEquals(1, entries.size());
-        assertFalse(entries.get(0).isExact());
-        assertEquals("Default", entries.get(0).getValue());
-        assertEquals(Path.ROOT, entries.get(0).getPath());
-        assertTrue(entries.get(0).getQualifiers().isEmpty());
+        assertFalse(entries.get(0).exact);
+        assertEquals("Default", entries.get(0).value);
+        assertEquals(Path.ROOT, entries.get(0).path);
+        assertTrue(entries.get(0).qualifiers.isEmpty());
         
         // For "/a"
         entries = config.getMatchAncestor(Path.fromString("/a"));
         assertEquals(1, entries.size());
-        assertFalse(entries.get(0).isExact());
-        assertEquals("The A area", entries.get(0).getValue());
-        assertEquals(Path.fromString("/a"), entries.get(0).getPath());
-        assertTrue(entries.get(0).getQualifiers().isEmpty());
+        assertFalse(entries.get(0).exact);
+        assertEquals("The A area", entries.get(0).value);
+        assertEquals(Path.fromString("/a"), entries.get(0).path);
+        assertTrue(entries.get(0).qualifiers.isEmpty());
 
         // For "/a/1/2/3/unknown"
         entries = config.getMatchAncestor(Path.fromString("/a/1/2/3/unknown"));
         assertEquals(1, entries.size());
-        assertFalse(entries.get(0).isExact());
-        assertEquals("The A area", entries.get(0).getValue());
-        assertEquals(Path.fromString("/a"), entries.get(0).getPath());
-        assertTrue(entries.get(0).getQualifiers().isEmpty());
+        assertFalse(entries.get(0).exact);
+        assertEquals("The A area", entries.get(0).value);
+        assertEquals(Path.fromString("/a"), entries.get(0).path);
+        assertTrue(entries.get(0).qualifiers.isEmpty());
 
         // For "/a/b"
         entries = config.getMatchAncestor(Path.fromString("/a/b"));
         assertEquals(2, entries.size());
-        assertTrue(entries.get(0).isExact());
-        assertEquals("The AB value in case of x=y", entries.get(0).getValue());
-        assertEquals(Path.fromString("/a/b"), entries.get(0).getPath());
-        assertEquals(1, entries.get(0).getQualifiers().size());
-        assertEquals("x", entries.get(0).getQualifiers().get(0).getName());
-        assertEquals("y", entries.get(0).getQualifiers().get(0).getValue());
+        assertTrue(entries.get(0).exact);
+        assertEquals("The AB value in case of x=y", entries.get(0).value);
+        assertEquals(Path.fromString("/a/b"), entries.get(0).path);
+        assertEquals(1, entries.get(0).qualifiers.size());
+        assertEquals("x", entries.get(0).qualifiers.get(0).name);
+        assertEquals("y", entries.get(0).qualifiers.get(0).value);
         
-        assertTrue(entries.get(1).isExact());
-        assertEquals("The AB value in case of z=1", entries.get(1).getValue());
-        assertEquals(Path.fromString("/a/b"), entries.get(1).getPath());
-        assertEquals(1, entries.get(1).getQualifiers().size());
-        assertEquals("z", entries.get(1).getQualifiers().get(0).getName());
-        assertEquals("1", entries.get(1).getQualifiers().get(0).getValue());
+        assertTrue(entries.get(1).exact);
+        assertEquals("The AB value in case of z=1", entries.get(1).value);
+        assertEquals(Path.fromString("/a/b"), entries.get(1).path);
+        assertEquals(1, entries.get(1).qualifiers.size());
+        assertEquals("z", entries.get(1).qualifiers.get(0).name);
+        assertEquals("1", entries.get(1).qualifiers.get(0).value);
         
         // For "/E"
         entries = config.getMatchAncestor(Path.fromString("/E"));
         assertEquals(1, entries.size());
-        assertTrue(entries.get(0).isExact());
-        assertEquals("Exactly E", entries.get(0).getValue());
-        assertEquals(Path.fromString("/E"), entries.get(0).getPath());
-        assertTrue(entries.get(0).getQualifiers().isEmpty());
+        assertTrue(entries.get(0).exact);
+        assertEquals("Exactly E", entries.get(0).value);
+        assertEquals(Path.fromString("/E"), entries.get(0).path);
+        assertTrue(entries.get(0).qualifiers.isEmpty());
 
         // For "/E/x" (gets config from "/", skips exact config for "/E")
         entries = config.getMatchAncestor(Path.fromString("/E/x"));
         assertEquals(1, entries.size());
-        assertFalse(entries.get(0).isExact());
-        assertEquals("Default", entries.get(0).getValue());
-        assertEquals(Path.fromString("/"), entries.get(0).getPath());
-        assertTrue(entries.get(0).getQualifiers().isEmpty());
+        assertFalse(entries.get(0).exact);
+        assertEquals("Default", entries.get(0).value);
+        assertEquals(Path.fromString("/"), entries.get(0).path);
+        assertTrue(entries.get(0).qualifiers.isEmpty());
         
         // For /a/b/c/f (should inherit from /a/b/c)
         entries = config.getMatchAncestor(Path.fromString("/a/b/c/f"));
         assertEquals(2, entries.size());
-        assertFalse(entries.get(0).isExact());
-        assertEquals("The ABC area", entries.get(0).getValue());
-        assertEquals(Path.fromString("/a/b/c"), entries.get(0).getPath());
-        assertTrue(entries.get(0).getQualifiers().isEmpty());
+        assertFalse(entries.get(0).exact);
+        assertEquals("The ABC area", entries.get(0).value);
+        assertEquals(Path.fromString("/a/b/c"), entries.get(0).path);
+        assertTrue(entries.get(0).qualifiers.isEmpty());
         
-        assertFalse(entries.get(1).isExact());
-        assertEquals("The ABC area in case of foo:bar=baz", entries.get(1).getValue());
-        assertEquals(Path.fromString("/a/b/c"), entries.get(1).getPath());
-        assertEquals(1, entries.get(1).getQualifiers().size());
-        assertEquals("foo:bar", entries.get(1).getQualifiers().get(0).getName());
-        assertEquals("baz", entries.get(1).getQualifiers().get(0).getValue());
+        assertFalse(entries.get(1).exact);
+        assertEquals("The ABC area in case of foo:bar=baz", entries.get(1).value);
+        assertEquals(Path.fromString("/a/b/c"), entries.get(1).path);
+        assertEquals(1, entries.get(1).qualifiers.size());
+        assertEquals("foo:bar", entries.get(1).qualifiers.get(0).name);
+        assertEquals("baz", entries.get(1).qualifiers.get(0).value);
         
         // For /a/b/c/d
         entries = config.getMatchAncestor(Path.fromString("/a/b/c/d"));
         assertEquals(1, entries.size());
-        assertTrue(entries.get(0).isExact());
-        assertEquals("Exactly ABCD", entries.get(0).getValue());
-        assertEquals(Path.fromString("/a/b/c/d"), entries.get(0).getPath());
-        assertTrue(entries.get(0).getQualifiers().isEmpty());
+        assertTrue(entries.get(0).exact);
+        assertEquals("Exactly ABCD", entries.get(0).value);
+        assertEquals(Path.fromString("/a/b/c/d"), entries.get(0).path);
+        assertTrue(entries.get(0).qualifiers.isEmpty());
         
     }
 
+    @Test
+    public void valueFactory() throws Exception {
+        InputStream is = new ByteArrayInputStream("/a = 1\n/a = 2".getBytes("utf-8"));
+        PathMappingConfig<Integer> cfg = new PathMappingConfig<>(is, s -> Integer.parseInt(s));
+        assertEquals(Integer.valueOf(1), cfg.get(Path.fromString("/a")).get(0).value);
+        assertEquals(Integer.valueOf(2), cfg.get(Path.fromString("/a")).get(1).value);
+    }
+
+    @Test(expected = IllegalStateException.class)
+    public void valueFactoryError1() throws Exception {
+
+        InputStream is = new ByteArrayInputStream("/a = x".getBytes("utf-8"));
+        try {
+            PathMappingConfig<Integer> cfg = new PathMappingConfig<>(is, s -> Integer.parseInt(s));
+        } catch (Exception e) {
+            assertTrue(e.getMessage().contains("line 1"));
+            throw e;
+        }
+    }
+
+    @Test(expected = IllegalStateException.class)
+    public void valueFactoryError2() throws Exception {
+
+        InputStream is = new ByteArrayInputStream("/a = 1\n#some comment\n/b = x".getBytes("utf-8"));
+        try {
+            PathMappingConfig<Integer> cfg = new PathMappingConfig<>(is, s -> Integer.parseInt(s));
+        } catch (Exception e) {
+            assertTrue(e.getMessage().contains("line 3"));
+            throw e;
+        }
+    }
 }

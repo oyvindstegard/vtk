@@ -184,9 +184,9 @@ public final class PropertiesResource extends Properties implements Initializing
         if (defaultProperties != null) {
             super.putAll(defaultProperties);
         }
-        InputStream inputStream = this.repository.getInputStream(token, uri, false);
-        super.load(inputStream); 
-        inputStream.close();
+        try (InputStream inputStream = this.repository.getInputStream(token, uri, false)) {
+            super.load(inputStream);
+        }
     }
 
 }

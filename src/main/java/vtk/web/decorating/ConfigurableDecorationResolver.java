@@ -49,8 +49,8 @@ import javax.servlet.http.HttpServletResponseWrapper;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.BeanInitializationException;
 import org.springframework.beans.factory.InitializingBean;
+import org.springframework.beans.factory.annotation.Required;
 import org.springframework.web.servlet.LocaleResolver;
 
 import vtk.repository.AuthorizationException;
@@ -69,11 +69,11 @@ import vtk.web.service.URL;
 
 public class ConfigurableDecorationResolver implements DecorationResolver, InitializingBean {
 
-    private static Logger logger = LoggerFactory.getLogger(
+    private final Logger logger = LoggerFactory.getLogger(
         ConfigurableDecorationResolver.class);
 
     private TemplateManager templateManager;
-    private PathMappingConfig config;
+    private volatile PathMappingConfig<String> config;
     private Path configPath;
     private Properties decorationConfiguration;
     private PropertyTypeDefinition parseableContentPropDef;
@@ -87,13 +87,20 @@ public class ConfigurableDecorationResolver implements DecorationResolver, Initi
         String string;
         Pattern compiled;
     }
-    
+
+    @Required
     public void setTemplateManager(TemplateManager templateManager) {
         this.templateManager = templateManager;
     }
-    
+
+    @Required
     public void setDecorationConfiguration(Properties decorationConfiguration) {
         this.decorationConfiguration = decorationConfiguration;
+    }
+
+    @Required
+    public void setPathMappingConfiguration(String configUri) {
+        this.configPath = Path.fromString(configUri);
     }
 
     public void setSupportMultipleTemplates(boolean supportMultipleTemplates) {
@@ -105,12 +112,9 @@ public class ConfigurableDecorationResolver implements DecorationResolver, Initi
         this.parseableContentPropDef = parseableContentPropDef;
     }
 
+    @Required
     public void setRepository(Repository repository) {
         this.repository = repository;
-    }
-    
-    public void setConfig(String config) {
-        this.configPath = Path.fromString(config);
     }
     
     public void setLocaleResolver(LocaleResolver localeResolver) {
@@ -121,35 +125,20 @@ public class ConfigurableDecorationResolver implements DecorationResolver, Initi
         this.maxDocumentSize = maxDocumentSize;
     }
 
+    @Override
     public void afterPropertiesSet() {
-        if (this.configPath == null) {
-            throw new BeanInitializationException(
-                "JavaBean property 'config' not set");
-        }
-        if (this.templateManager == null) {
-            throw new BeanInitializationException(
-                "JavaBean property 'templateManager' not set");
-        }
-        if (this.decorationConfiguration == null) {
-            throw new BeanInitializationException(
-                "JavaBean property 'decorationConfiguration' not set");
-        }
-        if (this.parseableContentPropDef != null && this.repository == null) {
-            throw new BeanInitializationException(
-            "JavaBean property 'repository' must be set when property " +
-            "'parseableContentPropDef' is set");
-        }
-        loadConfig();
+        loadPathMappingConfiguration();
     }
-    
-    public void loadConfig() {
-        try {
-            InputStream inputStream = this.repository.getInputStream(null, this.configPath, true);
-            this.config = new PathMappingConfig(inputStream);
-        }
-        catch(Throwable t) {
-            logger.warn("Unable to load decoration configuration file: " 
-                    + this.configPath + ": " + t.getMessage(), t);
+
+    /**
+     * Reload path mapping configuration from repository.
+     */
+    public void loadPathMappingConfiguration() {
+        logger.debug("Reload path mapping config from {}", configPath);
+        try (InputStream is = repository.getInputStream(null, configPath, true)) {
+            this.config = PathMappingConfig.strConfig(is);
+        } catch(Throwable t) {
+            logger.error("Unable to create PathMappingConfig from configuration file " + configPath + ": " + t.getMessage(), t);
         }
     }
 
@@ -212,9 +201,7 @@ public class ConfigurableDecorationResolver implements DecorationResolver, Initi
         
         logger.debug("Decorator descriptor spec: {}", paramString);
         if (paramString != null) {
-            Locale locale = Locale.getDefault();
-        
-            locale = new org.springframework.web.servlet.support.RequestContext(
+            Locale locale = new org.springframework.web.servlet.support.RequestContext(
                     request, request.getServletContext()).getLocale();
             populateDescriptor(descriptor, locale, paramString);
         }
@@ -305,7 +292,7 @@ public class ConfigurableDecorationResolver implements DecorationResolver, Initi
                 continue;
             }
 
-            RegexpCacheItem cached = this.regexpCache.get(key);
+            RegexpCacheItem cached = this.regexpCache.get(key); // XXX unsynchronized access to cache map
             if (cached == null || !cached.string.equals(key)) {
                 cached = new RegexpCacheItem();
                 cached.string = key;
@@ -341,12 +328,12 @@ public class ConfigurableDecorationResolver implements DecorationResolver, Initi
         // first look for one that has "exact = true". 
         // Otherwise, just pick first one in top group.
         for (Path path: list) {
-            List<ConfigEntry> entries = this.config.get(path);
-            Map<ConfigEntry, Integer> score = new HashMap<>();
+            List<ConfigEntry<String>> entries = this.config.get(path);
+            Map<ConfigEntry<String>, Integer> score = new HashMap<>();
             
             if (entries != null) {
                 for (ConfigEntry entry: entries) {
-                    if (entry.isExact()) {
+                    if (entry.exact) {
                         if (!uri.equals(path)) {
                             score.put(entry, -1);
                             break;
@@ -358,7 +345,7 @@ public class ConfigurableDecorationResolver implements DecorationResolver, Initi
                         // See TODO above.
                         score.put(entry, score.get(entry) + 10);
                     }
-                    List<Qualifier> predicates = entry.getQualifiers();
+                    List<Qualifier> predicates = entry.qualifiers;
                     if (score.get(entry) == null) {
                         score.put(entry, 0);
                     }
@@ -376,8 +363,8 @@ public class ConfigurableDecorationResolver implements DecorationResolver, Initi
                     }
                 }
                 int highest = 0;
-                ConfigEntry topEntry = null;
-                for (ConfigEntry entry: score.keySet()) {
+                ConfigEntry<String> topEntry = null;
+                for (ConfigEntry<String> entry: score.keySet()) {
                     if (score.get(entry) >= highest) {
                         highest = score.get(entry);
                         topEntry = entry;
@@ -385,8 +372,8 @@ public class ConfigurableDecorationResolver implements DecorationResolver, Initi
                 }
                 if (topEntry != null) {
                     logger.debug("Path match: {}, matched: entry: {} = {} (q: {})", 
-                            uri, path, topEntry.getValue(), topEntry.getQualifiers());
-                    return topEntry.getValue();
+                            uri, path, topEntry.value, topEntry.qualifiers);
+                    return topEntry.value;
                 }
             }
         }
@@ -397,24 +384,24 @@ public class ConfigurableDecorationResolver implements DecorationResolver, Initi
 
     private boolean matchPredicate(HttpServletRequest request,
             HttpServletResponse response, Qualifier predicate, Resource resource) {
-        if ("status".equals(predicate.getName())) {
+        if ("status".equals(predicate.name)) {
             int status = response.getStatus();
-            return String.valueOf(status).equals(predicate.getValue());
+            return String.valueOf(status).equals(predicate.value);
         }
-        else if ("type".equals(predicate.getName())) {
+        else if ("type".equals(predicate.name)) {
             if (resource == null) {
                 return false;
             }
-            return repository.getTypeInfo(resource).isOfType(predicate.getValue());
+            return repository.getTypeInfo(resource).isOfType(predicate.value);
         }
-        else if ("service".equals(predicate.getName())) {
+        else if ("service".equals(predicate.name)) {
 
             Service currentService = RequestContext.getRequestContext(request).getService();
             while (currentService != null) {
                 Object attr = currentService.getAttribute("decorating.servicePredicateName");
                 if (attr != null && attr instanceof String) {
                     String servicePredicate = (String) attr;
-                    if (servicePredicate.equals(predicate.getValue())) {
+                    if (servicePredicate.equals(predicate.value)) {
                         return true;
                     }
                     return false;
@@ -422,10 +409,10 @@ public class ConfigurableDecorationResolver implements DecorationResolver, Initi
                 currentService = currentService.getParent();
             }
         }
-        else if ("lang".equals(predicate.getName())) {
+        else if ("lang".equals(predicate.value)) {
             if (this.localeResolver != null) {
                 Locale locale = this.localeResolver.resolveLocale(request);
-                String value = predicate.getValue();
+                String value = predicate.value;
                 if (value.equals(locale.getLanguage() + "_" + locale.getCountry() + "_" + locale.getVariant())) {
                     return true;
                 }
@@ -513,7 +500,7 @@ public class ConfigurableDecorationResolver implements DecorationResolver, Initi
 
             }
             else {
-              result.put(name, values[0]);  
+              result.put(name, values[0]);
             }
         }
         return result;
@@ -525,22 +512,27 @@ public class ConfigurableDecorationResolver implements DecorationResolver, Initi
         private List<Template> templates = new ArrayList<>();
         private Map<Template, Map<String, Object>> templateParameters = new HashMap<>();
         
+        @Override
         public boolean decorate() {
             return !this.templates.isEmpty() || this.tidy || this.parse;
         }
         
+        @Override
         public boolean tidy() {
             return this.tidy;
         }
         
+        @Override
         public boolean parse() {
             return this.parse;
         }
         
+        @Override
         public List<Template> getTemplates() {
             return Collections.unmodifiableList(this.templates);
         }
         
+        @Override
         public Map<String, Object> getParameters(Template t) {
             return Collections.unmodifiableMap(this.templateParameters.get(t));
         }

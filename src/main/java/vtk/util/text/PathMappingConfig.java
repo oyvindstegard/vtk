@@ -31,13 +31,18 @@
 package vtk.util.text;
 
 import java.io.BufferedReader;
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.UncheckedIOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
+import java.util.Properties;
+import java.util.function.Function;
 
 import vtk.repository.Path;
 
@@ -80,14 +85,18 @@ import vtk.repository.Path;
  * set of qualifiers and values. A single path can map to zero or more
  * {@link ConfigEntry} instances, each with list of qualifier name-value-pairs,
  * a single VALUE and a flag indicating that exact path matching is desired.
- * <p>
- * It is up to client code how to interpret the configuration entries that
- * apply for a given path - this class is merely a parser that understands path
- * hierarchies and the syntax described.
+ *
+ * <p>A factory must be provided which can create configuration values from strings.
+ *
+ * <p>Instances of this class are generally immutable, except for values created
+ * by user supplied factory, for which there is no guarantee.
+ *
+ * @param <T> the type of configuration values
  */
-public class PathMappingConfig {
+public class PathMappingConfig<T> {
 
     private final Node root = new Node();
+    private final Function<String,T> valueFactory;
     private int maxLineSize = 300;
     private int maxLines = 10000;
 
@@ -95,9 +104,12 @@ public class PathMappingConfig {
      * Construct a configuration instance from an input stream.
      * 
      * @param source the input stream to read configuration lines from.
-     * @throws Exception in case of parsing errors.
+     * @param valueFactory factory for creating values from strings
+     * @throws UncheckedIOException in case of IOException
+     * @throws IllegalStateException if failure to create config entries
      */
-    public PathMappingConfig(InputStream source) throws Exception {
+    public PathMappingConfig(InputStream source, Function<String,T> valueFactory) {
+        this.valueFactory = Objects.requireNonNull(valueFactory);
         load(source);
     }
 
@@ -106,14 +118,18 @@ public class PathMappingConfig {
      * 
      * @param source the input stream to read configuration lines from. The stream
      *               will be closed after parsing.
+     * @param valueFactory factory used for creating values
      * @param maxLineSize max size of lines in configuration source.
      * @param maxLines max number of lines read from configuration source.
-     * @throws Exception in case of parsing errors.
+     *
+     * @throws UncheckedIOException in case of IOException
+     * @throws IllegalStateException if failure to create config entries
      */
-    public PathMappingConfig(InputStream source, int maxLineSize, int maxLines) throws Exception {
+    public PathMappingConfig(InputStream source, Function<String,T> valueFactory, int maxLineSize, int maxLines) {
         if (maxLineSize <= 0) throw new IllegalArgumentException("maxLineSize must be > 0");
         if (maxLines <= 0) throw new IllegalArgumentException("maxLines must be > 0");
         
+        this.valueFactory = Objects.requireNonNull(valueFactory);
         this.maxLineSize = maxLineSize;
         this.maxLines = maxLines;
         
@@ -121,9 +137,45 @@ public class PathMappingConfig {
     }
 
     /**
-     * Returns all config entries that apply exactly for the given path.
+     * Obtain a typical config which provides the config values as strings.
+     *
+     * <p>Convenience for calling {@link #PathMappingConfig(java.io.InputStream, java.util.function.Function) with
+     * {@code Functions.identity()} as value factory, providing all config values simply as strings.
+     *
+     * @param source the input stream to read configuration lines from. The stream
+     *               will be closed after parsing.
+     * @return  a new path mapping config
+     *
+     * @throws IllegalStateException if failure to create config entries from the source
      */
-    public List<ConfigEntry> get(Path path) {
+    public static PathMappingConfig<String> strConfig(InputStream source) {
+        return new PathMappingConfig(source, Function.identity());
+    }
+
+    /**
+     * Obtain a typical config which provides the config values as strings.
+     *
+     * <p>Convenience for calling {@link #PathMappingConfig(java.io.InputStream, java.util.function.Function, int, int) }
+     * wtih {@code Function.identity()} as value factory, providing all config values as strings.
+     *
+     * @param source the input stream to read configuration lines from. The stream
+     *               will be closed after parsing.
+     * @param maxLineSize max size of lines in configuration source.
+     * @param maxLines max number of lines read from configuration source.
+     * @return  a new path mapping config
+     *
+     * @throws IllegalStateException if failure to create config entries from the source
+     */
+    public static PathMappingConfig<String> strConfig(InputStream source, int maxLineSize, int maxLines) {
+        return new PathMappingConfig(source, Function.identity(), maxLineSize, maxLines);
+    }
+
+    /**
+     * Returns all config entries that apply exactly for the given path.
+     * @param path the path to look up config for
+     * @return  list of config entries which apply exactly to the provided path
+     */
+    public List<ConfigEntry<T>> get(Path path) {
         Node n = root;
         for (String name : path.getElements()) {
             if (name.equals("/")) {
@@ -142,14 +194,15 @@ public class PathMappingConfig {
     
     /**
      * Returns config entries that apply exactly for the given path or
-     * the config entries for the closes ancestor path are not exact match rules.
+     * the config entries for the closest ancestor path that are not exact match rules.
      * 
+     * @param path
      * @return a list of config entries, or <code>null</code> if no entries
      * apply.
      */
-    public List<ConfigEntry> getMatchAncestor(Path path) {
+    public List<ConfigEntry<T>> getMatchAncestor(Path path) {
         Node n = root;
-        List<ConfigEntry> entries = getApplicableEntries(n, path);
+        List<ConfigEntry<T>> entries = getApplicableEntries(n, path);
         List<String> nodeNames = path.getElements();
         for (int i=1; i<nodeNames.size();i++) {
             n = n.children.get(nodeNames.get(i));
@@ -157,7 +210,7 @@ public class PathMappingConfig {
                 break;
             }
 
-            List<ConfigEntry> applicable = getApplicableEntries(n, path);
+            List<ConfigEntry<T>> applicable = getApplicableEntries(n, path);
             if (!applicable.isEmpty()) {
                 entries = applicable;
             }
@@ -171,12 +224,12 @@ public class PathMappingConfig {
     
     /**
      * Node n must correspond to path p or an ancestor path of p
-     * @return list of corresponding config entries, empty list of none.
+     * @return list of corresponding config entries, empty list if none.
      */
-    private List<ConfigEntry> getApplicableEntries(Node n, Path p) {
-        List<ConfigEntry> entries = new ArrayList<ConfigEntry>();
+    private List<ConfigEntry<T>> getApplicableEntries(Node n, Path p) {
+        List<ConfigEntry<T>> entries = new ArrayList<>();
         if (n.entries == null) return entries;
-        for (ConfigEntry e: n.entries) {
+        for (ConfigEntry<T> e: n.entries) {
             if (e.exact) {
                 if (p.equals(e.path)) {
                     entries.add(e);
@@ -188,10 +241,10 @@ public class PathMappingConfig {
         }
         return entries;
     }
-    
-    private void load(InputStream is) throws Exception {
-        BufferedReader reader = new BufferedReader(new InputStreamReader(is, "UTF-8"));
-        try {
+
+    private void load(InputStream is) {
+
+        try (BufferedReader reader = new BufferedReader(new InputStreamReader(is, "UTF-8"))) {
             String line;
             int lineNum = 0;
             while ((line = reader.readLine()) != null) {
@@ -208,15 +261,15 @@ public class PathMappingConfig {
                     continue;
                 }
                 if (line.startsWith("/")) {
-                    parseLine(line, this.root);
+                    parseLine(line, lineNum, this.root);
                 }
             }
-        } finally {
-            reader.close();
+        } catch (IOException io) {
+            throw new UncheckedIOException(io);
         }
     }
 
-    private void parseLine(String line, Node root) {
+    private void parseLine(String line, int lineNum, Node root) {
         String[] kv = TextUtils.parseKeyValue(line, '=', TextUtils.TRIM 
                                                          | TextUtils.IGNORE_UNESCAPED_SEP_IN_VALUE 
                                                          | TextUtils.IGNORE_INVALID_ESCAPE);
@@ -226,10 +279,15 @@ public class PathMappingConfig {
         if ("".equals(lhs) || "".equals(rhs)) {
             return;
         }
-        buildNode(lhs, rhs, root);
+        try {
+            registerNode(lhs, rhs, root);
+        } catch (Exception e) {
+            throw new IllegalStateException(String.format("Failed to create configuration entry at line %s: %s: %s",
+                    lineNum, e.getClass().getSimpleName(), e.getMessage()), e);
+        }
     }
     
-    private void buildNode(String lhs, String rhs, Node root) {
+    private void registerNode(String lhs, String rhs, Node root) {
         boolean exact = false;
         if (lhs.endsWith("/") && !lhs.equals("/")) {
             lhs = lhs.substring(0, lhs.length() - 1);
@@ -258,7 +316,7 @@ public class PathMappingConfig {
 
         String qualifierStr = leftBracketPos == -1 ? null
                 : lhs.substring(leftBracketPos + 1, rightBracketPos).trim();
-        List<Qualifier> qualifiers = new ArrayList<Qualifier>();
+        List<Qualifier> qualifiers = new ArrayList<>();
         if (qualifierStr != null && !qualifierStr.isEmpty()) {
             String[] splitQualifiers = TextUtils.parseCsv(qualifierStr, ',', TextUtils.TRIM 
                                                                              | TextUtils.DISCARD
@@ -286,15 +344,17 @@ public class PathMappingConfig {
             n = child;
         }
         if (n.entries == null) {
-            n.entries = new ArrayList<ConfigEntry>();
+            n.entries = new ArrayList<>();
         }
-        n.entries.add(new ConfigEntry(qualifiers, rhs, exact, path));
+
+        T value = valueFactory.apply(rhs);
+        n.entries.add(new ConfigEntry<>(qualifiers, value, exact, path));
     }
 
-    private static class Node {
+    private class Node {
 
-        private Map<String, Node> children = new HashMap<String, Node>();
-        private List<ConfigEntry> entries = null;
+        private Map<String, Node> children = new HashMap<>();
+        private List<ConfigEntry<T>> entries = null;
 
         @Override
         public String toString() {
@@ -330,51 +390,36 @@ public class PathMappingConfig {
      * multiple lines may have the same path mapping, and thus there can be
      * multiple instances of this class for a single path as returned by
      * {@link #get(vtk.repository.Path) }.
+     *
+     * @param <T> value type of config entries
      */
-    public static final class ConfigEntry {
+    public static final class ConfigEntry<T> {
 
-        private List<Qualifier> qualifiers;
-        private String value;
-        private boolean exact;
-        private Path path;
+        /**
+         * List of qualifiers associated with the entry.
+         */
+        public final List<Qualifier> qualifiers;
 
-        public ConfigEntry(List<Qualifier> qualifiers, String value, boolean exact, Path path) {
-            this.qualifiers = qualifiers;
+        /**
+         * Value associated with the entry.
+         */
+        public final T value;
+
+        /**
+         * Tells whether the entry applies exactly to the path.
+         */
+        public final boolean exact;
+
+        /**
+         * The path which this entry is associated with.
+         */
+        public final Path path;
+
+        private ConfigEntry(List<Qualifier> qualifiers, T value, boolean exact, Path path) {
+            this.qualifiers = Collections.unmodifiableList(qualifiers);
             this.value = value;
             this.exact = exact;
             this.path = path;
-        }
-
-        /**
-         * Returns list of qualifiers for configuration entry.
-         * @return 
-         */
-        public List<Qualifier> getQualifiers() {
-            return Collections.unmodifiableList(this.qualifiers);
-        }
-
-        /**
-         * Returns the configuration value as a string.
-         */
-        public String getValue() {
-            return this.value;
-        }
-
-        /**
-         * @return <code>true</code> if this config entry applies to its path
-         * exactly, <code>false</code> if the entry applies to its path and
-         * path descendants.
-         */
-        public boolean isExact() {
-            return this.exact;
-        }
-        
-        /**
-         * Returns path in the configuration that this config entry is associated
-         * with.
-         */
-        public Path getPath() {
-            return this.path;
         }
 
         @Override
@@ -393,26 +438,26 @@ public class PathMappingConfig {
      */
     public static final class Qualifier {
 
-        private String name;
-        private String value;
+        /**
+         * Qualifier name
+         */
+        public final String name;
+
+        /**
+         * Qualifier value
+         */
+        public final String value;
 
         public Qualifier(String name, String value) {
             this.name = name;
             this.value = value;
         }
 
-        public String getName() {
-            return this.name;
-        }
-
-        public String getValue() {
-            return this.value;
-        }
-
         @Override
         public String toString() {
-            StringBuilder sb = new StringBuilder();
-            sb.append(this.name).append("=").append(this.value);
+            StringBuilder sb = new StringBuilder("Q{");
+            sb.append(this.name).append(":").append(this.value);
+            sb.append("}");
             return sb.toString();
         }
     }

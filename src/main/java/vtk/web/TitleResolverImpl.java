@@ -36,8 +36,6 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Locale;
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -141,29 +139,21 @@ public class TitleResolverImpl implements ApplicationListener<ContextRefreshedEv
     private Repository repository;
     private ResourceTypeTree resourceTypeTree;
     private Path configPath;
-    private volatile PathMappingConfig config;
-    private Map<String, SimpleTemplate> templateCache = new ConcurrentHashMap<String, SimpleTemplate>();
+    private volatile PathMappingConfig<SimpleTemplate> config;
     private SimpleTemplate fallbackTemplate = SimpleTemplate.compile("${title} - ${hostname}");
     
     @Override
-     public String resolve(final Resource resource) {
+    public String resolve(final Resource resource) {
         if (config == null) {
             // Be graceful if config is not loaded
             logger.warn("Configuration not loaded or failed to load, using fallback title for " + resource.getURI());
             return renderTemplate(fallbackTemplate, resource);
         }
         
-        ConfigEntry entry = matchConfigForResource(resource);
+        ConfigEntry<SimpleTemplate> entry = matchConfigForResource(resource);
         if (entry == null) return renderTemplate(fallbackTemplate, resource);
         
-        String rawTemplate = entry.getValue();
-        SimpleTemplate compiledTemplate = templateCache.get(rawTemplate);
-        if (compiledTemplate == null) {
-            compiledTemplate = SimpleTemplate.compile(rawTemplate, SimpleTemplate.ESC_UNESCAPE);
-            templateCache.put(rawTemplate, compiledTemplate);
-        }
-        
-        return renderTemplate(compiledTemplate, resource);
+        return renderTemplate(entry.value, resource);
         
     }
      
@@ -201,27 +191,27 @@ public class TitleResolverImpl implements ApplicationListener<ContextRefreshedEv
         return prop;
     }
     
-    private ConfigEntry matchConfigForResource(Resource resource) {
+    private ConfigEntry<SimpleTemplate> matchConfigForResource(Resource resource) {
         
         Path path = resource.getURI();
         while (path != null) {
-            List<ConfigEntry> entries = this.config.getMatchAncestor(path);
+            List<ConfigEntry<SimpleTemplate>> entries = this.config.getMatchAncestor(path);
             if (entries == null || entries.isEmpty()) {
                 break;
             }
             // Jump up to config entry ancestor path, so we don't do needless matching
             // on the way up:
-            path = entries.get(0).getPath();
+            path = entries.get(0).path;
             
-            List<ConfigEntry> candidates = new ArrayList<ConfigEntry>();
-            for (ConfigEntry entry: entries) {
-                if (entry.isExact() && !path.equals(resource.getURI())) {
+            List<ConfigEntry<SimpleTemplate>> candidates = new ArrayList<>();
+            for (ConfigEntry<SimpleTemplate> entry: entries) {
+                if (entry.exact && !path.equals(resource.getURI())) {
                     // For exact entries, we don't apply URI namespace inheritance of rules.
                     continue;
                 }
-                
+
                 boolean match = true;
-                for (Qualifier q: entry.getQualifiers()) {
+                for (Qualifier q: entry.qualifiers) {
                     if (!matchQualifier(q, resource)) {
                         match = false;
                         break;
@@ -234,13 +224,10 @@ public class TitleResolverImpl implements ApplicationListener<ContextRefreshedEv
             
             if (!candidates.isEmpty()) {
                 // Sort candidate list [stably], so that any exact entries come last
-                Collections.sort(candidates, new Comparator<ConfigEntry>(){
-                    @Override
-                    public int compare(ConfigEntry o1, ConfigEntry o2) {
-                        if (o1.isExact() && !o2.isExact()) return 1;
-                        if (o2.isExact() && !o1.isExact()) return -1;
-                        return 0;
-                    }
+                Collections.sort(candidates, (ConfigEntry o1, ConfigEntry o2) -> {
+                    if (o1.exact && !o2.exact) return 1;
+                    if (o2.exact && !o1.exact) return -1;
+                    return 0;
                 });
                 
                 return candidates.get(candidates.size()-1);
@@ -253,17 +240,17 @@ public class TitleResolverImpl implements ApplicationListener<ContextRefreshedEv
     }
     
     private boolean matchQualifier(Qualifier q, Resource r) {
-        if ("type".equals(q.getName())) {
-            return r.getResourceType().equals(q.getValue());
+        if ("type".equals(q.name)) {
+            return r.getResourceType().equals(q.value);
         }
-        if ("context".equals(q.getName())) {
-            return matchContext(q.getValue(), r);
+        if ("context".equals(q.name)) {
+            return matchContext(q.value, r);
         }
-        if ("lang".equals(q.getName())) {
-            return matchLanguage(q.getValue(), r);
+        if ("lang".equals(q.name)) {
+            return matchLanguage(q.value, r);
         }
         
-        return matchPropertyValue(q.getName(),q.getValue(), r);
+        return matchPropertyValue(q.name, q.value, r);
     }
     
     private boolean matchContext(String contextType, Resource r) {
@@ -337,8 +324,7 @@ public class TitleResolverImpl implements ApplicationListener<ContextRefreshedEv
     public void loadConfig() {
         try {
             InputStream inputStream = this.repository.getInputStream(null, this.configPath, true);
-            this.config = new PathMappingConfig(inputStream);
-            this.templateCache.clear();
+            this.config = new PathMappingConfig<>(inputStream, t -> SimpleTemplate.compile(t, SimpleTemplate.ESC_UNESCAPE));
         } catch(Throwable t) {
             logger.warn("Unable to load title configuration file: " 
                     + this.configPath + ": " + t.getMessage(), t);

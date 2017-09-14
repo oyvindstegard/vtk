@@ -61,10 +61,10 @@
   <bean id="decorating.decorationResolver"
         class="vtk.web.decorating.ConfigurableDecorationResolver"
         parent="repositoryAware">
-    <property name="config" value="${decorating.templateConfigFile}" />
     <property name="supportMultipleTemplates" value="${decorating.supportMultipleTemplates}" />
     <property name="templateManager" ref="decorating.templateManager" />
     <property name="decorationConfiguration" ref="decorating.configurationPropertiesFile" />
+    <property name="pathMappingConfiguration" value="${decorating.templateConfigFile}"/>
     <property name="parseableContentPropDef" ref="containsSSIDirectivesPropDef" />
     <property name="localeResolver" ref="viewServiceResourceAwareLocaleResolver" />
     <property name="maxDocumentSize" value="${decorating.maxDocumentSize}" />
@@ -88,7 +88,7 @@
     <property name="uri" value="${decorating.templateConfigFile}" />
     <property name="multipleInvocations">
       <map>
-        <entry key-ref="decorating.decorationResolver" value="loadConfig" />
+        <entry key-ref="decorating.decorationResolver" value="loadPathMappingConfiguration" />
         <entry key-ref="decorating.configurationPropertiesFile" value="load" />
       </map>
     </property>
