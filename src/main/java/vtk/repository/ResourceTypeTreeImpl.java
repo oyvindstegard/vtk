@@ -744,8 +744,16 @@ public class ResourceTypeTreeImpl implements ResourceTypeTree, InitializingBean,
     public String getResourceTypeTreeAsString() {
         TreePrinter tp = new TreePrinter(new TreePrinter.Format() {
             @Override
+            public String nodeNamePrefix(boolean siblingsFollowing) {
+                return siblingsFollowing ? "\u251c\u2500>" : "\u2514\u2500>";
+            }
+            @Override
             public int maxLevelIndentation() {
-                return 4;
+                return 3;
+            }
+            @Override
+            public char verticalTreeLine() {
+                return '\u2502';
             }
         });
         return tp.render(getTreePrinterModel());

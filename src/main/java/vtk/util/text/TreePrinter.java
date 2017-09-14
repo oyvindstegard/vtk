@@ -87,9 +87,9 @@ public class TreePrinter {
          */
         default String nodeNamePrefix(boolean siblingsFollowing) {
             if (siblingsFollowing) {
-                return "*--"; // or "+--"
+                return "*--"; // or "+--", or use unicode line drawing char "\u251c"
             } else {
-                return "*--"; // or "\\--"
+                return "*--"; // or "\\--", or use unicode line drawing char "\u2514"
             }
         }
 
@@ -127,7 +127,7 @@ public class TreePrinter {
          * @return character used for drawing vertical lines in tree.
          */
         default char verticalTreeLine() {
-            return '|';
+            return '|'; // or use unicode line drawing char "\u2502"
         }
 
         /**

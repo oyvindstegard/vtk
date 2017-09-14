@@ -60,6 +60,7 @@ import vtk.repository.store.PrincipalMetadataDAO;
 import vtk.security.AuthenticationException;
 import vtk.security.SecurityContext;
 import vtk.security.token.TokenManager;
+import vtk.util.text.TreePrinter;
 import vtk.web.service.Service;
 import vtk.web.service.ServiceResolver;
 import vtk.web.service.URL;
@@ -162,7 +163,7 @@ public class RequestContextInitializer implements ContextInitializer, ServiceRes
             logger.info("Registered service tree root services in the following order: " 
                         + rootServices);
             logger.info("Service tree:");
-            logger.info(printServiceTree(true).toString());
+            logger.info("\n" + getServiceTreeAsString(true));
         }
     }
     
@@ -380,36 +381,64 @@ public class RequestContextInitializer implements ContextInitializer, ServiceRes
     }
     
 
-    public StringBuilder printServiceTree(boolean printAssertions) {
-        StringBuilder buffer = new StringBuilder();
-        String lineSeparator = System.getProperty("line.separator");
-        printServiceList(rootServices, buffer, "->", lineSeparator, printAssertions);
-        return buffer;
+    public String getServiceTreeAsString(boolean printAssertions) {
+        TreePrinter.ModelBuilder builder = TreePrinter.newModelBuilder();
+        for (Service root: rootServices) {
+            addServiceToTreeModel(root, printAssertions, true, builder);
+        }
+        TreePrinter tp = new TreePrinter(new TreePrinter.Format(){
+            @Override
+            public String nodeNamePrefix(boolean siblingsFollowing) {
+                return siblingsFollowing ? "\u251c\u2500>" : "\u2514\u2500>";
+            }
+            @Override
+            public char verticalTreeLine() {
+                return '\u2502';
+            }
+            @Override
+            public String rootNodeNamePrefix() {
+                return "\u2500>";
+            }
+            @Override
+            public int maxLevelIndentation() {
+                return 3;
+            }
+        });
+        return tp.render(builder.getModel());
     }
 
-    private void printServiceList(List<Service> services, StringBuilder buffer,
-                                  String indent, String lineSeparator, boolean printAssertions) {
-        if (services == null)
-            return;
-        
-        for (Service service : services) {
-            buffer.append(indent);
-            buffer.append(service.getName());
-            if (service.getOrder() == Integer.MAX_VALUE) {
-                buffer.append(" (*)");
+    private void addServiceToTreeModel(Service service, boolean printAssertions,
+            boolean root, TreePrinter.ModelBuilder b) {
+
+        StringBuilder sb = new StringBuilder();
+        sb.append(service.getName());
+        if (service.getOrder() == Integer.MAX_VALUE) {
+            sb.append(" (*)");
+        } else {
+            sb.append(" (").append(service.getOrder()).append(")");
+        }
+
+        if (root) {
+            b.add(sb.toString());
+        } else {
+            b.addChild(sb.toString());
+        }
+
+        if (printAssertions) {
+            for (WebAssertion assertion : service.getAssertions()) {
+                b.addAttribute(assertion);
             }
-            else {
-                buffer.append(" (").append(service.getOrder()).append(")");
+        }
+
+        List<Service> children = childServices.get(service);
+        if (children != null) {
+            for (Service child: children) {
+                addServiceToTreeModel(child, printAssertions, false, b);
             }
-            if (printAssertions) {
-                for (WebAssertion assertion: service.getAssertions()) {
-                    buffer.append(lineSeparator);
-                    for (int i = indent.length(); i > 0; i--) buffer.append(' ');
-                    buffer.append("   ").append(assertion);
-                }
-            }
-            buffer.append(lineSeparator);
-            printServiceList(childServices.get(service), buffer, "  " + indent, lineSeparator, printAssertions);
+        }
+
+        if (!root) {
+            b.toParent();
         }
     }
 

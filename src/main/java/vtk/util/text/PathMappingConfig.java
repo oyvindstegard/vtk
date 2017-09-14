@@ -1,4 +1,4 @@
-/* Copyright (c) 2008-2013, University of Oslo, Norway
+/* Copyright (c) 2008-2017, University of Oslo, Norway
  * All rights reserved.
  * 
  * Redistribution and use in source and binary forms, with or without
@@ -358,56 +358,54 @@ public class PathMappingConfig<T> {
 
         @Override
         public String toString() {
-            try {
-                TreePrinter tp = new TreePrinter(new TreePrinter.Format() {
-                    @Override
-                    public String formatAttribute(TreePrinter.NamedValue attribute) {
-                        StringBuilder b = new StringBuilder();
-                        Entry<T> e = (Entry<T>)attribute.value();
-                        if (!e.qualifiers.isEmpty()) {
-                            b.append(e.qualifiers.toString());
-                            b.append(" ");
-                        }
-                        if (e.exact) {
-                            b.append("[exact path] ");
-                        }
-                        b.append(e.value);
-                        return b.toString();
+            TreePrinter tp = new TreePrinter(new TreePrinter.Format() {
+                @Override
+                public String formatAttribute(TreePrinter.NamedValue attribute) {
+                    StringBuilder b = new StringBuilder();
+                    Entry<T> e = (Entry<T>) attribute.value();
+                    if (!e.qualifiers.isEmpty()) {
+                        b.append(e.qualifiers.toString());
+                        b.append(" ");
                     }
-                });
-                return tp.render(getTreeModel());
-            } catch (Throwable t) {
-                System.err.println("T: " + t);
-                return "FUCK";
-            }
+                    if (e.exact) {
+                        b.append("[exact path] ");
+                    }
+                    b.append(e.value);
+                    return b.toString();
+                }
+            });
+            return tp.render(getTreeModel());
         }
 
         private TreePrinter.Model getTreeModel() {
             ModelBuilder builder = TreePrinter.newModelBuilder();
-            builder.add("/");
-            children.forEach((k,v) -> {
-                addChild(v, builder);
-            });
-
+            addToTreeModel("/", this, true, builder);
             return builder.getModel();
         }
 
-        private ModelBuilder addChild(Node n, ModelBuilder builder) {
-            boolean added = false;
-            if (n.entries != null) {
+        private void addToTreeModel(String name, Node n, boolean root, ModelBuilder builder) {
+            boolean addedChild = false;
+            if (root) {
+                builder.add(name);
+                for (Entry<?> e : n.entries) {
+                    builder.addAttribute(e);
+                }
+            } else if (n.entries != null) {
                 Path p = n.entries.iterator().next().path;
                 builder.addChild(p.toString());
                 for (Entry<?> e : n.entries) {
                     builder.addAttribute(e);
                 }
-                added = true;
+                addedChild = true;
             }
 
             n.children.forEach((k,v) -> {
-                addChild(v, builder);
+                addToTreeModel(k, v, false, builder);
             });
 
-            return added ? builder.toParent() : builder;
+            if (addedChild) {
+                builder.toParent();
+            }
         }
 
     }

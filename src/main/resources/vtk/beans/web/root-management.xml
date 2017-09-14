@@ -174,8 +174,8 @@
           ModelAndView handleRequest(HttpServletRequest request, HttpServletResponse response) throws Exception {
               response.setHeader('Content-type', 'text/html; charset=utf-8')
               def tree_html = types.getResourceTypeTreeAsString()
-                              .replaceAll(/(\+-- [^\s]+)/, /<span style='font-weight:bold'>$1<\/span>/)
-                              .replaceAll(/(?m)^(\s[a-zA-Z-]+)/, /<span style='font-weight:bold'>$1<\/span>/)
+                              .replaceAll(/(.\u2500>[^\s]+)/, /<span style='font-weight:bold'>$1<\/span>/)
+                              .replaceAll(/(?m)^([a-zA-Z-]+)/, /<span style='font-weight:bold'>$1<\/span>/)
               def w = response.getWriter()
               w.print("""<!DOCTYPE html>
 <html><head><title>Resource types</title></head>
@@ -233,8 +233,8 @@
       class ServiceTreeDumper implements Controller, ApplicationContextAware {
           ModelAndView handleRequest(HttpServletRequest request, HttpServletResponse response) throws Exception {
               response.setHeader('Content-type', 'text/html; charset=utf-8')
-              def tree_html = context.getBean('requestContextInitializer').printServiceTree(true).toString()
-              tree_html = tree_html.replaceAll(/(->[^\s]+)/, /<span style='font-weight:bold'>$1<\/span>/)
+              def tree_html = context.getBean('requestContextInitializer').getServiceTreeAsString(true)
+              tree_html = tree_html.replaceAll(/(\u2500>[^\s]+)/, /<span style='font-weight:bold'>$1<\/span>/)
               def w = response.getWriter()
               w.print("""<!DOCTYPE html>
 <html><head><title>Services</title></head>

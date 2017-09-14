@@ -14,7 +14,7 @@ class ServletServicesCommand implements VCommand {
 
         out.print context.get("context")
           .getBean("requestContextInitializer")
-          .printServiceTree(args.assertions != null)
+          .getServiceTreeAsString(args.assertions != null)
 
     }
 
