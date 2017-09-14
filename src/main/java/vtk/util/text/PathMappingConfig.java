@@ -359,7 +359,22 @@ public class PathMappingConfig<T> {
         @Override
         public String toString() {
             try {
-                TreePrinter tp = new TreePrinter();
+                TreePrinter tp = new TreePrinter(new TreePrinter.Format() {
+                    @Override
+                    public String formatAttribute(TreePrinter.NamedValue attribute) {
+                        StringBuilder b = new StringBuilder();
+                        Entry<T> e = (Entry<T>)attribute.value();
+                        if (!e.qualifiers.isEmpty()) {
+                            b.append(e.qualifiers.toString());
+                            b.append(" ");
+                        }
+                        if (e.exact) {
+                            b.append("[exact path] ");
+                        }
+                        b.append(e.value);
+                        return b.toString();
+                    }
+                });
                 return tp.render(getTreeModel());
             } catch (Throwable t) {
                 System.err.println("T: " + t);
@@ -392,11 +407,7 @@ public class PathMappingConfig<T> {
                 addChild(v, builder);
             });
 
-            if (added) {
-                return builder.toParent();
-            } else {
-                return builder;
-            }
+            return added ? builder.toParent() : builder;
         }
 
     }
