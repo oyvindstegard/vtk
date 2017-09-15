@@ -49,7 +49,6 @@ import javax.servlet.http.HttpServletResponseWrapper;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Required;
 import org.springframework.web.servlet.LocaleResolver;
 
@@ -67,7 +66,7 @@ import vtk.web.RequestContext;
 import vtk.web.service.Service;
 import vtk.web.service.URL;
 
-public class ConfigurableDecorationResolver implements DecorationResolver, InitializingBean {
+public class ConfigurableDecorationResolver implements DecorationResolver {
 
     private final Logger logger = LoggerFactory.getLogger(
         ConfigurableDecorationResolver.class);
@@ -76,16 +75,20 @@ public class ConfigurableDecorationResolver implements DecorationResolver, Initi
     private volatile PathMappingConfig<String> config;
     private Path configPath;
     private Properties decorationConfiguration;
+    private volatile List<RegexpCacheItem> regexpRules = new ArrayList<>();
     private PropertyTypeDefinition parseableContentPropDef;
     private Repository repository; 
     private boolean supportMultipleTemplates = false;
-    private Map<String, RegexpCacheItem> regexpCache = new HashMap<>();
     private LocaleResolver localeResolver = null;
     private long maxDocumentSize = -1;
 
     private static class RegexpCacheItem {
-        String string;
-        Pattern compiled;
+        final String configKey;
+        final Pattern compiledPattern;
+        RegexpCacheItem(String key, Pattern pattern) {
+            this.configKey = key;
+            this.compiledPattern = pattern;
+        }
     }
 
     @Required
@@ -125,21 +128,36 @@ public class ConfigurableDecorationResolver implements DecorationResolver, Initi
         this.maxDocumentSize = maxDocumentSize;
     }
 
-    @Override
-    public void afterPropertiesSet() {
-        loadPathMappingConfiguration();
-    }
-
     /**
      * Reload path mapping configuration from repository.
      */
-    public void loadPathMappingConfiguration() {
+    public void loadConfiguration() {
         logger.debug("Reload path mapping config from {}", configPath);
         try (InputStream is = repository.getInputStream(null, configPath, true)) {
-            this.config = PathMappingConfig.strConfig(is);
+            this.config = PathMappingConfig.strConfig(is); // volatile replace
         } catch(Throwable t) {
             logger.error("Unable to create PathMappingConfig from configuration file " + configPath + ": " + t.getMessage(), t);
         }
+        try {
+            this.regexpRules = reloadRegexpRules(); // volatile replace
+        } catch (Exception e) {
+            logger.error("Failed to reload regexp rules: " + e.getMessage(), e);
+        }
+    }
+
+    private List<RegexpCacheItem> reloadRegexpRules() {
+        List<RegexpCacheItem> result = new ArrayList<>();
+        Enumeration<?> keys = this.decorationConfiguration.propertyNames();
+        while (keys.hasMoreElements()) {
+            String configKey = (String) keys.nextElement();
+            if (!configKey.startsWith("regexp[")) {
+                continue;
+            }
+
+            Pattern pattern = parseRegexpParam(configKey);
+            result.add(new RegexpCacheItem(configKey, pattern));
+        }
+        return result;
     }
 
     @Override
@@ -284,34 +302,16 @@ public class ConfigurableDecorationResolver implements DecorationResolver, Initi
     }
     
     private String checkRegexpMatch(String uri) {
-        Enumeration<?> keys = this.decorationConfiguration.propertyNames();
-        String result = null;
-        while (keys.hasMoreElements()) {
-            String key = (String) keys.nextElement();
-            if (!key.startsWith("regexp[")) {
-                continue;
+        String paramString = null;
+        for (RegexpCacheItem rci: this.regexpRules) {
+            Matcher m = rci.compiledPattern.matcher(uri);
+            if (m.find()) {
+                paramString = decorationConfiguration.getProperty(rci.configKey);
             }
 
-            RegexpCacheItem cached = this.regexpCache.get(key); // XXX unsynchronized access to cache map
-            if (cached == null || !cached.string.equals(key)) {
-                cached = new RegexpCacheItem();
-                cached.string = key;
-                cached.compiled = parseRegexpParam(key);
-                synchronized(this.regexpCache) {
-                    this.regexpCache.put(key, cached);
-                }
-            }
-            if (cached.compiled == null) {
-                continue;
-            }
-            
-            Matcher m = cached.compiled.matcher(uri);
-            if (m.find()) {
-                result = decorationConfiguration.getProperty(key);
-            } 
         }
-        logger.debug("Regexp match: {}", result);
-        return result;
+        logger.debug("Regexp match: {}", paramString);
+        return paramString;
     }
 
     private String checkPathMatch(HttpServletRequest request,
