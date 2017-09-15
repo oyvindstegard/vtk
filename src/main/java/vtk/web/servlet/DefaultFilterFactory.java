@@ -54,5 +54,11 @@ public class DefaultFilterFactory implements FilterFactory {
     public int getOrder() {
         return order;
     }
+    
+    @Override
+    public String toString() {
+        return getClass().getSimpleName() 
+                + "(" + filter + ", " + order + ")";
+    }
 
 }
