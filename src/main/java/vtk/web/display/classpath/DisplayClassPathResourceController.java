@@ -50,10 +50,10 @@ import org.springframework.core.io.Resource;
 import org.springframework.web.servlet.ModelAndView;
 import org.springframework.web.servlet.mvc.Controller;
 import org.springframework.web.servlet.mvc.LastModified;
+
 import vtk.resourcemanagement.StaticResourceResolver;
 import vtk.util.io.IO;
 import vtk.util.repository.MimeHelper;
-import vtk.web.RequestContext;
 import vtk.web.service.URL;
 
 /**
@@ -68,13 +68,12 @@ import vtk.web.service.URL;
  */
 public class DisplayClassPathResourceController implements
         Controller, LastModified, ApplicationContextAware {
-
-    private final Logger logger = LoggerFactory.getLogger(this.getClass());
+    private static final Logger logger = LoggerFactory
+            .getLogger(DisplayClassPathResourceController.class);
     private StaticResourceResolver staticResourceResolver;
     private ApplicationContext applicationContext;
     private Map<String, String> headers;
     private boolean handleLastModified;
-
 
     @Override
     public ModelAndView handleRequest(HttpServletRequest request, HttpServletResponse response) throws Exception {
@@ -85,14 +84,20 @@ public class DisplayClassPathResourceController implements
 
         URL url = URL.create(request);
         Resource resource = this.staticResourceResolver.resolve(url.getPath());
-        if (resource == null || !resource.exists()) {
-            if (this.logger.isDebugEnabled()) {
-                StringBuilder sb = new StringBuilder("Unable to serve resource: " + resource);
-                if (resource != null) {
-                    sb.append(" from " + resource.getDescription() + ": resource does not exist");
-                }
-                this.logger.debug(sb.toString());
-            }
+        if (resource == null) {
+            logger.debug("Unable to serve resource: {}: not found", url.getPath());
+            response.sendError(HttpServletResponse.SC_NOT_FOUND);
+            return null;
+        }
+        else if (!resource.exists()) {
+            logger.debug("Unable to serve resource: {} from {}: not found", 
+                    url.getPath(), resource.getDescription());
+            response.sendError(HttpServletResponse.SC_NOT_FOUND);
+            return null;
+        }
+        else if (!resource.isReadable()) {
+            logger.debug("Unable to serve resource: {} from {}: not readable", 
+                    url.getPath(), resource.getDescription());
             response.sendError(HttpServletResponse.SC_NOT_FOUND);
             return null;
         }
@@ -114,13 +119,12 @@ public class DisplayClassPathResourceController implements
                 IO.copy(inStream, response.getOutputStream()).perform();
             }
 
-            if (this.logger.isDebugEnabled()) {
-                this.logger.debug("Successfully served resource: " + resource + " from " + resource.getDescription());
-            }
-        } catch (IOException e) {
-            if (this.logger.isDebugEnabled()) {
-                this.logger.debug("Unable to serve resource: " + resource + " from " + resource.getDescription(), e);
-            }
+            logger.debug("Successfully served resource: {} from {}", 
+                    resource, resource.getDescription());
+        }
+        catch (IOException e) {
+            logger.debug("Unable to serve resource: {} from {}", 
+                    resource, resource.getDescription(), e);
             response.sendError(HttpServletResponse.SC_NOT_FOUND);
         }
         return null;
@@ -177,11 +181,13 @@ public class DisplayClassPathResourceController implements
             URLConnection connection = url.openConnection();
             stream.contentLength = connection.getContentLength();
             stream.stream = connection.getInputStream();
-        } else if (resource instanceof FileSystemResource) {
+        }
+        else if (resource instanceof FileSystemResource) {
             File file = resource.getFile();
             stream.contentLength = (int) file.length();
             stream.stream = resource.getInputStream();
-        } else {
+        }
+        else {
             stream.stream = resource.getInputStream();
         }
         return stream;
