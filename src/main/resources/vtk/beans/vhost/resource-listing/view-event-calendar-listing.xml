@@ -17,12 +17,6 @@
     <property name="serviceNameProvider" ref="collectionListing.viewService.serviceNameProvider" />
   </bean>
 
-  <bean id="calendarEventListing.feedService" class="vtk.web.service.ServiceImpl">
-    <property name="parent" ref="eventListing.feedService" />
-    <property name="handler" ref="eventListing.calendarFeedHandler" />
-    <property name="assertions" ref="calendarEventListing.displayTypeIsCalendar" />
-  </bean>
-
   <bean id="calendarEventListing.displayTypeIsCalendar"
         class="vtk.web.service.RepositoryAssertionWrapper">
     <constructor-arg name="assertion">
@@ -45,11 +39,6 @@
     <property name="calendarSearchComponent" ref="eventListing.calendarCurrentMonthAndForwardSearchComponent" />
     <property name="publishDatePropDef" ref="publishDatePropDef" />
   </bean>
-
-  <bean id="eventListing.calendarFeedHandler" parent="eventListing.calendarHandler">
-    <property name="viewName" value="eventListingCalendar.feedView" />
-  </bean>
-
 
   <bean id="eventListing.calendarCurrentMonthAndForwardSearchComponent" parent="collectionListing.searchComponent">
     <property name="name" value="eventListing.calendarCurrentMonthAndForwardSearchComponent" />
@@ -87,7 +76,7 @@
   </bean>
 
   <bean id="calendarEventListing.viewSpecificDateFeedService" class="vtk.web.service.ServiceImpl">
-    <property name="parent" ref="calendarEventListing.feedService" />
+    <property name="parent" ref="eventListing.feedService" />
     <property name="assertions">
       <list>
         <bean class="vtk.web.service.RequestParameterExistsAssertion">
@@ -127,8 +116,7 @@
   </bean>
 
   <bean id="calendarEventListing.viewAllUpcomingFeedService" class="vtk.web.service.ServiceImpl">
-    <property name="parent" ref="calendarEventListing.feedService" />
-    <property name="assertions" ref="vrtxParameterIsFeedAssertion" />
+    <property name="parent" ref="eventListing.feedService" />
     <property name="handler" ref="calendarEventListing.viewAllUpcomingFeedHandler" />
   </bean>
 
