@@ -30,7 +30,6 @@
  */
 package vtk.security.web.saml;
 
-import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
@@ -121,7 +120,7 @@ public class LostPostHandler implements Controller {
         Json.MapContainer body = state.getBody();
         state.delete();
 
-        Map<String, Object> model = new HashMap<String, Object>();
+        Map<String, Object> model = new HashMap<>();
         model.put("postURL", postURL);
         model.put("body", body);
         return new ModelAndView(this.viewName, model);
@@ -389,7 +388,11 @@ public class LostPostHandler implements Controller {
         
         private static String identifier(HttpServletRequest request) {
             Cookie cookie = null;
-            for (Cookie c: request.getCookies()) {
+            Cookie[] cookies = request.getCookies();
+            if (cookies == null) {
+                return null;
+            }
+            for (Cookie c: cookies) {
                 if (COOKIE_NAME.equals(c.getName())) {
                     cookie = c;
                     break;
