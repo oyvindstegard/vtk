@@ -36,15 +36,15 @@ import java.util.List;
 import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Required;
+
 import vtk.repository.Namespace;
 import vtk.repository.PropertySet;
 import vtk.repository.Resource;
 import vtk.repository.ResourceTypeTree;
 import vtk.repository.resourcetype.PropertyTypeDefinition;
 import vtk.repository.search.PropertySortField;
-
-import vtk.repository.search.SortField;
 import vtk.repository.search.ResourceSortField;
+import vtk.repository.search.SortField;
 import vtk.web.service.URL;
 
 /**
@@ -111,9 +111,15 @@ public class SearchSorting {
     }
 
     public List<SortField> getSortFieldsFromRequestParams(String[] sortingParams) {
-        List<SortField> sortFields = new ArrayList<SortField>();
+        List<SortField> sortFields = new ArrayList<>();
         for (String sortFieldParam : sortingParams) {
-            sortFieldParam = URL.decode(sortFieldParam);
+            try {
+                sortFieldParam = URL.decode(sortFieldParam);
+            }
+            catch (Exception e) {
+                // invalid, ignore
+                continue;
+            }
             String[] paramValues = sortFieldParam.split(Listing.SORTING_PARAM_DELIMITER);
             if (paramValues.length > 3) {
                 // invalid, just ignore it
