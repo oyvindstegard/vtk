@@ -75,19 +75,19 @@ public class ConfigurableDecorationResolver implements DecorationResolver {
     private volatile PathMappingConfig<String> config;
     private Path configPath;
     private Properties decorationConfiguration;
-    private volatile List<RegexpCacheItem> regexpRules = new ArrayList<>();
+    private volatile List<RegexpRule> regexpRules = new ArrayList<>();
     private PropertyTypeDefinition parseableContentPropDef;
     private Repository repository; 
     private boolean supportMultipleTemplates = false;
     private LocaleResolver localeResolver = null;
     private long maxDocumentSize = -1;
 
-    private static class RegexpCacheItem {
-        final String configKey;
+    private static class RegexpRule {
         final Pattern compiledPattern;
-        RegexpCacheItem(String key, Pattern pattern) {
-            this.configKey = key;
+        final String configValue;
+        RegexpRule(Pattern pattern, String configValue) {
             this.compiledPattern = pattern;
+            this.configValue = configValue;
         }
     }
 
@@ -139,15 +139,19 @@ public class ConfigurableDecorationResolver implements DecorationResolver {
             logger.error("Unable to create PathMappingConfig from configuration file " + configPath + ": " + t.getMessage(), t);
         }
         try {
-            this.regexpRules = reloadRegexpRules(); // volatile replace
+            this.regexpRules = parseRegexpRules(); // volatile replace
         } catch (Exception e) {
             logger.error("Failed to reload regexp rules: " + e.getMessage(), e);
         }
     }
 
-    private List<RegexpCacheItem> reloadRegexpRules() {
-        List<RegexpCacheItem> result = new ArrayList<>();
-        Enumeration<?> keys = this.decorationConfiguration.propertyNames();
+    // XXX Order matters for regexp rules. Template matching for overlapping regexp rules
+    // will have undefined behaviour wrt. config file when using Properties keys enum.
+    // (Although between each change, the undefined result will stay the same.)
+    private List<RegexpRule> parseRegexpRules() {
+        final List<RegexpRule> result = new ArrayList<>();
+        final Properties snapshot = (Properties)this.decorationConfiguration.clone();
+        final Enumeration<?> keys = snapshot.keys();
         while (keys.hasMoreElements()) {
             String configKey = (String) keys.nextElement();
             if (!configKey.startsWith("regexp[")) {
@@ -155,7 +159,7 @@ public class ConfigurableDecorationResolver implements DecorationResolver {
             }
 
             Pattern pattern = parseRegexpParam(configKey);
-            result.add(new RegexpCacheItem(configKey, pattern));
+            result.add(new RegexpRule(pattern, snapshot.getProperty(configKey)));
         }
         return result;
     }
@@ -300,15 +304,18 @@ public class ConfigurableDecorationResolver implements DecorationResolver {
         }
         return null;
     }
-    
+
+    // XXX currently uses "last match wins" matching, but this does not
+    // matter much when the order of the regexp rule list is undefined, which
+    // is currently the case. Therefore, this method could just as well use
+    // "first match wins", instead of looping through everything, every time.
     private String checkRegexpMatch(String uri) {
         String paramString = null;
-        for (RegexpCacheItem rci: this.regexpRules) {
-            Matcher m = rci.compiledPattern.matcher(uri);
+        for (RegexpRule regexpRule: this.regexpRules) {
+            Matcher m = regexpRule.compiledPattern.matcher(uri);
             if (m.find()) {
-                paramString = decorationConfiguration.getProperty(rci.configKey);
+                paramString = regexpRule.configValue;
             }
-
         }
         logger.debug("Regexp match: {}", paramString);
         return paramString;
