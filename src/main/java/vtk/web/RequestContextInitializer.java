@@ -88,15 +88,17 @@ import vtk.web.service.WebAssertion;
  */
 public class RequestContextInitializer implements ContextInitializer, ServiceResolver {
     // For service lookup:
-    private Map<String, Service> services = new HashMap<>();
+    private final Map<String, Service> services = new HashMap<>();
     
     // Map containing parent -> children mapping, effectively representing top-down graph of the service trees.
-    private Map<Service, List<Service>> childServices = new HashMap<>();
+    private final Map<Service, List<Service>> childServices = new HashMap<>();
+
+    // List of all root services
+    private final List<Service> rootServices = new ArrayList<>();
     
     private IndexFileResolver indexFileResolver;
     private PrincipalMetadataDAO principalMetadataDAO;
     private static Logger logger = LoggerFactory.getLogger(RequestContextInitializer.class);
-    private List<Service> rootServices = new ArrayList<>();
 
     private String trustedToken;
     private Repository repository;
