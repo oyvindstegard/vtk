@@ -126,7 +126,7 @@ public class ConfigurablePathPolicyAssertion implements RepositoryAssertion, Pre
                 }
             });
         } catch (Throwable t) {
-            logger.error("Failed to load policy configuration file "+ configurationFile + ": " + t.getMessage());
+            logger.warn("Failed to load policy configuration file "+ configurationFile + ": " + t.getMessage());
         }
     }
 
