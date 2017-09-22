@@ -193,10 +193,15 @@ public class LinkChecker {
         
         // Hostname may need IDN-encoding
         if (!isASCII(url.getHost())) {
-            String frag = url.getRef() != null ? "#" + url.getRef() : "";
-            String host = java.net.IDN.toASCII(url.getHost());
-            url = new java.net.URL(url.getProtocol(), host, url.getPort(), 
-                    url.getFile() + frag);
+            try {
+                String frag = url.getRef() != null ? "#" + url.getRef() : "";
+                String host = java.net.IDN.toASCII(url.getHost());
+                url = new java.net.URL(url.getProtocol(), host, url.getPort(), 
+                        url.getFile() + frag);
+            }
+            catch (IllegalArgumentException e) {
+                throw new MalformedURLException(url.toString() + ": " + e.getMessage());
+            }
         }
         
         // URL may already be encoded, or it may not, at this point.
