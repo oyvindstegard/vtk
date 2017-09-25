@@ -135,14 +135,9 @@ public class LinkRepairJob extends AbstractResourceJob {
             @Override
             public void writeContent(InputStream content) {
                 try {
-                    Resource updated = ctx.getRepository().storeContent(
-                            ctx.getToken(), null, resource.getURI(),
-                            ContentInputSources.fromStream(content));
-                    
-                    // Update system job status:
-                    ctx.getRepository().store(ctx.getToken(), null, updated,
-                            ctx.getSystemChangeContext());
-
+                    ctx.getRepository().storeContent(
+                        ctx.getToken(), null, resource.getURI(),
+                        ContentInputSources.fromStream(content));
                     
                 }
                 catch (Exception e) {
@@ -161,13 +156,9 @@ public class LinkRepairJob extends AbstractResourceJob {
                     ctx.getRepository().createRevision(ctx.getToken(), null,
                             resource.getURI(), Type.REGULAR);
                     
-                    Resource stored = ctx.getRepository()
-                            .storeContent(ctx.getToken(), null, resource.getURI(),
-                                    ContentInputSources.fromBytes(buffer));
-                    
-                    // Update system job status:
-                    ctx.getRepository().store(ctx.getToken(), null, stored,
-                            ctx.getSystemChangeContext());
+                    ctx.getRepository()
+                        .storeContent(ctx.getToken(), null, resource.getURI(),
+                            ContentInputSources.fromBytes(buffer));                    
                 }
                 catch (Exception e) {
                     throw new RuntimeException(e);
@@ -182,6 +173,7 @@ public class LinkRepairJob extends AbstractResourceJob {
         };
 
         // Update 'hrefs' JSON property with relocated 'uri' fields
+        
         Property hrefsProp = resource.getProperty(hrefsPropDef);
         if (hrefsProp != null) {
             MapContainer jsonValue = hrefsProp.getJSONValue();
@@ -217,6 +209,11 @@ public class LinkRepairJob extends AbstractResourceJob {
         // of the 'hrefs' property, which will use the updated JSON value as a
         // starting point:
         LinkReplacer.process(replaceContext);
+        
+        // Update system job status:
+        ctx.getRepository().store(ctx.getToken(), null, resource,
+                ctx.getSystemChangeContext());
+
     }
     
     

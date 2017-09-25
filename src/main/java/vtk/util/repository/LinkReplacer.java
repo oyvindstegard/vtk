@@ -33,6 +33,7 @@ package vtk.util.repository;
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -259,6 +260,9 @@ public class LinkReplacer {
     private static Map<String, Object> filterJsonProp(Map<String, Object> jsonValue, 
             List<JSONPropertyAttributeDescription> attributes, Context ctx,
             String logLabel) {
+        
+        Map<String, Object> returnValue = new LinkedHashMap<>();
+        
         for (JSONPropertyAttributeDescription attr: attributes) {
             switch (attr.getType()) {
             case "image_ref": 
@@ -266,23 +270,29 @@ public class LinkReplacer {
             case "resource_ref":
                 Object ref = jsonValue.get(attr.getName());
                 if (ref != null) {
-                    jsonValue.put(attr.getName(), 
-                                  mapRef(ref, ctx, logLabel +
-                                         "@" + attr.getName()));
+                    returnValue.put(attr.getName(),
+                            mapRef(ref, ctx, logLabel +
+                                    "@" + attr.getName()));
                 }
                 break;
             case "simple_html":
             case "html":
                 Object html = jsonValue.get(attr.getName());
                 if (html != null) {
-                    jsonValue.put(attr.getName(), 
+                    returnValue.put(attr.getName(), 
                             filterHtml(html.toString(), ctx,
                                        logLabel + "@" + attr.getName()));
                 }
                 break;
+            default:
+                Object value = jsonValue.get(attr.getName());
+                if (value != null) {
+                    returnValue.put(attr.getName(), value);
+                }
+                break;
             }
         }
-        return jsonValue;
+        return returnValue;
     }
     
     private static String mapRef(Object ref, Context ctx, String logLabel) {
