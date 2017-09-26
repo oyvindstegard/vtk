@@ -211,9 +211,9 @@ public class LinkRepairJob extends AbstractResourceJob {
         LinkReplacer.process(replaceContext);
         
         // Update system job status:
-        ctx.getRepository().store(ctx.getToken(), null, resource,
+        ctx.getRepository().store(ctx.getToken(), null, 
+                ctx.getRepository().retrieve(ctx.getToken(), resource.getURI(), false),
                 ctx.getSystemChangeContext());
-
     }
     
     
@@ -279,8 +279,13 @@ public class LinkRepairJob extends AbstractResourceJob {
                 String prev = vrtxIdMap.get(vrtxid);
                 if (prev != null) {
                     try {
-                        URL mappedUrl = base.relativeURL(prev).setPath(r.getURI());
-                        resultMap.put(prev, mappedUrl);
+                        URL prevURL = base.relativeURL(prev);
+                        URL mappedURL = new URL(prevURL).setPath(r.getURI());
+                        resultMap.put(prev, mappedURL);
+                        if (!prev.startsWith("/")) {
+                            resultMap.put(prevURL.getPathRepresentation(), mappedURL);
+                            resultMap.put(prevURL.protocolRelativeURL(), mappedURL);
+                        }
                     }
                     catch (Throwable t) {
                         // Nothing we can do with the (mangled) URL
