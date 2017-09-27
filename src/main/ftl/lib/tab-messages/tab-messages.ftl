@@ -6,6 +6,23 @@
   -   
   -->
 
+<#macro workingCopy isWorkingCopy>
+  <#if isWorkingCopy>
+    <@wrapper>
+	  <#nested />
+    </@wrapper>
+  </#if>
+</#macro>
+
+<#macro externalEdit>
+  <#local exernalEdited = resourceContext.currentResource.getPropertyByPrefix(nullArg, "extern-edit-warn")?default("") />
+  <#if exernalEdited != "">
+    <@wrapper>
+	  <#nested />
+    </@wrapper>
+  </#if>
+</#macro>
+
 <#macro wrapper>
   <div class="tabMessage-big">
     <#nested />
