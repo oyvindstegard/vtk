@@ -353,10 +353,10 @@
 
 
   <bean id="repository.displayResourceTypeTreeService" class="vtk.web.service.ServiceImpl">
-    <property name="order" value="-96000" />
+    <property name="parent" ref="appServices" />
     <property name="assertions">
       <bean class="vtk.web.service.RequestURIRegexpAssertion">
-        <property name="pattern" value="${resourceTypeTreeService.displayURL}" />
+        <property name="pattern" value="^${resourceTypeTreeService.displayURL}/?$" />
       </bean>
     </property>
     <property name="handler" ref="repository.displayResourceTypeTreeController" />

@@ -63,6 +63,23 @@
   </bean>
 
 
+  <!-- ****************************************************************** -->
+  <!-- APP SERVICES BRANCH                                                -->
+  <!-- Non-repository resources and specialized app services/resources.   -->
+  <!-- Uses webdav authentication challenge by default.                   -->
+  <!-- ****************************************************************** -->
+  <bean id="appServices" class="vtk.web.service.ServiceImpl">
+    <property name="order" value="-97000"/>
+    <property name="assertions">
+      <list>
+        <bean class="vtk.web.service.RequestURIRegexpAssertion">
+          <property name="pattern" value="^${appServicesRoot}/"/>
+        </bean>
+      </list>
+    </property>
+    <property name="authenticationChallenge" ref="${appServicesAuthenticationChallenge}" />
+  </bean>
+
   <!-- ************************** -->
   <!-- THE WEB SERVICE TREE       -->
   <!-- Web browser based services -->
@@ -172,7 +189,8 @@
 
 
   <bean id="staticResourceService" class="vtk.web.service.ServiceImpl">
-    <property name="order" value="-97000" />
+    <property name="parent" ref="appServices" />
+    <property name="order" value="-1000" />
     <property name="assertions">
       <list>
         <bean class="vtk.web.service.StaticResourceLocationsAssertion" />
@@ -610,12 +628,12 @@
   <bean id="serviceResolver" class="vtk.web.service.BeanContextServiceResolver" />
 
   <bean id="propertySearch.queryService" class="vtk.web.service.ServiceImpl">
-    <property name="order" value="-999" />
+    <property name="parent" ref="appServices" />
     <property name="assertions">
       <list>
         <ref bean="request.isGetOrHead" />
         <bean class="vtk.web.service.RequestURIRegexpAssertion">
-          <property name="pattern" value="${appServices.baseURL}/property-query.*" />
+          <property name="pattern" value="^${appServices.baseURL}/property-query" />
         </bean>
       </list>
     </property>

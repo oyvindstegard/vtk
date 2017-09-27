@@ -24,11 +24,11 @@
   </bean>
 
   <bean id="filebrowser.fckconnector" class="vtk.web.service.ServiceImpl">
-    <property name="order" value="-999" />
+    <property name="parent" ref="appServices" />
     <property name="assertions">
       <list>
         <bean class="vtk.web.service.RequestURIRegexpAssertion">
-          <property name="pattern" value="${editor.fck.browseURL}" />
+          <property name="pattern" value="^${editor.fck.browseURL}" />
         </bean>
         <bean class="vtk.web.service.RequestParameterAssertion">
           <property name="parameterName" value="action" />

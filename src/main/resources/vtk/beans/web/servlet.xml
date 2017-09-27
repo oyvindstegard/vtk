@@ -16,7 +16,7 @@
     <property name="services" ref="services" />
     <property name="nonRepositoryRoots">
       <set>
-        <value>${vrtx.staticResourcesBaseURL}</value>
+        <value>${appServicesRoot}</value>
       </set>
     </property>
     <property name="viewUnauthenticatedParameter" value="x-prevent-decorating"/>

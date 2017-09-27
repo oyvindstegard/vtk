@@ -356,7 +356,7 @@
 
   <bean id="notViewUnpublishedMediaPlayerRefererAssertion" class="vtk.web.service.RequestHeaderRegexpAssertion">
     <property name="header" value="Referer" />
-    <property name="pattern" value="^https?://[^/]+/vrtx/__vrtx/static-resources/flash/SMP_[0-9.]+-patched/[0-9.]+/StrobeMediaPlayback\.swf$" />
+    <property name="pattern" value="^https?://[^/]+${webResources.baseURL}/flash/SMP_[0-9.]+-patched/[0-9.]+/StrobeMediaPlayback\.swf$" />
     <property name="invert" value="true" />
   </bean>
 

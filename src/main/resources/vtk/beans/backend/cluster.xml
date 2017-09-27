@@ -65,10 +65,10 @@
   -->
 
   <bean id="cluster.statusService" class="vtk.web.service.ServiceImpl">
-    <property name="order" value="-96000" />
+    <property name="parent" ref="appServices" />
     <property name="assertions">
       <bean class="vtk.web.service.RequestURIRegexpAssertion">
-        <property name="pattern" value="${cluster.statusURL}" />
+        <property name="pattern" value="^${cluster.statusURL}" />
       </bean>
     </property>
     <property name="handler" ref="cluster.statusController" />

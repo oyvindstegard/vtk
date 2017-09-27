@@ -42,8 +42,14 @@ import vtk.repository.Resource;
 import vtk.security.Principal;
 
 /**
- * Assertion that does regular expression matches on the requested
- * URI.
+ * Assertion that does regular expression matches on the {@link HttpServletRequest#getRequestURI()  requested
+ * URI}.
+ *
+ * <p>Note that the configured regular expression only needs to match a portion
+ * of a request URI for this assertion to match the request. So for instance an empty
+ * regular expression, {@code ""}, will match all possible request URIs.
+ * Therefore, use {@code "^"} and {@code "$"} to anchor match at start or end of URI if necessary.
+ *
  * <p>Configurable properties:
  * <ul>
  *   <li><code>pattern</code> - The {@link Pattern regular
