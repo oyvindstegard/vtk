@@ -2,6 +2,7 @@
 <#import "/lib/vtk.ftl" as vrtx />
 <#import "include/scripts.ftl" as scripts />
 <#import "/lib/editor/common.ftl" as editor />
+<#import "/lib/tab-messages/tab-messages-editor.ftl" as tabMessages />
 <#import "editor/vrtx-json-javascript.ftl" as vrtxJSONJavascript />
 <#import "vrtx-types/vrtx-json-common.ftl" as vrtxJSONCommon />
 
@@ -107,11 +108,7 @@
   
   <#assign header = form.resource.getLocalizedMsg("header", locale, contentLocale, null) />
   
-  <#if form.workingCopy>
-    <div class="tabMessage-big">
-      <@vrtx.msg code="editor.workingCopyMsg" args=[versioning.currentVersionURL] escape=false />
-    </div>
-  </#if>
+  <@tabMessages.display form.workingCopy versioning />
 
   <div id="vrtx-editor-title-submit-buttons">
     <div id="vrtx-editor-title-submit-buttons-inner-wrapper">

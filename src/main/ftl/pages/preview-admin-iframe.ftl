@@ -15,6 +15,7 @@
   -
   -->
 <#import "/lib/vtk.ftl" as vrtx />
+<#import "/lib/tab-messages/tab-messages-preview.ftl" as tabMessages />
 
 <#if !resourceReference?exists>
   <#stop "Unable to render model: required submodel
@@ -55,12 +56,8 @@
     </script> 
   </head>
   <body id="vrtx-preview">
-
-    <#if workingCopy?exists>
-      <div class="tabMessage-big">
-        <@vrtx.msg code="preview.workingCopyMsg" args=[versioning.currentVersionURL] escape=false />
-      </div>
-    </#if>
+  
+    <@tabMessages.display workingCopy?exists versioning />
     
     <#assign previewRefreshParameter = 'outer-iframe-refresh' />
     <#assign constructor = "freemarker.template.utility.ObjectConstructor"?new() />
