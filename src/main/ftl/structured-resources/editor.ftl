@@ -108,7 +108,7 @@
   
   <#assign header = form.resource.getLocalizedMsg("header", locale, contentLocale, null) />
   
-  <@tabMessages.display form.workingCopy versioning />
+  <@tabMessages.display form.workingCopy versioning! />
 
   <div id="vrtx-editor-title-submit-buttons">
     <div id="vrtx-editor-title-submit-buttons-inner-wrapper">

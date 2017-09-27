@@ -57,7 +57,7 @@
   </head>
   <body id="vrtx-preview">
   
-    <@tabMessages.display workingCopy?exists versioning />
+    <@tabMessages.display workingCopy?exists versioning! />
     
     <#assign previewRefreshParameter = 'outer-iframe-refresh' />
     <#assign constructor = "freemarker.template.utility.ObjectConstructor"?new() />
