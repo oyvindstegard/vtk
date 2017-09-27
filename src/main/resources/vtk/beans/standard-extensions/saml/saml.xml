@@ -125,7 +125,8 @@
     - and then redirecting to the resource from where logout request was initiated
   -->
   <bean id="saml.postLogoutService" class="vtk.web.service.ServiceImpl">
-    <property name="order" value="-97000"/>
+    <property name="parent" ref="appServices" />
+    <property name="order" value="-500"/>
     <property name="assertions">
       <list>
         <bean class="vtk.web.service.RequestPathAssertion">
@@ -142,7 +143,8 @@
   </bean>
 
   <bean id="saml.metadataService" class="vtk.web.service.ServiceImpl">
-    <property name="order" value="-97000"/>
+    <property name="parent" ref="appServices" />
+    <property name="order" value="-500"/>
     <property name="assertions">
       <list>
         <bean class="vtk.web.service.RequestPathAssertion">
@@ -163,7 +165,8 @@
   </bean>
 
   <bean id="saml.lostPostService" class="vtk.web.service.ServiceImpl">
-    <property name="order" value="-96000"/>
+    <property name="parent" ref="appServices"/>
+    <property name="order" value="-250"/>
     <property name="assertions">
       <list>
         <bean class="vtk.web.service.RequestPathAssertion">
@@ -250,7 +253,8 @@
   -->
 
   <bean id="saml.ieCookieRedirectService" class="vtk.web.service.ServiceImpl">
-    <property name="order" value="-3"/> 
+    <proeprty name="parent" ref="appServices"/>
+    <property name="order" value="-200"/>
     <property name="assertions">
       <list>
         <bean class="vtk.web.service.RequestPathAssertion">
