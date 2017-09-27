@@ -253,7 +253,7 @@
   -->
 
   <bean id="saml.ieCookieRedirectService" class="vtk.web.service.ServiceImpl">
-    <proeprty name="parent" ref="appServices"/>
+    <property name="parent" ref="appServices"/>
     <property name="order" value="-200"/>
     <property name="assertions">
       <list>
