@@ -1,9 +1,0 @@
-<!DOCTYPE html>
-<html>
-  <head ${document:attributes select=[html.head]}>
-    ${document:head}
-  </head>
-  <body ${document:attributes select=[html.body]}>
-    ${document:body}
-  </body>
-</html>
