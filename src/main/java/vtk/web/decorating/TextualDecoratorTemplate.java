@@ -125,6 +125,8 @@ public class TextualDecoratorTemplate implements Template {
                         continue;
                     }
 
+                    // XXX ugly component NullPointerException if fragment NOT optional and component is null
+
                     String chunk = renderComponent(component, decoratorRequest);
                     if (logger.isDebugEnabled()) {
                         logger.debug("Included component: " + fragment
