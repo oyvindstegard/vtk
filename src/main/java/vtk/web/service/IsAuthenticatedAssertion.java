@@ -102,7 +102,8 @@ public class IsAuthenticatedAssertion extends AbstractAssertion {
     
     @Override
     public String toString() {
-        return "request.isAuthenticated";
+        return (invert ? "request.isNotAuthenticated" : "request.isAuthenticated")
+                + (requiresAuthentication ? " (require auth)" : "");
     }
 
     private boolean matches(Resource resource, Principal principal) {
