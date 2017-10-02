@@ -32,8 +32,11 @@ package vtk.beans.factory;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.BeanFactoryUtils;
@@ -45,11 +48,14 @@ import org.springframework.core.OrderComparator;
 
 /**
  * FactoryBean that exposes a list of target beans of a specified class existing
- * in the application context.
+ * in the application context, optinoally excluding specific beans by id.
+ *
  * <p>
  * Note: If used to populate a bean of the specified class, the bean will have a
- * recursive reference to itself
- * 
+ * recursive reference to itself. To avoid this, the
+ * {@link #setExcludeBeans(java.util.Set) exclude beans} property may be set to
+ * bean ids which shall be excluded from the generated lists.
+ *
  * @see #setTargetBeansClass
  */
 public class BeansListingFactoryBean<T> implements FactoryBean<List<T>>,
@@ -58,6 +64,8 @@ public class BeansListingFactoryBean<T> implements FactoryBean<List<T>>,
     private Class<T> targetBeansClass;
 
     private ApplicationContext applicationContext;
+
+    private Set<String> excludeBeans = Collections.emptySet();
 
     @Required
     public void setTargetBeansClass(Class<T> targetBeansClass) {
@@ -72,11 +80,16 @@ public class BeansListingFactoryBean<T> implements FactoryBean<List<T>>,
     }
 
     public List<T> getObject() throws BeansException {
-        Map<?, T> matchingBeans = BeanFactoryUtils
+        Map<String, T> matchingBeans = BeanFactoryUtils
                 .beansOfTypeIncludingAncestors(this.applicationContext,
                         targetBeansClass, true, false);
 
-        List<T> beans = new ArrayList<T>(matchingBeans.values());
+        List<T> beans = matchingBeans.entrySet()
+                .stream()
+                .filter(e -> !excludeBeans.contains(e.getKey()))
+                .map(e -> e.getValue())
+                .collect(Collectors.toCollection(() -> new ArrayList<>()));
+
         Collections.sort(beans, new OrderComparator());
         return beans;
     }
@@ -96,6 +109,15 @@ public class BeansListingFactoryBean<T> implements FactoryBean<List<T>>,
 
     public boolean isEagerInit() {
         return false;
+    }
+
+    /**
+     * Optional set of bean ids to exclude from returned listings.
+     *
+     * @param excludeBeans
+     */
+    public void setExcludeBeans(Set<String> excludeBeans) {
+        this.excludeBeans = new HashSet<>(excludeBeans);
     }
 
 }
