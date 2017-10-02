@@ -35,12 +35,14 @@ import java.util.List;
 import java.util.regex.Pattern;
 
 import javax.servlet.http.HttpServletRequest;
+import org.springframework.beans.factory.annotation.Required;
 
 import vtk.security.AuthenticationException;
 import vtk.security.AuthenticationProcessingException;
 import vtk.security.Principal;
 import vtk.security.PrincipalImpl;
 import vtk.security.PrincipalStore;
+import vtk.security.roles.RoleManager;
 import vtk.web.service.WebAssertion;
 
 /**
@@ -57,6 +59,11 @@ import vtk.web.service.WebAssertion;
  * <p>The set of valid proxy users and target users is limited using
  * regular expressions, and an optional {@link PrincipalStore} can be
  * used to validate (otherwise syntactically correct) target users.</p>
+ *
+ * <p>Note that target users with {@link RoleManager.Role#ROOT root role} or
+ * {@link RoleManager.Role#READ_EVERYTHING read everything role} is not allowed by default,
+ * and such proxy authentication attempts will fail. If desired, root role users
+ * may be allowed by setting {@link #setAllowTargetUsersWithRootRole(boolean) }.
  * 
  * <p>A set of {@link WebAssertion assertions} can also be configured to limit 
  * the scope in which this authentication handler attempts to perform 
@@ -70,6 +77,8 @@ public class ProxyAuthenticationHandler extends HttpBasicAuthenticationHandler {
     private String requestParam = null;
     
     private List<WebAssertion> assertions = null;
+    private RoleManager roleManager;
+    private boolean allowTargetUsersWithRootRole = false;
 
     /**
      * Constructs a new proxy authentication handler.
@@ -111,6 +120,11 @@ public class ProxyAuthenticationHandler extends HttpBasicAuthenticationHandler {
             Principal p = new PrincipalImpl(targetUid, Principal.Type.USER);
             if (!targetPrincipalStore.validatePrincipal(p)) 
                 throw new AuthenticationException("Unknown principal: " + targetUid);
+
+            if (!allowTargetUsersWithRootRole && (roleManager.hasRole(p, RoleManager.Role.ROOT)
+                    || roleManager.hasRole(p, RoleManager.Role.READ_EVERYTHING))) {
+                throw new AuthenticationException("Target user has root role, which is not allowed");
+            }
         }
         return new AuthResult(targetUid);
     }
@@ -122,6 +136,19 @@ public class ProxyAuthenticationHandler extends HttpBasicAuthenticationHandler {
     
     public void setTargetPrincipalStore(PrincipalStore targetPrincipalStore) {
         this.targetPrincipalStore = targetPrincipalStore;
+    }
+
+    @Required
+    public void setRoleManager(RoleManager roleManager) {
+        this.roleManager = roleManager;
+    }
+
+    /**
+     * Set whether target users with root roles should be allowed or not.
+     * @param allow
+     */
+    public void setAllowTargetUsersWithRootRole(boolean allow) {
+        this.allowTargetUsersWithRootRole = allow;
     }
     
 }
