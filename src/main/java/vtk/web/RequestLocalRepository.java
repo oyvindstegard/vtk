@@ -55,6 +55,7 @@ import vtk.repository.Repository;
 import vtk.repository.RepositoryAction;
 import vtk.repository.RepositoryException;
 import vtk.repository.Resource;
+import vtk.repository.ResourceId;
 import vtk.repository.ResourceLockedException;
 import vtk.repository.ResourceNotFoundException;
 import vtk.repository.ResourceOverwriteException;
@@ -145,6 +146,12 @@ public class RequestLocalRepository {
                 Revision revision) throws ResourceNotFoundException,
         AuthorizationException, AuthenticationException, IOException {
             return this.repository.retrieve(token, uri, forProcessing, revision);
+        }
+
+        @Override
+        public Resource retrieveById(String token, ResourceId id, boolean forProcessing)
+                throws RepositoryException, AuthenticationException, AuthorizationException, IOException {
+            return this.repository.retrieveById(token, id, forProcessing);
         }
 
         @Override

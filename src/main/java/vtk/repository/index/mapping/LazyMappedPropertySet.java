@@ -44,6 +44,8 @@ import vtk.repository.Path;
 import vtk.repository.Property;
 import vtk.repository.PropertySet;
 import vtk.repository.PropertySetImpl;
+import vtk.repository.Resource;
+import vtk.repository.ResourceId;
 import vtk.repository.resourcetype.PropertyTypeDefinition;
 import vtk.repository.search.PropertySelect;
 
@@ -58,7 +60,7 @@ import vtk.repository.search.PropertySelect;
 public final class LazyMappedPropertySet implements PropertySet {
 
     private Path uri;
-    private int id = -1;
+    private int id = PropertySetImpl.NULL_RESOURCE_ID;
     private String resourceType;
     private List<IndexableField> propFields;
     private List<IndexableField> aclFields;
@@ -117,8 +119,9 @@ public final class LazyMappedPropertySet implements PropertySet {
     }
     
     @Override
-    public int getID() {
-        return this.id;
+    public Optional<ResourceId> getResourceId() {
+        return this.id == PropertySetImpl.NULL_RESOURCE_ID ?
+                Optional.empty() : Optional.of(new ResourceId(this.id));
     }
 
     @Override

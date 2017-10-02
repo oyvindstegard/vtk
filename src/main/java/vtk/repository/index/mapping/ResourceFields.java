@@ -126,7 +126,7 @@ public class ResourceFields extends Fields {
         fields.addAll(makeFields(RESOURCETYPES_FIELD_NAME, propSet.getResourceType(), INDEXED)); // Include leaf type in types field
 
         // ID (system field, stored and indexed, but only as a string type)
-        fields.addAll(makeFields(ID_FIELD_NAME, Integer.toString(propSet.getID()), INDEXED_STORED));
+        fields.addAll(makeFields(ID_FIELD_NAME, Integer.toString(propSet.getNumericId()), INDEXED_STORED));
     }
     
     public String resolveResourceType(String resourceTypePath) {

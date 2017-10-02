@@ -177,6 +177,11 @@ public class Cache implements DataAccessor, InitializingBean {
         }
     }
 
+    @Override
+    public Path getResourcePath(int id) throws DataAccessException {
+        return this.wrappedAccessor.getResourcePath(id);
+    }
+
     /**
      * Loads resource into cache (if it wasn't already there), returns resource.
      * 

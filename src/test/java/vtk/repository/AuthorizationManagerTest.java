@@ -44,6 +44,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 
 import org.json.simple.JSONObject;
@@ -463,7 +464,17 @@ public class AuthorizationManagerTest {
             
             this.tree.put(resource.getURI(), resource);
         }
-        
+
+        @Override
+        public Path getResourcePath(int id) throws DataAccessException {
+            Optional<ResourceImpl> resource = tree.values().stream()
+                    .filter(r -> r.getNumericId() == id).findFirst();
+            if (resource.isPresent()) {
+                return resource.get().getURI();
+            }
+            return null;
+        }
+
         @Override
         public ResourceImpl load(Path uri) throws DataAccessException {
             if (!tree.containsKey(uri)) {

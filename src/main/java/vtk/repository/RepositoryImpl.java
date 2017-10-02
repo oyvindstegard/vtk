@@ -189,6 +189,21 @@ public class RepositoryImpl implements Repository, ApplicationContextAware,
     @Transactional(readOnly=true)
     @OpLog
     @Override
+    public Resource retrieveById(@OpLogParam(name = "token") String token,
+            @OpLogParam(name = "id") ResourceId id, boolean forProcessing)
+            throws RepositoryException, AuthenticationException, AuthorizationException, IOException {
+
+        final Path uri = dao.getResourcePath(id.numericId());
+        if (uri == null) {
+            throw new ResourceNotFoundException(id);
+        }
+        
+        return retrieve(token, uri, forProcessing);
+    }
+
+    @Transactional(readOnly=true)
+    @OpLog
+    @Override
     public Resource retrieve(@OpLogParam(name = "token") String token, 
                              @OpLogParam Path uri, boolean forProcessing) throws ResourceNotFoundException,
             AuthorizationException, AuthenticationException, IOException {
@@ -503,7 +518,7 @@ public class RepositoryImpl implements Repository, ApplicationContextAware,
             content = getContent(newResource);
             newResource.setAcl(parent.getAcl());
             newResource.setInheritedAcl(true);
-            int aclIneritedFrom = parent.isInheritedAcl() ? parent.getAclInheritedFrom() : parent.getID();
+            int aclIneritedFrom = parent.isInheritedAcl() ? parent.getAclInheritedFrom() : parent.getNumericId();
             newResource.setAclInheritedFrom(aclIneritedFrom);
             
             TypeHandlerHooks hooks = typeHandlerHooksRegistry.getTypeHandlerHooksForCreateCollection();
@@ -785,7 +800,7 @@ public class RepositoryImpl implements Repository, ApplicationContextAware,
                     this.dao.storeACL(clone);
                 }
 
-                final String trashID = "trash-" + resourceToDelete.getID();
+                final String trashID = "trash-" + resourceToDelete.getNumericId();
                 this.dao.markDeleted(resourceToDelete, parentCollection, principal, trashID);
                 this.contentStore.moveToTrash(resourceToDelete.getURI(), trashID);
 
@@ -816,7 +831,7 @@ public class RepositoryImpl implements Repository, ApplicationContextAware,
         if (resource == null) {
             throw new ResourceNotFoundException(uri);
         }
-        return this.dao.getRecoverableResources(resource.getID());
+        return this.dao.getRecoverableResources(resource.getNumericId());
     }
 
     @Transactional(readOnly=false)
@@ -1182,7 +1197,7 @@ public class RepositoryImpl implements Repository, ApplicationContextAware,
             ResourceImpl newResource = new ResourceImpl(uri);
             newResource.setAcl(parent.getAcl());
             newResource.setInheritedAcl(true);
-            int aclIneritedFrom = parent.isInheritedAcl() ? parent.getAclInheritedFrom() : parent.getID();
+            int aclIneritedFrom = parent.isInheritedAcl() ? parent.getAclInheritedFrom() : parent.getNumericId();
             newResource.setAclInheritedFrom(aclIneritedFrom);
             
             // Check if contentType has interceptor for storage
@@ -1526,7 +1541,7 @@ public class RepositoryImpl implements Repository, ApplicationContextAware,
 
             Resource original = (Resource) r.clone();
             r.setAcl(parent.getAcl());
-            r.setAclInheritedFrom(parent.getID());
+            r.setAclInheritedFrom(parent.getNumericId());
             r.setInheritedAcl(true);
 
             ResourceImpl newResource = this.dao.storeACL(r);

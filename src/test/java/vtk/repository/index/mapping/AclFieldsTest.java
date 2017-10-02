@@ -67,7 +67,7 @@ public class AclFieldsTest {
         
         ps = new PropertySetImpl();
         ps.setAclInheritedFrom(1000);
-        ps.setID(1001);
+        ps.setNumericId(1001);
         ps.setUri(Path.fromString("/vrtx"));
         ps.setResourceType("collection");
     }

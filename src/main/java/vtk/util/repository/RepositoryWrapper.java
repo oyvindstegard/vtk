@@ -50,6 +50,7 @@ import vtk.repository.Repository;
 import vtk.repository.RepositoryAction;
 import vtk.repository.RepositoryException;
 import vtk.repository.Resource;
+import vtk.repository.ResourceId;
 import vtk.repository.ResourceLockedException;
 import vtk.repository.ResourceNotFoundException;
 import vtk.repository.ResourceOverwriteException;
@@ -90,6 +91,12 @@ public class RepositoryWrapper implements Repository {
             throws AuthorizationException, IOException {
         repository.setReadOnly(token, readOnly);
         
+    }
+
+    @Override
+    public Resource retrieveById(String token, ResourceId id, boolean forProcessing)
+            throws RepositoryException, AuthenticationException, AuthorizationException, IOException {
+        return repository.retrieveById(token, id, forProcessing);
     }
 
     @Override

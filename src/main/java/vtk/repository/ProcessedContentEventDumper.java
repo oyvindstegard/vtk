@@ -33,6 +33,7 @@ package vtk.repository;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 
 import org.springframework.beans.factory.annotation.Required;
@@ -63,14 +64,14 @@ public class ProcessedContentEventDumper extends AbstractDBEventDumper {
 
     @Override
     public void created(Resource resource, Principal principal) {
-        List<ChangeLogEntry> entries = changeLogEntries(resource.getURI(), Operation.CREATED, -1, resource.isCollection(), new Date());
+        List<ChangeLogEntry> entries = changeLogEntries(resource.getURI(), Operation.CREATED, Optional.empty(), resource.isCollection(), new Date());
         
         changeLogDAO.addChangeLogEntries(entries, DescendantsSpec.SUBTREE);
     }
 
     @Override
     public void deleted(Resource resource, Principal principal) {
-        List<ChangeLogEntry> entries = changeLogEntries(resource.getURI(), Operation.DELETED, resource.getID(), resource.isCollection(), new Date());
+        List<ChangeLogEntry> entries = changeLogEntries(resource.getURI(), Operation.DELETED, resource.getResourceId(), resource.isCollection(), new Date());
         
         changeLogDAO.addChangeLogEntries(entries, DescendantsSpec.NONE);
     }
@@ -89,7 +90,7 @@ public class ProcessedContentEventDumper extends AbstractDBEventDumper {
 
     @Override
     public void modified(Resource resource, Resource originalResource, Principal principal) {
-        List<ChangeLogEntry> entries = changeLogEntries(resource.getURI(), Operation.MODIFIED_PROPS, -1, resource.isCollection(), new Date());
+        List<ChangeLogEntry> entries = changeLogEntries(resource.getURI(), Operation.MODIFIED_PROPS, Optional.empty(), resource.isCollection(), new Date());
         
         changeLogDAO.addChangeLogEntries(entries, DescendantsSpec.NONE);
     }
@@ -97,7 +98,7 @@ public class ProcessedContentEventDumper extends AbstractDBEventDumper {
 
     @Override
     public void contentModified(Resource resource, Resource original, Principal principal) {
-        List<ChangeLogEntry> entries = changeLogEntries(resource.getURI(), Operation.MODIFIED_CONTENT, -1, resource.isCollection(), new Date());
+        List<ChangeLogEntry> entries = changeLogEntries(resource.getURI(), Operation.MODIFIED_CONTENT, Optional.empty(), resource.isCollection(), new Date());
         
         changeLogDAO.addChangeLogEntries(entries, DescendantsSpec.NONE);
     }
@@ -147,7 +148,7 @@ public class ProcessedContentEventDumper extends AbstractDBEventDumper {
             Operation op = acl.hasPrivilege(Privilege.READ_PROCESSED, all) ?
                     Operation.ACL_READ_ALL_YES : Operation.ACL_READ_ALL_NO;
 
-            List<ChangeLogEntry> entries = changeLogEntries(resource.getURI(), op, -1, resource.isCollection(), new Date());
+            List<ChangeLogEntry> entries = changeLogEntries(resource.getURI(), op, Optional.empty(), resource.isCollection(), new Date());
             
             changeLogDAO.addChangeLogEntries(entries, DescendantsSpec.NONE);
             
@@ -156,7 +157,7 @@ public class ProcessedContentEventDumper extends AbstractDBEventDumper {
                 Resource[] childResources =
                     this.dataAccessor.loadChildren(this.dataAccessor.load(resource.getURI()));
                 for (int i=0; i < childResources.length; i++) {
-                    entries = changeLogEntries(childResources[i].getURI(), op, -1, childResources[i].isCollection(), new Date());
+                    entries = changeLogEntries(childResources[i].getURI(), op, Optional.empty(), childResources[i].isCollection(), new Date());
                     
                     changeLogDAO.addChangeLogEntries(entries, DescendantsSpec.NONE);
                 }

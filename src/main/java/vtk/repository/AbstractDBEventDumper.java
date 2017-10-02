@@ -35,6 +35,7 @@ import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Required;
 import vtk.repository.ChangeLogEntry.Operation;
@@ -74,13 +75,13 @@ public abstract class AbstractDBEventDumper extends AbstractRepositoryEventDumpe
      * 
      * @param uri the URI of the modified resource
      * @param operation the operation performed on the resource
-     * @param resourceId the resource id or <code>-1</code> if not known
+     * @param resourceId the optional resource id
      * @param collection whether the resource is or was a collection
      * @param timestamp the timestamp of the changelog events
      * @return list of changelog entries for each configured logger id, where
      * each entry in list will be identical except for the logger id
      */
-    protected List<ChangeLogEntry> changeLogEntries(Path uri, Operation operation, int resourceId,
+    protected List<ChangeLogEntry> changeLogEntries(Path uri, Operation operation, Optional<ResourceId> resourceId,
             boolean collection, Date timestamp) {
         
         List<ChangeLogEntry> entries = new ArrayList<>(loggerIds.size());
@@ -90,7 +91,11 @@ public abstract class AbstractDBEventDumper extends AbstractRepositoryEventDumpe
             entry.setLoggerType(loggerType);
             entry.setUri(uri);
             entry.setOperation(operation);
-            entry.setResourceId(resourceId);
+            if (resourceId.isPresent()) {
+                entry.setResourceId(resourceId.get().numericId());
+            } else {
+                entry.setResourceId(PropertySetImpl.NULL_RESOURCE_ID);
+            }
             entry.setCollection(collection);
             entry.setTimestamp(timestamp);
             entries.add(entry);

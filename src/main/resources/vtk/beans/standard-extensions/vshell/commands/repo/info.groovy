@@ -29,7 +29,7 @@ class RepoInfoCommand implements VCommand {
 
         def r = revision ? repo.retrieve(token, uri, true, revision) :
             repo.retrieve(token, uri, true)
-        out.println("id: ${r.ID}")
+        out.println("id: ${r.resourceId}")
         out.println("type: ${r.resourceType}")
 
         out.println()
