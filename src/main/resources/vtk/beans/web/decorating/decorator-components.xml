@@ -148,8 +148,13 @@
     <property name="alternativeLoginServices">
       <map>
         <entry key="admin" value-ref="manageService" />
+        
+        <entry key="ajaxeditor.service" value-ref="ajaxeditor.service" />
+        <entry key="structuredResources.editService" value-ref="structuredResources.editService" />
+        <entry key="editor.service" value-ref="editor.service" />
       </map>
     </property>
+    <property name="ajaxEditorExistsAssertion" ref="ajaxeditor.editorExistsAssertion" />
     <property name="logoutService" ref="logoutService" />
   </bean>
 
