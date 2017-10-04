@@ -731,7 +731,7 @@ public interface Repository {
      *            <code>infinity</code>
      *
      * @param requestedTimoutSeconds
-     *            the timeout period wanted (in seconds)
+     *            the timeout period wanted (in seconds), or value &lt;= 0 to get the default repository lock timeout
      *
      * @param lockToken
      *            if <code>null</code>, an attempt is made to lock the resource, otherwise
