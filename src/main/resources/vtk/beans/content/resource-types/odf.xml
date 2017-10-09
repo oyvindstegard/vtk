@@ -54,10 +54,13 @@
 	<property name="parentTypeDefinition" ref="odfResourceTypeDefinition" />
   </bean>
 
+  <bean id="odf.Pattern.contentTypeOdf" class="java.util.regex.Pattern" factory-method="compile">
+    <constructor-arg value="application/vnd\.oasis\.opendocument\.(text|presentation|spreadsheet|graphics|database)" />
+  </bean>
+
   <bean id="contentTypeMatchesOdf" 
         class="vtk.repository.resourcetype.ResourceContentTypeRegexpAssertion">
-    <constructor-arg name="pattern" 
-                     value="application/vnd\.oasis\.opendocument\.(text|presentation|spreadsheet|graphics|database)" />
+    <constructor-arg name="pattern" ref="odf.Pattern.contentTypeOdf" />
   </bean>
 
   <bean id="contentTypeMatchesOdfText"
