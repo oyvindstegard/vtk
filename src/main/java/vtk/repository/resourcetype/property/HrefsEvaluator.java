@@ -146,27 +146,26 @@ public class HrefsEvaluator implements LatePropertyEvaluator {
 
             if (evaluateContent && ctx.getContent() != null) {
                 if ("application/json".equals(resource.getContentType())) {
+                    // if structured resource, find links in JSON or HTML fields 
+                    // that are not evaluated as properties by the regular mechanism:
                     StructuredResourceDescription desc = 
                             resourceManager.get(resource.getResourceType());
                     if (desc != null) {
-
                         StructuredResource res = 
                                 desc.buildResource(ctx.getContent().getContentInputStream());
 
                         for (PropertyDescription pdesc : desc.getAllPropertyDescriptions()) {
-                            if (pdesc.isNoExtract()) {
-                                Object p = res.getProperty(pdesc.getName());
-                                if (p == null) {
-                                    continue;
-                                }
-                                if ("json".equals(pdesc.getType())) {
-                                    JSONPropertyDescription jsonDesc = (JSONPropertyDescription) pdesc;
-                                    extractFromJson(p, jsonDesc, collector);
-                                }
-                                else {
-                                    InputStream is = new ByteArrayInputStream(p.toString().getBytes());
-                                    extractFromHtml(is, collector, LinkSource.CONTENT);
-                                }
+                            Object p = res.getProperty(pdesc.getName());
+                            if (p == null) {
+                                continue;
+                            }
+                            if ("json".equals(pdesc.getType())) {
+                                JSONPropertyDescription jsonDesc = (JSONPropertyDescription) pdesc;
+                                extractFromJson(p, jsonDesc, collector);
+                            }
+                            else {
+                                InputStream is = new ByteArrayInputStream(p.toString().getBytes());
+                                extractFromHtml(is, collector, LinkSource.CONTENT);
                             }
                         }
                     }
@@ -411,7 +410,7 @@ public class HrefsEvaluator implements LatePropertyEvaluator {
             this.linkSource = source;
         }
         
-        private static final Set<String> ELEMS = new HashSet<String>(Arrays.asList(new String[]{
+        private static final Set<String> ELEMS = new HashSet<>(Arrays.asList(new String[]{
                 "a", "img", "script", "link", "frame", "iframe"
         }));
         
@@ -492,14 +491,11 @@ public class HrefsEvaluator implements LatePropertyEvaluator {
             Object o = map.get(field.getName());
             if (o == null) continue;
             
-            switch (field.getType()) {
-            
-            case "resource_ref":
-            case "image_ref":
+            if (field.isRefType()) {
                 Link link = new Link(o.toString(), LinkType.PROPERTY, LinkSource.CONTENT);
                 collector.link(link);
-                break;
-            default:
+            }
+            else {
                 InputStream is = new ByteArrayInputStream(o.toString().getBytes());
                 extractFromHtml(is, collector, LinkSource.CONTENT);
             }
