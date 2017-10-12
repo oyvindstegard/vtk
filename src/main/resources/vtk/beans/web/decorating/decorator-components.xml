@@ -145,17 +145,16 @@
     abstract="true">
     <property name="namespace" ref="decorating.includeNamespace" />
     <property name="view" ref="decorating.loginManageComponent.view" />
-    <property name="alternativeLoginServices">
-      <map>
-        <entry key="admin" value-ref="manageService" />
-        
-        <entry key="ajaxeditor.service" value-ref="ajaxeditor.service" />
-        <entry key="structuredResources.editService" value-ref="structuredResources.editService" />
-        <entry key="editor.service" value-ref="editor.service" />
-      </map>
-    </property>
-    <property name="ajaxEditorExistsAssertion" ref="ajaxeditor.editorExistsAssertion" />
     <property name="logoutService" ref="logoutService" />
+    <property name="manageService" ref="manageService" />
+    <property name="editServices">
+      <list>
+        <ref bean="structuredResources.editService" />
+        <ref bean="editor.service" />
+      </list>
+    </property>
+    <property name="ajaxEditorService" ref="ajaxeditor.service" />
+    <property name="ajaxEditorExistsAssertion" ref="ajaxeditor.editorExistsAssertion" />
   </bean>
 
   <bean id="decorating.loginManageComponent" parent="abstractLoginManageComponent">

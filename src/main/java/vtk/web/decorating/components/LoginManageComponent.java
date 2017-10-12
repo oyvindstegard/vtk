@@ -54,11 +54,15 @@ public class LoginManageComponent extends ViewRenderingDecoratorComponent {
 
     private static final String DESCRIPTION = "Displays an authentication and manage component";
 
-    private Map<String, Service> alternativeLoginServices;
     private Service logoutService;
+    private Service manageService;
+    private List<Service> editServices;
+    
+    private Service ajaxEditorService;
+    private WebAssertion ajaxEditorExistsAssertion;
+    
     private boolean displayOnlyIfAuth = false;
     private boolean displayAuthUser = false;
-    private WebAssertion ajaxEditorExistsAssertion;
 
     @Override
     protected void processModel(Map<String, Object> model, DecoratorRequest request, DecoratorResponse response)
@@ -115,11 +119,10 @@ public class LoginManageComponent extends ViewRenderingDecoratorComponent {
     }
 
     private void putAdminURL(Map<String, URL> options, Resource resource, DecoratorRequest request) throws Exception {
-        Service adminService = this.alternativeLoginServices.get("admin");
-        if (adminService != null) {
-            URL adminURL = adminService.urlConstructor(URL.create(request.getServletRequest()))
-                    .withURI(resource.getURI())
-                    .constructURL();
+        if (this.manageService != null) {
+            URL adminURL = manageService.urlConstructor(URL.create(request.getServletRequest()))
+                                         .withURI(resource.getURI())
+                                        .constructURL();
             if (resource.isCollection()) {
                 options.put("admin-collection", adminURL);
             }
@@ -131,17 +134,14 @@ public class LoginManageComponent extends ViewRenderingDecoratorComponent {
 
     private void putEditURL(Map<String, URL> options, Resource resource, DecoratorRequest request, Principal principal, Repository repository) throws Exception {
         URL editURL = null;
-        Service editService = null;
         
         if(ajaxEditorExistsAssertion.matches(request.getServletRequest(), resource, principal)) { // Need to check this here also, as not checked in Service.constructURL for some reason
-            editService = this.alternativeLoginServices.get("ajaxeditor.service");
-            if (editService != null) editURL = editContructURL(editURL, editService, resource, request, principal);
+            if (this.ajaxEditorService != null) editURL = editContructURL(editURL, this.ajaxEditorService, resource, request, principal);
         } else {
-            editService = this.alternativeLoginServices.get("structuredResources.editService");
-            if (editService != null) editURL = editContructURL(editURL, editService, resource, request, principal);
-            
-            editService = this.alternativeLoginServices.get("editor.service");
-            if (editService != null) editURL = editContructURL(editURL, editService, resource, request, principal);
+            for(Service service : this.editServices) {
+                editURL = editContructURL(editURL, service, resource, request, principal);
+                if(editURL != null) break;
+            }
         }
         
         if(editURL != null) {
@@ -170,12 +170,14 @@ public class LoginManageComponent extends ViewRenderingDecoratorComponent {
         return editURL;
     }
 
-    public void setAlternativeLoginServices(Map<String, Service> alternativeLoginServices) {
-        this.alternativeLoginServices = alternativeLoginServices;
+    @Required
+    public void setManageService(Service manageService) {
+        this.manageService = manageService;
     }
 
-    public Map<String, Service> getAlternativeLoginServices() {
-        return alternativeLoginServices;
+    @Required
+    public void setEditServices(List<Service> editServices) {
+        this.editServices = editServices;
     }
 
     @Required
@@ -184,6 +186,16 @@ public class LoginManageComponent extends ViewRenderingDecoratorComponent {
             throw new IllegalArgumentException("Argument cannot be null");
         }
         this.logoutService = logoutService;
+    }
+
+    @Required
+    public void setAjaxEditorExistsAssertion(WebAssertion ajaxEditorExistsAssertion) {
+        this.ajaxEditorExistsAssertion = ajaxEditorExistsAssertion;
+    }
+
+    @Required
+    public void setAjaxEditorService(Service ajaxEditorService) {
+        this.ajaxEditorService = ajaxEditorService;
     }
 
     @Override
@@ -203,10 +215,6 @@ public class LoginManageComponent extends ViewRenderingDecoratorComponent {
 
     public void setDisplayAuthUser(boolean displayAuthUser) {
         this.displayAuthUser = displayAuthUser;
-    }
-
-    public void setAjaxEditorExistsAssertion(WebAssertion ajaxEditorExistsAssertion) {
-        this.ajaxEditorExistsAssertion = ajaxEditorExistsAssertion;
     }
 
 }
