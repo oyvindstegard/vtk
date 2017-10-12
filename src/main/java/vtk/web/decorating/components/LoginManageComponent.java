@@ -108,9 +108,9 @@ public class LoginManageComponent extends ViewRenderingDecoratorComponent {
     
     private void putLogoutURL(Map<String, URL> options, Resource resource, Principal principal, RequestContext requestContext) throws Exception {
         URL logoutURL = logoutService.urlConstructor(requestContext.getRequestURL())
-                .withResource(resource)
-                .withPrincipal(principal)
-                .constructURL();
+                                     .withResource(resource)
+                                     .withPrincipal(principal)
+                                     .constructURL();
         options.put("logout", logoutURL);
     }
 
@@ -160,10 +160,10 @@ public class LoginManageComponent extends ViewRenderingDecoratorComponent {
         if(editURL == null) {
             try {
                 editURL = editService.urlConstructor(URL.create(request.getServletRequest()))
-                              .withURI(resource.getURI())
-                              .withResource(resource)
-                              .withPrincipal(principal)
-                              .constructURL();
+                                     .withURI(resource.getURI())
+                                     .withResource(resource)
+                                     .withPrincipal(principal)
+                                     .constructURL();
             } catch (Exception e) {
                 // URL not created because of assertions
             }
