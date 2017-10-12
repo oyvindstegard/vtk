@@ -160,7 +160,6 @@ public class LoginManageComponent extends ViewRenderingDecoratorComponent {
         if(editURL == null) {
             try {
                 editURL = editService.urlConstructor(URL.create(request.getServletRequest()))
-                                     .withURI(resource.getURI())
                                      .withResource(resource)
                                      .withPrincipal(principal)
                                      .constructURL();
