@@ -32,6 +32,7 @@ package vtk.web.service;
 
 import java.io.Serializable;
 import java.io.UnsupportedEncodingException;
+import java.net.URI;
 import java.net.URLDecoder;
 import java.net.URLEncoder;
 import java.util.ArrayList;
@@ -491,6 +492,16 @@ public class URL implements Serializable {
         url.append(this.protocol).append(":");
         url.append(protocolRelativeURL());
         return url.toString();
+    }
+
+    /**
+     * Bridge to JDK java.net.URI class.
+     *
+     * <p>This method is convenience for calling {@code java.net.URI.create(url.toString())}, where {@code url} is this URL instance.
+     * @return a java.net.URI instance corresponding to this URL
+     */
+    public java.net.URI toURI() {
+        return URI.create(toString());
     }
 
     @Override
