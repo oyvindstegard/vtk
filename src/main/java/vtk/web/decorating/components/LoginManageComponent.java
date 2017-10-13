@@ -171,6 +171,14 @@ public class LoginManageComponent extends ViewRenderingDecoratorComponent {
     }
 
     @Required
+    public void setLogoutService(Service logoutService) {
+        if (logoutService == null) {
+            throw new IllegalArgumentException("Argument cannot be null");
+        }
+        this.logoutService = logoutService;
+    }
+
+    @Required
     public void setManageService(Service manageService) {
         this.manageService = manageService;
     }
@@ -181,21 +189,13 @@ public class LoginManageComponent extends ViewRenderingDecoratorComponent {
     }
 
     @Required
-    public void setLogoutService(Service logoutService) {
-        if (logoutService == null) {
-            throw new IllegalArgumentException("Argument cannot be null");
-        }
-        this.logoutService = logoutService;
+    public void setAjaxEditorService(Service ajaxEditorService) {
+        this.ajaxEditorService = ajaxEditorService;
     }
 
     @Required
     public void setAjaxEditorExistsAssertion(WebAssertion ajaxEditorExistsAssertion) {
         this.ajaxEditorExistsAssertion = ajaxEditorExistsAssertion;
-    }
-
-    @Required
-    public void setAjaxEditorService(Service ajaxEditorService) {
-        this.ajaxEditorService = ajaxEditorService;
     }
 
     @Override
