@@ -318,7 +318,7 @@ VrtxEditor.prototype.richtextEditorFacade = {
     config.disableObjectResizing = true;
     config.disableNativeSpellChecker = false;
     config.pasteFromWordRemoveFontStyles = true;
-    
+
     config.allowedContent = true;
 
     /* Enable ACF - with all elements
@@ -1288,7 +1288,7 @@ VrtxEditor.prototype.initEnhancements = function initEnhancements() {
 
   // Show / hide mappings for selects
   vrtxEdit.setShowHideSelectNewEditor();
-    
+
   // Documenttype domains
   if (vrtxEdit.editorForm.hasClass("vrtx-hvordan-soke")) {
     vrtxEdit.accordionGroupedInit();
@@ -1312,6 +1312,7 @@ VrtxEditor.prototype.initEnhancements = function initEnhancements() {
     vrtxEdit.accordionGroupedInit(".vrtx-sea-accordion", "fast");
   } else if (vrtxEdit.editorForm.hasClass("vrtx-structured-project")) {
     setShowHideBooleanNewEditor("getExternalScientificInformation", "div.projectNr, div.numberOfPublications", false);
+    setShowHideBooleanNewEditor("getExternalScientificInformation", "div.nfrProjectNr", true);
   } else if (vrtxEdit.editorForm.hasClass("vrtx-contact-supervisor")) {
     vrtxAdm.cachedDoc.on("keyup", ".vrtx-string.id input[type='text']", $.debounce(50, true, function () {
       vrtxAdm.inputUpdateEngine.update({
