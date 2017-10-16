@@ -32,9 +32,12 @@ package vtk.repository;
 
 import java.util.*;
 
+import org.junit.After;
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.runners.Enclosed;
 import org.junit.runner.RunWith;
+import vtk.security.InvalidPrincipalException;
 import vtk.security.Principal;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -375,10 +378,177 @@ public class PermissionsIntegrationTest extends RepositoryFixture {
             }
         }
 
-        @Test
-        public void name() throws Exception {
+    }
 
+    public static class Blacklist {
+        private String rootToken;
+        private Path webidResourcePath;
+        private Resource webidResource;
+
+        @Before
+        public void setUp() throws Exception {
+            this.rootToken = newUserToken("root@localhost");
+            this.webidResourcePath = Path.fromString(
+                    "/permissions/alle-webid/tilgang-for-webidebrukeren-systemtest.html"
+            );
+
+            this.webidResource = repository.lock(
+                    rootToken,
+                    webidResourcePath,
+                    "permission-test",
+                    Repository.Depth.ZERO,
+                    5,
+                    null,
+                    Lock.Type.EXCLUSIVE
+            );
+        }
+
+        @After
+        public void tearDown() throws Exception {
+            repository.unlock(
+                    rootToken,
+                    webidResourcePath,
+                    webidResource.getLock().getLockToken()
+            );
+        }
+
+        @Test
+        public void users_not_allowed_to_have_admin_rights() throws Exception {
+            final Principal pseudoAll = principalFactory.getPrincipal(
+                    "pseudo:all", Principal.Type.PSEUDO
+            );
+            assertPrincipalIsNotAllowedToHavePrivilege(pseudoAll, Privilege.ALL);
+
+            final Principal webidUser = principalFactory.getPrincipal(
+                    "user@webid.uio.no", Principal.Type.USER
+            );
+            assertPrincipalIsNotAllowedToHavePrivilege(webidUser, Privilege.ALL);
+
+            final Principal webidAdminGroup = principalFactory.getPrincipal(
+                    "admin@webid.uio.no", Principal.Type.GROUP
+            );
+            assertPrincipalIsNotAllowedToHavePrivilege(webidAdminGroup, Privilege.ALL);
+        }
+
+        @Test
+        public void users_not_allowed_to_have_read_write_rights() throws Exception {
+            final Principal pseudoAll = principalFactory.getPrincipal(
+                    "pseudo:all", Principal.Type.PSEUDO
+            );
+            assertPrincipalIsNotAllowedToHavePrivilege(pseudoAll, Privilege.READ_WRITE);
+
+            final Principal webidUser = principalFactory.getPrincipal(
+                    "user@webid.uio.no", Principal.Type.USER
+            );
+            assertPrincipalIsNotAllowedToHavePrivilege(webidUser, Privilege.READ_WRITE);
+
+            final Principal webidAllGroup = principalFactory.getPrincipal(
+                    "alle@webid.uio.no", Principal.Type.GROUP
+            );
+            assertPrincipalIsNotAllowedToHavePrivilege(webidAllGroup, Privilege.READ_WRITE);
+
+            final Principal webidAdminGroup = principalFactory.getPrincipal(
+                    "admin@webid.uio.no", Principal.Type.GROUP
+            );
+            assertPrincipalIsAllowedToHavePrivilege(webidAdminGroup, Privilege.READ_WRITE);
+        }
+
+        @Test
+        public void users_not_allowed_to_have_read_rights() throws Exception {
+            final Principal pseudoAll = principalFactory.getPrincipal(
+                    "pseudo:all", Principal.Type.PSEUDO
+            );
+            assertPrincipalIsAllowedToHavePrivilege(pseudoAll, Privilege.READ);
+
+            final Principal webidUser = principalFactory.getPrincipal(
+                    "user@webid.uio.no", Principal.Type.USER
+            );
+            assertPrincipalIsNotAllowedToHavePrivilege(webidUser, Privilege.READ);
+
+            final Principal webidAllGroup = principalFactory.getPrincipal(
+                    "alle@webid.uio.no", Principal.Type.GROUP
+            );
+            assertPrincipalIsNotAllowedToHavePrivilege(webidAllGroup, Privilege.READ);
+
+            final Principal webidAdminGroup = principalFactory.getPrincipal(
+                    "admin@webid.uio.no", Principal.Type.GROUP
+            );
+            assertPrincipalIsAllowedToHavePrivilege(webidAdminGroup, Privilege.READ);
+        }
+
+        @Test
+        public void users_not_allowed_to_have_comment_rights() throws Exception {
+            final Principal pseudoAll = principalFactory.getPrincipal(
+                    "pseudo:all", Principal.Type.PSEUDO
+            );
+            assertPrincipalIsNotAllowedToHavePrivilege(pseudoAll, Privilege.ADD_COMMENT);
+
+            final Principal webidUser = principalFactory.getPrincipal(
+                    "user@webid.uio.no", Principal.Type.USER
+            );
+            assertPrincipalIsNotAllowedToHavePrivilege(webidUser, Privilege.ADD_COMMENT);
+
+            final Principal webidAllGroup = principalFactory.getPrincipal(
+                    "alle@webid.uio.no", Principal.Type.GROUP
+            );
+            assertPrincipalIsAllowedToHavePrivilege(webidAllGroup, Privilege.ADD_COMMENT);
+        }
+
+        @Test
+        public void users_not_allowed_to_have_read_processed_rights() throws Exception {
+            final Principal pseudoAll = principalFactory.getPrincipal(
+                    "pseudo:all", Principal.Type.PSEUDO
+            );
+            assertPrincipalIsAllowedToHavePrivilege(pseudoAll, Privilege.READ_PROCESSED);
+
+            final Principal webidUser = principalFactory.getPrincipal(
+                    "user@webid.uio.no", Principal.Type.USER
+            );
+            assertPrincipalIsNotAllowedToHavePrivilege(webidUser, Privilege.READ_PROCESSED);
+
+            final Principal webidAllGroup = principalFactory.getPrincipal(
+                    "alle@webid.uio.no", Principal.Type.GROUP
+            );
+            assertPrincipalIsNotAllowedToHavePrivilege(webidAllGroup, Privilege.READ_PROCESSED);
+
+            final Principal webidAdminGroup = principalFactory.getPrincipal(
+                    "admin@webid.uio.no", Principal.Type.GROUP
+            );
+            assertPrincipalIsAllowedToHavePrivilege(webidAdminGroup, Privilege.READ_PROCESSED);
+        }
+
+        private void assertPrincipalIsNotAllowedToHavePrivilege(
+                Principal principal, Privilege privilege
+        ) {
+            if (Principal.Type.PSEUDO.equals(principal.getType())) {
+                assertThatThrownBy(
+                        () -> webidResource.getAcl().addEntry(privilege, principal)
+                ).isInstanceOf(IllegalArgumentException.class);
+                return;
+            }
+            final Acl acl = webidResource.getAcl().addEntry(privilege, principal);
+            assertThatThrownBy(
+                    () -> repository.storeACL(
+                            rootToken,
+                            webidResource.getLock().getLockToken(),
+                            webidResourcePath,
+                            acl
+                    )
+            ).isInstanceOf(InvalidPrincipalException.class);
+        }
+
+        private void assertPrincipalIsAllowedToHavePrivilege(
+                Principal principal, Privilege privilege
+        ) throws Exception {
+            final Acl acl = webidResource.getAcl().addEntry(privilege, principal);
+            repository.storeACL(
+                    rootToken,
+                    webidResource.getLock().getLockToken(),
+                    webidResourcePath,
+                    acl
+            );
         }
 
     }
+
 }
