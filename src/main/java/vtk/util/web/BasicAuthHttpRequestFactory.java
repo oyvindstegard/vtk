@@ -47,9 +47,10 @@ import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
 
 /**
  * Extends {@link HttpComponentsClientHttpRequestFactory} and provides
- * basic authentication for created HTTP requests.
+ * preemptive basic authentication for created HTTP requests.
  */
 public class BasicAuthHttpRequestFactory extends HttpComponentsClientHttpRequestFactory {
+
     private String username = null;
     private String password = null;
 
@@ -84,4 +85,5 @@ public class BasicAuthHttpRequestFactory extends HttpComponentsClientHttpRequest
 
         return localContext;
     }
+    
 }
