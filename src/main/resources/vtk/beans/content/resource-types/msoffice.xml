@@ -71,11 +71,11 @@
   </bean>
   
   <bean id="msoffice.Pattern.contentTypeXls" class="java.util.regex.Pattern" factory-method="compile">
-    <constructor-arg name="pattern" value="application/(ms-excel|x-msexcel|vnd\.(ms-excel(|\.(sheet(|\.binary)|template|addin)\.macroEnabled\.12)|openxmlformats-officedocument\.spreadsheetml\.(sheet|template)))" />
+    <constructor-arg value="application/(ms-excel|x-msexcel|vnd\.(ms-excel(|\.(sheet(|\.binary)|template|addin)\.macroEnabled\.12)|openxmlformats-officedocument\.spreadsheetml\.(sheet|template)))" />
   </bean>
 
   <bean id="msoffice.Pattern.contentTypePpt" class="java.util.regex.Pattern" factory-method="compile">
-    <constructor-arg name="pattern" value="application/(ms-ppt|vnd\.(ms-powerpoint(|\.(addin|presentation|template|slideshow)\.macroEnabled\.12)|openxmlformats-officedocument\.presentationml\.(presentation|template|slideshow)))" />
+    <constructor-arg value="application/(ms-ppt|vnd\.(ms-powerpoint(|\.(addin|presentation|template|slideshow)\.macroEnabled\.12)|openxmlformats-officedocument\.presentationml\.(presentation|template|slideshow)))" />
   </bean>
 
   <bean id="contentTypeMatchesOoXml" class="vtk.repository.resourcetype.ResourceContentTypeRegexpAssertion">
