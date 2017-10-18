@@ -42,7 +42,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Optional;
-import java.util.function.BiFunction;
+import java.util.function.Function;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -52,8 +52,8 @@ import org.springframework.web.servlet.ModelAndView;
 import org.springframework.web.servlet.View;
 import org.springframework.web.servlet.mvc.Controller;
 import org.springframework.web.servlet.support.RequestContextUtils;
-import vtk.repository.Lock;
 
+import vtk.repository.Lock;
 import vtk.repository.Path;
 import vtk.repository.Repository;
 import vtk.repository.Resource;
@@ -80,26 +80,33 @@ public class AjaxEditorController implements Controller {
     private final String appResourceURL;
     private final String appPath;
     private final String staticResourcesURL;
+    private final Repository repository;
+    private final String templateLoaderSecurityToken;
 
     public AjaxEditorController(View editView,
             StaticResourceResolver staticResourceResolver,
             String appResourceURL, String appPath,
-            String staticResourcesURL) {
+            String staticResourcesURL,
+            Repository repository,
+            String templateLoaderSecurityToken) {
         this.editView = editView;
         this.staticResourceResolver = staticResourceResolver;
         this.appResourceURL = appResourceURL;
         this.appPath = appPath;
         this.staticResourcesURL = staticResourcesURL;
+        this.repository = repository;
+        this.templateLoaderSecurityToken = templateLoaderSecurityToken;
     }
     
-    public WebAssertion editAssertion() {        
-        return new EditorExistsAssertion((request, type) -> templateExists(type, "editor.tl", request));
+    public WebAssertion editAssertion() {
+        return new EditorExistsAssertion(type -> 
+        templateExists(repository, templateLoaderSecurityToken, type, "editor.tl"));
     }
     
     private static class EditorExistsAssertion implements WebAssertion {
-        private BiFunction<HttpServletRequest, String, Boolean> existsFunction;
+        private Function<String, Boolean> existsFunction;
         
-        public EditorExistsAssertion(BiFunction<HttpServletRequest, String, Boolean> existsFunction) {
+        public EditorExistsAssertion(Function<String, Boolean> existsFunction) {
             this.existsFunction = existsFunction;
         }
     
@@ -108,12 +115,15 @@ public class AjaxEditorController implements Controller {
                 Principal principal) {
             if (resource == null) return false;
             String type = resource.getResourceType();
-            return existsFunction.apply(request, type);
+            return existsFunction.apply(type);
         }
 
         @Override
         public Optional<URL> processURL(URL url, Resource resource,
                 Principal principal) {
+            if (!existsFunction.apply(resource.getResourceType())) {
+                return Optional.empty();
+            }
             return Optional.of(url);
         }
 
@@ -192,14 +202,14 @@ public class AjaxEditorController implements Controller {
     }
     
     
-    private boolean templateExists(String type, String filename, HttpServletRequest request) {
-        RequestContext rc = RequestContext.getRequestContext(request);
+    private boolean templateExists(Repository repository, String securityToken, 
+            String type, String filename) {
         Path repositoryPath = Path.fromString(this.appPath + "/" + type + "/" + filename);
         org.springframework.core.io.Resource systemPath = this.staticResourceResolver.resolve(
                 Path.fromString(this.staticResourcesURL + "/" + type + "/" + filename));
 
         try {
-            if (rc.getRepository().exists(rc.getSecurityToken(), repositoryPath)) {
+            if (repository.exists(securityToken, repositoryPath)) {
                 return true;
             }
             else if (systemPath != null && systemPath.exists()) {

@@ -149,12 +149,11 @@
     <property name="manageService" ref="manageService" />
     <property name="editServices">
       <list>
+        <ref bean="ajaxeditor.service" />
         <ref bean="structuredResources.editService" />
         <ref bean="editor.service" />
       </list>
     </property>
-    <property name="ajaxEditorService" ref="ajaxeditor.service" />
-    <property name="ajaxEditorExistsAssertion" ref="ajaxeditor.editorExistsAssertion" />
   </bean>
 
   <bean id="decorating.loginManageComponent" parent="abstractLoginManageComponent">

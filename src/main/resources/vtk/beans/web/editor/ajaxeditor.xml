@@ -40,6 +40,8 @@
     <constructor-arg value="${doctypes.appResourceURL}" />
     <constructor-arg value="${doctypes.appPath}" />
     <constructor-arg value="${doctypes.staticResourceURL}" />
+    <constructor-arg ref="repository" />
+    <constructor-arg ref="trustedToken" />
   </bean>
 
   <bean id="ajaxeditor.editView" parent="freemarkerView">

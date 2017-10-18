@@ -48,7 +48,6 @@ import vtk.web.decorating.DecoratorResponse;
 import vtk.web.display.listing.ListingPager;
 import vtk.web.service.Service;
 import vtk.web.service.URL;
-import vtk.web.service.WebAssertion;
 
 public class LoginManageComponent extends ViewRenderingDecoratorComponent {
 
@@ -57,9 +56,6 @@ public class LoginManageComponent extends ViewRenderingDecoratorComponent {
     private Service logoutService;
     private Service manageService;
     private List<Service> editServices;
-    
-    private Service ajaxEditorService;
-    private WebAssertion ajaxEditorExistsAssertion;
     
     private boolean displayOnlyIfAuth = false;
     private boolean displayAuthUser = false;
@@ -89,7 +85,8 @@ public class LoginManageComponent extends ViewRenderingDecoratorComponent {
             if (principal == null && !displayOnlyIfAuth) { // Not logged in - Unauthenticated
                 this.putLoginURL(options, request);
                 this.putAdminURL(options, resource, request);
-            } else if (principal != null) { // Logged in - Authenticated)
+            }
+            else if (principal != null) { // Logged in - Authenticated)
                 if (displayAuthUser) {
                     options.put("principal-desc", null);
                 }
@@ -134,42 +131,31 @@ public class LoginManageComponent extends ViewRenderingDecoratorComponent {
 
     private void putEditURL(Map<String, URL> options, Resource resource, DecoratorRequest request, Principal principal, Repository repository) throws Exception {
         URL editURL = null;
-        
-        if(ajaxEditorExistsAssertion.matches(request.getServletRequest(), resource, principal)) { // Need to check this here also, as not checked in Service.constructURL for some reason
-            if (this.ajaxEditorService != null) editURL = editContructURL(editURL, this.ajaxEditorService, resource, request, principal);
-        } else {
-            for(Service service : this.editServices) {
-                editURL = editContructURL(editURL, service, resource, request, principal);
-                if(editURL != null) break;
+        for (Service service : editServices) {
+            try {
+                editURL = service.urlConstructor(URL.create(request.getServletRequest()))
+                        .withResource(resource)
+                        .withPrincipal(principal)
+                        .constructURL();
+                break;
             }
+            catch (Throwable t) { }
         }
         
-        if(editURL != null) {
-            boolean isWriteAuthorizedNotLockedByOther = repository.isAuthorized(resource, RepositoryAction.READ_WRITE, principal, true);
-            if(isWriteAuthorizedNotLockedByOther) {
+        if (editURL != null) {
+            boolean isWriteAuthorizedNotLockedByOther = repository
+                    .isAuthorized(resource, RepositoryAction.READ_WRITE, principal, true);
+            if (isWriteAuthorizedNotLockedByOther) {
                 if (resource.isCollection()) {
                     options.put("edit-collection", editURL);
-                } else {
+                }
+                else {
                     options.put("edit", editURL);
                 }
             }
         }
     }
     
-    private URL editContructURL(URL editURL, Service editService, Resource resource, DecoratorRequest request, Principal principal) {
-        if(editURL == null) {
-            try {
-                editURL = editService.urlConstructor(URL.create(request.getServletRequest()))
-                                     .withResource(resource)
-                                     .withPrincipal(principal)
-                                     .constructURL();
-            } catch (Exception e) {
-                // URL not created because of assertions
-            }
-        }
-        return editURL;
-    }
-
     @Required
     public void setLogoutService(Service logoutService) {
         if (logoutService == null) {
@@ -187,17 +173,7 @@ public class LoginManageComponent extends ViewRenderingDecoratorComponent {
     public void setEditServices(List<Service> editServices) {
         this.editServices = editServices;
     }
-
-    @Required
-    public void setAjaxEditorService(Service ajaxEditorService) {
-        this.ajaxEditorService = ajaxEditorService;
-    }
-
-    @Required
-    public void setAjaxEditorExistsAssertion(WebAssertion ajaxEditorExistsAssertion) {
-        this.ajaxEditorExistsAssertion = ajaxEditorExistsAssertion;
-    }
-
+    
     @Override
     protected String getDescriptionInternal() {
         return DESCRIPTION;
