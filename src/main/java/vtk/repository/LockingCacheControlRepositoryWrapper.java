@@ -529,6 +529,20 @@ public class LockingCacheControlRepositoryWrapper implements Repository, Cluster
     }
 
     @Override
+    public Resource retrieveById(String token, ResourceId id, boolean forProcessing)
+            throws RepositoryException, AuthenticationException, AuthorizationException, IOException {
+
+         /* XXX no path read locking when loading by ID. But it is likely better than
+          * alternative of looking up path by id first, in a separate tx, then locking the path.
+          * This is because that would be racy if the target resource was moved or deleted
+          * after looking up path, but before actually loading by path.
+          *
+          */
+        return wrappedRepository.retrieveById(token, id, forProcessing); // Tx
+
+    }
+
+    @Override
     public void setReadOnly(String token, boolean readOnly) throws AuthorizationException, IOException {
         this.wrappedRepository.setReadOnly(token, readOnly); // Tx
     }

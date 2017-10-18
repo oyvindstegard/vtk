@@ -1,21 +1,21 @@
-/* Copyright (c) 2004, University of Oslo, Norway
+/* Copyright (c) 2017, University of Oslo, Norway
  * All rights reserved.
- * 
+ *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are
  * met:
- * 
+ *
  *  * Redistributions of source code must retain the above copyright
  *    notice, this list of conditions and the following disclaimer.
- * 
+ *
  *  * Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 
+ *
  *  * Neither the name of the University of Oslo nor the names of its
  *    contributors may be used to endorse or promote products derived from
  *    this software without specific prior written permission.
- *      
+ *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS
  * IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED
  * TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A
@@ -30,55 +30,61 @@
  */
 package vtk.repository;
 
-import java.util.Optional;
-
+import static junit.framework.TestCase.*;
+import org.junit.Test;
 
 /**
- * Indicates that a requested resource does not exist in the
- * repository.
  *
- * <p>A resource may have been adressed by either path or id, and this
- * exception will either have a requested path or a requested id in it.
- *
+ * @author oyvind
  */
-public class ResourceNotFoundException extends RepositoryException {
+public class ResourceIdTest {
 
-    private static final long serialVersionUID = 3689351018110399794L;
-    
-    private final Optional<Path> uri;
-    private final Optional<ResourceId> resourceId;
-
-    public ResourceNotFoundException(Path uri) {
-        this.uri = Optional.of(uri);
-        this.resourceId = Optional.empty();
-    }
-
-    public ResourceNotFoundException(ResourceId id) {
-        this.uri = Optional.empty();
-        this.resourceId = Optional.of(id);
-    }
-
-    public Optional<Path> getURI() {
-        return this.uri;
-    }
-
-    public Optional<ResourceId> getResourceId() {
-        return this.resourceId;
-    }
-
-    public String getUriOrResourceId() {
-        return this.uri.isPresent() ? this.uri.get().toString() : this.resourceId.get().toString();
-    }
-
-    @Override
-    public String getMessage() {
-        return "resource not found: " + getUriOrResourceId();
+    @Test
+    public void fromString() {
+        ResourceId id = ResourceId.fromString("vtkframework.org_1000");
+        assertEquals("vtkframework.org", id.repositoryId().get());
+        assertEquals(1000, id.numericId());
     }
     
-    @Override
-    public String toString() {
-        StringBuilder sb = new StringBuilder(this.getClass().getName());
-        sb.append(": ").append(getUriOrResourceId());
-        return sb.toString();
+    @Test
+    public void fromString_2() {
+        ResourceId id = ResourceId.fromString("1000");
+        assertFalse(id.repositoryId().isPresent());
+        assertEquals(1000, id.numericId());
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void invalidRepositoryId() {
+        ResourceId.fromString("_1000");
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void invalidRepositoryId_2() {
+        ResourceId.fromString("abc1000");
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void invalidRepositoryId_3() {
+        ResourceId.fromString("__1000");
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void invalidNumericId() {
+        ResourceId.fromString("-1000");
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void invalidNumericId_2() {
+        ResourceId.fromString("abc");
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void invalidNumericId_3() {
+        new ResourceId(-1);
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void invalidNumericId_4() {
+        ResourceId.fromString("vtkframework.org_1000_");
     }
 }

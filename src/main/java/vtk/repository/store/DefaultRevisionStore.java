@@ -153,7 +153,7 @@ public class DefaultRevisionStore extends AbstractSqlMapDataAccessor implements 
     
     private void insertRevision(ResourceImpl resource, Revision revision, SqlSession sqlSession) {
         Map<String, Object> parameters = new HashMap<>();
-        parameters.put("resourceId", resource.getID());
+        parameters.put("resourceId", resource.getNumericId());
         parameters.put("revisionId", revision.getID());
         parameters.put("uid", revision.getUid());
         parameters.put("name", revision.getName());
@@ -182,8 +182,8 @@ public class DefaultRevisionStore extends AbstractSqlMapDataAccessor implements 
 
     @Override
     public void delete(ResourceImpl resource, Revision revision) {
-        Map<String, Object> parameters = new HashMap<String, Object>();
-        parameters.put("resourceId", resource.getID());
+        Map<String, Object> parameters = new HashMap<>();
+        parameters.put("resourceId", resource.getNumericId());
         parameters.put("revisionId", revision.getID());
         String sqlMap = getSqlMap("deleteRevision");
         getSqlSession().delete(sqlMap, parameters);
@@ -233,7 +233,7 @@ public class DefaultRevisionStore extends AbstractSqlMapDataAccessor implements 
         try {
             
             Map<String, Object> parameters = new HashMap<>();
-            parameters.put("resourceId", resource.getID());
+            parameters.put("resourceId", resource.getNumericId());
             parameters.put("revisionId", revision.getID());
             parameters.put("uid", revision.getUid());
             parameters.put("name", revision.getName());
@@ -334,7 +334,7 @@ public class DefaultRevisionStore extends AbstractSqlMapDataAccessor implements 
         
     
     private File revisionFile(ResourceImpl resource, Revision revision, boolean create) {
-        long resourceID = resource.getID();
+        long resourceID = resource.getNumericId();
         long revisionID = revision.getID();
         String basePath = revisionPath(resourceID);
         File dir = new File(basePath);

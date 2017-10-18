@@ -153,7 +153,7 @@ class PropertySetRowHandler implements ResultHandler {
      */
     private Acl getAcl(PropertySetImpl propertySet, SqlSession sqlSession) {
         final Integer aclResourceId = propertySet.isInheritedAcl() ? 
-                        propertySet.getAclInheritedFrom() : propertySet.getID();
+                        propertySet.getAclInheritedFrom() : propertySet.getNumericId();
                         
         // Try cache first:
         Acl acl = this.aclCache.get(aclResourceId);

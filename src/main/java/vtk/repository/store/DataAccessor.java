@@ -46,6 +46,14 @@ import vtk.security.Principal;
 public interface DataAccessor {
 
     /**
+     * Gets a resource path by internal numeric id.
+     * @param id
+     * @return
+     * @throws DataAccessException 
+     */
+    public Path getResourcePath(int id) throws DataAccessException;
+
+    /**
      * Loads a single resource by uri
      * @param uri
      */

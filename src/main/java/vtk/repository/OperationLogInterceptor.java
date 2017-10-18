@@ -130,7 +130,7 @@ public class OperationLogInterceptor implements MethodInterceptor {
             OperationLog.failure(operation, params, "read-only", op.write());
             throw roe;
         } catch (ResourceNotFoundException rnf) {
-            OperationLog.failure(operation, params, "resource not found: '" + rnf.getURI() + "'", op.write());
+            OperationLog.failure(operation, params, "resource not found: '" + rnf.getUriOrResourceId() + "'", op.write());
             throw rnf;
         } catch (IllegalOperationException | IOException ioe) {
             OperationLog.failure(operation, params, ioe.getMessage(), op.write());

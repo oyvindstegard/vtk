@@ -53,8 +53,13 @@ public interface PropertySet extends Iterable<Property> {
     public static final String NAME_IDENTIFIER = "name";
     public static final String TYPE_IDENTIFIER = "type";
     public static final String URI_IDENTIFIER = "uri";
-    
-    public int getID(); 
+
+    /**
+     * Get a resource identifier. (May not always be available,
+     * depending on the backend that produced this property set.)
+     * @return an optional resource identifier
+     */
+    public Optional<ResourceId> getResourceId();
 
     public Path getURI();
 

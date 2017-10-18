@@ -52,18 +52,31 @@ import vtk.security.Principal;
  * </ul>
  */
 public class ResourceContentTypeRegexpAssertion implements RepositoryAssertion {
-    private Pattern pattern;
-    private Pattern exceptionPattern;
     
+    private final Pattern pattern;
+    private final Optional<Pattern> exceptionPattern;
+    
+    public ResourceContentTypeRegexpAssertion(Pattern pattern) {
+        this.pattern = Objects.requireNonNull(pattern);
+        this.exceptionPattern = Optional.empty();
+    }
+
+    public ResourceContentTypeRegexpAssertion(Pattern pattern, Pattern exceptionPattern) {
+        this.pattern = Objects.requireNonNull(pattern);
+        this.exceptionPattern = Optional.of(exceptionPattern);
+    }
+
     public ResourceContentTypeRegexpAssertion(String pattern) {
-        Objects.requireNonNull(pattern, "pattern cannot be null");
-        this.pattern = Pattern.compile(pattern);
+        this(Pattern.compile(Objects.requireNonNull(pattern, "pattern cannot be null")));
     }
     
     public ResourceContentTypeRegexpAssertion(String pattern, String exceptionPattern) {
-        this(pattern);
-        Objects.requireNonNull(exceptionPattern, "exceptionPattern cannot be null");
-        this.exceptionPattern = Pattern.compile(exceptionPattern);
+        this.pattern = Pattern.compile(Objects.requireNonNull(pattern, "pattern cannot be null"));
+        if (exceptionPattern != null) {
+            this.exceptionPattern = Optional.of(Pattern.compile(exceptionPattern));
+        } else {
+            this.exceptionPattern = Optional.empty();
+        }
     }
         
     @Override
@@ -77,9 +90,9 @@ public class ResourceContentTypeRegexpAssertion implements RepositoryAssertion {
         StringBuilder sb = new StringBuilder();
         sb.append("property.content-type ~ ");
         sb.append(this.pattern.pattern());
-        if (this.exceptionPattern != null) {
+        if (this.exceptionPattern.isPresent()) {
             sb.append(" && (content-type !~ ");
-            sb.append(this.exceptionPattern.pattern());
+            sb.append(this.exceptionPattern.get().pattern());
             sb.append(")");
         }
         return sb.toString();
@@ -90,8 +103,8 @@ public class ResourceContentTypeRegexpAssertion implements RepositoryAssertion {
             Matcher m = this.pattern.matcher(resource.getContentType());
             boolean match = m.matches();
             
-            if (this.exceptionPattern != null) {
-                m = this.exceptionPattern.matcher(resource.getContentType());
+            if (this.exceptionPattern.isPresent()) {
+                m = this.exceptionPattern.get().matcher(resource.getContentType());
                 if (m.matches()) {
                     match = false;
                 }

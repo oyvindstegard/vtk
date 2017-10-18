@@ -273,7 +273,7 @@ public class ConsistencyCheck {
             PropertySetInternalData indexPropSetInternalData = randomIndexAccessor.getPropertySetInternalData(indexUri);
             
             int indexUUID = indexPropSetInternalData.getResourceId();
-            int daoUUID = repoPropSet.getID();
+            int daoUUID = repoPropSet.getNumericId();
             
             if (indexUUID != daoUUID) {
                 // Invalid UUID (this can also be considered a dangling inconsistency)

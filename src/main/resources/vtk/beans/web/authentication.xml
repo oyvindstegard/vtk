@@ -504,6 +504,7 @@
     <property name="identifier" value="HTTP/Basic/Proxy/${proxyAuth.proxyUser}" />
     <property name="targetPrincipalStore" value="#{${proxyAuth.principalStore}}" />
     <property name="assertions" value="#{{${proxyAuth.assertions}}}" />
+    <property name="roleManager" ref="roleManager" />
   </bean>
 
   <!-- List of assertions in an "or"-expression for proxy auth.

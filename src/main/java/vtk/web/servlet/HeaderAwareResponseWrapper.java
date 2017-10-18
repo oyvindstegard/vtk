@@ -49,7 +49,7 @@ import javax.servlet.http.HttpServletResponseWrapper;
  */
 public class HeaderAwareResponseWrapper extends HttpServletResponseWrapper {
 
-    private Map<String, List<Object>> headers = new HashMap<>();
+    private final Map<String, List<Object>> headers = new HashMap<>();
     
     public HeaderAwareResponseWrapper(HttpServletResponse response) {
         super(response);
