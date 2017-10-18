@@ -30,10 +30,11 @@
  */
 package vtk.web.servlet;
 
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.PrintWriter;
+import java.io.UncheckedIOException;
+import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -47,6 +48,8 @@ import java.util.regex.Pattern;
 import javax.servlet.ServletOutputStream;
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletResponse;
+
+import org.apache.commons.io.output.ByteArrayOutputStream;
 
 import vtk.util.io.BoundedOutputStream;
 import vtk.util.io.IO;
@@ -109,12 +112,16 @@ public class BufferedResponse implements HttpServletResponse {
         return this.bufferStream.toByteArray();
     }
 
-    public String getContentString() throws Exception {
-        if (this.characterEncoding != null) {
-            return new String(this.bufferStream.toByteArray(), this.characterEncoding);
+    public String getContentString() {
+        try {
+            if (this.characterEncoding != null) {
+                return new String(this.bufferStream.toByteArray(), this.characterEncoding);
+            }
+            return new String(this.bufferStream.toByteArray(), DEFAULT_CHAR_ENCODING);
         }
-
-        return new String(this.bufferStream.toByteArray(), DEFAULT_CHAR_ENCODING);
+        catch (UnsupportedEncodingException e) {
+            throw new UncheckedIOException(e);
+        }
     }
 
     @Override
@@ -324,7 +331,7 @@ public class BufferedResponse implements HttpServletResponse {
             return;
         }
         header = header.trim();
-        setHeaderInternal(header, new Integer(value));
+        setHeaderInternal(header, Integer.valueOf(value));
         applyHeaderSideEffects(header, String.valueOf(value));
     }
 
@@ -334,7 +341,7 @@ public class BufferedResponse implements HttpServletResponse {
             return;
         }
         header = header.trim();
-        addHeaderInternal(header, new Integer(value));
+        addHeaderInternal(header, Integer.valueOf(value));
         applyHeaderSideEffects(header, String.valueOf(value));
     }
     
@@ -396,7 +403,17 @@ public class BufferedResponse implements HttpServletResponse {
         }
         return values.get(0);
     }
-    
+
+//    @Override
+//    public String toString() {
+//        List<String> headers = getHeaderNames().stream()
+//                .map(h -> Map.entry(h, getHeaderValues(h)))
+//                .flatMap(entry -> entry.getValue().stream()
+//                        .map(v -> entry.getKey() + ": " + v))
+//                .collect(Collectors.toList());
+//        
+//        return getClass().getSimpleName() + "(" + status + "," + headers + ")";
+//    }
     
     /**
      * Write metadata and contents of buffered response to another response.
@@ -405,16 +422,17 @@ public class BufferedResponse implements HttpServletResponse {
     public void writeTo(HttpServletResponse response, boolean closeOutputStream) 
         throws IOException {
         // Write/copy metadata
-        response.setContentLength(getContentLength());
+        if (this.statusMessage != null) {
+            response.setStatus(this.status, this.statusMessage);
+        }
+        else {
+            response.setStatus(this.status);
+        }
         String contentType = getContentType();
         if (contentType != null) {
             response.setContentType(contentType);
         }
-        if (this.statusMessage != null) {
-            response.setStatus(this.status, this.statusMessage);
-        } else {
-            response.setStatus(this.status);
-        }
+        response.setContentLength(getContentLength());
         response.setLocale(this.locale);
 
         for (String header: getHeaderNames()) {
@@ -437,25 +455,32 @@ public class BufferedResponse implements HttpServletResponse {
         if (value instanceof String) {
             if (add) {
                 response.addHeader(header, (String) value);
-            } else {
+            }
+            else {
                 response.setHeader(header, (String) value);
             }
-        } else if (value instanceof Integer) {
+        }
+        else if (value instanceof Integer) {
             if (add) {
                 response.addIntHeader(header, ((Integer)value).intValue());
-            } else {
+            }
+            else {
                 response.setIntHeader(header, ((Integer)value).intValue());
             }
-        } else if (value instanceof Date) {
+        }
+        else if (value instanceof Date) {
             if (add) {
                 response.addDateHeader(header, ((Date)value).getTime());
-            } else {
+            }
+            else {
                 response.setDateHeader(header, ((Date)value).getTime());
             }
-        } else {
+        }
+        else {
             if (add) {
                 response.addHeader(header, value.toString());
-            } else {
+            }
+            else {
                 response.setHeader(header, value.toString());
                 
             }
@@ -475,20 +500,19 @@ public class BufferedResponse implements HttpServletResponse {
         List<Object> list = new ArrayList<>();
         list.add(value);
         this.headers.put(header, list);
-        
     }
 
     
     private void applyHeaderSideEffects(String header, String value) {
         if (CONTENT_TYPE.equalsIgnoreCase(header)) {
             processContentTypeHeader(value);
-        } else if (CONTENT_LENGTH.equalsIgnoreCase(header)) {
+        }
+        else if (CONTENT_LENGTH.equalsIgnoreCase(header)) {
             try {
                 long longValue = Long.parseLong(value);
                 this.contentLength = longValue;
-            } catch (Exception e) {
-                
             }
+            catch (Exception e) { }
         }
     }
     
@@ -509,7 +533,8 @@ public class BufferedResponse implements HttpServletResponse {
             this.contentType = contentType;
             this.characterEncoding = characterEncoding;
             setHeaderInternal(CONTENT_TYPE, contentType);
-        } else {
+        }
+        else {
             this.contentType = value;
             setHeaderInternal(CONTENT_TYPE, value);
         }
