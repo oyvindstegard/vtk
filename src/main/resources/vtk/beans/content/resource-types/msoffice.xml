@@ -61,21 +61,37 @@
       </list>
     </property>
   </bean>
+
+  <bean id="msoffice.Pattern.contentTypeOoxml" class="java.util.regex.Pattern" factory-method="compile">
+    <constructor-arg value="application/(msword|ms-excel|x-msexcel|ms-ppt|vnd\.((ms-word(|\.(document|template)\.macroEnabled\.12)|ms-excel(|\.(sheet(|\.binary)|template|addin|)\.macroEnabled\.12)|ms-powerpoint(|\.(addin|presentation|template|slideshow)\.macroEnabled\.12))|(openxmlformats-officedocument\.(wordprocessingml\.(document|template)|spreadsheetml\.(sheet|template)|presentationml\.(presentation|template|slideshow)))))"/>
+  </bean>
+
+  <bean id="msoffice.Pattern.contentTypeDoc" class="java.util.regex.Pattern" factory-method="compile">
+    <constructor-arg value="application/(msword|vnd\.(ms-word(|\.(document|template)\.macroEnabled\.12)|openxmlformats-officedocument\.wordprocessingml\.(document|template)))" />
+  </bean>
   
+  <bean id="msoffice.Pattern.contentTypeXls" class="java.util.regex.Pattern" factory-method="compile">
+    <constructor-arg value="application/(ms-excel|x-msexcel|vnd\.(ms-excel(|\.(sheet(|\.binary)|template|addin)\.macroEnabled\.12)|openxmlformats-officedocument\.spreadsheetml\.(sheet|template)))" />
+  </bean>
+
+  <bean id="msoffice.Pattern.contentTypePpt" class="java.util.regex.Pattern" factory-method="compile">
+    <constructor-arg value="application/(ms-ppt|vnd\.(ms-powerpoint(|\.(addin|presentation|template|slideshow)\.macroEnabled\.12)|openxmlformats-officedocument\.presentationml\.(presentation|template|slideshow)))" />
+  </bean>
+
   <bean id="contentTypeMatchesOoXml" class="vtk.repository.resourcetype.ResourceContentTypeRegexpAssertion">
-    <constructor-arg name="pattern" value="application/(msword|ms-excel|x-msexcel|ms-ppt|vnd\.((ms-word(|\.(document|template)\.macroEnabled\.12)|ms-excel(|\.(sheet(|\.binary)|template|addin|)\.macroEnabled\.12)|ms-powerpoint(|\.(addin|presentation|template|slideshow)\.macroEnabled\.12))|(openxmlformats-officedocument\.(wordprocessingml\.(document|template)|spreadsheetml\.(sheet|template)|presentationml\.(presentation|template|slideshow)))))" />
+    <constructor-arg ref="msoffice.Pattern.contentTypeOoxml"/>
   </bean>
 
   <bean id="contentTypeMatchesDoc" class="vtk.repository.resourcetype.ResourceContentTypeRegexpAssertion">
-    <constructor-arg name="pattern" value="application/(msword|vnd\.(ms-word(|\.(document|template)\.macroEnabled\.12)|openxmlformats-officedocument\.wordprocessingml\.(document|template)))" />
+    <constructor-arg ref="msoffice.Pattern.contentTypeDoc" />
   </bean>
   
   <bean id="contentTypeMatchesXls" class="vtk.repository.resourcetype.ResourceContentTypeRegexpAssertion">
-    <constructor-arg name="pattern" value="application/(ms-excel|x-msexcel|vnd\.(ms-excel(|\.(sheet(|\.binary)|template|addin)\.macroEnabled\.12)|openxmlformats-officedocument\.spreadsheetml\.(sheet|template)))" />
+    <constructor-arg ref="msoffice.Pattern.contentTypeXls" />
   </bean>
   
   <bean id="contentTypeMatchesPpt" class="vtk.repository.resourcetype.ResourceContentTypeRegexpAssertion">
-    <constructor-arg name="pattern" value="application/(ms-ppt|vnd\.(ms-powerpoint(|\.(addin|presentation|template|slideshow)\.macroEnabled\.12)|openxmlformats-officedocument\.presentationml\.(presentation|template|slideshow)))" />
+    <constructor-arg ref="msoffice.Pattern.contentTypePpt" />
   </bean>
 
 </beans>

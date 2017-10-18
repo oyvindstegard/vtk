@@ -103,7 +103,7 @@ public class PlaintextEditController extends SimpleFormController<PlaintextEditC
     
     private final Logger logger = LoggerFactory.getLogger(this.getClass().getName());
     
-    private int lockTimeoutSeconds = 300;
+    private int lockTimeoutSeconds = 600;
 
     private String defaultCharacterEncoding = "utf-8";
     private TextResourceContentHelper textResourceContentHelper;

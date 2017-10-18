@@ -47,7 +47,7 @@ public abstract class PropertyDescription {
     private boolean trim;
     private String affectingService;
 
-    private Map<Locale, Map<String, Object>> vocabulary = new HashMap<Locale, Map<String, Object>>();
+    private Map<Locale, Map<String, Object>> vocabulary = new HashMap<>();
 
     public final void setName(String name) {
         this.name = name;
@@ -63,6 +63,12 @@ public abstract class PropertyDescription {
 
     public String getType() {
         return type;
+    }
+    
+    public boolean isRefType() {
+        return "resource_ref".equals(type) 
+                || "image_ref".equals(type) 
+                || "media_ref".equals(type);
     }
 
     public void setOverrides(String overrides) {
@@ -101,6 +107,7 @@ public abstract class PropertyDescription {
         this.affectingService = affectingService;
     }
 
+    @Override
     public String toString() {
         return this.getClass().getName() + ": " + this.name;
     }
@@ -108,7 +115,7 @@ public abstract class PropertyDescription {
     public void addVocabulary(Locale lang, String vocabularyKey, Object vocabularyValue) {
         Map<String, Object> m = vocabulary.get(lang);
         if (m == null) {
-            m = new LinkedHashMap<String, Object>();
+            m = new LinkedHashMap<>();
         }
         m.put(vocabularyKey, vocabularyValue);
         this.vocabulary.put(lang, m);

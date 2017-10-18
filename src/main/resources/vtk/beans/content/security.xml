@@ -76,11 +76,19 @@
     <property name="principalStores">
       <bean class="vtk.beans.factory.BeansListingFactoryBean">
         <property name="targetBeansClass" value="vtk.security.PrincipalStore" />
+        <!-- PrincipalManager is itself a PrincipalStore, so exclude it from aggregated list -->
+        <property name="excludeBeans">
+          <set><value>principalManager</value></set>
+        </property>
       </bean>
     </property>
     <property name="groupStores">
       <bean class="vtk.beans.factory.BeansListingFactoryBean">
         <property name="targetBeansClass" value="vtk.security.GroupStore" />
+        <!-- PrincipalManager is itself a GroupStore, so exclude it from aggregated list -->
+        <property name="excludeBeans">
+          <set><value>principalManager</value></set>
+        </property>
       </bean>
     </property>
   </bean>

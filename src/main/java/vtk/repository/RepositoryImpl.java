@@ -143,12 +143,13 @@ public class RepositoryImpl implements Repository, ApplicationContextAware,
     // trash can
     private int permanentDeleteOverdueLimitInDays = 60;
 
-    public final static long LOCK_DEFAULT_TIMEOUT = 30 * 60 * 1000; // 30
-    // minutes
-    public final static long LOCK_MAX_TIMEOUT = LOCK_DEFAULT_TIMEOUT;
+    // TODO switch to java.time.Duration:
+    public final static int LOCK_DEFAULT_TIMEOUT_SECONDS = 30 * 60; // 30 minutes
+    public final static int LOCK_MAX_TIMEOUT_SECONDS = LOCK_DEFAULT_TIMEOUT_SECONDS;
 
-    private long lockDefaultTimeout = LOCK_DEFAULT_TIMEOUT;
-    private long lockMaxTimeout = LOCK_DEFAULT_TIMEOUT;
+    // TODO switch to java.time.Duration:
+    private int lockDefaultTimeoutSeconds = LOCK_DEFAULT_TIMEOUT_SECONDS;
+    private int lockMaxTimeoutSeconds = LOCK_DEFAULT_TIMEOUT_SECONDS;
 
     private static final int FILE_COPY_BUF_SIZE = 122880;
     
@@ -184,6 +185,21 @@ public class RepositoryImpl implements Repository, ApplicationContextAware,
 
         return this.dao.load(uri) != null;
 
+    }
+
+    @Transactional(readOnly=true)
+    @OpLog
+    @Override
+    public Resource retrieveById(@OpLogParam(name = "token") String token,
+            @OpLogParam(name = "id") ResourceId id, boolean forProcessing)
+            throws RepositoryException, AuthenticationException, AuthorizationException, IOException {
+
+        final Path uri = dao.getResourcePath(id.numericId());
+        if (uri == null) {
+            throw new ResourceNotFoundException(id);
+        }
+        
+        return retrieve(token, uri, forProcessing);
     }
 
     @Transactional(readOnly=true)
@@ -503,7 +519,7 @@ public class RepositoryImpl implements Repository, ApplicationContextAware,
             content = getContent(newResource);
             newResource.setAcl(parent.getAcl());
             newResource.setInheritedAcl(true);
-            int aclIneritedFrom = parent.isInheritedAcl() ? parent.getAclInheritedFrom() : parent.getID();
+            int aclIneritedFrom = parent.isInheritedAcl() ? parent.getAclInheritedFrom() : parent.getNumericId();
             newResource.setAclInheritedFrom(aclIneritedFrom);
             
             TypeHandlerHooks hooks = typeHandlerHooksRegistry.getTypeHandlerHooksForCreateCollection();
@@ -785,7 +801,7 @@ public class RepositoryImpl implements Repository, ApplicationContextAware,
                     this.dao.storeACL(clone);
                 }
 
-                final String trashID = "trash-" + resourceToDelete.getID();
+                final String trashID = "trash-" + resourceToDelete.getNumericId();
                 this.dao.markDeleted(resourceToDelete, parentCollection, principal, trashID);
                 this.contentStore.moveToTrash(resourceToDelete.getURI(), trashID);
 
@@ -816,7 +832,7 @@ public class RepositoryImpl implements Repository, ApplicationContextAware,
         if (resource == null) {
             throw new ResourceNotFoundException(uri);
         }
-        return this.dao.getRecoverableResources(resource.getID());
+        return this.dao.getRecoverableResources(resource.getNumericId());
     }
 
     @Transactional(readOnly=false)
@@ -908,20 +924,16 @@ public class RepositoryImpl implements Repository, ApplicationContextAware,
             r.setLock(null);
         }
 
+        int timeoutSeconds = requestedTimeoutSeconds > 0 ? requestedTimeoutSeconds : lockDefaultTimeoutSeconds;
+        timeoutSeconds = Math.min(lockMaxTimeoutSeconds, timeoutSeconds);
+        Date timeout = new Date(System.currentTimeMillis() + timeoutSeconds*1000);
         if (r.getLock() == null) {
             String newLockToken = "opaquelocktoken:" + UUID.randomUUID().toString();
-
-            Date timeout = new Date(System.currentTimeMillis() + this.lockDefaultTimeout);
-
-            if ((requestedTimeoutSeconds * 1000) > this.lockMaxTimeout) {
-                timeout = new Date(System.currentTimeMillis() + this.lockDefaultTimeout);
-            }
 
             Lock lock = new Lock(newLockToken, principal, ownerInfo, depth, timeout, lockType);
             r.setLock(lock);
         } else {
-            r.setLock(new Lock(r.getLock().getLockToken(), principal, ownerInfo, depth, new Date(System
-                    .currentTimeMillis() + (requestedTimeoutSeconds * 1000)), r.getLock().getType()));
+            r.setLock(new Lock(r.getLock().getLockToken(), principal, ownerInfo, depth, timeout, r.getLock().getType()));
         }
 
         ResourceImpl newResource = this.dao.storeLock(r);
@@ -1182,7 +1194,7 @@ public class RepositoryImpl implements Repository, ApplicationContextAware,
             ResourceImpl newResource = new ResourceImpl(uri);
             newResource.setAcl(parent.getAcl());
             newResource.setInheritedAcl(true);
-            int aclIneritedFrom = parent.isInheritedAcl() ? parent.getAclInheritedFrom() : parent.getID();
+            int aclIneritedFrom = parent.isInheritedAcl() ? parent.getAclInheritedFrom() : parent.getNumericId();
             newResource.setAclInheritedFrom(aclIneritedFrom);
             
             // Check if contentType has interceptor for storage
@@ -1526,7 +1538,7 @@ public class RepositoryImpl implements Repository, ApplicationContextAware,
 
             Resource original = (Resource) r.clone();
             r.setAcl(parent.getAcl());
-            r.setAclInheritedFrom(parent.getID());
+            r.setAclInheritedFrom(parent.getNumericId());
             r.setInheritedAcl(true);
 
             ResourceImpl newResource = this.dao.storeACL(r);
@@ -2046,12 +2058,18 @@ public class RepositoryImpl implements Repository, ApplicationContextAware,
         this.id = id;
     }
 
-    public void setLockMaxTimeout(long lockMaxTimeout) {
-        this.lockMaxTimeout = lockMaxTimeout;
+    public void setLockMaxTimeoutSeconds(int maxTimeoutSeconds) {
+        if (maxTimeoutSeconds <= 0) {
+            throw new IllegalArgumentException("Max lock timeout must be > 0");
+        }
+        this.lockMaxTimeoutSeconds = maxTimeoutSeconds;
     }
 
-    public void setLockDefaultTimeout(long lockDefaultTimeout) {
-        this.lockDefaultTimeout = lockDefaultTimeout;
+    public void setLockDefaultTimeoutSeconds(int defaultTimeoutSeconds) {
+        if (defaultTimeoutSeconds <= 0) {
+            throw new IllegalArgumentException("Default lock timeout must be > 0");
+        }
+        this.lockDefaultTimeoutSeconds = defaultTimeoutSeconds;
     }
 
     @Required

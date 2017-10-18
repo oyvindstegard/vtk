@@ -44,7 +44,8 @@ import vtk.util.cache.SimpleCacheImpl;
 
 
 /**
- * A simple principal manager implementation.
+ * A simple principal manager implementation, which is combines {@link PrincipalStore} and
+ * {@link GroupStore} APIs and aggregates instances of those classes into a single entity.
  * 
  * Delegates API calls to a set of underlying {@link GroupStore} and {@link PrincipalStore} instances.
  * Caches aggregated group membership lookups.
@@ -56,25 +57,38 @@ public class PrincipalManagerImpl implements PrincipalManager, InitializingBean 
 
     private PrincipalStore principalStore;
     private GroupStore groupStore;
+    private int order = 0;
     
     public void setPrincipalStore(PrincipalStore principalStore) {
+        if (principalStore == this) {
+            throw new IllegalArgumentException("Cannot set self as aggregated principal store");
+        }
         this.principalStore = principalStore;
     }
 
     public void setPrincipalStores(List<PrincipalStore> principalStores) {
-        logger.info("Initialized with principal stores: " + principalStores);
-        
         if (principalStores != null) {
+            for (PrincipalStore s: principalStores) {
+                if (this == s) {
+                    throw new IllegalArgumentException("Found self in list of aggregated principal stores, which is not allowed");
+                }
+            }
             this.principalStore = new ChainedPrincipalStore(principalStores); 
         }
+        logger.info("Initialized with principal stores: " + principalStores);
     }
     
     public void setGroupStores(List<GroupStore> groupStores) {
-        logger.info("Initialized with group stores: " + groupStores);
-        
         if (groupStores != null) {
+            for (GroupStore g: groupStores) {
+                if (this == g) {
+                    throw new IllegalArgumentException("Found self in list of aggregated group stores, which is not allowed");
+                }
+            }
             this.groupStore = new ChainedGroupStore(groupStores); 
         }
+
+        logger.info("Initialized with group stores: " + groupStores);
     }    
 
     
@@ -115,6 +129,15 @@ public class PrincipalManagerImpl implements PrincipalManager, InitializingBean 
         return this.groupStore.getMemberGroups(principal);
     }
 
+    @Override
+    public int getOrder() {
+        return order;
+    }
+
+    public void setOrder(int order) {
+        this.order = order;
+    }
+
     private static final class ChainedPrincipalStore implements PrincipalStore {
 
         private List<PrincipalStore> stores = null;
@@ -145,12 +168,12 @@ public class PrincipalManagerImpl implements PrincipalManager, InitializingBean 
     }
     
     private static final class ChainedGroupStore implements GroupStore {
-        private List<GroupStore> stores;
-        private SimpleCache<Principal, Set<Principal>> groupMembershipCache;
+        private final List<GroupStore> stores;
+        private final SimpleCache<Principal, Set<Principal>> groupMembershipCache;
         
         ChainedGroupStore(List<GroupStore> stores) {
             this.stores = stores;
-            SimpleCacheImpl<Principal, Set<Principal>> cache = new SimpleCacheImpl<Principal, Set<Principal>>(60);
+            SimpleCacheImpl<Principal, Set<Principal>> cache = new SimpleCacheImpl<>(60);
 
             // Refresh cached groups periodically, regardless of user activity:
             cache.setRefreshTimestampOnGet(false);
@@ -179,9 +202,9 @@ public class PrincipalManagerImpl implements PrincipalManager, InitializingBean 
         public Set<Principal> getMemberGroups(Principal principal) {
             Set<Principal> memberGroups = this.groupMembershipCache.get(principal);
             if (memberGroups == null) {
-                logger.debug("Groups for principal "+ principal + " not in cache.");
+                logger.debug("Groups for principal {} not in cache.", principal);
                 
-                memberGroups = new HashSet<Principal>();
+                memberGroups = new HashSet<>();
                 for (GroupStore store : this.stores) {
                     Set<Principal> groups = store.getMemberGroups(principal);
                     if (groups != null) { // Extra precaution ..

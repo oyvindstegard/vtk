@@ -34,6 +34,7 @@ import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
+import java.util.Optional;
 
 import javax.servlet.http.HttpServletRequest;
 
@@ -112,8 +113,8 @@ public class ResourceWrapper implements Resource {
     }
     
     @Override
-    public int getID() {
-        return this.resource.getID();
+    public Optional<ResourceId> getResourceId() {
+        return this.resource.getResourceId();
     }
 
     @Override

@@ -311,7 +311,7 @@ public class ExpiresCacheResponseFilter extends AbstractServletFilter {
         
         @Override
         public String toString() {
-            return "CacheControlResponseWrapper[" + super.toString() + "]";
+            return getClass().getSimpleName() + "(" + response + ")";
         }
 
         private boolean contentTypeMatch(String contentType) {

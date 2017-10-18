@@ -162,11 +162,8 @@ public class LinkReplacer {
             Object prop = res.getProperty(pdesc.getName());
             if (prop == null) continue;
             if (!(pdesc instanceof EditablePropertyDescription)) continue;
-            
-            switch (pdesc.getType()) {
-            case "image_ref":
-            case "media_ref":
-            case "resource_ref":
+
+            if (pdesc.isRefType()) {
                 String mapped = mapRef(prop, ctx, 
                         "json_resource_field:" + pdesc.getName());
                 if (!mapped.equals(prop.toString())) {
@@ -176,56 +173,59 @@ public class LinkReplacer {
                     res.removeProperty(pdesc.getName());
                     res.addProperty(pdesc.getName(), mapped);
                 }
-                break;
-            case "html":
-            case "simple_html":
-                
-                String filtered = filterHtml(prop.toString(), ctx, 
-                        "json_resource_field:" + pdesc.getName());
-                if (!filtered.equals(prop.toString())) {
-                    modified = true;
-                }
-                if (modified) {
-                    res.removeProperty(pdesc.getName());
-                    res.addProperty(pdesc.getName(), filtered);
-                }
-                break;
-            case "json":
-                if (!(pdesc instanceof JSONPropertyDescription)) break;
-                
-                JSONPropertyDescription jsonDesc = (JSONPropertyDescription) pdesc;
-                if (jsonDesc.isWildcard()) continue;
-                List<JSONPropertyAttributeDescription> attributes = jsonDesc.getAttributes();
-
-                if (pdesc.isMultiple()) {
-                    List<Map<String, Object>> elements = (List<Map<String, Object>>) prop;
-
-                    prop = elements.stream()
-                            .map(jsonValue -> filterJsonProp(jsonValue, attributes, ctx, 
-                                    "json_resource_field:" + pdesc.getName()))
-                            .collect(Collectors.toList());
-                    if (!prop.equals(elements)) {
-                        modified = true;
-                    }
-                }
-                else {
-                    Map<String, Object> jsonValue = (Map<String, Object>) prop;
-                    String before = prop.toString();
-                    
-                    prop = filterJsonProp(jsonValue, attributes, ctx, 
-                            "json_resource_field:" + pdesc.getName());
-                    
-                    if (!JsonStreamer.toJson(prop).equals(before)) {
-                        modified = true;
-                    }
-                }
-
-                if (modified) {
-                    res.removeProperty(pdesc.getName());
-                    res.addProperty(pdesc.getName(), prop);
-                }
-                break;
             }
+            else {
+                switch (pdesc.getType()) {
+                case "html":
+                case "simple_html":
+
+                    String filtered = filterHtml(prop.toString(), ctx, 
+                            "json_resource_field:" + pdesc.getName());
+                    if (!filtered.equals(prop.toString())) {
+                        modified = true;
+                    }
+                    if (modified) {
+                        res.removeProperty(pdesc.getName());
+                        res.addProperty(pdesc.getName(), filtered);
+                    }
+                    break;
+                case "json":
+                    if (!(pdesc instanceof JSONPropertyDescription)) break;
+
+                    JSONPropertyDescription jsonDesc = (JSONPropertyDescription) pdesc;
+                    if (jsonDesc.isWildcard()) continue;
+                    List<JSONPropertyAttributeDescription> attributes = jsonDesc.getAttributes();
+
+                    if (pdesc.isMultiple()) {
+                        List<Map<String, Object>> elements = (List<Map<String, Object>>) prop;
+
+                        prop = elements.stream()
+                                .map(jsonValue -> filterJsonProp(jsonValue, attributes, ctx, 
+                                        "json_resource_field:" + pdesc.getName()))
+                                .collect(Collectors.toList());
+                        if (!prop.equals(elements)) {
+                            modified = true;
+                        }
+                    }
+                    else {
+                        Map<String, Object> jsonValue = (Map<String, Object>) prop;
+                        String before = prop.toString();
+
+                        prop = filterJsonProp(jsonValue, attributes, ctx, 
+                                "json_resource_field:" + pdesc.getName());
+
+                        if (!JsonStreamer.toJson(prop).equals(before)) {
+                            modified = true;
+                        }
+                    }
+
+                    if (modified) {
+                        res.removeProperty(pdesc.getName());
+                        res.addProperty(pdesc.getName(), prop);
+                    }
+                    break;
+                }
+            }                
         }
         if (modified) ctx.writeRevision(res);
     }

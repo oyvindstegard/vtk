@@ -39,7 +39,7 @@ import java.util.Set;
  * @see PrincipalStore
  * 
  */
-public interface PrincipalManager {
+public interface PrincipalManager extends GroupStore, PrincipalStore {
     
     /**
      * Validates the existence of a given group.
@@ -48,6 +48,7 @@ public interface PrincipalManager {
      * @return <code>true</code> if the group exists,
      * <code>false</code> otherwise.
      */
+    @Override
     public boolean validateGroup(Principal group)
         throws AuthenticationProcessingException;
 
@@ -59,6 +60,7 @@ public interface PrincipalManager {
      * @return <code>true</code> if the principal exists,
      * <code>false</code> otherwise.
      */
+    @Override
     public boolean validatePrincipal(Principal principal)
         throws AuthenticationProcessingException;
 
@@ -71,6 +73,7 @@ public interface PrincipalManager {
      * @return true if the group exists and the given principal is a
      * member of that group, false otherwise.
      */
+    @Override
     public boolean isMember(Principal principal, Principal group);
     
     /**
@@ -80,6 +83,7 @@ public interface PrincipalManager {
      * @return A set of group principals in which the given principal is a member. 
      *         The <code>Set</code> is immutable.
      */
+    @Override
     public Set<Principal> getMemberGroups(Principal principal);
 
 }

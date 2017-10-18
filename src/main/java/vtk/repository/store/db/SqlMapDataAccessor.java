@@ -60,6 +60,7 @@ import vtk.repository.PropertyImpl;
 import vtk.repository.PropertySet;
 import vtk.repository.PropertySetImpl;
 import vtk.repository.RecoverableResource;
+import vtk.repository.ResourceId;
 import vtk.repository.ResourceImpl;
 import vtk.repository.ResourceTypeTree;
 import vtk.repository.resourcetype.BinaryValue;
@@ -96,7 +97,21 @@ public class SqlMapDataAccessor extends AbstractSqlMapDataAccessor implements Da
 
     private boolean optimizedAclCopySupported = false;
     private String repositoryId;
-    
+
+    /**
+     * Fetches a resource path by numeric id.
+     *
+     * <p>Does not fetch resources in trash URI namespace (would be invalid path).
+     *
+     * @param id database numeric resource id
+     * @return a path, or {@code null} if no such resource was found
+     * @throws DataAccessException
+     */
+    @Override
+    public Path getResourcePath(int id) throws DataAccessException {
+        return getSqlSession().selectOne(getSqlMap("getResourcePath"), id);
+    }
+
     @Override
     public ResourceImpl load(Path uri) {
         return load(uri, getSqlSession());
@@ -140,7 +155,7 @@ public class SqlMapDataAccessor extends AbstractSqlMapDataAccessor implements Da
         }
 
         populateStandardProperties(resource, resourceMap);
-        int resourceId = resource.getID();
+        int resourceId = resource.getNumericId();
         sqlMap = getSqlMap("loadPropertiesForResource");
         List<Map<String, Object>> propertyList = sqlSession.selectList(sqlMap, resourceId);
         populateCustomProperties(new ResourceImpl[] { resource }, propertyList);
@@ -189,14 +204,14 @@ public class SqlMapDataAccessor extends AbstractSqlMapDataAccessor implements Da
         // Delete any old persistent locks
         String sqlMap = getSqlMap("deleteLockByResourceId");
         SqlSession sqlSession = getSqlSession();
-        sqlSession.delete(sqlMap, r.getID());
+        sqlSession.delete(sqlMap, r.getNumericId());
 
         Lock lock = r.getLock();
 
         if (lock != null) {
             Map<String,Object> params = new HashMap<>(3, 1f);
             params.put("lock", lock);
-            params.put("resourceId", r.getID());
+            params.put("resourceId", r.getNumericId());
             sqlMap = getSqlMap("insertLock");
             sqlSession.update(sqlMap, params);
 
@@ -206,7 +221,7 @@ public class SqlMapDataAccessor extends AbstractSqlMapDataAccessor implements Da
 //            parameters.put("owner", lock.getPrincipal().getQualifiedName());
 //            parameters.put("ownerInfo", lock.getOwnerInfo());
 //            parameters.put("depth", lock.getDepth().toString());
-//            parameters.put("resourceId", r.getID());
+//            parameters.put("resourceId", r.getResourceId());
 //            parameters.put("type", lock.getType().toString());
 //
 //            sqlMap = getSqlMap("insertLock");
@@ -231,7 +246,7 @@ public class SqlMapDataAccessor extends AbstractSqlMapDataAccessor implements Da
             insertAcl(r, sqlSession);
 
             Map<String, Object> parameters = new HashMap<>(5, 1f);
-            parameters.put("resourceId", r.getID());
+            parameters.put("resourceId", r.getNumericId());
             parameters.put("inheritedFrom", null);
 
             String sqlMap = getSqlMap("updateAclInheritedFromByResourceId");
@@ -239,7 +254,7 @@ public class SqlMapDataAccessor extends AbstractSqlMapDataAccessor implements Da
 
             parameters.clear();
             parameters.put("previouslyInheritedFrom", oldInheritedFrom);
-            parameters.put("inheritedFrom", r.getID());
+            parameters.put("inheritedFrom", r.getNumericId());
             parameters.put("uri", r.getURI().toString());
             parameters.put("uriWildcard", SqlDaoUtils.getUriSqlWildcard(r.getURI(), SQL_ESCAPE_CHAR));
 
@@ -251,7 +266,7 @@ public class SqlMapDataAccessor extends AbstractSqlMapDataAccessor implements Da
         // ACL was not inherited
         // Delete previous ACL entries for resource:
         String sqlMap = getSqlMap("deleteAclEntriesByResourceId");
-        sqlSession.delete(sqlMap, r.getID());
+        sqlSession.delete(sqlMap, r.getNumericId());
 
         if (!r.isInheritedAcl()) {
             insertAcl(r, sqlSession);
@@ -264,8 +279,8 @@ public class SqlMapDataAccessor extends AbstractSqlMapDataAccessor implements Da
 
             Map<String, Object> parameters = new HashMap<>(4, 1f);
             parameters.put("inheritedFrom", nearest);
-            parameters.put("resourceId", r.getID());
-            parameters.put("previouslyInheritedFrom", r.getID());
+            parameters.put("resourceId", r.getNumericId());
+            parameters.put("previouslyInheritedFrom", r.getNumericId());
 
             sqlMap = getSqlMap("updateAclInheritedFromByResourceIdOrPreviousInheritedFrom");
             sqlSession.update(sqlMap, parameters);
@@ -296,7 +311,7 @@ public class SqlMapDataAccessor extends AbstractSqlMapDataAccessor implements Da
             Map<String, Object> map = getSqlSession().selectOne(sqlMap,
                     r.getURI().toString());
             Integer id = (Integer) map.get("resourceId");
-            r.setID(id);
+            r.setNumericId(id);
         }
 
         //storeLock(r);
@@ -341,7 +356,7 @@ public class SqlMapDataAccessor extends AbstractSqlMapDataAccessor implements Da
         sqlSession.update(sqlMap, parameters);
 
         parameters.put("trashCanURI", trashID + "/" + resourceURI.getName());
-        parameters.put("parentID", parent.getID());
+        parameters.put("parentID", parent.getNumericId());
         parameters.put("principal", principal.getName());
         parameters.put("deletedTime", Calendar.getInstance().getTime());
         parameters.put("wasInheritedAcl", resource.isInheritedAcl() ? "Y" : "N");
@@ -393,7 +408,7 @@ public class SqlMapDataAccessor extends AbstractSqlMapDataAccessor implements Da
             Acl recoveredResourceAcl = recoveredResource.getAcl();
             Acl parentAcl = parentResource.getAcl();
             if (recoveredResourceAcl.equals(parentAcl)) {
-                recoveredResource.setAclInheritedFrom(parentResource.getID());
+                recoveredResource.setAclInheritedFrom(parentResource.getNumericId());
                 recoveredResource.setInheritedAcl(true);
                 storeACL(recoveredResource);
             }
@@ -792,7 +807,7 @@ public class SqlMapDataAccessor extends AbstractSqlMapDataAccessor implements Da
                 }
 
                 parameters.put("actionId", actionID);
-                parameters.put("resourceId", r.getID());
+                parameters.put("resourceId", r.getNumericId());
                 parameters.put("principal", p.getQualifiedName());
                 parameters.put("isUser", p.getType() == Principal.Type.GROUP ? "N" : "Y");
                 parameters.put("grantedBy", r.getOwner().getQualifiedName());
@@ -817,7 +832,7 @@ public class SqlMapDataAccessor extends AbstractSqlMapDataAccessor implements Da
     private boolean isInheritedAcl(ResourceImpl r, SqlSession sqlSession) {
 
         String sqlMap = getSqlMap("isInheritedAcl");
-        Map<String, Integer> map = sqlSession.selectOne(sqlMap, r.getID());
+        Map<String, Integer> map = sqlSession.selectOne(sqlMap, r.getNumericId());
 
         Integer inheritedFrom = map.get("inheritedFrom");
         return inheritedFrom != null;
@@ -977,7 +992,7 @@ public class SqlMapDataAccessor extends AbstractSqlMapDataAccessor implements Da
         Set<Integer> resourceIds = new HashSet<>();
         for (int i = 0; i < resources.length; i++) {
 
-            int id = resources[i].isInheritedAcl() ? resources[i].getAclInheritedFrom() : resources[i].getID();
+            int id = resources[i].isInheritedAcl() ? resources[i].getAclInheritedFrom() : resources[i].getNumericId();
 
             resourceIds.add(id);
         }
@@ -989,7 +1004,7 @@ public class SqlMapDataAccessor extends AbstractSqlMapDataAccessor implements Da
             if (resource.getAclInheritedFrom() != -1) {
                 aclHolder = map.get(resource.getAclInheritedFrom());
             } else {
-                aclHolder = map.get(resource.getID());
+                aclHolder = map.get(resource.getNumericId());
             }
 
             if (aclHolder == null) {
@@ -1089,7 +1104,7 @@ public class SqlMapDataAccessor extends AbstractSqlMapDataAccessor implements Da
         }
         
         String sqlMap = getSqlMap("deletePropertiesByResourceId");
-        sqlSession.update(sqlMap, r.getID());
+        sqlSession.update(sqlMap, r.getNumericId());
 
         final String batchSqlMap = getSqlMap("insertPropertyEntry");
         
@@ -1098,7 +1113,7 @@ public class SqlMapDataAccessor extends AbstractSqlMapDataAccessor implements Da
             if (!PropertyType.SPECIAL_PROPERTIES_SET.contains(property.getDefinition().getName())) {
                 parameters.put("namespaceUri", property.getDefinition().getNamespace().getUri());
                 parameters.put("name", property.getDefinition().getName());
-                parameters.put("resourceId", r.getID());
+                parameters.put("resourceId", r.getNumericId());
                 parameters.put("inheritable", property.getDefinition().isInheritable());
 
                 Value[] values;
@@ -1155,7 +1170,7 @@ public class SqlMapDataAccessor extends AbstractSqlMapDataAccessor implements Da
 
         Map<Integer, ResourceImpl> resourceMap = new HashMap<>(resources.length+1, 1f);
         for (ResourceImpl resource : resources) {
-            resourceMap.put(resource.getID(), resource);
+            resourceMap.put(resource.getNumericId(), resource);
         }
 
         Map<PropHolder, List<Object>> propValuesMap = new HashMap<>();
@@ -1195,18 +1210,14 @@ public class SqlMapDataAccessor extends AbstractSqlMapDataAccessor implements Da
         }
     }
     
-    private String makeExternalId(int internalId) {
-        return repositoryId + "_" + internalId;
-    }
-
     void populateStandardProperties(PropertySetImpl resourceImpl, Map<String, ?> resourceMap) {
 
         // Internal resource id
-        resourceImpl.setID(((Number) resourceMap.get("id")).intValue());
+        resourceImpl.setNumericId(((Number)resourceMap.get("id")).intValue());
         
         // External resource id property
         resourceImpl.addProperty(createProperty(Namespace.DEFAULT_NAMESPACE, PropertyType.EXTERNAL_ID_PROP_NAME, 
-                makeExternalId(resourceImpl.getID())));
+                new ResourceId(repositoryId, resourceImpl.getNumericId()).toString()));
 
         boolean collection = "Y".equals(resourceMap.get("isCollection"));
         resourceImpl.addProperty(createProperty(Namespace.DEFAULT_NAMESPACE, PropertyType.COLLECTION_PROP_NAME, Boolean

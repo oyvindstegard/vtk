@@ -81,12 +81,31 @@ public class PropertySetImpl implements PropertySet, Cloneable {
         this.acl = acl;
     }
 
+    /**
+     * Obtain resource ID.
+     *
+     * <p>Depending on the state of the resource, ID may not be available
+     * for new resource objects which have not been stored in repository yet.
+     * @return an optional resource identifier
+     */
     @Override
-    public int getID() {
+    public Optional<ResourceId> getResourceId() {
+        if (id == NULL_RESOURCE_ID) return Optional.empty();
+
+        Property resourceIdProp = getProperty(Namespace.DEFAULT_NAMESPACE, PropertyType.EXTERNAL_ID_PROP_NAME);
+        if (resourceIdProp != null) {
+            return Optional.of(ResourceId.fromString(resourceIdProp.getStringValue()));
+        }
+
+        // Since property externalId is not mandatory, we have fallback to providing the numric ID without host/repositoryId.
+        return Optional.of(new ResourceId(id));
+    }
+
+    public int getNumericId() {
         return this.id;
     }
 
-    public void setID(int id) {
+    public void setNumericId(int id) {
         this.id = id;
     }
      
@@ -124,7 +143,12 @@ public class PropertySetImpl implements PropertySet, Cloneable {
             this.aclInheritedFrom = NULL_RESOURCE_ID;
         }
     }
-    
+
+    /**
+     * Get numeric id of resource from which this resource inherits its ACL.
+     *
+     * @return number &gt;= 0, or {@link #NULL_RESOURCE_ID} if not set
+     */
     public int getAclInheritedFrom() {
         return this.aclInheritedFrom;
     }

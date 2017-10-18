@@ -103,16 +103,6 @@
     <result property="userOrGroupName" column="user_or_group_name" />
   </resultMap>
   
-<!--  <resultMap id="Lock" type="java.util.HashMap">
-    <result property="id" column="lock_id" javaType="int" />
-    <result property="resourceId" column="resource_id" javaType="int" />
-    <result property="uri" column="uri" />
-    <result property="token" column="token" />
-    <result property="owner" column="lock_owner" />
-    <result property="ownerInfo" column="lock_owner_info" />
-    <result property="depth" column="depth" />
-    <result property="timeout" column="timeout" javaType="date" />
-  </resultMap>-->
   <resultMap id="Lock" type="vtk.repository.Lock">
     <constructor>
       <arg column="token" javaType="string"/>
@@ -156,6 +146,9 @@
     <result property="timestamp" column="timestamp" javaType="date"/>
   </resultMap>
 
+  <select id="getResourcePath" parameterType="java.lang.Integer" resultType="vtk.repository.Path">
+    select uri from vortex_resource where resource_id = #{value} and uri like '/%'
+  </select>
 
   <select id="loadResourceByUri" resultMap="Resource">
     select * from vortex_resource where uri = #{value}

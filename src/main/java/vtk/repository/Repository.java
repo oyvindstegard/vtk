@@ -33,6 +33,7 @@ package vtk.repository;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.List;
+import vtk.repository.resourcetype.PropertyType;
 
 import vtk.repository.search.QueryException;
 import vtk.repository.search.ResultSet;
@@ -158,6 +159,22 @@ public interface Repository {
 
     public Resource retrieve(String token, Path uri, boolean forProcessing, Revision revision) throws ResourceNotFoundException,
             AuthorizationException, AuthenticationException, IOException;
+
+    /**
+     * Retrieve a resource by id, meaning the same ID as exposed by property
+     * {@link PropertyType#EXTERNAL_ID_PROP_NAME externalId} and {@link PropertySet#getResourceId() }.
+     *
+     * <p>A resource ID is independent of path and stays the same for the
+     * entire life cycle of a repository resource.
+     * @param token
+     * @param id the resource id
+     * @param forProcessing
+     *            is the request for uio:read-processed (true) or dav:read
+     *            (false)
+     * @return
+     */
+    public Resource retrieveById(String token, ResourceId id, boolean forProcessing)
+            throws RepositoryException, AuthenticationException, AuthorizationException, IOException;
 
     /**
      * Returns a listing of the immediate children of a resource.
@@ -714,7 +731,7 @@ public interface Repository {
      *            <code>infinity</code>
      *
      * @param requestedTimoutSeconds
-     *            the timeout period wanted (in seconds)
+     *            the timeout period wanted (in seconds), or value &lt;= 0 to get the default repository lock timeout
      *
      * @param lockToken
      *            if <code>null</code>, an attempt is made to lock the resource, otherwise

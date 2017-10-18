@@ -32,6 +32,7 @@ package vtk.repository;
 
 import java.util.Date;
 import java.util.List;
+import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Required;
 
@@ -50,7 +51,7 @@ public class ProcessedContentEventDumperOpen extends AbstractDBEventDumper {
     public void created(Resource resource, Principal principal) {
         List<ChangeLogEntry> entries = changeLogEntries(resource.getURI(), 
                 Operation.CREATED,
-                -1, resource.isCollection(), new Date());
+                Optional.empty(), resource.isCollection(), new Date());
         
         changeLogDAO.addChangeLogEntries(entries, DescendantsSpec.SUBTREE);
 
@@ -58,7 +59,7 @@ public class ProcessedContentEventDumperOpen extends AbstractDBEventDumper {
 
     @Override
     public void deleted(Resource resource, Principal principal) {
-        List<ChangeLogEntry> entries = changeLogEntries(resource.getURI(), Operation.DELETED, resource.getID(), resource.isCollection(), new Date());
+        List<ChangeLogEntry> entries = changeLogEntries(resource.getURI(), Operation.DELETED, resource.getResourceId(), resource.isCollection(), new Date());
         
         changeLogDAO.addChangeLogEntries(entries, DescendantsSpec.NONE);
     }
@@ -71,21 +72,21 @@ public class ProcessedContentEventDumperOpen extends AbstractDBEventDumper {
 
     @Override
     public void modified(Resource resource, Resource originalResource, Principal principal) {
-        List<ChangeLogEntry> entries = changeLogEntries(resource.getURI(), Operation.MODIFIED_PROPS, -1, resource.isCollection(), new Date());
+        List<ChangeLogEntry> entries = changeLogEntries(resource.getURI(), Operation.MODIFIED_PROPS, Optional.empty(), resource.isCollection(), new Date());
         
         changeLogDAO.addChangeLogEntries(entries, DescendantsSpec.NONE);
     }
 
     @Override
     public void modifiedInheritableProperties(Resource resource, Resource originalResource, Principal principal) {
-        List<ChangeLogEntry> entries = changeLogEntries(resource.getURI(), Operation.MODIFIED_PROPS, -1, resource.isCollection(), new Date());
+        List<ChangeLogEntry> entries = changeLogEntries(resource.getURI(), Operation.MODIFIED_PROPS, Optional.empty(), resource.isCollection(), new Date());
         
         changeLogDAO.addChangeLogEntries(entries, DescendantsSpec.SUBTREE);
     }
 
     @Override
     public void contentModified(Resource resource, Resource original, Principal principal) {
-        List<ChangeLogEntry> entries = changeLogEntries(resource.getURI(), Operation.MODIFIED_CONTENT, -1, resource.isCollection(), new Date());
+        List<ChangeLogEntry> entries = changeLogEntries(resource.getURI(), Operation.MODIFIED_CONTENT, Optional.empty(), resource.isCollection(), new Date());
         
         changeLogDAO.addChangeLogEntries(entries, DescendantsSpec.NONE);
     }
@@ -135,7 +136,7 @@ public class ProcessedContentEventDumperOpen extends AbstractDBEventDumper {
  
         Operation op = newAllowsReadForAll ? Operation.ACL_READ_ALL_YES : Operation.ACL_READ_ALL_NO;
         
-        List<ChangeLogEntry> entries = changeLogEntries(resource.getURI(), op, ((ResourceImpl) resource).getID(), resource.isCollection(), new Date());
+        List<ChangeLogEntry> entries = changeLogEntries(resource.getURI(), op, ((ResourceImpl) resource).getResourceId(), resource.isCollection(), new Date());
         if (resource.isInheritedAcl()) {
             changeLogDAO.addChangeLogEntries(entries, DescendantsSpec.ACL_INHERITED_TO_INHERITANCE);
         } else {

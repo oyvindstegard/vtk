@@ -19,7 +19,7 @@ resourcetype structured-project {
     relatedGroups : resource_ref multiple,
     rssFeeds : json (rssTitle:string, rssUrl:string) multiple,
     getExternalScientificInformation : boolean defaultvalue("false"),
-    projectNr : string trim,
+    nfrProjectNr : string trim,
     numberOfPublications : string,
     selectedPublications : html noextract,
     related-content : html noextract,
@@ -34,7 +34,7 @@ resourcetype structured-project {
     tags tooltip (en : "(Tag1, Tag2, ...)", no : "(Emneord1, Emneord2, ...)", nn : "(Emneord1, Emneord2, ...)"),
     tags (class[vrtx-autocomplete-tag]),
     participantsCachedFullNames (noedit),
-    group combinedPublications (getExternalScientificInformation, projectNr, numberOfPublications, selectedPublications) (after rssFeeds),
+    group combinedPublications (getExternalScientificInformation, nfrProjectNr, numberOfPublications, selectedPublications) (after rssFeeds),
     numberOfPublications (dropdown)
   }
 
@@ -72,8 +72,8 @@ resourcetype structured-project {
 	  ##
 	  [def document structured-document()]
 	  [def getExternalPublications document.properties.getExternalScientificInformation]
-	  [def projectNr document.properties.projectNr]
-	  [if getExternalPublications = "true" && projectNr != null]
+	  [def nfrProjectNr document.properties.nfrProjectNr]
+	  [if getExternalPublications = "true" && nfrProjectNr != null]
 	    [call "include:publications"]
 	  [else]
 	    [def selectedPublications document.properties.selectedPublications]
@@ -293,20 +293,30 @@ resourcetype structured-project {
     caption : (en : "Image caption", no : "Bildetekst", nn : "Bilettekst"),
     photo-prefix : (en : "Photo", no : "Foto", nn : "Foto"),
     hidePicture : (en : "Hide image in project", no : "Skjul bilde i prosjekt", nn : "Skjul bilete i prosjekt"),
-    related-content : (en : "Related content (right column)", no : "Relatert innhold (vises i høyre kolonne)", nn : "Relatert innhald (visast i høgre kolonne)"),
+    related-content : (en : "Related content (right column)",
+                       no : "Relatert innhold (vises i høyre kolonne)",
+                       nn : "Relatert innhald (visast i høgre kolonne)"),
     participantsHeader : (en : "Participants", no : "Deltakere", nn : "Deltakarar"),
-    participantsUsernames : (en : "Participants from UiO (enter the participant username)",no : "Deltakere fra UiO (fyll inn deltakerens brukernavn)", nn :"Deltakarar fra UiO (fyll inn deltakarens brukernavn)"),
+    participantsUsernames : (en : "Participants from UiO (enter the participant username)",
+                             no : "Deltakere fra UiO (fyll inn deltakerens brukernavn)",
+                             nn :"Deltakarar fra UiO (fyll inn deltakarens brukernavn)"),
     participants : (en : "Other participants", no : "Andre deltakere", nn : "Andre deltakarar"),
     participantName : (en : "Name",no : "Navn", nn :"Namn"),
     participantUrl : (en : "Webaddress",no : "Webadresse", nn :"Webadresse"),
-    relatedGroups : (en : "Involved research groups", no : "Involverte forskergrupper", nn : "Involverte forskargrupper"),
+    relatedGroups : (en : "Involved research groups",
+                     no : "Involverte forskergrupper",
+                     nn : "Involverte forskargrupper"),
     rssFeeds : (en : "Subscribe to RSS-feeds",no : "Abonner på RSS-strømmer", nn :"Abonner på RSS-strømmar"),
     rssTitle : (en : "Title",no : "Tittel", nn : "Tittel"),
     rssUrl : (en : "Webaddress",no : "Webadresse", nn :"Webadresse"),
     combinedPublications : (en : "Publications", no : "Publikasjoner", nn : "Publikasjonar"),
-    getExternalScientificInformation : (en : "Show publications registered in Cristin", no : "Vis publikasjoner rapportert i Cristin", nn : "Vis publikasjonar rapporterte i Cristin"),
-    projectNr : (en : "The project's Cristin ID", no : "Prosjektets Cristin-ID", nn : "Prosjektets Cristin-ID"),
-    numberOfPublications : (en : "Maximum number of publications from Cristin", no : "Maks antall publikasjoner fra Cristin", nn : "Maks antall publikasjonar frå Cristin"),
+    getExternalScientificInformation : (en : "Show publications registered in Cristin (only for projects funded by The Research Council)",
+                                        no : "Vis publikasjoner rapportert i Cristin (kun for NFR-prosjekter)",
+                                        nn : "Vis publikasjonar rapporterte i Cristin (kun for NFR-prosjektar)"),
+    nfrProjectNr : (en : "NFR project number", no : "NFR-prosjektnummer", nn : "NFR-prosjektnummer"),
+    numberOfPublications : (en : "Maximum number of publications from Cristin",
+                            no : "Maks antall publikasjoner fra Cristin",
+                            nn : "Maks antall publikasjonar frå Cristin"),
     selectedPublications : (en : "Selected publications", no : "Utvalgte publikasjoner", nn : "Utvalde publikasjonar"),
     tags : (en : "Tags", no : "Emneord", nn : "Emneord"),
     content : (en : "Content", no :"Innhold", nn : "Innhold"),
