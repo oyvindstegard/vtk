@@ -1,6 +1,6 @@
 /*
  * Async Treeview 0.1 - Lazy-loading extension for Treeview
- * 
+ *
  * http://bassistance.de/jquery-plugins/jquery-plugin-treeview/
  *
  * Copyright (c) 2007 JÃ¶rn Zaefferer
@@ -32,8 +32,9 @@
     function createNode(parent) {
       var linkOrPlainText = "";
       var theuri = this.uri;
-      var text = this.text;
+      var text = vrtxAdmin.escapeHtml(this.text);
       if (theuri) {
+        theuri = vrtxAdmin.escapeHtml(theuri);
         var title = this.title;
         if (title) {
           linkOrPlainText = "<a class='tree-link' href='" + theuri + "' title='" + title + "'>" + text + "</a>"
@@ -46,7 +47,7 @@
       var current = $("<li/>").attr("id", this.id || "")
                               .html("<span>" + linkOrPlainText + "</span>")
                               .appendTo(parent);
-                             
+
       if (this.listClasses) current.addClass(this.listClasses);
       if (this.spanClasses) current.children("span").addClass(this.spanClasses);
       if (this.expanded) current.addClass("open");
@@ -57,7 +58,7 @@
           current.addClass("hasChildren");
           createNode.call({
             classes: "placeholder",
-            text: "&nbsp;",
+            text: " ",
             children: []
           }, branch);
         }
