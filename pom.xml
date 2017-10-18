@@ -399,6 +399,7 @@
                 <script><![CDATA[
                 def testFolder = "${project.build.directory}/vtk-test"
                 new File(testFolder).mkdir()
+                new File("${testFolder}/tmp").mkdir()
                 new File("${testFolder}/index").mkdir()
                 new File("${testFolder}/data").mkdir()
                 new File("${testFolder}/trash").mkdir()
@@ -566,6 +567,7 @@
           <systemPropertyVariables>
             <buildDirectory>${project.build.directory}</buildDirectory>
             <log4j.configurationFile>log4j2.test.xml</log4j.configurationFile>
+            <java.io.tmpdir>${project.build.directory}/vtk-test/tmp</java.io.tmpdir>
           </systemPropertyVariables>
           <includes>
             <include>**/*IntegrationTest.java</include>
