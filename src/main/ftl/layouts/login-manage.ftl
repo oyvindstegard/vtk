@@ -5,7 +5,8 @@
 <#if options?has_content>
   <#assign type = "login-manage" />
 
-  <#-- First option => visible dropdown toggler (and link if not principal desc.) -->
+  <#-- First option => visible dropdown toggler (with link if not principal description) -->
+  
   <#list options?keys as opt>
     <#if opt_index == 1><#break /></#if>
     <#if opt = "principal-desc">
@@ -19,6 +20,7 @@
   </#list>
   
   <#-- Rest of options => dropdown list -->
+  
   <#if (options?size > 1)>
     <!-- begin view dropdown js -->
     <script type="text/javascript" src="${jsUrl}"></script>
@@ -36,8 +38,10 @@
             <#if classes != ""><#assign classes = classes + " " /></#if>
             <#assign classes = classes + "vrtx-dropdown-last" />
           </#if>
+          
           <li<#if classes != ""> class="${classes}"</#if>>
             <#assign url = options[opt] />
+            
             <#if opt = "logout">
               <form action="${url}" method="post" class="vrtx-dropdown-form">
                 <@vrtx.csrfPreventionToken url=url />

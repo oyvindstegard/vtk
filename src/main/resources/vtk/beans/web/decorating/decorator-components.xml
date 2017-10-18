@@ -145,12 +145,15 @@
     abstract="true">
     <property name="namespace" ref="decorating.includeNamespace" />
     <property name="view" ref="decorating.loginManageComponent.view" />
-    <property name="alternativeLoginServices">
-      <map>
-        <entry key="admin" value-ref="manageService" />
-      </map>
-    </property>
     <property name="logoutService" ref="logoutService" />
+    <property name="manageService" ref="manageService" />
+    <property name="editServices">
+      <list>
+        <ref bean="ajaxeditor.service" />
+        <ref bean="structuredResources.editService" />
+        <ref bean="editor.service" />
+      </list>
+    </property>
   </bean>
 
   <bean id="decorating.loginManageComponent" parent="abstractLoginManageComponent">
