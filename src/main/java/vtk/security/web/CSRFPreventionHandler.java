@@ -529,6 +529,14 @@ public class CSRFPreventionHandler extends AbstractServletFilter implements Html
             }
             url.setRef(null);
 
+            // Don't generate and inject tokens for forms with action-URLs that have
+            // hostname different from the hostname in the current request
+            // (For now, we don't care about possible port differences.)
+            URL requestUrl = RequestContext.getRequestContext(request).getRequestURL();
+            if (!requestUrl.getHost().equals(url.getHost())) {
+                return NodeResult.keep;
+            }
+
             HttpSession session = request.getSession(false);
 
             if (session != null) {
