@@ -37,6 +37,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.runners.Enclosed;
 import org.junit.runner.RunWith;
+import vtk.security.AuthenticationException;
 import vtk.security.InvalidPrincipalException;
 import vtk.security.Principal;
 
@@ -551,4 +552,29 @@ public class PermissionsIntegrationTest extends RepositoryFixture {
 
     }
 
+    public static class ReadSource {
+
+        @Test
+        public void cannot_read_source_with_read_processed_privilege()
+                throws Exception
+        {
+            Path fileWithReadProcessedPrivilege = Path.fromString(
+                    "/permissions/portal-kun-les-transformert.xml"
+            );
+            repository.retrieve(
+                    null, fileWithReadProcessedPrivilege,true);
+            assertThatThrownBy(
+                    () -> repository.retrieve(
+                            null, fileWithReadProcessedPrivilege,false)
+            ).isInstanceOf(AuthenticationException.class);
+        }
+
+        @Test
+        public void can_read_source_with_read_privilege() throws Exception {
+            Path fileWithReadPrivilege = Path.fromString("/permissions/portal.xml");
+            repository.retrieve(null, fileWithReadPrivilege,true);
+            repository.retrieve(null, fileWithReadPrivilege,false);
+        }
+
+    }
 }
