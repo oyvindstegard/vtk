@@ -14,6 +14,11 @@
     </property>
   </bean>
 
+  <bean id="resourceTypeIsOdf" class="vtk.repository.resourcetype.ResourceTypeAssertion"
+        parent="repositoryAware">
+    <property name="resourceTypeDefinition" ref="odfResourceTypeDefinition" />
+  </bean>
+
   <bean id="odfTextResourceTypeDefinition"
         parent="primaryResourceType">
     <property name="name" value="odt"/>
@@ -60,31 +65,31 @@
 
   <bean id="contentTypeMatchesOdf" 
         class="vtk.repository.resourcetype.ResourceContentTypeRegexpAssertion">
-    <constructor-arg name="pattern" ref="odf.Pattern.contentTypeOdf" />
+    <constructor-arg ref="odf.Pattern.contentTypeOdf" />
   </bean>
 
   <bean id="contentTypeMatchesOdfText"
         class="vtk.repository.resourcetype.ResourceContentTypeRegexpAssertion">
-    <constructor-arg name="pattern" value="application/vnd\.oasis\.opendocument\.text" />
+    <constructor-arg value="application/vnd\.oasis\.opendocument\.text" />
   </bean>
 
   <bean id="contentTypeMatchesOdfPresentation" 
         class="vtk.repository.resourcetype.ResourceContentTypeRegexpAssertion">
-    <constructor-arg name="pattern" value="application/vnd\.oasis\.opendocument\.presentation" />
+    <constructor-arg value="application/vnd\.oasis\.opendocument\.presentation" />
   </bean>
   
   <bean id="contentTypeMatchesOdfSpreadsheet" 
         class="vtk.repository.resourcetype.ResourceContentTypeRegexpAssertion">
-    <constructor-arg name="pattern" value="application/vnd\.oasis\.opendocument\.spreadsheet" />
+    <constructor-arg value="application/vnd\.oasis\.opendocument\.spreadsheet" />
   </bean>
   
   <bean id="contentTypeMatchesOdfGraphics" 
         class="vtk.repository.resourcetype.ResourceContentTypeRegexpAssertion">
-    <constructor-arg name="pattern" value="application/vnd\.oasis\.opendocument\.graphics" />
+    <constructor-arg value="application/vnd\.oasis\.opendocument\.graphics" />
   </bean>
   
   <bean id="contentTypeMatchesOdfDatabase"  class="vtk.repository.resourcetype.ResourceContentTypeRegexpAssertion">
-    <constructor-arg name="pattern" value="application/vnd\.oasis\.opendocument\.database" />
+    <constructor-arg value="application/vnd\.oasis\.opendocument\.database" />
   </bean>
   
 </beans>
