@@ -37,6 +37,8 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.runners.Enclosed;
 import org.junit.runner.RunWith;
+import vtk.repository.resourcetype.ConstraintViolationException;
+import vtk.repository.resourcetype.PropertyType;
 import vtk.security.AuthenticationException;
 import vtk.security.InvalidPrincipalException;
 import vtk.security.Principal;
@@ -207,6 +209,117 @@ public class PermissionsIntegrationTest extends RepositoryFixture {
                     .findFirst();
             assertThat(comment.isPresent()).isTrue();
             repository.deleteComment(token, null, adminRightResource, comment.get());
+        }
+
+        @Test
+        public void acl_is_inherited_if_it_do_not_have_its_own_acl() throws Exception {
+            String token = newUserToken("vortex-test@uio.no");
+            Principal userLocalhost = principalFactory.getPrincipal(
+                    "user@localhost", Principal.Type.USER
+            );
+            Path testResourcePath = Path.fromString(
+                    "/permissions/rettighetshierarki/vortex-test-admin/test_acl_inheriance.html");
+            Resource testResource = repository.createDocument(
+                    token,
+                    null,
+                    testResourcePath,
+                    ContentInputSources.empty()
+            );
+            assertThat(testResource.isInheritedAcl()).isTrue();
+
+            Acl acl = testResource.getAcl().addEntry(Privilege.READ_WRITE, userLocalhost);
+            repository.storeACL(token, null, testResourcePath, acl);
+            testResource = repository.retrieve(token, testResourcePath, false);
+            assertThat(testResource.isInheritedAcl()).isFalse();
+            assertThat(
+                    testResource.getAcl().hasPrivilege(Privilege.READ_WRITE, userLocalhost)
+            ).isTrue();
+
+            repository.delete(
+                    token, null, testResourcePath, false
+            );
+        }
+
+        @Test
+        public void cannot_retrieve_without_privileges_even_if_owner() throws Exception {
+            String ownerToken = newUserToken("vortex-test@uio.no");
+            String rootToken = newUserToken("root@localhost");
+            Path testResourcePath = Path.fromString(
+                    "/permissions/rettighetshierarki/vortex-test-admin/no_read_for_vortex_test.html"
+            );
+            Path testCollectionPath = Path.fromString(
+                    "/permissions/rettighetshierarki/vortex-test-admin/no_read_for_vortex_test"
+            );
+
+            repository.createDocument(
+                    ownerToken,
+                    null,
+                    testResourcePath,
+                    ContentInputSources.empty()
+            );
+            repository.createCollection(
+                    ownerToken,
+                    null,
+                    testCollectionPath
+            );
+            repository.storeACL(rootToken, null, testResourcePath, Acl.EMPTY_ACL);
+            repository.storeACL(rootToken, null, testCollectionPath, Acl.EMPTY_ACL);
+
+            assertThatThrownBy(
+                    () -> repository.retrieve(ownerToken, testResourcePath, true)
+            ).isInstanceOf(AuthorizationException.class);
+
+            assertThatThrownBy(
+                    () -> repository.retrieve(ownerToken, testCollectionPath, true)
+            ).isInstanceOf(AuthorizationException.class);
+
+            repository.delete(
+                    rootToken, null, testResourcePath, false
+            );
+            repository.delete(
+                    rootToken, null, testCollectionPath, false
+            );
+        }
+
+        @Test
+        public void can_change_owner_only_to_self() throws Exception {
+            String ownerToken = newUserToken("vortex-test@uio.no");
+            Principal ownerPrincipal = tokenManager.getPrincipal(ownerToken);
+            String rootToken = newUserToken("root@localhost");
+            Path testResourcePath = Path.fromString(
+                    "/permissions/rettighetshierarki/vortex-test-admin/change_owner.html"
+            );
+
+            final Resource testResource = repository.createDocument(
+                    rootToken,
+                    null,
+                    testResourcePath,
+                    ContentInputSources.empty()
+            );
+
+            Property ownerProperty = testResource.getProperty(
+                    Namespace.DEFAULT_NAMESPACE, PropertyType.OWNER_PROP_NAME
+            );
+            assertThat(ownerProperty.getValue().getPrincipalValue())
+                    .isEqualTo(testResource.getOwner());
+
+            ownerProperty.setPrincipalValue(
+                    principalFactory.getPrincipal("user@localhost", Principal.Type.USER)
+            );
+            testResource.addProperty(ownerProperty);
+            assertThatThrownBy(
+                    () -> repository.store(ownerToken, null, testResource)
+            ).isInstanceOf(ConstraintViolationException.class);
+
+            ownerProperty.setPrincipalValue(ownerPrincipal);
+            testResource.addProperty(ownerProperty);
+            repository.store(ownerToken, null, testResource);
+            Resource updatedResource = repository.retrieve(ownerToken, testResourcePath, false);
+            assertThat(updatedResource.getOwner()).isEqualTo(ownerPrincipal);
+
+            repository.delete(
+                    rootToken, null, testResourcePath, false
+            );
         }
 
     }
