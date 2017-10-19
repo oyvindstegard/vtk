@@ -19,20 +19,6 @@
     </property>
   </bean>
 
-  <bean id="getXmlSourceService" class="vtk.web.service.ServiceImpl">
-    <property name="order" value="-1" />
-    <property name="parent" ref="viewService" />
-    <property name="assertions">
-      <list>
-        <ref bean="vrtxParameterIsSourceAssertion" />
-        <bean class="vtk.repository.resourcetype.ResourceTypeAssertion" parent="repositoryAware">
-          <property name="resourceTypeDefinition" ref="xmlResource" />
-        </bean>
-      </list>
-    </property>
-    <property name="handler" ref="webdavGetHandler" />
-  </bean>
-
   <bean id="vrtxParameterIsSourceAssertion" class="vtk.web.service.RequestParameterAssertion">
     <property name="parameterName" value="vrtx" />
     <property name="parameterValue" value="source" />

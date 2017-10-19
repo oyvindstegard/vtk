@@ -198,7 +198,7 @@ public class DisplayResourceController
 
         if (!resource.isCollection()) {
 
-            InputStream stream = repository.getInputStream(token, uri, true);
+            InputStream stream = repository.getInputStream(token, uri, this.displayProcessed);
             
             if (this.streamToString) {
                 stream = new BoundedInputStream(stream, streamToStringLimit);
@@ -210,8 +210,6 @@ public class DisplayResourceController
                 }
                 return new ModelAndView(this.viewName, model);
             }
-            
-
             
             // Provide as string instead of stream
             String characterEncoding = resource.getCharacterEncoding();
