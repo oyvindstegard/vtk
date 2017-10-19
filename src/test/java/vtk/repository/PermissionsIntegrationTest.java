@@ -87,6 +87,11 @@ public class PermissionsIntegrationTest extends RepositoryFixture {
             assertThat(comments.get(0).getTitle()).isEqualTo("Test");
             assertThat(comments.get(0).getContent()).isEqualTo("Test comment");
             assertThatThrownBy(
+                    () -> repository.storeACL(
+                            token, article.getLock().getLockToken(), articlePath, Acl.EMPTY_ACL
+                    )
+            );
+            assertThatThrownBy(
                     () -> repository.deleteACL(token, article.getLock().getLockToken(), articlePath)
             ).isInstanceOf(AuthorizationException.class);
             repository.unlock(token, articlePath, article.getLock().getLockToken());
