@@ -35,6 +35,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 import vtk.repository.Resource;
 import vtk.security.Principal;
@@ -55,4 +56,11 @@ public class RepositoryOrAssertion implements RepositoryAssertion {
             .isPresent();
     }
 
+    @Override
+    public String toString() {
+        return assertions
+            .stream()
+            .map(x -> x.toString())
+            .collect(Collectors.joining(" or "));
+    }
 }
