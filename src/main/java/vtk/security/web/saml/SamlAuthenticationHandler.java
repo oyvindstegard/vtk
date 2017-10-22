@@ -357,12 +357,11 @@ public class SamlAuthenticationHandler implements AuthenticationChallenge, Authe
 
             // In this state, Vortex should normally have a user token stored
             final Principal principal = RequestContext.getRequestContext(request).getPrincipal();
-
-            this.logout.handleLogoutRequest(request, response);
-
             if (principal != null) {
                 publishLogoutEvent(request, principal);
             }
+
+            this.logout.handleLogoutRequest(request, response);
 
             setHeaders(response);
             return null;
