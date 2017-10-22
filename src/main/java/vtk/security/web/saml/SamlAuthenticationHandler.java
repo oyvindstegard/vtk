@@ -33,11 +33,8 @@ package vtk.security.web.saml;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
-import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.Random;
 
@@ -48,7 +45,10 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.annotation.Required;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.ApplicationContextAware;
 import org.springframework.web.servlet.ModelAndView;
 import org.springframework.web.servlet.mvc.Controller;
 
@@ -60,15 +60,18 @@ import vtk.security.PrincipalFactory;
 import vtk.security.web.AuthenticationChallenge;
 import vtk.security.web.AuthenticationHandler;
 import vtk.security.web.InvalidAuthenticationRequestException;
+import vtk.util.web.HttpUtil;
 import vtk.web.InvalidRequestException;
+import vtk.web.RequestContext;
 import vtk.web.service.WebAssertion;
 import vtk.web.service.Service;
 import vtk.web.service.URL;
 
 /**
- * Skeleton of what will be a SAML Web browser SSO authentication handler/challenge
+ * SAML authentication handler.
  */
-public class SamlAuthenticationHandler implements AuthenticationChallenge, AuthenticationHandler, Controller {
+public class SamlAuthenticationHandler implements AuthenticationChallenge, AuthenticationHandler,
+        Controller, ApplicationContextAware {
 
     private String identifier;
     private Challenge challenge;
@@ -89,8 +92,6 @@ public class SamlAuthenticationHandler implements AuthenticationChallenge, Authe
     private String ieReturnURL;
 
     private Map<String, String> staticHeaders = new HashMap<>();
-
-    private Collection<LoginListener> loginListeners;
 
     private PrincipalFactory principalFactory;
 
@@ -113,6 +114,8 @@ public class SamlAuthenticationHandler implements AuthenticationChallenge, Authe
     private String backstepParameter = "backsteps";
 
     private final Logger authDebugLog = LoggerFactory.getLogger("vtk.security.web.AUTH_DEBUG");
+
+    private ApplicationContext applicationContext;
 
     @Override
     public void challenge(HttpServletRequest request, HttpServletResponse response)
@@ -160,17 +163,9 @@ public class SamlAuthenticationHandler implements AuthenticationChallenge, Authe
         }
         String id = userData.getUsername();
         Principal principal = this.principalFactory.getPrincipal(id, Principal.Type.USER);
-        if (this.loginListeners != null) {
-            for (LoginListener listener : this.loginListeners) {
-                try {
-                    listener.onLogin(principal, userData);
-                } catch (Exception e) {
-                    authLogger.debug(request.getRemoteAddr() + " - request-URI: " + request.getRequestURI() + " - "
-                            + "Failed to invoke login listener: " + listener);
-                    throw new AuthenticationProcessingException("Failed to invoke login listener: " + listener, e);
-                }
-            }
-        }
+
+        publishLoginEvent(request, principal, userData);
+
         return new AuthResult(principal.getQualifiedName());
     }
 
@@ -294,45 +289,40 @@ public class SamlAuthenticationHandler implements AuthenticationChallenge, Authe
 
         this.logout.initiateLogout(request, response);
 
+        publishLogoutEvent(request, principal);
+
         setHeaders(response);
         return true;
     }
 
     private void removeCookies(HttpServletRequest request, HttpServletResponse response) {
-        Cookie c = getCookie(request, uioAuthSSO);
-
-        if (c != null) {
+        HttpUtil.getCookie(request, uioAuthSSO).ifPresent(c -> {
             if (logger.isDebugEnabled()) {
                 logger.debug("Deleting cookie " + uioAuthSSO);
             }
-            c = new Cookie(uioAuthSSO, c.getValue());
-
-            c.setPath("/");
+            Cookie deleteCookie = new Cookie(c.getName(), c.getValue());
+            deleteCookie.setPath("/");
             if (this.spCookieDomain != null) {
-                c.setDomain(this.spCookieDomain);
+                deleteCookie.setDomain(this.spCookieDomain);
             }
-            c.setMaxAge(0);
-            response.addCookie(c);
-        }
-        List<String> spCookies = new ArrayList<>();
-        spCookies.add(vrtxAuthSP);
-        spCookies.add(uioAuthIDP);
+            deleteCookie.setMaxAge(0);
+            response.addCookie(deleteCookie);
+        });
 
-        for (String cookie : spCookies) {
-            c = getCookie(request, cookie);
-            if (c != null) {
+        for (String cookieName : new String[]{vrtxAuthSP, uioAuthIDP}) {
+            HttpUtil.getCookie(request, cookieName).ifPresent(c -> {
                 if (logger.isDebugEnabled()) {
-                    logger.debug("Deleting cookie " + cookie);
+                    logger.debug("Deleting cookie " + cookieName);
                 }
-                c = new Cookie(cookie, c.getValue());
-                c.setSecure(true);
-                c.setPath("/");
+                Cookie deleteCookie = new Cookie(c.getName(), c.getValue());
+                deleteCookie.setSecure(true);
+                deleteCookie.setPath("/");
                 if (this.spCookieDomain != null) {
-                    c.setDomain(this.spCookieDomain);
+                    deleteCookie.setDomain(this.spCookieDomain);
                 }
-                c.setMaxAge(0);
-                response.addCookie(c);
-            }
+                deleteCookie.setMaxAge(0);
+                response.addCookie(deleteCookie);
+            });
         }
     }
 
@@ -364,17 +354,40 @@ public class SamlAuthenticationHandler implements AuthenticationChallenge, Authe
             }
         } else if (logout.isLogoutRequest(request)) {
             // Logout request from IDP (based on some other SP's request)
+
+            // In this state, Vortex should normally have a user token stored
+            final Principal principal = RequestContext.getRequestContext(request).getPrincipal();
+
             this.logout.handleLogoutRequest(request, response);
+
+            if (principal != null) {
+                publishLogoutEvent(request, principal);
+            }
+
             setHeaders(response);
             return null;
-        } else if (this.logout.isLogoutResponse(request)) {
+        } else if (logout.isLogoutResponse(request)) {
             // Logout response (based on our request) from IDP
+
+            // Local LogoutEvent has already been published earlier in the logout() method of this class
+
             this.logout.handleLogoutResponse(request, response);
+
             setHeaders(response);
             return null;
         }
         // Request is neither logout request nor logout response nor login response.
         throw new InvalidRequestException("Invalid SAML request: ");
+    }
+
+    private void publishLoginEvent(HttpServletRequest request, Principal principal, UserData userData) {
+        logger.debug("SAML login event for principal {} on host {}", principal.getQualifiedName(), request.getHeader("Host"));
+        applicationContext.publishEvent(new SamlLoginEvent(this, request, principal, userData));
+    }
+
+    private void publishLogoutEvent(HttpServletRequest request, Principal principal) {
+        logger.debug("SAML logout event for principal {} on host {}", principal.getQualifiedName(), request.getHeader("Host"));
+        applicationContext.publishEvent(new SamlLogoutEvent(this, request, principal));
     }
 
     @Override
@@ -443,10 +456,6 @@ public class SamlAuthenticationHandler implements AuthenticationChallenge, Authe
         this.postHandler = postHandler;
     }
 
-    public void setLoginListeners(Collection<LoginListener> loginListeners) {
-        this.loginListeners = loginListeners;
-    }
-
     public void setStaticHeaders(Map<String, String> staticHeaders) {
         this.staticHeaders = staticHeaders;
     }
@@ -490,16 +499,9 @@ public class SamlAuthenticationHandler implements AuthenticationChallenge, Authe
         this.manageAssertion = manageAssertion;
     }
 
-    public static Cookie getCookie(HttpServletRequest request, String name) {
-        Cookie[] cookies = request.getCookies();
-        if (cookies == null) {
-            return null;
-        }
-        for (Cookie cookie : cookies) {
-            if (name.equals(cookie.getName())) {
-                return cookie;
-            }
-        }
-        return null;
+    @Override
+    public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
+        this.applicationContext = applicationContext;
     }
+
 }

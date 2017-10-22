@@ -54,6 +54,7 @@ import vtk.security.PrincipalFactory;
 import vtk.security.SecurityContext;
 import vtk.security.token.TokenManager;
 import vtk.security.web.AuthenticationHandler.AuthResult;
+import vtk.util.web.HttpUtil;
 import vtk.web.RequestContext;
 import vtk.web.service.Service;
 import vtk.web.service.WebAssertion;
@@ -145,7 +146,7 @@ public class SecurityInitializer {
                         + " in request session, setting security context");
                 SecurityContext.setSecurityContext(new SecurityContext(token, principal, this), req);
 
-                if (getCookie(req, VRTXLINK_COOKIE) == null && cookieLinksEnabled) {
+                if (! HttpUtil.getCookie(req, VRTXLINK_COOKIE).isPresent() && cookieLinksEnabled) {
                     UUID cookieLinkID = cookieLinkStore.addToken(req, token);
                     Cookie c = new Cookie(VRTXLINK_COOKIE, cookieLinkID.toString());
                     c.setPath("/");
@@ -292,33 +293,34 @@ public class SecurityInitializer {
                     + "' - method: '<none>' - status: OK");
         }
         if (this.rememberAuthMethod) {
-            List<String> spCookies = new ArrayList<>();
-            spCookies.add(vrtxAuthSP);
-            spCookies.add(uioAuthIDP);
-            spCookies.add(VRTXLINK_COOKIE);
-			spCookies.add(uioAuthSSO);
-
-            for (String cookie : spCookies) {
-                Cookie c = getCookie(request, cookie);
-                if (c != null) {
+            for (String cookieName : new String[] {
+                vrtxAuthSP,
+                uioAuthIDP,
+                VRTXLINK_COOKIE,
+                uioAuthSSO
+                })
+            {
+                HttpUtil.getCookie(request, cookieName)
+                        .map(Cookie::getValue)
+                        .ifPresent(cookieValue -> {
                     if (logger.isDebugEnabled()) {
-                        logger.debug("Deleting cookie " + cookie);
+                        logger.debug("Deleting cookie " + cookieName);
                     }
                     if (authLogger.isDebugEnabled()) {
                         authLogger.debug(request.getRemoteAddr() + " - request-URI: " + request.getRequestURI() + " - "
-                                + "Deleting cookie " + cookie);
+                                + "Deleting cookie " + cookieName);
                     }
-                    c = new Cookie(cookie, c.getValue());
-                    if (!cookie.equals(VRTXLINK_COOKIE)) {
-                        c.setSecure(true);
+                    Cookie deleteCookie = new Cookie(cookieName, cookieValue);
+                    if (!cookieName.equals(VRTXLINK_COOKIE)) {
+                        deleteCookie.setSecure(true);
                     }
-                    c.setPath("/");
-                    if (spCookieDomain != null && !cookie.equals(VRTXLINK_COOKIE)) {
-                        c.setDomain(spCookieDomain);
+                    deleteCookie.setPath("/");
+                    if (spCookieDomain != null && !cookieName.equals(VRTXLINK_COOKIE)) {
+                        deleteCookie.setDomain(spCookieDomain);
                     }
-                    c.setMaxAge(0);
-                    response.addCookie(c);
-                }
+                    deleteCookie.setMaxAge(0);
+                    response.addCookie(deleteCookie);
+                });
             }
         }
 
@@ -380,23 +382,22 @@ public class SecurityInitializer {
                 spCookies.add(VRTXLINK_COOKIE);
             }
 
-            for (String cookie : spCookies) {
-                Cookie c = getCookie(request, cookie);
-                if (c != null) {
+            for (final String cookieName : spCookies) {
+                HttpUtil.getCookie(request, cookieName).map(Cookie::getValue).ifPresent(cookieValue -> {
                     if (logger.isDebugEnabled()) {
-                        logger.debug("Deleting cookie " + cookie);
+                        logger.debug("Deleting cookie " + cookieName);
                     }
-                    c = new Cookie(cookie, c.getValue());
-                    if (!cookie.equals(VRTXLINK_COOKIE)) {
-                        c.setSecure(true);
+                    Cookie deleteCookie = new Cookie(cookieName, cookieValue);
+                    if (!cookieName.equals(VRTXLINK_COOKIE)) {
+                        deleteCookie.setSecure(true);
                     }
-                    c.setPath("/");
-                    if (spCookieDomain != null && !cookie.equals(VRTXLINK_COOKIE)) {
-                        c.setDomain(this.spCookieDomain);
+                    deleteCookie.setPath("/");
+                    if (spCookieDomain != null && !cookieName.equals(VRTXLINK_COOKIE)) {
+                        deleteCookie.setDomain(this.spCookieDomain);
                     }
-                    c.setMaxAge(0);
-                    response.addCookie(c);
-                }
+                    deleteCookie.setMaxAge(0);
+                    response.addCookie(deleteCookie);
+                });
             }
         }
 
@@ -478,24 +479,24 @@ public class SecurityInitializer {
             }
         }
         if (request.getCookies() != null && !request.isSecure()) {
-            Cookie c = getCookie(request, VRTXLINK_COOKIE);
-            logger.debug("Cookie: " + VRTXLINK_COOKIE + ": " + c);
-            if (c != null) {
+            Optional<String> cookieValue = HttpUtil.getCookie(request, VRTXLINK_COOKIE).map(Cookie::getValue);
+            logger.debug("Cookie: " + VRTXLINK_COOKIE + ": " + cookieValue);
+            if (cookieValue.isPresent()) {
                 UUID id;
                 try {
-                    id = UUID.fromString(c.getValue());
+                    id = UUID.fromString(cookieValue.get());
                 }
                 catch (Throwable t) {
-                    logger.debug("Invalid UUID cookie value: " + c.getValue(), t);
+                    logger.debug("Invalid UUID cookie value: " + cookieValue.get(), t);
                     return null;
                 }
                 String token = this.cookieLinkStore.getToken(request, id);
                 if (token == null) {
                     logger.debug("No token found from cookie " + VRTXLINK_COOKIE + ", deleting cookie");
-                    c = new Cookie(VRTXLINK_COOKIE, c.getValue());
-                    c.setPath("/");
-                    c.setMaxAge(0);
-                    response.addCookie(c);
+                    Cookie deleteCookie = new Cookie(VRTXLINK_COOKIE, cookieValue.get());
+                    deleteCookie.setPath("/");
+                    deleteCookie.setMaxAge(0);
+                    response.addCookie(deleteCookie);
                 }
                 else {
                     logger.debug("Found token " + token + " from cookie " + VRTXLINK_COOKIE);
@@ -573,11 +574,9 @@ public class SecurityInitializer {
     private AuthenticationChallenge getAuthenticationChallenge(HttpServletRequest request, Service service) {
         AuthenticationChallenge challenge = null;
         if (this.rememberAuthMethod) {
-            Cookie c = getCookie(request, vrtxAuthSP);
-            if (c != null) {
-                String id = c.getValue();
-                
-                Optional<AuthenticationHandler> handler = authHandlerRegistry.lookup(id);
+            Optional<String> id = HttpUtil.getCookie(request, vrtxAuthSP).map(Cookie::getValue);
+            if (id.isPresent()) {
+                Optional<AuthenticationHandler> handler = authHandlerRegistry.lookup(id.get());
                 if (handler.isPresent() && spCookieHandlers.contains(handler.get())) {
                     challenge = handler.get().getAuthenticationChallenge();
                 }
@@ -605,19 +604,6 @@ public class SecurityInitializer {
             return getAuthenticationChallenge(request, service.getParent());
         }
         return challenge;
-    }
-
-    private static Cookie getCookie(HttpServletRequest request, String name) {
-        Cookie[] cookies = request.getCookies();
-        if (cookies == null) {
-            return null;
-        }
-        for (Cookie cookie : cookies) {
-            if (name.equals(cookie.getName())) {
-                return cookie;
-            }
-        }
-        return null;
     }
 
     public void setVrtxAuthSP(String vrtxAuthSP) {

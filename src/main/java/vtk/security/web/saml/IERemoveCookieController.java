@@ -12,6 +12,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.web.servlet.ModelAndView;
 import org.springframework.web.servlet.mvc.Controller;
+import vtk.util.web.HttpUtil;
 import vtk.web.service.URL;
 
 /**
@@ -37,9 +38,9 @@ public class IERemoveCookieController implements Controller {
         URL currentURL = URL.create(request);
 
         String cookieTicket = request.getParameter(ieCookieLogoutTicket);
-        List<String> cookiesToDelete = new ArrayList<String>();
+        List<String> cookiesToDelete = new ArrayList<>();
 
-        if (SamlAuthenticationHandler.getCookie(request, uioAuthSSO) != null) {
+        if (HttpUtil.getCookie(request, uioAuthSSO).isPresent()) {
             cookiesToDelete.add(uioAuthSSO);
         }
 

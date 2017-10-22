@@ -9,6 +9,7 @@ import javax.servlet.http.HttpServletRequest;
 import vtk.repository.Resource;
 import vtk.security.Principal;
 import vtk.security.web.SecurityInitializer;
+import vtk.util.web.HttpUtil;
 
 /**
  * Assertion that checks for UIO_AUTH_SSO cookie and if several other conditions are met, appends the authTarget
@@ -43,7 +44,9 @@ public class SSOCookieAssertion implements WebAssertion {
 
         // No check for action=refresh-lock on the assumption that java refreshes don't trigger
         // a redirect in the browser
-        if (getCookie(request, uioAuthSSO) != null && getCookie(request, SecurityInitializer.VRTXLINK_COOKIE) == null
+        final Optional<Cookie> ssoCookie = HttpUtil.getCookie(request, uioAuthSSO);
+        if (ssoCookie.isPresent()
+                && !HttpUtil.getCookie(request, SecurityInitializer.VRTXLINK_COOKIE).isPresent()
                 && request.getParameter("authTarget") == null && !request.getRequestURI().contains(serviceProviderURI)) {
 
             StringBuffer url = request.getRequestURL();
@@ -56,9 +59,8 @@ public class SSOCookieAssertion implements WebAssertion {
 
             Long cookieTimestamp = new Long(0);
             try {
-                cookieTimestamp = Long.valueOf(getCookie(request, uioAuthSSO).getValue());
+                cookieTimestamp = Long.valueOf(ssoCookie.get().getValue());
             } catch (NumberFormatException e) {
-
             }
             Long currentTime = new Date().getTime();
 
@@ -96,16 +98,4 @@ public class SSOCookieAssertion implements WebAssertion {
         this.ssoTimeout = ssoTimeout;
     }
 
-    private static Cookie getCookie(HttpServletRequest request, String name) {
-        Cookie[] cookies = request.getCookies();
-        if (cookies == null) {
-            return null;
-        }
-        for (Cookie cookie : cookies) {
-            if (name.equals(cookie.getName())) {
-                return cookie;
-            }
-        }
-        return null;
-    }
 }

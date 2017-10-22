@@ -55,6 +55,7 @@ import vtk.security.AuthenticationProcessingException;
 import vtk.util.io.IO;
 import vtk.util.text.Json;
 import vtk.util.text.JsonStreamer;
+import vtk.util.web.HttpUtil;
 import vtk.web.service.URL;
 
 public class LostPostHandler implements Controller {
@@ -387,21 +388,7 @@ public class LostPostHandler implements Controller {
         }
         
         private static String identifier(HttpServletRequest request) {
-            Cookie cookie = null;
-            Cookie[] cookies = request.getCookies();
-            if (cookies == null) {
-                return null;
-            }
-            for (Cookie c: cookies) {
-                if (COOKIE_NAME.equals(c.getName())) {
-                    cookie = c;
-                    break;
-                }
-            }
-            if (cookie == null) {
-                return null;
-            }
-            return cookie.getValue();
+            return HttpUtil.getCookie(request, COOKIE_NAME).map(Cookie::getValue).orElse(null);
         }
     }
 }

@@ -26,7 +26,6 @@
     class="vtk.security.web.saml.SamlAuthenticationHandler">
     <property name="identifier" value="saml:${saml.authenticationURL}"/>
     <property name="principalFactory" ref="principalFactory"/>
-    <property name="loginListeners" ref="saml.loginListeners" />
 
     <property name="challenge" ref="saml.challenge"/>
     <property name="login" ref="saml.login"/>
@@ -86,20 +85,6 @@
   <bean id="saml.login" class="vtk.security.web.saml.Login" parent="saml.abstractHandler">
     <property name="replayMinutes" value="60"/>
   </bean>
-
-  <bean id="saml.loginListeners" class="vtk.util.SortedCollection">
-    <constructor-arg>
-      <bean class="org.springframework.core.OrderComparator" />
-    </constructor-arg>
-    <constructor-arg name="unique" value="true" />
-  </bean>
-
-  <bean id="saml.loginListenersBuilder"
-        class="org.springframework.beans.factory.config.MethodInvokingBean" abstract="true">
-    <property name="targetObject" ref="saml.loginListeners" />
-    <property name="targetMethod" value="add" />
-  </bean>
-
 
   <bean id="saml.logout" class="vtk.security.web.saml.Logout" parent="saml.abstractHandler">
     <property name="redirectService" ref="viewService"/>
