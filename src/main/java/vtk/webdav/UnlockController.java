@@ -34,13 +34,13 @@ import java.io.IOException;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import org.springframework.http.HttpStatus;
 
 import vtk.repository.Path;
 import vtk.repository.Repository;
 import vtk.repository.Resource;
 import vtk.repository.ResourceLockedException;
 import vtk.repository.ResourceNotFoundException;
-import vtk.util.web.HttpUtil;
 import vtk.web.InvalidRequestException;
 import vtk.web.RequestContext;
 
@@ -75,7 +75,7 @@ public class UnlockController extends AbstractWebdavController {
             responseBuilder(HttpServletResponse.SC_NOT_FOUND).writeTo(response);
         }
         catch (ResourceLockedException e) {
-            responseBuilder(HttpUtil.SC_LOCKED).writeTo(response);
+            responseBuilder(HttpStatus.LOCKED.value()).writeTo(response);
         }
     }
    

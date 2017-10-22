@@ -33,12 +33,12 @@ package vtk.util.web;
 
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
+import java.util.Arrays;
 import java.util.Date;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.Optional;
+import javax.servlet.http.Cookie;
 
 import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.lang.time.FastDateFormat;
 import org.slf4j.Logger;
@@ -54,7 +54,7 @@ import vtk.util.cache.ReusableObjectCache;
 public class HttpUtil {
 
     private static final Logger LOG = LoggerFactory.getLogger(HttpUtil.class);
-    private static FastDateFormat HTTP_DATE_FORMATTER =
+    private static final FastDateFormat HTTP_DATE_FORMATTER =
         FastDateFormat.getInstance("EEE, dd MMM yyyy HH:mm:ss z",
                                    java.util.TimeZone.getTimeZone("GMT"),
                                    java.util.Locale.US);
@@ -73,68 +73,7 @@ public class HttpUtil {
 
     private static final int INFINITE_TIMEOUT = 410000000;
 
-    /* HTTP status codes defined by WebDAV */
-    public static final int SC_PROCESSING = 102;
-    public static final int SC_MULTI_STATUS = 207;
-    public static final int SC_UNPROCESSABLE_ENTITY = 418;
-    public static final int SC_INSUFFICIENT_SPACE_ON_RESOURCE = 419;
-    public static final int SC_METHOD_FAILURE = 420;
-    public static final int SC_LOCKED = 423;
-    public static final int SC_FAILED_DEPENDENCY = 424;
-    public static final int SC_INSUFFICIENT_STORAGE = 507;
-
-    private static final Map<Integer, String> statusMessages;
     static {
-        statusMessages = new HashMap<Integer, String>();
-        statusMessages.put(HttpServletResponse.SC_ACCEPTED, "Accepted");
-        statusMessages.put(HttpServletResponse.SC_BAD_GATEWAY, "Bad Gateway");
-        statusMessages.put(HttpServletResponse.SC_BAD_REQUEST, "Bad Request");
-        statusMessages.put(HttpServletResponse.SC_CONFLICT, "Conflict");
-        statusMessages.put(HttpServletResponse.SC_CONTINUE, "Continue");
-        statusMessages.put(HttpServletResponse.SC_CREATED, "Created");
-        statusMessages.put(HttpServletResponse.SC_EXPECTATION_FAILED, "Expectation Failed");
-        statusMessages.put(HttpServletResponse.SC_FORBIDDEN, "Forbidden");
-        statusMessages.put(HttpServletResponse.SC_GATEWAY_TIMEOUT, "Gateway Timeout");
-        statusMessages.put(HttpServletResponse.SC_GONE, "Gone");
-        statusMessages.put(HttpServletResponse.SC_HTTP_VERSION_NOT_SUPPORTED, "HTTP Version Not Supported");
-        statusMessages.put(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Internal Server Error");
-        statusMessages.put(HttpServletResponse.SC_LENGTH_REQUIRED, "Length Required");
-        statusMessages.put(HttpServletResponse.SC_METHOD_NOT_ALLOWED, "Method Not Allowed");
-        statusMessages.put(HttpServletResponse.SC_MOVED_PERMANENTLY, "Moved Permanently");
-        statusMessages.put(HttpServletResponse.SC_MOVED_TEMPORARILY, "Moved Temporarily");
-        statusMessages.put(HttpServletResponse.SC_MULTIPLE_CHOICES, "Multiple Choices");
-        statusMessages.put(HttpServletResponse.SC_NO_CONTENT, "No Content");
-        statusMessages.put(HttpServletResponse.SC_NON_AUTHORITATIVE_INFORMATION, "Non Authorative Information");
-        statusMessages.put(HttpServletResponse.SC_NOT_ACCEPTABLE, "Not Acceptible");
-        statusMessages.put(HttpServletResponse.SC_NOT_FOUND, "Not Found");
-        statusMessages.put(HttpServletResponse.SC_NOT_MODIFIED, "Not Modified");
-        statusMessages.put(HttpServletResponse.SC_OK, "OK");
-        statusMessages.put(HttpServletResponse.SC_PARTIAL_CONTENT, "Partial Content");
-        statusMessages.put(HttpServletResponse.SC_PAYMENT_REQUIRED, "Payment Required");
-        statusMessages.put(HttpServletResponse.SC_PRECONDITION_FAILED, "Precondition Failed");
-        statusMessages.put(HttpServletResponse.SC_PROXY_AUTHENTICATION_REQUIRED, "Proxy Authentication Required");
-        statusMessages.put(HttpServletResponse.SC_REQUEST_ENTITY_TOO_LARGE, "Request Entity Too Large");
-        statusMessages.put(HttpServletResponse.SC_REQUEST_TIMEOUT, "Request Timeout");
-        statusMessages.put(HttpServletResponse.SC_REQUEST_URI_TOO_LONG, "Request URI Too Long");
-        statusMessages.put(HttpServletResponse.SC_REQUESTED_RANGE_NOT_SATISFIABLE, "Requested Range Not Satisfiable");
-        statusMessages.put(HttpServletResponse.SC_RESET_CONTENT, "Reset Content");
-        statusMessages.put(HttpServletResponse.SC_SEE_OTHER, "See Other");
-        statusMessages.put(HttpServletResponse.SC_SWITCHING_PROTOCOLS, "Switching Protocols");
-        statusMessages.put(HttpServletResponse.SC_TEMPORARY_REDIRECT, "Temporary Redirect");
-        statusMessages.put(HttpServletResponse.SC_UNAUTHORIZED, "Unauthorized");
-        statusMessages.put(HttpServletResponse.SC_UNSUPPORTED_MEDIA_TYPE, "Unsupported Media Type");
-        statusMessages.put(HttpServletResponse.SC_USE_PROXY, "Use Proxy");
-
-        /* Include some WebDAV status codes: */
-        statusMessages.put(SC_MULTI_STATUS, "Multi-Status");
-        statusMessages.put(SC_PROCESSING, "Processing");
-        statusMessages.put(SC_UNPROCESSABLE_ENTITY, "Unprocessable Entity");
-        statusMessages.put(SC_INSUFFICIENT_SPACE_ON_RESOURCE, "Insufficient Space On Resource");
-        statusMessages.put(SC_METHOD_FAILURE, "Method Failure");
-        statusMessages.put(SC_LOCKED, "Locked");
-        statusMessages.put(SC_FAILED_DEPENDENCY, "Failed Dependency");
-        statusMessages.put(SC_INSUFFICIENT_STORAGE, "Insufficient Storage");
-
         CACHED_HTTP_DATE_FORMATS = new ReusableObjectCache[HTTP_DATE_PARSE_FORMATS.length];
         for (int i=0; i<HTTP_DATE_PARSE_FORMATS.length; i++) {
             final String dateFormat = HTTP_DATE_PARSE_FORMATS[i];
@@ -142,6 +81,17 @@ public class HttpUtil {
         }
     }
 
+    /**
+     * Get first instance of named cookie in a request.
+     * @param request the request
+     * @param name the cookie name
+     * @return an optionally present cookie with the given name
+     */
+    public static Optional<Cookie> getCookie(HttpServletRequest request, String name) {
+       return Optional.ofNullable(request.getCookies())
+            .flatMap(cookies -> Arrays.stream(cookies)
+                    .filter(c -> c.getName().equals(name)).findFirst());
+     }
 
     /**
      * Formats a HTTP date suitable for headers such as "Last-Modified".
@@ -186,29 +136,11 @@ public class HttpUtil {
         if (!headerValue.matches("\\s*\\w+/\\w+(;charset=[^\\s]+)?")) {
             return null;
         }
-        if (headerValue.indexOf(";") == -1) {
+        if (!headerValue.contains(";")) {
             return headerValue.trim();
         }
         return headerValue.substring(0, headerValue.indexOf(";")).trim();
     }      
-    
-
-
-    /**
-     * Gets the status message for a HTTP status code. For example,
-     * <code>getStatusMessage(HttpServletResponse.SC_NOT_FOUND)</code>
-     * would return <code>Not Found</code>.
-     *
-     * @param status an <code>int</code> value
-     * @return a <code>String</code>
-     */
-    public static String getStatusMessage(int status) {
-        if (!statusMessages.containsKey(status)) {
-            throw new IllegalArgumentException("Unknown status code: " + status);
-        }
-        return statusMessages.get(status);
-    }
-
 
     /**
      * Searches for <code>field1="value1",field2=value,...</code>

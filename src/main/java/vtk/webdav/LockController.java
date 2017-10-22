@@ -42,6 +42,7 @@ import org.jdom.JDOMException;
 import org.jdom.input.SAXBuilder;
 import org.jdom.output.Format;
 import org.jdom.output.XMLOutputter;
+import org.springframework.http.HttpStatus;
 import vtk.repository.AuthorizationException;
 
 import vtk.repository.ContentInputSources;
@@ -198,7 +199,7 @@ public class LockController extends AbstractWebdavController {
                 this.logger.debug("Got ResourceLockedException for URI " + uri, e);
             }
 
-            responseBuilder(HttpUtil.SC_LOCKED).writeTo(response);
+            responseBuilder(HttpStatus.LOCKED.value()).writeTo(response);
         }
         catch (IllegalOperationException | AuthorizationException e) {
             if (this.logger.isDebugEnabled()) {

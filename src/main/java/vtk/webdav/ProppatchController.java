@@ -45,6 +45,7 @@ import org.jdom.input.SAXBuilder;
 import org.jdom.output.Format;
 import org.jdom.output.XMLOutputter;
 import org.springframework.beans.factory.annotation.Required;
+import org.springframework.http.HttpStatus;
 
 import vtk.repository.AuthorizationException;
 import vtk.repository.IllegalOperationException;
@@ -66,7 +67,6 @@ import vtk.repository.resourcetype.ValueFormatException;
 import vtk.security.AuthenticationException;
 import vtk.security.Principal;
 import vtk.text.html.HtmlUtil;
-import vtk.util.web.HttpUtil;
 import vtk.web.InvalidRequestException;
 import vtk.web.RequestContext;
 import vtk.web.service.Service;
@@ -116,7 +116,7 @@ public class ProppatchController extends AbstractWebdavController  {
                 resource = repository.store(token, null, resource, sc);
             }
 
-            responseBuilder(HttpUtil.SC_MULTI_STATUS)
+            responseBuilder(HttpStatus.MULTI_STATUS.value())
                     .handler(xmlResponseHandler(doc))
                     .writeTo(response);
         }
@@ -140,7 +140,7 @@ public class ProppatchController extends AbstractWebdavController  {
             writeDavErrorResponse(response, new Integer(HttpServletResponse.SC_FORBIDDEN), e);
         }
         catch (ResourceLockedException e) {
-            responseBuilder(HttpUtil.SC_LOCKED)
+            responseBuilder(HttpStatus.LOCKED.value())
                 .header("Content-Type", "text/plain;charset=utf-8")
                 .message(e.getMessage())
                 .writeTo(response);

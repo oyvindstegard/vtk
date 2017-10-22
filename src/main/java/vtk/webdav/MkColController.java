@@ -34,13 +34,13 @@ import java.io.IOException;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import org.springframework.http.HttpStatus;
 
 import vtk.repository.IllegalOperationException;
 import vtk.repository.Path;
 import vtk.repository.ReadOnlyException;
 import vtk.repository.Repository;
 import vtk.repository.ResourceLockedException;
-import vtk.util.web.HttpUtil;
 import vtk.web.RequestContext;
 
 /**
@@ -107,7 +107,7 @@ public class MkColController extends AbstractWebdavController {
 
         }
         catch (ResourceLockedException e) {
-            responseBuilder(HttpUtil.SC_LOCKED)
+            responseBuilder(HttpStatus.LOCKED.value())
                 .header("Content-Type", "text/plain;charset=utf-8")
                 .message("Locked: " + uri)
                 .writeTo(response);

@@ -33,13 +33,13 @@ package vtk.web.api;
 import org.springframework.web.HttpRequestHandler;
 import vtk.repository.*;
 import vtk.util.Result;
-import vtk.util.web.HttpUtil;
 import vtk.web.RequestContext;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import org.springframework.http.HttpStatus;
 
 public class DeleteApiHandler implements HttpRequestHandler {
     @Override
@@ -65,7 +65,7 @@ public class DeleteApiHandler implements HttpRequestHandler {
                     .message(ex.getMessage());
             }
             if (ex instanceof ResourceLockedException) {
-                return new ApiResponseBuilder(HttpUtil.SC_LOCKED)
+                return new ApiResponseBuilder(HttpStatus.LOCKED.value())
                     .message(ex.getMessage());
             }
             return new ApiResponseBuilder(HttpServletResponse.SC_INTERNAL_SERVER_ERROR)

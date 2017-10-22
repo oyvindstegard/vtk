@@ -34,6 +34,7 @@ import java.io.IOException;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import org.springframework.http.HttpStatus;
 
 import vtk.repository.FailedDependencyException;
 import vtk.repository.IllegalOperationException;
@@ -42,7 +43,6 @@ import vtk.repository.ReadOnlyException;
 import vtk.repository.Repository;
 import vtk.repository.ResourceLockedException;
 import vtk.repository.ResourceNotFoundException;
-import vtk.util.web.HttpUtil;
 import vtk.web.RequestContext;
 
 
@@ -94,7 +94,7 @@ public class DeleteController extends AbstractWebdavController {
                 .writeTo(response);
         }
         catch (ResourceLockedException e) {
-            responseBuilder(HttpUtil.SC_LOCKED)
+            responseBuilder(HttpStatus.LOCKED.value())
                 .header("Content-Type", "text/plain;charset=utf-8")
                 .message(e.getMessage())
                 .writeTo(response);

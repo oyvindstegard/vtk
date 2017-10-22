@@ -35,10 +35,10 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Locale;
 import java.util.TimeZone;
+import org.springframework.http.HttpStatus;
 
 import vtk.util.cache.ArrayStackCache;
 import vtk.util.cache.ReusableObjectCache;
-import vtk.util.web.HttpUtil;
 
 /**
  * Some WebDAV utility methods.
@@ -62,10 +62,9 @@ public final class WebdavUtil {
         StringBuilder message = new StringBuilder("HTTP/");
         message.append(WebdavConstants.HTTP_VERSION_USED).append(" ");
         message.append(statusCode).append(" ");
-        message.append(HttpUtil.getStatusMessage(statusCode));
+        message.append(HttpStatus.valueOf(statusCode).getReasonPhrase());
         
         return message.toString();
-       
     }
 
 

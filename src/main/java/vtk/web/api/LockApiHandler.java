@@ -37,6 +37,7 @@ import java.util.Objects;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import org.springframework.http.HttpStatus;
 
 import org.springframework.web.HttpRequestHandler;
 
@@ -95,7 +96,7 @@ public class LockApiHandler implements HttpRequestHandler {
                         .message(ex.getMessage());
             }
             if (ex instanceof ResourceLockedException) {
-                return new ApiResponseBuilder(HttpUtil.SC_LOCKED)
+                return new ApiResponseBuilder(HttpStatus.LOCKED.value())
                         .message(ex.getMessage());
             }
             return new ApiResponseBuilder(HttpServletResponse.SC_INTERNAL_SERVER_ERROR)
