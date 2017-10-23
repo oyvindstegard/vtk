@@ -45,10 +45,9 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.annotation.Required;
-import org.springframework.context.ApplicationContext;
-import org.springframework.context.ApplicationContextAware;
+import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.context.ApplicationEventPublisherAware;
 import org.springframework.web.servlet.ModelAndView;
 import org.springframework.web.servlet.mvc.Controller;
 
@@ -71,7 +70,7 @@ import vtk.web.service.URL;
  * SAML authentication handler.
  */
 public class SamlAuthenticationHandler implements AuthenticationChallenge, AuthenticationHandler,
-        Controller, ApplicationContextAware {
+        Controller, ApplicationEventPublisherAware {
 
     private String identifier;
     private Challenge challenge;
@@ -115,7 +114,7 @@ public class SamlAuthenticationHandler implements AuthenticationChallenge, Authe
 
     private final Logger authDebugLog = LoggerFactory.getLogger("vtk.security.web.AUTH_DEBUG");
 
-    private ApplicationContext applicationContext;
+    private ApplicationEventPublisher applicationEventPublisher;
 
     @Override
     public void challenge(HttpServletRequest request, HttpServletResponse response)
@@ -381,12 +380,12 @@ public class SamlAuthenticationHandler implements AuthenticationChallenge, Authe
 
     private void publishLoginEvent(HttpServletRequest request, Principal principal, UserData userData) {
         logger.debug("SAML login event for principal {} on host {}", principal.getQualifiedName(), request.getHeader("Host"));
-        applicationContext.publishEvent(new SamlLoginEvent(this, request, principal, userData));
+        applicationEventPublisher.publishEvent(new SamlLoginEvent(this, request, principal, userData));
     }
 
     private void publishLogoutEvent(HttpServletRequest request, Principal principal) {
         logger.debug("SAML logout event for principal {} on host {}", principal.getQualifiedName(), request.getHeader("Host"));
-        applicationContext.publishEvent(new SamlLogoutEvent(this, request, principal));
+        applicationEventPublisher.publishEvent(new SamlLogoutEvent(this, request, principal));
     }
 
     @Override
@@ -499,8 +498,8 @@ public class SamlAuthenticationHandler implements AuthenticationChallenge, Authe
     }
 
     @Override
-    public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
-        this.applicationContext = applicationContext;
+    public void setApplicationEventPublisher(ApplicationEventPublisher applicationEventPublisher) {
+        this.applicationEventPublisher = applicationEventPublisher;
     }
 
 }
