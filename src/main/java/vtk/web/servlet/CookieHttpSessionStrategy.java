@@ -41,6 +41,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.session.Session;
 import org.springframework.session.web.http.HttpSessionStrategy;
+import vtk.util.web.HttpUtil;
 
 /**
  * HttpSessionStrategy implementation that supports different cookie
@@ -60,8 +61,7 @@ public class CookieHttpSessionStrategy implements HttpSessionStrategy {
     @Override
     public String getRequestedSessionId(HttpServletRequest request) {
         String cookieName = request.isSecure() ? cookieNameHttps : cookieNameHttp;
-        Optional<Cookie> cookie = sessionCookie(request, cookieName);
-        return cookie.map(Cookie::getValue).orElse(null);
+        return HttpUtil.getCookie(request, cookieName).map(Cookie::getValue).orElse(null);
     }
 
     @Override
@@ -91,7 +91,7 @@ public class CookieHttpSessionStrategy implements HttpSessionStrategy {
     }
 
     private Cookie clearCookie(HttpServletRequest request, String cookieName, boolean secure) {
-        Optional<String> id = sessionCookie(request, cookieName).map(Cookie::getValue);
+        Optional<String> id = HttpUtil.getCookie(request, cookieName).map(Cookie::getValue);
         Cookie cookie = new Cookie(cookieName, id.orElse(""));
         logger.debug("Remove session cookie: " + cookieName);
         cookie.setPath("/");
@@ -101,9 +101,4 @@ public class CookieHttpSessionStrategy implements HttpSessionStrategy {
         return cookie;
     }
     
-    private Optional<Cookie> sessionCookie(HttpServletRequest request, String cookieName) {
-        return Optional.ofNullable(request.getCookies())
-            .flatMap(cookies -> Arrays.stream(cookies)
-                    .filter(c -> c.getName().equals(cookieName)).findFirst());
-    }
-}
+ }

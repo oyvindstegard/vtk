@@ -51,6 +51,7 @@ import org.jdom.Element;
 import org.jdom.JDOMException;
 import org.jdom.input.SAXBuilder;
 import org.springframework.beans.factory.InitializingBean;
+import org.springframework.http.HttpStatus;
 
 import vtk.repository.AuthorizationException;
 import vtk.repository.Lock;
@@ -202,7 +203,7 @@ public class PropfindController extends AbstractWebdavController
             Element e = buildMultistatusElement(request, model);
             Document doc = new Document(e);
 
-            responseBuilder(HttpUtil.SC_MULTI_STATUS)
+            responseBuilder(HttpStatus.MULTI_STATUS.value())
                     .handler(xmlResponseHandler(doc))
                     .writeTo(response);
         }
@@ -221,7 +222,7 @@ public class PropfindController extends AbstractWebdavController
 
         }
         catch (ResourceLockedException e) {
-            responseBuilder(HttpUtil.SC_LOCKED)
+            responseBuilder(HttpStatus.LOCKED.value())
                 .header("Content-Type", "text/plain;charset=utf-8")
                 .message(e.getMessage())
             .writeTo(response);

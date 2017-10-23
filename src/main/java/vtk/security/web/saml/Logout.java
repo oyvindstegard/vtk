@@ -101,7 +101,7 @@ public class Logout extends SamlService {
         String url = urlToLogoutServiceForDomain(samlConfiguration, requestID, relayState);
 
         response.setStatus(HttpServletResponse.SC_FOUND);
-        response.setHeader("Location", url.toString());
+        response.setHeader("Location", url);
     }
 
     public void handleLogoutRequest(HttpServletRequest request, HttpServletResponse response) throws Exception {
@@ -139,17 +139,11 @@ public class Logout extends SamlService {
     }
 
     public boolean isLogoutRequest(HttpServletRequest request) {
-        if (request.getParameter("SAMLRequest") == null) {
-            return false;
-        }
-        return true;
+        return request.getParameter("SAMLRequest") != null;
     }
 
     public boolean isLogoutResponse(HttpServletRequest request) {
-        if (request.getParameter("SAMLResponse") == null) {
-            return false;
-        }
-        return true;
+        return request.getParameter("SAMLResponse") != null;
     }
 
     public void handleLogoutResponse(HttpServletRequest request, HttpServletResponse response) throws Exception {

@@ -39,9 +39,7 @@ import vtk.repository.store.Revisions;
 import vtk.security.Principal;
 import vtk.util.io.IO;
 import vtk.util.io.SizeLimitException;
-import vtk.util.web.HttpUtil;
 import vtk.web.RequestContext;
-import vtk.web.filter.UploadLimitInputStreamFilter;
 import vtk.web.service.WebAssertion;
 import vtk.web.service.URL;
 
@@ -49,6 +47,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.InputStream;
 import java.util.List;
+import org.springframework.http.HttpStatus;
 
 /**
  * Handler for PUT requests.
@@ -136,7 +135,7 @@ public class PutController implements Controller {
         } catch (ResourceNotFoundException e) {
             response.setStatus(HttpServletResponse.SC_NOT_FOUND);
         } catch (ResourceLockedException e) {
-            response.setStatus(HttpUtil.SC_LOCKED);
+            response.setStatus(HttpStatus.LOCKED.value());
         } catch (IllegalOperationException | ReadOnlyException e) {
             response.setStatus(HttpServletResponse.SC_FORBIDDEN);
         }

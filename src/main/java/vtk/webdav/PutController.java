@@ -37,6 +37,7 @@ import java.util.Map;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import org.springframework.http.HttpStatus;
 
 import vtk.repository.ContentInputSources;
 import vtk.repository.IllegalOperationException;
@@ -50,7 +51,6 @@ import vtk.repository.ResourceLockedException;
 import vtk.repository.ResourceNotFoundException;
 import vtk.repository.TypeInfo;
 import vtk.repository.resourcetype.PropertyType;
-import vtk.util.web.HttpUtil;
 import vtk.web.RequestContext;
 
 /**
@@ -180,7 +180,7 @@ public class PutController extends AbstractWebdavController {
             responseBuilder(HttpServletResponse.SC_NOT_FOUND).writeTo(response);
         }
         catch (ResourceLockedException e) {
-            responseBuilder(HttpUtil.SC_LOCKED).writeTo(response);
+            responseBuilder(HttpStatus.LOCKED.value()).writeTo(response);
         }
         catch (IllegalOperationException | ReadOnlyException e) {
             responseBuilder(HttpServletResponse.SC_FORBIDDEN).writeTo(response);

@@ -47,6 +47,7 @@ import java.util.regex.Pattern;
 import javax.servlet.ServletOutputStream;
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletResponse;
+import org.springframework.http.HttpStatus;
 
 import vtk.util.io.BoundedOutputStream;
 import vtk.util.io.IO;
@@ -346,7 +347,7 @@ public class BufferedResponse implements HttpServletResponse {
     @Override
     public void setStatus(int status) {
         this.status = status;
-        this.statusMessage = HttpUtil.getStatusMessage(status);
+        this.statusMessage = HttpStatus.valueOf(status).getReasonPhrase();
     }
 
     @Override
