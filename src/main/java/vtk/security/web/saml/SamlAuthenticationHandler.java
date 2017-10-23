@@ -284,11 +284,11 @@ public class SamlAuthenticationHandler implements AuthenticationChallenge, Authe
     @Override
     public boolean logout(Principal principal, HttpServletRequest request, HttpServletResponse response)
             throws AuthenticationProcessingException, ServletException, IOException {
+        publishLogoutEvent(request, principal);
+
         removeCookies(request, response);
 
         this.logout.initiateLogout(request, response);
-
-        publishLogoutEvent(request, principal);
 
         setHeaders(response);
         return true;
