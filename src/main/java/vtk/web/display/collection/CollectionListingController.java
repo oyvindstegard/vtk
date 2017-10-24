@@ -55,7 +55,6 @@ import vtk.web.display.listing.ListingPager;
 import vtk.web.display.listing.ListingPagingLink;
 import vtk.web.search.Listing;
 import vtk.web.search.SearchComponent;
-import vtk.web.service.Service;
 import vtk.web.service.URL;
 import vtk.web.servlet.ResourceAwareLocaleResolver;
 
@@ -80,7 +79,6 @@ public class CollectionListingController extends BaseCollectionListingController
         int totalHits = 0;
 
         RequestContext requestContext = RequestContext.getRequestContext(request);
-        Service service = requestContext.getService();
         Repository repository = requestContext.getRepository();
         Principal principal = requestContext.getPrincipal();
 
