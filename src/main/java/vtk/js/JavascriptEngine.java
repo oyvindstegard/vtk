@@ -115,9 +115,9 @@ public class JavascriptEngine {
     private CompletableFuture<Script> script(String identifier) {
         
         CompletableFuture<Map<String,Script>> 
-            fooFuture = CompletableFuture.supplyAsync(() -> scripts, jsExecutor);
+            cache = CompletableFuture.supplyAsync(() -> scripts, jsExecutor);
         
-        return fooFuture.thenCompose(map -> {
+        return cache.thenCompose(map -> {
             Script cached = scripts.get(identifier);
             Result<InputSource> source = sourceProvider.apply(identifier);
             if (cached != null) {
