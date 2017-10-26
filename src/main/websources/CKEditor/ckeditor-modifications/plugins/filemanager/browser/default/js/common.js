@@ -145,3 +145,20 @@ function ajaxSubmit (oFormElement, successHandler, errorHandler)
     xhr.send(null);
   }
 }
+
+function escapeHtml(str) {
+  var entityMap = {
+    '&': '&amp;',
+    '<': '&lt;',
+    '>': '&gt;',
+    '"': '&quot;',
+    "'": '&#39;',
+    '/': '&#x2F;',
+    '`': '&#x60;',
+    '=': '&#x3D;'
+  };
+
+  return str.replace(/[&<>"'`=\/]/g, function (s) {
+    return entityMap[s];
+  });
+}

@@ -106,7 +106,6 @@ function CheckLoaded()
 
 function OpenFolder( folderPath )
 {
-	sActiveFolder = folderPath ;
 
 	if ( ! bIsLoaded )
 	{
@@ -133,6 +132,7 @@ function OpenFolder( folderPath )
 
 function LoadFolders( folderPath )
 {
+
 	// Clear the folders list.
 	oListManager.Clear() ;
 
@@ -161,13 +161,13 @@ function GetFoldersCallBack( fckXml )
 
 	// Get the current folder path.
 	var oNode = fckXml.SelectSingleNode( 'Connector/CurrentFolder' ) ;
-	var sCurrentFolderPath = oNode.attributes.getNamedItem('path').value ;
+	var sCurrentFolderPath = escapeHtml(oNode.attributes.getNamedItem('path').value) ;
 
 	var oNodes = fckXml.SelectNodes( 'Connector/Folders/Folder' ) ;
 
 	for ( var i = 0 ; i < oNodes.length ; i++ )
 	{
-		var sFolderName = oNodes[i].attributes.getNamedItem('name').value ;
+		var sFolderName = escapeHtml(oNodes[i].attributes.getNamedItem('name').value) ;
 		oListManager.AddItem( sFolderName, sCurrentFolderPath + sFolderName + '/' ) ;
 	}
 
