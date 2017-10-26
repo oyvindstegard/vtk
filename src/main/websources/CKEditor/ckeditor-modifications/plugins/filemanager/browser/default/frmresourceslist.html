@@ -139,7 +139,7 @@ function GetFoldersAndFilesCallBack( fckXml )
 		alert( 'The server didn\'t reply with a proper XML data. Please check your configuration.' ) ;
 		return ;
 	}
-	var sCurrentFolderPath	= oFolderNode.attributes.getNamedItem('path').value ;
+	var sCurrentFolderPath	= escapeHtml(oFolderNode.attributes.getNamedItem('path').value) ;
 	var sCurrentFolderUrl	= oFolderNode.attributes.getNamedItem('url').value ;
 
 //	var dTimer = new Date() ;
@@ -151,7 +151,7 @@ function GetFoldersAndFilesCallBack( fckXml )
 	oNodes = fckXml.SelectNodes( 'Connector/Folders/Folder' ) ;
 	for ( var i = 0 ; i < oNodes.length ; i++ )
 	{
-		var sFolderName = oNodes[i].attributes.getNamedItem('name').value ;
+		var sFolderName = escapeHtml(oNodes[i].attributes.getNamedItem('name').value) ;
 		oHtml.Append( oListManager.GetFolderRowHtml( sFolderName, sCurrentFolderPath + sFolderName + "/" ) ) ;
 	}
 
@@ -160,7 +160,7 @@ function GetFoldersAndFilesCallBack( fckXml )
 	for ( var j = 0 ; j < oNodes.length ; j++ )
 	{
 		var oNode = oNodes[j] ;
-		var sFileName = oNode.attributes.getNamedItem('name').value ;
+		var sFileName = escapeHtml(oNode.attributes.getNamedItem('name').value) ;
 		var sFileSize = oNode.attributes.getNamedItem('size').value ;
 
 		// Get the optional "url" attribute. If not available, build the url.
