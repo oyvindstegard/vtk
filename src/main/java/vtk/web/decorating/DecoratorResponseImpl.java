@@ -40,53 +40,55 @@ import java.util.Locale;
 
 public class DecoratorResponseImpl implements DecoratorResponse {
 
-    private ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+    private final ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
 
     private String doctype;
     private Locale locale;
     private String characterEncoding;
     
-
     public DecoratorResponseImpl(String doctype, Locale locale, String characterEncoding) {
         this.doctype = doctype;
         this.locale = locale;
         this.characterEncoding = characterEncoding;
     }
     
-
+    @Override
     public void setDoctype(String doctype) {
         this.doctype = doctype;
     }
     
-    
+    @Override
     public String getDoctype() {
         return this.doctype;
     }
-    
 
+    @Override
     public void setLocale(Locale locale) {
         this.locale = locale;
     }
 
+    @Override
     public Locale getLocale() {
         return this.locale;
     }
     
-    
+    @Override
     public void setCharacterEncoding(String characterEncoding) {
         java.nio.charset.Charset.forName(characterEncoding);
         this.characterEncoding = characterEncoding;
     }
     
+    @Override
     public String getCharacterEncoding() {
         return this.characterEncoding;
     }
 
-
+    @Override
     public OutputStream getOutputStream() {
         return this.outputStream;
     }
     
+    @Override
     public Writer getWriter() throws IOException {
         return new OutputStreamWriter(this.outputStream, this.characterEncoding);
     }

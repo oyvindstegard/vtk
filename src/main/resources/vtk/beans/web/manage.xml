@@ -1332,6 +1332,24 @@
 
   <bean id="manage.javascriptRegistry" class="vtk.web.MediaRegistry" />
   <bean id="manage.cssRegistry" class="vtk.web.MediaRegistry" />
+  <bean id="manage.placeholderComponentRegistry" class="vtk.web.decorating.PlaceholderComponentRegistry"/>
+
+  <!-- Convenience bean for registering admin placeholder components.
+       Consult the system decorating template files for possible placement identifiers.
+  -->
+  <bean id="manage.placeholderComponent.register"
+        class="org.springframework.beans.factory.config.MethodInvokingBean"
+        abstract="true">
+    <property name="targetObject" ref="manage.placeholderComponentRegistry" />
+    <property name="targetMethod" value="register" />
+  </bean>
+
+  <bean id="manage.placeholderComponent" class="vtk.web.decorating.components.DelegatingPlaceholderComponent">
+    <constructor-arg ref="manage.placeholderComponentRegistry"/>
+    <property name="name" value="placeholder"/>
+    <property name="namespace" ref="decorating.manageNamespace"/>
+    <property name="description" value="System template placeholder component (for customizations)"/>
+  </bean>
 
   <bean class="vtk.web.AdminMedia">
     <constructor-arg ref="manage.javascriptRegistry" />
@@ -1356,22 +1374,6 @@
         <value>${themeBaseURL}/default.css</value>
       </list>
     </constructor-arg>
-  </bean>
-
-  <bean id="manage.lineTopComponent" class="vtk.web.decorating.components.ViewRenderingDecoratorComponent">
-    <property name="namespace" ref="decorating.manageNamespace" />
-    <property name="name" value="display-line-top" />
-    <property name="description" value="Inserts line top" />
-    <property name="view" ref="manage.lineTopView" />
-  </bean>
-
-  <bean id="manage.lineTopView" parent="freemarkerView">
-    <property name="url" value="system/line-top.ftl" />
-    <property name="attributes">
-      <map>
-        <entry key="displayUpscoping" value="${displayUpscoping}" />
-      </map>
-    </property>
   </bean>
 
   <bean id="manage.titleComponent" class="vtk.web.decorating.components.ViewRenderingDecoratorComponent">

@@ -87,4 +87,19 @@ public class MockDecoratorResponse implements DecoratorResponse {
         HtmlElement dummy = page.getRootElement();
         return dummy.getChildElements();
     }
+
+    @Override
+    public String getDoctype() {
+        return null;
+    }
+
+    @Override
+    public Locale getLocale() {
+        return null;
+    }
+
+    @Override
+    public String getCharacterEncoding() {
+        return charset.name();
+    }
 }

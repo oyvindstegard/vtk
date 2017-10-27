@@ -33,19 +33,21 @@ package vtk.web;
 import java.net.URI;
 import java.util.*;
 
+/**
+ * A configuration registry of named web page media references, grouped by a placement identifier.
+ */
 public class MediaRegistry {
     private final Map<String, List<URI>> registry = new HashMap<>();
 
     public void register(String place, URI reference) {
-        if (!registry.containsKey(place))
-            registry.put(place, new ArrayList<>());
-        registry.get(place).add(reference);
+        if (place == null || reference == null) {
+            throw new IllegalArgumentException("Both place and reference must be non-null");
+        }
+        registry.computeIfAbsent(place, k -> new ArrayList<>()).add(reference);
     }
 
     public List<URI> getMedia(String place) {
-        List<URI> media = registry.get(place);
-        if (media == null) media = Collections.emptyList();
-        return media;
+        return registry.getOrDefault(place, Collections.emptyList());
     }
 
 }
