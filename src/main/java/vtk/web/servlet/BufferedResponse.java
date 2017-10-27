@@ -30,6 +30,7 @@
  */
 package vtk.web.servlet;
 
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.PrintWriter;
@@ -48,8 +49,6 @@ import java.util.regex.Pattern;
 import javax.servlet.ServletOutputStream;
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletResponse;
-
-import org.apache.commons.io.output.ByteArrayOutputStream;
 
 import vtk.util.io.BoundedOutputStream;
 import vtk.util.io.IO;
