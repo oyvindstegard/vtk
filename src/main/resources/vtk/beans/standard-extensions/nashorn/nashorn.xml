@@ -23,6 +23,8 @@
         <entry key="repo">
           <bean class="vtk.web.js.Repo">
             <constructor-arg name="repository" ref="repository" />
+            <constructor-arg ref="propertySearch.searcher" />
+            <constructor-arg ref="javascriptHandler.provider" />
           </bean>
         </entry>
         <entry key="mustache">
