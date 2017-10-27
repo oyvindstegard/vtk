@@ -74,20 +74,20 @@ public class ListCollectionsController implements HttpRequestHandler {
     public void handleRequest(HttpServletRequest request, HttpServletResponse response) 
             throws IOException {
         
-        String input = Optional.ofNullable(request.getParameter("uri"))
-           .flatMap(str -> {
-               if ("".equals(str.trim())) return Optional.of("/");
-               return Optional.of(str);
-           })
-           .orElse("/");
+        Optional<Result<Path>> uri = Optional.ofNullable(request.getParameter("uri"))
+                .flatMap(input -> {
+                    if ("".equals(input.trim())) return Optional.empty();
+                    return Optional.of(input);
+                })
+                .map(str -> Result.attempt(() -> Path.fromString(str)));
 
-        Result<Path> uri = Result.attempt(() -> Path.fromString(input));
-        if (uri.failure.isPresent()) {
-            badRequest(uri.failure.get(), response);
+        if (uri.isPresent() && uri.get().failure.isPresent()) {
+            badRequest(uri.get().failure.get(), response);
         }
         else {
             String token = RequestContext.getRequestContext(request).getSecurityToken();
-            List<Resource> resources = provider.buildSearchAndPopulateResources(uri.toOptional(), token);
+            List<Resource> resources = provider
+                    .buildSearchAndPopulateResources(uri.flatMap(Result::toOptional), token);
             writeResults(resources, request, response, token);
         }
     }
