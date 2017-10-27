@@ -36,8 +36,11 @@ import java.io.UncheckedIOException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -125,11 +128,12 @@ public class JavascriptHandler implements HttpRequestHandler {
         if (scriptLocation.failure.isPresent()) {
             throw new RuntimeException(scriptLocation.failure.get());
         }
-        
+        Path scriptURI = scriptLocation.result.get();
         BufferedResponse bufferedResponse = new BufferedResponse(200);
         
+        
         CompletableFuture<ScriptObjectMirror> handlerFunction = 
-                scriptEngine.compiledFunction(scriptLocation.result.get().toString(), "handler");
+                scriptEngine.compiledFunction(scriptURI.toString(), "handler");
         
         CompletableFuture<CallContext> callContextFuture = handlerFunction.thenComposeAsync(result -> {
                 CompletableFuture<Void> completionFuture = new CompletableFuture<>();
@@ -149,17 +153,46 @@ public class JavascriptHandler implements HttpRequestHandler {
         CompletableFuture<Void> completion = 
                 invocationFuture.thenCompose(callContext -> callContext.completionHandle);
         
-        logger.debug("Awaiting completion of Javascript handler for request {}", request);
+        logger.debug("Awaiting completion of script {} for request {}", scriptURI, request);
+        
         try {
             completion.get(10, TimeUnit.SECONDS);
+            logger.debug("Execution of script {} completed normally");
             bufferedResponse.writeTo(response, true);
         }
-        catch (Throwable t) {
-            response.setStatus(500);
-            PrintWriter writer = response.getWriter();
-            writer.write(scriptEngine.jsError(t));
-            writer.flush();
-            writer.close();
+        catch (TimeoutException e) {
+            logger.debug("Execution of script {} for request {} timed out", 
+                    scriptURI, request, e);
+            error(response, "Execution of script " 
+                    + scriptURI + " timed out (end() not called?)");
         }
+        catch (ExecutionException e) {
+            logger.debug("Execution of script {} for request {} failed", 
+                    scriptURI, request, e);
+            Throwable cause = e.getCause();
+            if (cause == null) {
+                error(response, "Execution of script " + scriptURI 
+                        + " failed: " + e.getMessage());
+            }
+            else {
+                String message = Optional.ofNullable(scriptEngine.jsError(cause))
+                        .orElse(Optional.ofNullable(cause.getMessage())
+                                .orElse(cause.toString()));
+                error(response, message);
+            }
+        }
+        catch (Throwable t) {
+            logger.debug("Execution of script {} for request {} failed", 
+                    scriptURI, request, t);
+            error(response, "Execution of script " + scriptURI + " failed: " + t.getMessage());
+        }
+    }
+    
+    private void error(HttpServletResponse response, String message) throws IOException {
+        response.setStatus(500);
+        PrintWriter writer = response.getWriter();
+        writer.write(message);
+        writer.flush();
+        writer.close();
     }
 }

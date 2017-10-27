@@ -81,7 +81,7 @@ public class JSContext {
     }
     
     public void contentType(String contentType) {
-        logger.debug("Content-Type: {}", contentType);
+        logger.trace("Content-Type: {}", contentType);
         response.setContentType(contentType);
     }
     
@@ -91,7 +91,7 @@ public class JSContext {
     }
     
     public void end(String str) {
-        logger.debug("end({})", str);
+        logger.trace("end({})", str);
 
         CompletableFuture.supplyAsync(() -> { 
             try {
@@ -128,7 +128,7 @@ public class JSContext {
    }
    
    public void write(String str, ScriptObjectMirror callback) {
-       logger.debug("write({}, {})", str, callback);
+       logger.trace("write({}, {})", str, callback);
        // Writing is done in a buffered response (not blocking), 
        // so no need to do it asynchronously 
        Result<?> writeAttempt = Result.attempt(() -> {
