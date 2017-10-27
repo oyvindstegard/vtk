@@ -84,7 +84,7 @@ public final class Result<T> {
     public static <T> Result<T> failure(Throwable error) {
         return new Result<>(Optional.empty(), Optional.of(error));
     }
-   
+    
     /**
      * Attempts to create a {@link Result} from a {@link Supplier}. If 
      * the supplier throws an exception this method returns a failure, 
@@ -153,7 +153,7 @@ public final class Result<T> {
     /**
      * Applies the given function to this failure and returns a new result with 
      * the mapped value, or returns this if this is a success.
-     * @param recovery the recovery function}
+     * @param recovery the recovery function
      * @return this if this is a success, otherwise the a new success result 
      * with the value as mapped by the recovery function
      */

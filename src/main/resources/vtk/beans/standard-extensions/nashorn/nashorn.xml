@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-3.1.xsd">
+
+  <bean id="javascript.renderService" class="vtk.web.service.ServiceImpl">
+    <property name="order" value="-1" />
+    <property name="assertions">
+      <list>
+        <bean class="vtk.web.service.RequestParameterExistsAssertion">
+          <property name="parameterName" value="script" />
+        </bean>
+      </list>
+    </property>
+    <property name="handler" ref="javascriptHandler" />
+    <property name="servletFilters" ref="decorating.servletFilter" />
+</bean>
+
+  <bean id="javascriptHandler" class="vtk.web.js.JavascriptHandler">
+    <constructor-arg name="scriptProvider" ref="javascriptHandler.provider" />
+    <constructor-arg name="uriResolver" ref="javascriptHandler.parameterUriResolver" />
+    <constructor-arg name="modules">
+      <map>
+        <entry key="repo">
+          <bean class="vtk.web.js.Repo">
+            <constructor-arg name="repository" ref="repository" />
+            <constructor-arg ref="propertySearch.searcher" />
+            <constructor-arg ref="javascriptHandler.provider" />
+          </bean>
+        </entry>
+        <entry key="mustache">
+          <bean class="vtk.web.js.Mustache" />
+        </entry>
+      </map>
+    </constructor-arg>
+  </bean>
+
+  <bean id="javascriptHandler.parameterUriResolver" class="vtk.web.js.JavascriptHandler" 
+        factory-method="requestParameterResolver">
+    <constructor-arg name="prefix" value="/vrtx/scripts" />
+    <constructor-arg name="parameter" value="script" />
+  </bean>
+
+  <bean id="javascriptHandler.resourceTypeUriResolver" class="vtk.web.js.JavascriptHandler" 
+        factory-method="resourceTypeResolver">
+    <constructor-arg name="prefix" value="/vrtx/scripts/display" />
+  </bean>
+
+  <bean id="javascriptHandler.provider" class="vtk.js.JavascriptEngine">
+    <constructor-arg ref="javascriptHandler.sourceProvider" />
+  </bean>
+
+  <bean id="javascriptHandler.sourceProvider" class="vtk.util.repository.RepositoryInputSourceProvider">
+    <constructor-arg name="repository" ref="repository" />
+    <constructor-arg name="prefix">
+      <bean class="vtk.repository.Path" factory-method="fromString">
+        <constructor-arg value="/" />
+      </bean>
+    </constructor-arg>
+  </bean>
+
+</beans>
+
