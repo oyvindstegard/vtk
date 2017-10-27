@@ -135,13 +135,16 @@ public class ConfigurableDecorationResolver implements DecorationResolver {
         logger.debug("Reload path mapping config from {}", configPath);
         try (InputStream is = repository.getInputStream(null, configPath, true)) {
             this.config = PathMappingConfig.strConfig(is); // volatile replace
-        } catch(Throwable t) {
-            logger.error("Unable to create PathMappingConfig from configuration file " + configPath + ": " + t.getMessage(), t);
+        }
+        catch(Throwable t) {
+            logger.warn("Unable to create PathMappingConfig from configuration file {}: {}", 
+                    configPath, t.getMessage());
         }
         try {
             this.regexpRules = parseRegexpRules(); // volatile replace
-        } catch (Exception e) {
-            logger.error("Failed to reload regexp rules: " + e.getMessage(), e);
+        }
+        catch (Exception e) {
+            logger.warn("Failed to reload regexp rules: {}", e.getMessage());
         }
     }
 
@@ -193,10 +196,8 @@ public class ConfigurableDecorationResolver implements DecorationResolver {
                 && resource.getContentLength() >= this.maxDocumentSize) {
             descriptor.parse = false;
             descriptor.tidy = false;
-            if (logger.isInfoEnabled()) {
-                logger.info("Not decorating " + request.getRequestURI() 
-                        + ": document size too large: " + resource.getContentLength());
-            }
+            logger.info("Not decorating {}: document size too large: {}", 
+                    request.getRequestURI(), resource.getContentLength());
             return descriptor;
         }
         
@@ -238,10 +239,9 @@ public class ConfigurableDecorationResolver implements DecorationResolver {
                 descriptor.parse = false;
             }
         }
-        if (logger.isDebugEnabled()) {
-            logger.debug("Resolved request " + request.getRequestURI() 
-                    + " to decorating descriptor " + descriptor);
-        }
+        logger.debug("Resolved request {} to decorating descriptor {}", 
+                request.getRequestURI() , descriptor);
+
         return descriptor;
     }
     
@@ -384,7 +384,7 @@ public class ConfigurableDecorationResolver implements DecorationResolver {
                 }
             }
         }
-        logger.debug("Path match: no entry matched");
+        logger.debug("Path match: {}: no entry matched", uri);
         return null;
     }
     
@@ -592,10 +592,8 @@ public class ConfigurableDecorationResolver implements DecorationResolver {
         }
         references.add(base + "_" + language + extension);
         references.add(base + extension);
-        if (logger.isDebugEnabled()) {
-            logger.debug("Attempting to resolve template ref '" + ref + "' using "
-                         + "sequence " + references);
-        }
+        logger.debug("Attempting to resolve template ref '{}' using sequence: {}", 
+                ref, references);
         return references.toArray(new String[references.size()]);
     }
 }

@@ -33,7 +33,6 @@ package vtk.web;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.List;
 import java.util.Locale;
 
@@ -42,6 +41,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Required;
 import org.springframework.context.ApplicationListener;
 import org.springframework.context.event.ContextRefreshedEvent;
+
 import vtk.repository.Namespace;
 import vtk.repository.Path;
 import vtk.repository.Property;
@@ -258,7 +258,8 @@ public class TitleResolverImpl implements ApplicationListener<ContextRefreshedEv
 
         try {
             typeDef = resourceTypeTree.getResourceTypeDefinitionByName(contextType);
-        } catch (IllegalArgumentException ie) {}
+        }
+        catch (IllegalArgumentException ie) {}
 
         if (typeDef == null) return false;
         
@@ -297,7 +298,8 @@ public class TitleResolverImpl implements ApplicationListener<ContextRefreshedEv
         Value[] values;
         if (def.isMultiple()) {
            values = prop.getValues();
-        } else {
+        }
+        else {
             values = new Value[] {prop.getValue()};
         }
 
@@ -325,9 +327,10 @@ public class TitleResolverImpl implements ApplicationListener<ContextRefreshedEv
         try {
             InputStream inputStream = this.repository.getInputStream(null, this.configPath, true);
             this.config = new PathMappingConfig<>(inputStream, t -> SimpleTemplate.compile(t, SimpleTemplate.ESC_UNESCAPE));
-        } catch(Throwable t) {
+        }
+        catch(Throwable t) {
             logger.warn("Unable to load title configuration file: " 
-                    + this.configPath + ": " + t.getMessage(), t);
+                    + this.configPath + ": " + t.getMessage());
         }
     }
 
