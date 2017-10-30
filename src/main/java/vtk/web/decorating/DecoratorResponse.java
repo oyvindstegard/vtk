@@ -47,4 +47,11 @@ public interface DecoratorResponse {
     public OutputStream getOutputStream() throws IOException;
 
     public Writer getWriter() throws IOException;
+
+    public String getDoctype();
+
+    public Locale getLocale();
+
+    public String getCharacterEncoding();
+
 }

@@ -17,9 +17,10 @@
   </head>
   <body${document:element-attributes select=[html.body] exclude=[class]} class="app-fluid forms-new ${document:element-attributes select=[html.body] exclude=[id] value-only=[true]}"> 
     <div id="app-head-wrapper">  
-      ${manage:display-line-top}
+      ${manage:placeholder place=[line-top]}
       <div id="app-head">
-        <div id="app-name"> 
+        ${manage:placeholder place=[app-head]}
+        <div id="app-name">
           <a href='/?vrtx=admin'>${manage:repository-id}</a> 
           <span id="tagline">${manage:localized-text code=[manage.bannerText] default=[Administration of webdocuments]}</span>
         </div>
@@ -47,15 +48,18 @@
           ${manage:tab-menu}
           ${manage:tab-help}
         </div>
+        <div id="content-header-wrapper">${manage:placeholder place=[content-header]}</div>
         <div id="contents">
           ${document:body}
         </div>
+        <div id="content-footer-wrapper">${manage:placeholder place=[content-footer]}</div>
       </div>
     </div>
     
     <div id="app-footer-wrapper" class="footer">    
       <div id="app-footer">
         ${manage:version-info}
+        ${manage:placeholder place=[app-footer]}
       </div>
     </div>
     ${manage:javascript place=[body_end]}
