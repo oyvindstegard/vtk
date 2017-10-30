@@ -33,42 +33,6 @@ body {
   background: $headFooterBackgroundColor;
   margin-bottom: 20px;
   border-bottom: 1px solid #dad9d9;
-
-  #line-top {
-    background-color: $lineTopBackgroundColor;
-    height: 34px;
-
-    &.not-upscoped-host {
-      height: 7px;
-    }
-    #uiologo {
-      @include appHeadLine;
-
-      /* "The Phark Method" - image replacement
-       * Don't want that extra empty span from Levin Alexander method
-       * (although it is used elsewhere in Ny UiO design and have an extra advantage).
-       */
-      a {
-        @include bg("images/uio-app-uio-small-black.png");
-        display: block;
-        overflow: hidden;
-        @include posAbs(10px, 15px);
-        @include wh(195px, 15px);
-        text-indent: -9999px;
-
-        &:focus,
-        &:hover {
-          background-position:  0 -17px;
-        }
-      }
-      &.english-uiologo {
-        a {
-          background-image: url(images/uio-app-uio-small-black-eng.png);
-          height: 18px;
-        }
-      }
-    }
-  }
 }
 
 #app-head {
