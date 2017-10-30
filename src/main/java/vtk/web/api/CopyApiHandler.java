@@ -31,7 +31,6 @@
 package vtk.web.api;
 
 import java.util.Objects;
-import java.util.Optional;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -40,13 +39,9 @@ import org.springframework.web.HttpRequestHandler;
 
 import vtk.repository.AuthorizationException;
 import vtk.repository.IllegalOperationException;
-import vtk.repository.Namespace;
 import vtk.repository.Path;
-import vtk.repository.Property;
 import vtk.repository.Repository;
-import vtk.repository.Resource;
 import vtk.repository.ResourceOverwriteException;
-import vtk.repository.TypeInfo;
 import vtk.util.Result;
 import vtk.web.RequestContext;
 
@@ -109,16 +104,6 @@ public class CopyApiHandler implements HttpRequestHandler {
                 Repository repository = requestContext.getRepository();
                 String token = requestContext.getSecurityToken();
                 repository.copy(token, null, req.source, req.destination, false, false);
-                // XXX: begin temporary code:
-                if (req.title.isPresent()) {
-                    Resource r = repository.retrieve(token, req.destination, true);
-                    TypeInfo typeInfo = repository.getTypeInfo(r);
-                    Property title = typeInfo.createProperty(Namespace.DEFAULT_NAMESPACE, "userTitle");
-                    title.setStringValue(req.title.get());
-                    r.addProperty(title);
-                    repository.store(token, null, r);
-                }
-                // XXX: end temporary code
                 return new ApiResponseBuilder(HttpServletResponse.SC_OK)
                         .header("ContentType", "text/plain;charset=utf-8")
                         .message("Copy " + req.source + " to " + req.destination
@@ -153,26 +138,21 @@ public class CopyApiHandler implements HttpRequestHandler {
                         "Missing request parameter 'destination'"))
                   .flatMap(destStr -> Result.attempt(() -> Path.fromString(destStr))
                           .map(destPath -> {
-                              return new CopyRequest(sourcePath, destPath, 
-                                      Optional.ofNullable(request.getParameter("title")));
-                          }));
+                              return new CopyRequest(sourcePath, destPath);
+                   }));
             });
     }
     
     private static class CopyRequest {
         public final Path source;
         public final Path destination;
-        // XXX: temporary field (awaiting VTK-5021):
-        public final Optional<String> title;
-        private CopyRequest(Path source, Path destination, Optional<String> title) {
+        private CopyRequest(Path source, Path destination) {
             this.source = source; this.destination = destination;
-            this.title = title;
         }
         @Override
         public String toString() {
             return getClass().getSimpleName() + 
-                    "(" + source + ", " + destination + ", " 
-                    + title + ")";
+                    "(" + source + ", " + destination+ ")";
         }
     }
 }
