@@ -167,9 +167,6 @@ body {
     min-width: $fluidMinWidth;
     width: 100%;
   }
-  #app-head-wrapper #line-top #uiologo a {
-    left: $fluidPadding;
-  }
   #app-head {
     #app-name {
       left: $fluidPadding;
@@ -180,7 +177,6 @@ body {
     }
   }
   #app-head,
-  #app-head-wrapper #line-top #uiologo,
   #app-head-wrapper #vrtx-breadcrumb-wrapper #vrtx-breadcrumb,
   #app-head-wrapper #system-message-wrapper .system-message,
   #app-footer {
