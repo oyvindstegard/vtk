@@ -212,17 +212,22 @@
   <!--
     Checks for the uioAuthSSO cookie and forces an authentication attempt if found  
   -->
+  <bean id="saml.ssoCookieAssertion" class="vtk.web.service.SSOCookieAssertion">
+    <property name="uioAuthSSO" value="${saml.uioAuthSSO}" />
+    <property name="serviceProviderURI" value="${saml.serviceProviderURI}" />
+    <property name="urlPatternWhitelist" >
+      <list>
+        <value>${saml.ssoUrlPatternWhitelist}</value>
+      </list>
+    </property>
+    <property name="ssoTimeout" value="${security.ssoTimeoutMilliseconds}" />
+  </bean>
 
   <bean id="saml.ssoCookieService" class="vtk.web.service.ServiceImpl">
     <property name="order" value="-3"/>
     <property name="assertions">
       <list>
-        <bean class="vtk.web.service.SSOCookieAssertion">
-          <property name="uioAuthSSO" value="${saml.uioAuthSSO}" />          
-          <property name="serviceProviderURI" value="${saml.serviceProviderURI}" />
-          <property name="wordWhitelist" value="${security.ssoWordWhitelist}"/>
-          <property name="ssoTimeout" value="${security.ssoTimeoutMilliseconds}" />  
-        </bean>
+        <ref bean="saml.ssoCookieAssertion"/>
       </list>
     </property>
     <property name="handler" ref="saml.ssoCookieHandler"/>

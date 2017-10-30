@@ -1,7 +1,12 @@
 package vtk.web.service;
 
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Date;
+import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
+import java.util.regex.Pattern;
 
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
@@ -29,8 +34,8 @@ public class SSOCookieAssertion implements WebAssertion {
 
     private String uioAuthSSO;
     private String serviceProviderURI;
-    private String[] wordWhitelist;
     private Long ssoTimeout;
+    private List<Pattern> urlPatternWhitelist = Collections.emptyList();
 
     @Override
     public boolean conflicts(WebAssertion assertion) {
@@ -40,7 +45,7 @@ public class SSOCookieAssertion implements WebAssertion {
 
     @Override
     public boolean matches(HttpServletRequest request, Resource resource, Principal principal) {
-        Boolean doRedirect = false;
+        boolean doRedirect = false;
 
         // No check for action=refresh-lock on the assumption that java refreshes don't trigger
         // a redirect in the browser
@@ -49,11 +54,12 @@ public class SSOCookieAssertion implements WebAssertion {
                 && !HttpUtil.getCookie(request, SecurityInitializer.VRTXLINK_COOKIE).isPresent()
                 && request.getParameter("authTarget") == null && !request.getRequestURI().contains(serviceProviderURI)) {
 
-            StringBuffer url = request.getRequestURL();
+            String url = request.getRequestURL().toString();
 
-            for (String word : wordWhitelist) {
-                if (url.toString().endsWith(word.trim())) {
+            for (Pattern p: urlPatternWhitelist) {
+                if (p.matcher(url).matches()) {
                     doRedirect = true;
+                    break;
                 }
             }
 
@@ -90,8 +96,26 @@ public class SSOCookieAssertion implements WebAssertion {
         this.serviceProviderURI = serviceProviderURI;
     }
 
-    public void setWordWhitelist(String[] wordWhitelist) {
-        this.wordWhitelist = wordWhitelist;
+    /**
+     * Sets initial list of URL patterns to whitelist for SSO assertion.
+     * @param urlPatternWhitelist
+     */
+    public void setUrlPatternWhitelist(List<Pattern> urlPatternWhitelist) {
+        this.urlPatternWhitelist = Objects.requireNonNull(urlPatternWhitelist);
+    }
+
+    /**
+     * Adds a URL pattern to whitelist for SSO assertion.
+     *
+     * <p>Use of this method is not thread safe at runtime and is meant to be
+     * used for configuration extensibility at init time (which is single threaded).
+     *
+     * @param pattern a pattern matching URLs for which the SSO service should kick in.
+     */
+    public void addUrlPatternToWhitelist(Pattern pattern) {
+        List<Pattern> newList = new ArrayList<>(this.urlPatternWhitelist);
+        newList.add(pattern);
+        this.urlPatternWhitelist = newList;
     }
 
     public void setSsoTimeout(Long ssoTimeout) {
