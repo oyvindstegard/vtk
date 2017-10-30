@@ -124,8 +124,13 @@ public class CopyApiHandler implements HttpRequestHandler {
                         .message("Copy " + req.source + " to " + req.destination
                                     + " succeeded\n");
             }
-            catch (AuthorizationException | ResourceOverwriteException 
-                    | IllegalOperationException e) {
+            catch (ResourceOverwriteException e) {
+                return new ApiResponseBuilder(HttpServletResponse.SC_CONFLICT)
+                        .header("Content-Type", "text/plain;charset=utf-8")
+                        .message("Copy " + req.source + " to " + req.destination + 
+                                " failed: resource " + req.destination + " already exists");
+            }
+            catch (AuthorizationException | IllegalOperationException e) {
                 return new ApiResponseBuilder(HttpServletResponse.SC_FORBIDDEN)
                         .header("Content-Type", "text/plain;charset=utf-8")
                         .message("Copy " + req.source + " to " + req.destination + 
