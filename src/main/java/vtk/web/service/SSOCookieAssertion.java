@@ -24,7 +24,7 @@ import vtk.util.web.HttpUtil;
  * Configurable properties:
  * <ul>
  * <li><code>serviceProviderURI</code> - the endpoint for the SP
- * <li><code>wordWhitelist</code> - lift of resources that should be SSO redirected.
+ * <li><code>urlPatternWhitelist</code> - list of URL patterns for which SSO is allowed to trigger
  * <li><code>ssoTimeout</code> - timeout to do the redirect
  * </ul>
  * 
