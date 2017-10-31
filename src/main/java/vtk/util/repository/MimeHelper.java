@@ -32,7 +32,9 @@ package vtk.util.repository;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.Map;
 import java.util.Properties;
+import java.util.stream.Collectors;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -101,6 +103,20 @@ public class MimeHelper {
             }
         }
         return false;
+    }
+
+    /**
+     * Obtain map from file extension to MIME type.
+     *
+     * <p>The file extensions do not include the generally expected leading "dot".
+     *
+     * @return a map of file extensions to MIME type.
+     */
+    public static Map<String,String> extensionToMimetypeMap() {
+        return properties.entrySet().stream()
+                .filter(e -> !"unknownTypePrefixes".equals(e.getKey()))
+                .collect(Collectors.toMap(
+                        e -> e.getKey().toString(), e -> e.getValue().toString()));
     }
 
     /**
