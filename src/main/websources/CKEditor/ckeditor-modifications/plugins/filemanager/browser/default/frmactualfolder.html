@@ -33,7 +33,7 @@
 function SetCurrentFolder( resourceType, folderPath )
 {
 	document.getElementById('tdName').innerHTML = "<a id='button' href='#'>" + escapeHtml(folderPath) + "</a>" ;
-	FILEURL = escapeHtml(folderPath);
+	FILEURL = folderPath;
 	document.getElementById('button').onclick = function () {
 		OpenFile( FILEURL );
 	};
