@@ -51,6 +51,7 @@ import vtk.repository.search.QueryException;
 import vtk.repository.search.ResultSet;
 import vtk.repository.search.Search;
 import vtk.repository.store.Cache;
+import vtk.repository.store.ContentStore;
 import vtk.security.AuthenticationException;
 import vtk.security.Principal;
 import vtk.security.token.TokenManager;
@@ -60,13 +61,23 @@ import vtk.util.io.IO;
  * Handles synchronization in URI namespace of repository read/write operations
  * and does some extra cache flushing after transactions have completed.
  *
+ * <p>Also buffers content to temporary files before actual storage calls to repository
+ * are made, to increase robustness and reduce locking time.
+ *
  * Repository service calls which entail writing use exclusive locks on the involved
  * <code>Path</code>s, while reading calls use shared locks.
  * 
  * <p>One could argue that, since this code is necessary for proper synchronization of multithreaded access,
  * some or all of this code belongs somewhere inside or underneath
  * {@link RepositoryImpl}, but the code was cleaner when modelling it as a wrapper around it.
- * TODO rename to RepositoryNamespaceSynchronizer ? Model as subclass of RepositoryImpl instead ? And make RepositoryImpl abstract ?
+ * 
+ * <p>TODO rename to RepositoryNamespaceSynchronizer ?
+ * <p>TODO Model as subclass of RepositoryImpl instead ? And make RepositoryImpl abstract ?
+ * <p>XXX we allow potentially huge uploads content store calls before actually verifying
+ *        authentication and repository permissions.
+ *        This makes proper HTTP 100-Continue-handling more cumbersome for client code.
+ *        (Servlet containers typically detect when to send a 100-continue response
+ *        by monitoring when input stream is opened for reading by application code.)
  */
 public class LockingCacheControlRepositoryWrapper implements Repository, ClusterAware {
 
@@ -218,25 +229,17 @@ public class LockingCacheControlRepositoryWrapper implements Repository, Cluster
         }
     }
 
+
     @Override
     public Resource createDocument(final String token, final String lockToken, final Path uri, ContentInputSource content) throws IllegalOperationException,
             AuthorizationException, AuthenticationException, ResourceLockedException, ReadOnlyException, IOException {
 
         IO.TempFile tempFile = null;
         try {
-            // Convert input stream to local file if necessary, to ensure
-            // most efficient transfer to repository content store while holding locks.
-            if (!content.isFile() || !content.canDeleteSourceFile()) {
-                InputStream stream = content.stream();
-                if (! (stream instanceof FileInputStream
-                         || stream instanceof ByteArrayInputStream)) {
-
-                    tempFile = IO.tempFile(stream, tempDir)
-                            .progress(p -> tokenManager.getPrincipal(token)) // Refresh token because upload may be slow
-                            .progressInterval(128 * 1024 * 1024) // Refresh approx. for every 128M uploaded
-                            .perform();
-                    content = ContentInputSources.fromFile(tempFile.file(), true);
-                }
+            Optional<IO.TempFile> buffered = maybeBufferContent(token, content);
+            if (buffered.isPresent()) {
+                tempFile = buffered.get();
+                content = ContentInputSources.fromFile(buffered.get().file(), true);
             }
 
             // Synchronize on:
@@ -265,7 +268,6 @@ public class LockingCacheControlRepositoryWrapper implements Repository, Cluster
             finally {
                 this.lockManager.unlock(locked, true);
             }
-
         }
         finally {
             if (tempFile != null) {
@@ -533,11 +535,10 @@ public class LockingCacheControlRepositoryWrapper implements Repository, Cluster
             throws RepositoryException, AuthenticationException, AuthorizationException, IOException {
 
          /* XXX no path read locking when loading by ID. But it is likely better than
-          * alternative of looking up path by id first, in a separate tx, then locking the path.
-          * This is because that would be racy if the target resource was moved or deleted
-          * after looking up path, but before actually loading by path.
-          *
-          */
+            alternative of looking up path by id first, in a separate tx, then locking the path.
+            This is because that would be racy if the target resource was moved or deleted
+            after looking up path, but before actually loading by path. */
+
         return wrappedRepository.retrieveById(token, id, forProcessing); // Tx
 
     }
@@ -681,16 +682,28 @@ public class LockingCacheControlRepositoryWrapper implements Repository, Cluster
             AuthenticationException, ResourceNotFoundException, ResourceLockedException, IllegalOperationException,
             ReadOnlyException, IOException {
 
-        // Synchronize on:
-        // - URI
-        final List<Path> locked = this.lockManager.lock(uri, true);
+        IO.TempFile tempFile = null;
         try {
-           Resource r = this.wrappedRepository.storeContent(token, lockToken, uri, content); // Tx
-           notifyFlush(uri, false, "storeContent");
-           return r;
-        }
-        finally {
-            this.lockManager.unlock(locked, true);
+            Optional<IO.TempFile> buffered = maybeBufferContent(token, content);
+            if (buffered.isPresent()) {
+                tempFile = buffered.get();
+                content = ContentInputSources.fromFile(buffered.get().file(), true);
+            }
+
+            // Synchronize on:
+            // - URI
+            final List<Path> locked = this.lockManager.lock(uri, true);
+            try {
+                Resource r = this.wrappedRepository.storeContent(token, lockToken, uri, content); // Tx
+                notifyFlush(uri, false, "storeContent");
+                return r;
+            } finally {
+                this.lockManager.unlock(locked, true);
+            }
+        } finally {
+            if (tempFile != null) {
+                tempFile.delete();
+            }
         }
     }
 
@@ -699,16 +712,28 @@ public class LockingCacheControlRepositoryWrapper implements Repository, Cluster
             AuthenticationException, ResourceNotFoundException, ResourceLockedException, IllegalOperationException,
             ReadOnlyException, IOException {
 
-        // Synchronize on:
-        // - URI
-        final List<Path> locked = this.lockManager.lock(uri, true);
+        IO.TempFile tempFile = null;
         try {
-            Resource r = this.wrappedRepository.storeContent(token, lockToken, uri, content, revision); // Tx
-            notifyFlush(uri, false, "storeContent");
-            return r;
-        }
-        finally {
-            this.lockManager.unlock(locked, true);
+            Optional<IO.TempFile> buffered = maybeBufferContent(token, content);
+            if (buffered.isPresent()) {
+                tempFile = buffered.get();
+                content = ContentInputSources.fromFile(buffered.get().file(), true);
+            }
+
+            // Synchronize on:
+            // - URI
+            final List<Path> locked = this.lockManager.lock(uri, true);
+            try {
+                Resource r = this.wrappedRepository.storeContent(token, lockToken, uri, content, revision); // Tx
+                notifyFlush(uri, false, "storeContent");
+                return r;
+            } finally {
+                this.lockManager.unlock(locked, true);
+            }
+        } finally {
+            if (tempFile != null) {
+                tempFile.delete();
+            }
         }
     }
 
@@ -839,6 +864,35 @@ public class LockingCacheControlRepositoryWrapper implements Repository, Cluster
         this.wrappedRepository = wrappedRepository;
     }
 
+    // Convert input stream to local temporary file if necessary, to ensure
+    // most efficient transfer to repository content store while holding locks, and
+    // to potentially increase atomicity of repository content store calls by
+    // allowing file system move operation to take place.
+    private Optional<IO.TempFile> maybeBufferContent(String token, ContentInputSource source) throws IOException {
+        if (!source.isFile() || !source.canDeleteSourceFile()) {
+            InputStream stream = source.stream();
+            if (!(stream instanceof FileInputStream
+                    || stream instanceof ByteArrayInputStream)) {
+
+                IO.TempFile tempFile = IO.tempFile(stream, tempDir)
+                        .progress(p -> tokenManager.getPrincipal(token)) // Refresh token because upload may be slow
+                        .progressInterval(128 * 1024 * 1024) // Refresh approx. for every 128M uploaded
+                        .perform();
+                return Optional.of(tempFile);
+            }
+        }
+
+        return Optional.empty();
+    }
+
+    /**
+     * This temporary directly should ideally reside on the same file system
+     * as that used by the {@link ContentStore} implementation of the repository.
+     * That will ensure the most efficient transfer of resource content, allowing
+     * buffered files to be moved atomically into place.
+     *
+     * @param tempDirPath path to temporary directory used to buffer resource content
+     */
     @Required
     public void setTempDir(String tempDirPath) {
         File tmp = new File(tempDirPath);
