@@ -56,7 +56,7 @@ public class LocationHistoryEvaluator implements LatePropertyEvaluator {
         List<Object> log = null;
         if (property.isValueInitialized()) {
             Json.MapContainer object = property.getJSONValue();
-            log = object.optArrayValue("locations", new Json.ListContainer());
+            log = object.optArrayValue("locations").orElse(new Json.ListContainer());
         }
         if (log == null) log = new ArrayList<>();
         

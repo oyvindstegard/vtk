@@ -554,14 +554,14 @@ public class LinkCheckJob extends AbstractResourceJob {
                 try (InputStream jsonStream = statusProp.getBinaryStream()) {
                     Json.MapContainer status = Json.parseToContainer(jsonStream).asObject();
                     s.complete = "COMPLETE".equals(status.get("status"));
-                    for (Object b : status.optArrayValue("brokenLinks", Collections.emptyList())) {
+                    for (Object b : status.optArrayValue("brokenLinks").orElse(Collections.emptyList())) {
                         s.brokenLinks.add(b);
                     }
-                    for (Object b : status.optArrayValue("relocatedLinks", Collections.emptyList())) {
+                    for (Object b : status.optArrayValue("relocatedLinks").orElse(Collections.emptyList())) {
                         s.relocatedLinks.add(b);
                     }
-                    s.index = status.optLongValue("index", 0L);
-                    s.timestamp = status.optStringValue("timestamp", null);
+                    s.index = status.optLongValue("index").orElse(0L);
+                    s.timestamp = status.optStringValue("timestamp").orElse(null);
                 }
                 catch (Throwable t) { }
             }

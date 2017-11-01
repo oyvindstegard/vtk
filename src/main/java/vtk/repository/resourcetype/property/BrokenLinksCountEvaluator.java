@@ -83,7 +83,7 @@ public class BrokenLinksCountEvaluator implements PropertyEvaluator {
         try {
             MapContainer linkCheck = linkCheckProp.getJSONValue();
             List<Object> brokenLinks = linkCheck
-                    .optArrayValue("brokenLinks", Collections.emptyList());
+                    .optArrayValue("brokenLinks").orElse(Collections.emptyList());
             if (brokenLinks.isEmpty()) return false;
             
             ErrorCount errorCount = new ErrorCount();

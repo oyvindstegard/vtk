@@ -358,7 +358,7 @@ public class PropertiesApiHandler implements HttpRequestHandler {
     private Result<PropertyOperations> propertyOperations(Json.MapContainer body, 
             Resource resource, RequestContext requestContext) {
         Result<PropertyOperations> result = Result.attempt(() -> {
-            Map<String, Object> propsMap = body.optObjectValue("properties", null);
+            Map<String, Object> propsMap = body.optObjectValue("properties").orElse(null);
             if (propsMap == null) throw new IllegalArgumentException(
                     "Json body must contain a 'properties' entry");
             TypeInfo typeInfo = requestContext.getRepository().getTypeInfo(resource);

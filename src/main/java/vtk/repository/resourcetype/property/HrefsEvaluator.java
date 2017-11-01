@@ -101,7 +101,7 @@ public class HrefsEvaluator implements LatePropertyEvaluator {
                     Json.MapContainer obj = (Json.MapContainer) o;
                     String url = obj.stringValue("url");
                     String type = obj.stringValue("type");
-                    String vrtxid = obj.optStringValue("vrtxid", null);
+                    String vrtxid = obj.optStringValue("vrtxid").orElse(null);
                     // Preserve existing (URL -> vrtxid) mappings
                     if (vrtxid != null) collector.mapping(url, vrtxid);
 

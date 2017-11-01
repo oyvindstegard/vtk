@@ -339,10 +339,10 @@ public class BrokenLinksReport extends DocumentReporter {
                 }
                 Json.MapContainer obj = prop.getJSONValue();
                 for (String includeType : includeTypes) {
-                    sum += obj.optIntValue(includeType, 0);
+                    sum += obj.optIntValue(includeType).orElse(0);
                 }
                 for (String excludeType : excludeTypes) {
-                    sum -= obj.optIntValue(excludeType, 0);
+                    sum -= obj.optIntValue(excludeType).orElse(0);
                 }
                 return true;
             }
@@ -483,13 +483,13 @@ public class BrokenLinksReport extends DocumentReporter {
             count = 0;
             Json.MapContainer obj = prop.getJSONValue();
             for (String includeType : includeTypes) {
-                optInt = obj.optIntValue(includeType, 0);
+                optInt = obj.optIntValue(includeType).orElse(0);
                 sum += optInt;
                 cs.linkCount += optInt;
                 count += optInt;
             }
             for (String excludeType : excludeTypes) {
-                optInt = obj.optIntValue(excludeType, 0);
+                optInt = obj.optIntValue(excludeType).orElse(0);
                 sum -= optInt;
                 cs.linkCount -= optInt;
                 count -= optInt;

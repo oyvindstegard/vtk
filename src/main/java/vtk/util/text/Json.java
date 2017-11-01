@@ -42,6 +42,7 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -591,16 +592,15 @@ public final class Json {
          * TODO consider if default value should be converted to MapContainer if used.
          * 
          * @param key
-         * @param defaultValue
          * @return a {@code MapContainer} instance if key with appropriate value was found, otherwise
-         * the <code>defaultValue</code> instance
+         * an empty optional
          * 
          */
-        public Map<String,Object> optObjectValue(String key, Map<String,Object> defaultValue) {
+        public Optional<Map<String,Object>> optObjectValue(String key) {
             Object o = get(key);
-            if (o instanceof MapContainer) return (MapContainer)o;
+            if (o instanceof MapContainer) return Optional.of((MapContainer)o);
             
-            return defaultValue;
+            return Optional.empty();
         }
         
         /**
@@ -619,36 +619,31 @@ public final class Json {
 
         /** 
          * Get a JSON array value for key as a {@code ListContainer}. But if
-         * no appropriate value exists for the key, return a provided default
-         * value.
-         * 
-         * TODO consider if default value should be converted to ListContainer if used.
+         * no appropriate value exists for the key, return an empty {@code Optional}.
          * 
          * @param key
-         * @param defaultValue
          * @return 
          */
-        public List<Object> optArrayValue(String key, List<Object> defaultValue) {
+        public Optional<List<Object>> optArrayValue(String key) {
             Object o = get(key);
-            if (o instanceof ListContainer) return (ListContainer)o;
+            if (o instanceof ListContainer) return Optional.of((ListContainer)o);
             
-            return defaultValue;
+            return Optional.empty();
         }
         
         /**
          * Optional {@code long} value with default.
+         *
          * @param key
-         * @param defaultValue value to return in case of null-value, wrong data type or non-existing key.
-         * invalid value type.
-         * @return the value, but if key does not exist, has
-         * a JSON null-value or has an incompatible value type, then the {@code defaultValue} is returned.
+         * @return the value, but if key does not exist, has a JSON null-value
+         * or has an incompatible value type, then an empty {@code Optional} is
+         * returned.
          */
-        public Long optLongValue(String key, Long defaultValue) {
+        public Optional<Long> optLongValue(String key) {
             try {
-                Long value = longValue(key);
-                return value != null ? value : defaultValue;
+                return Optional.of(longValue(key));
             } catch (ValueException ve) {
-                return defaultValue;
+                return Optional.empty();
             }
         }
         
@@ -665,16 +660,14 @@ public final class Json {
         /**
          * Optional {@code int } value with default.
          * @param key
-         * @param defaultValue value to return in case of null-value, wrong data type or non-existing key.
          * @return the value, but if key does not exist, has
-         * a JSON null-value or has an incompatible value type, then the {@code defaultValue} is returned.
+         * a JSON null-value or has an incompatible value type, then an empty {@code Optional} is returned
          */
-        public Integer optIntValue(String key, Integer defaultValue) {
+        public Optional<Integer> optIntValue(String key) {
             try {
-                Integer value = intValue(key);
-                return value != null ? value : defaultValue;
+                return Optional.of(intValue(key));
             } catch (ValueException ve) {
-                return defaultValue;
+                return Optional.empty();
             }
         }
 
@@ -691,16 +684,14 @@ public final class Json {
         /**
          * Optional {@code double} value with default.
          * @param key
-         * @param defaultValue value to return in case of null-value, wrong data type or non-existing key.
          * @return the value, but if key does not exist, has
-         * a JSON null-value or has an incompatible value type, then the {@code defaultValue} is returned.
+         * a JSON null-value or has an incompatible value type, then an empty {@code Optional} is returned..
          */
-        public Double optDoubleValue(String key, Double defaultValue) {
+        public Optional<Double> optDoubleValue(String key) {
             try {
-                Double value = doubleValue(key);
-                return value != null ? value : defaultValue;
+                return Optional.of(doubleValue(key));
             } catch (ValueException ve) {
-                return defaultValue;
+                return Optional.empty();
             }
         }
         
@@ -717,16 +708,14 @@ public final class Json {
         /**
          * Optional {@code boolean} value with default.
          * @param key
-         * @param defaultValue value to return in case of null-value, wrong data type or non-existing key.
          * @return the value, but if key does not exist, has
-         * a JSON null-value or has an incompatible value type, then the {@code defaultValue} is returned.
+         * a JSON null-value or has an incompatible value type, then an empty {@code Optional} is returned.
          */
-        public Boolean optBooleanValue(String key, Boolean defaultValue) {
+        public Optional<Boolean> optBooleanValue(String key) {
             try {
-                Boolean value = booleanValue(key);
-                return value != null ? value : defaultValue;
+                return Optional.of(booleanValue(key));
             } catch (ValueException ve) {
-                return defaultValue;
+                return Optional.empty();
             }
         }
         
@@ -741,19 +730,17 @@ public final class Json {
         }
         
         /**
-         * Optional {@code String} value with default.
+         * Optional {@code String} value.
          * @param key
-         * @param defaultValue value to return in case of null-value, wrong data type or non-existing key.
          * @return the value, but if key does not exist, has
-         * a JSON null-value or has an incompatible value type, then the {@code defaultValue} is returned.
+         * a JSON null-value or has an incompatible value type, then an empty {@code Optional} is returned.
          * @see #stringValue(java.lang.String) 
          */
-        public String optStringValue(String key, String defaultValue) {
+        public Optional<String> optStringValue(String key) {
             try {
-                String value = stringValue(key);
-                return value != null ? value : defaultValue;
+                return Optional.of(stringValue(key));
             } catch (ValueException ve) {
-                return defaultValue;
+                return Optional.empty();
             }
         }
 
@@ -808,10 +795,10 @@ public final class Json {
          * structure.
          *
          * <p>
-         * XXX Comitted for review; I'm not sure we need this for anything. But can
-         * be used for {@link MapContainer#optObjectValue(java.lang.String, java.util.Map)  MapContainer, to convert default
+         * XXX Comitted for review; I'm not sure we need this for anything. But
+         * can be used for {@link MapContainer#optObjectValue(java.lang.String)}  MapContainer, to convert default
          * arg to a MapContainer return value.
-         * 
+         *
          * If we decide this is not necessary, just remove it to keep things lean and simple.
          *
          * <p>
