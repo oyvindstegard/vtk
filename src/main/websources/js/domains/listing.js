@@ -43,9 +43,22 @@ $.when(vrtxAdmin.domainsIsReady).done(function() {
             });
             vrtxAdm.completeFormAsync({
               selector: "form#" + tabMenuServices[i] + "-form input[type=submit]",
+              errorContainer: "errorContainer",
+              errorContainerInsertAfter: "#initCreateChangeTemplate",
               transitionSpeed: speedCreationServices,
+              post: true,
               funcBeforeComplete: function () {
                 createTitleChange($("#title"), $("#name"), $("#isIndex"));
+              },
+              funcComplete: function () {
+                var currentPathWithEndSlash = location.pathname.replace(/\/$/, "") + "/";
+                var resourceName = $("#name").val();
+                if(/form#createDocumentService-form/i.test(this.selector)) {
+                  resourceName += $.trim($("#vrtx-textfield-file-type").text());
+                } else {
+                  resourceName += "/";
+                }
+                location.href = currentPathWithEndSlash + resourceName + "?vrtx=admin";
               }
             });
             if (vrtxAdm.fragmentParams['action'] === tabMenuServices[i]) {
