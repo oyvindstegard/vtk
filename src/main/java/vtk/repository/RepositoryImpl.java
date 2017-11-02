@@ -1388,9 +1388,7 @@ public class RepositoryImpl implements Repository, ApplicationContextAware,
 
     private boolean isAuthorizedInternal(Resource r, RepositoryAction a, Principal p, boolean considerLocks, String lockToken) throws IOException {
 
-        // TODO verify lockToken
-
-         if (r == null) {
+        if (r == null) {
             throw new IllegalArgumentException("Resource is NULL");
         }
         if (a == null) {
