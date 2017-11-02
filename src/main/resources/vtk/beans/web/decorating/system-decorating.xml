@@ -10,6 +10,7 @@
         <constructor-arg name="filters"><list /></constructor-arg>
         <constructor-arg name="resolver" ref="system.decorationResolver" />
         <constructor-arg name="preventDecoratingParameter" value="x-prevent-decorating" />
+        <constructor-arg name="preventParsingParameter" value="x-prevent-parsing" />
         
         <constructor-arg name="staticHeaders">
           <map>
