@@ -284,56 +284,56 @@ public class JsonTest {
         // Null value as default value
 
         // Long
-        assertNull(json.optLongValue("non-existing", null));
-        assertEquals((Long)1L, json.optLongValue("a", 1L));
-        assertEquals((Long)1L, json.optLongValue("b", 1L));
-        assertEquals((Long)1L, json.optLongValue("non-existing", 1L));
-        assertEquals((Long)133L, json.optLongValue("n", 0L));
+        assertNull(json.optLongValue("non-existing").orElse(null));
+        assertEquals((Long)1L, json.optLongValue("a").orElse(1L));
+        assertEquals((Long)1L, json.optLongValue("b").orElse(1L));
+        assertEquals((Long)1L, json.optLongValue("non-existing").orElse(1L));
+        assertEquals((Long)133L, json.optLongValue("n").orElse(0L));
         
         // Integer
-        assertNull(json.optIntValue("non-existing", null));
-        assertEquals((Integer)1, json.optIntValue("a", 1));
-        assertEquals((Integer)1, json.optIntValue("b", 1));
-        assertEquals((Integer)1, json.optIntValue("non-existing", 1));
-        assertEquals((Integer)133, json.optIntValue("n", 0));
+        assertNull(json.optIntValue("non-existing").orElse(null));
+        assertEquals((Integer)1, json.optIntValue("a").orElse(1));
+        assertEquals((Integer)1, json.optIntValue("b").orElse(1));
+        assertEquals((Integer)1, json.optIntValue("non-existing").orElse(1));
+        assertEquals((Integer)133, json.optIntValue("n").orElse(0));
         
         // Double
-        assertNull(json.optDoubleValue("non-existing", null));
-        assertEquals((Double)1d, json.optDoubleValue("a", 1d));
-        assertEquals((Double)1d, json.optDoubleValue("b", 1d));
-        assertEquals((Double)1d, json.optDoubleValue("non-existing", 1d));
-        assertEquals((Double)133.33d, json.optDoubleValue("n", 0d));
+        assertNull(json.optDoubleValue("non-existing").orElse(null));
+        assertEquals((Double)1d, json.optDoubleValue("a").orElse(1d));
+        assertEquals((Double)1d, json.optDoubleValue("b").orElse(1d));
+        assertEquals((Double)1d, json.optDoubleValue("non-existing").orElse(1d));
+        assertEquals((Double)133.33d, json.optDoubleValue("n").orElse(0d));
         
         // Boolean
-        assertNull(json.optBooleanValue("non-existing", null));
-        assertTrue(json.optBooleanValue("a", true));
-        assertTrue(json.optBooleanValue("b", true));
-        assertTrue(json.optBooleanValue("non-existing", true));
-        assertTrue(json.optBooleanValue("n", true));
+        assertNull(json.optBooleanValue("non-existing").orElse(null));
+        assertTrue(json.optBooleanValue("a").orElse(true));
+        assertTrue(json.optBooleanValue("b").orElse(true));
+        assertTrue(json.optBooleanValue("non-existing").orElse(true));
+        assertTrue(json.optBooleanValue("n").orElse(true));
         
         // String
-        assertNull(json.optStringValue("non-existing", null));
-        assertEquals("value", json.optStringValue("a", "default"));
-        assertEquals("default", json.optStringValue("b", "default"));
-        assertEquals("default", json.optStringValue("non-existing", "default"));
-        assertEquals("default", json.optStringValue("n", "default"));
+        assertNull(json.optStringValue("non-existing").orElse(null));
+        assertEquals("value", json.optStringValue("a").orElse("default"));
+        assertEquals("default", json.optStringValue("b").orElse("default"));
+        assertEquals("default", json.optStringValue("non-existing").orElse("default"));
+        assertEquals("default", json.optStringValue("n").orElse("default"));
         
         // Object value (map)
         MapContainer expectedObj = new MapContainer();
         expectedObj.put("n", 1L);
         
-        assertNull(json.optObjectValue("non-existing", null));
-        assertEquals(Collections.EMPTY_MAP, json.optObjectValue("non-existing", Collections.EMPTY_MAP));
-        assertEquals(Collections.EMPTY_MAP, json.optObjectValue("a", Collections.EMPTY_MAP));
-        assertEquals(expectedObj, json.optObjectValue("obj", Collections.EMPTY_MAP));
+        assertNull(json.optObjectValue("non-existing").orElse(null));
+        assertEquals(Collections.EMPTY_MAP, json.optObjectValue("non-existing").orElse(Collections.EMPTY_MAP));
+        assertEquals(Collections.EMPTY_MAP, json.optObjectValue("a").orElse(Collections.EMPTY_MAP));
+        assertEquals(expectedObj, json.optObjectValue("obj").orElse(Collections.EMPTY_MAP));
         
         // Array value (list)
         ListContainer expectedArr = new ListContainer();
         
-        assertNull(json.optArrayValue("non-existing", null));
-        assertEquals(Collections.EMPTY_LIST, json.optArrayValue("non-existing", Collections.EMPTY_LIST));
-        assertEquals(Collections.EMPTY_LIST, json.optArrayValue("a", Collections.EMPTY_LIST));
-        assertEquals(expectedArr, json.optArrayValue("arr", Collections.EMPTY_LIST));
+        assertNull(json.optArrayValue("non-existing").orElse(null));
+        assertEquals(Collections.EMPTY_LIST, json.optArrayValue("non-existing").orElse(Collections.EMPTY_LIST));
+        assertEquals(Collections.EMPTY_LIST, json.optArrayValue("a").orElse(Collections.EMPTY_LIST));
+        assertEquals(expectedArr, json.optArrayValue("arr").orElse(Collections.EMPTY_LIST));
     }
     
     @Test

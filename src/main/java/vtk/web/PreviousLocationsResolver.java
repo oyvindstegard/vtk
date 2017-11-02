@@ -168,7 +168,7 @@ public class PreviousLocationsResolver {
             return Optional.empty();
         }
         MapContainer jsonValue = history.getJSONValue();
-        List<Object> list = jsonValue.optArrayValue("locations", null);
+        List<Object> list = jsonValue.optArrayValue("locations").orElse(null);
         if (list == null || list.size() == 0) {
             return Optional.empty();
         }
