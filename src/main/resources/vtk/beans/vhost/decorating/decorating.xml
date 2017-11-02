@@ -9,6 +9,7 @@
         <constructor-arg name="filters" ref="decorating.initialFilters" />
         <constructor-arg name="resolver" ref="decorating.decorationResolver" />
         <constructor-arg name="preventDecoratingParameter" value="x-prevent-decorating" />
+        <constructor-arg name="preventParsingParameter" value="x-prevent-parsing" />
         <constructor-arg name="staticHeaders"><null /></constructor-arg>
         <constructor-arg name="maxSize" value="${decorating.maxDocumentSize}" />
       </bean>
