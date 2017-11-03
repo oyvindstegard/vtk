@@ -110,6 +110,7 @@ public class ResourcePrincipalPermissionAssertion extends AbstractAssertion
     private boolean anonymous = false;
     private boolean considerLocks = true;
     private boolean parent = false;
+    private boolean requireExclusiveLock = true;
     private boolean ignoreLockTokenForSharedAclWriteLocks = true;
     
     Set<String> rootPrincipals;
@@ -117,6 +118,21 @@ public class ResourcePrincipalPermissionAssertion extends AbstractAssertion
     
     public void setRequiresAuthentication(boolean requiresAuthentication) {
         this.requiresAuthentication = requiresAuthentication;
+    }
+
+    /**
+     * Set whether to require exclusive locking ability.
+     *
+     * <p>If set, it will cause the assertion to not match if a resource is locked with
+     * a {@link Lock.Type#SHARED_ACL_WRITE shared} lock, even if the principal
+     * otherwise has ACL permission.
+     *
+     * <p>This flag only has effect if {@link #setConsiderLocks(boolean) considerLocks} is set.
+     *
+     * @param requireExclusiveLock
+     */
+    public void setRequireExclusiveLock(boolean requireExclusiveLock) {
+        this.requireExclusiveLock = requireExclusiveLock;
     }
 
     /**
@@ -234,9 +250,7 @@ public class ResourcePrincipalPermissionAssertion extends AbstractAssertion
 
     @Override
     public String toString() {
-        StringBuilder sb = new StringBuilder(
-                "principal.permissionsOn(currentResource).includes(" + this.permission + ")");
-        return sb.toString();
+        return "principal.permissionsOn(currentResource).includes(" + this.permission + ")";
     }
 
     @Override
@@ -309,11 +323,16 @@ public class ResourcePrincipalPermissionAssertion extends AbstractAssertion
         }
 
         String lockToken = null;
-        if (ignoreLockTokenForSharedAclWriteLocks) {
-            Lock lock = resource.getLock();
-            if (lock != null && lock.getType() == Lock.Type.SHARED_ACL_WRITE) {
-                // If lock is of SHARED_ACL_WRITE type, we pass on any lock token currently set on resource,
-                // since this assertion should match for anyone with ACL write on the resource.
+        Lock lock = resource.getLock();
+        if (lock != null && lock.getType() == Lock.Type.SHARED_ACL_WRITE) {
+            if (requireExclusiveLock) {
+                // Assume an exclusive lock is not attainable when a shared lock is present
+                return false;
+            }
+
+            // Exclusive lock not required, check if we should assume lock token
+            // is handled externally and just provide it to repository here for matching
+            if (ignoreLockTokenForSharedAclWriteLocks) {
                 lockToken = lock.getLockToken();
             }
         }
