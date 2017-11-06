@@ -145,7 +145,7 @@ public class RepositoryImpl implements Repository, ApplicationContextAware,
 
     // TODO switch to java.time.Duration:
     public final static int LOCK_DEFAULT_TIMEOUT_SECONDS = 30 * 60; // 30 minutes
-    public final static int LOCK_MAX_TIMEOUT_SECONDS = LOCK_DEFAULT_TIMEOUT_SECONDS;
+    public final static int LOCK_MAX_TIMEOUT_SECONDS = LOCK_DEFAULT_TIMEOUT_SECONDS * 2; // 60 minutes
 
     // TODO switch to java.time.Duration:
     private int lockDefaultTimeoutSeconds = LOCK_DEFAULT_TIMEOUT_SECONDS;
