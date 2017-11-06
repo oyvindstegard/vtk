@@ -63,16 +63,14 @@ public class AssertionMatchProvider implements ReferenceDataProvider {
     public void referenceData(Map<String, Object> model, HttpServletRequest request) {
         boolean match = false;
 
-        if (RequestContext.exists(request)) {
-            try {
-                RequestContext ctx = RequestContext.getRequestContext(request);
-                Resource resource = ctx.getRepository().retrieve(
-                        ctx.getSecurityToken(), ctx.getResourceURI(), true);
-                match = this.assertion.matches(request, resource, ctx.getPrincipal());
-            } catch (Exception e) {
-            }
+        try {
+            RequestContext ctx = RequestContext.getRequestContext(request);
+            Resource resource = ctx.getRepository().retrieve(
+                    ctx.getSecurityToken(), ctx.getResourceURI(), true);
+            match = this.assertion.matches(request, resource, ctx.getPrincipal());
+        } catch (Exception e) {
         }
-        
+
         model.put(this.modelKey, match);
     }
 

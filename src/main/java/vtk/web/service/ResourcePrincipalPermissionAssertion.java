@@ -42,6 +42,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.BeanInitializationException;
 import org.springframework.beans.factory.InitializingBean;
+import vtk.repository.Lock;
 
 import vtk.repository.Path;
 import vtk.repository.Privilege;
@@ -109,12 +110,49 @@ public class ResourcePrincipalPermissionAssertion extends AbstractAssertion
     private boolean anonymous = false;
     private boolean considerLocks = true;
     private boolean parent = false;
+    private boolean requireExclusiveLock = true;
+    private boolean ignoreLockTokenForSharedAclWriteLocks = true;
     
     Set<String> rootPrincipals;
     Set<String> readPrincipals;
     
     public void setRequiresAuthentication(boolean requiresAuthentication) {
         this.requiresAuthentication = requiresAuthentication;
+    }
+
+    /**
+     * Set whether to require exclusive locking ability.
+     *
+     * <p>If set, it will cause the assertion to not match if a resource is locked with
+     * a {@link Lock.Type#SHARED_ACL_WRITE shared} lock, even if the principal
+     * otherwise has ACL permission.
+     *
+     * <p>This flag only has effect if {@link #setConsiderLocks(boolean) considerLocks} is set.
+     *
+     * @param requireExclusiveLock
+     */
+    public void setRequireExclusiveLock(boolean requireExclusiveLock) {
+        this.requireExclusiveLock = requireExclusiveLock;
+    }
+
+    /**
+     * Setting that controls how to assert permissions when locks of type
+     * {@link Lock.Type#SHARED_ACL_WRITE} are present on a resource, and this
+     * assertion has been configured with
+     * {@link #setConsiderLocks(boolean) considerLocks} set to {@code true}.
+     *
+     * <p>
+     * When this setting is {@code true} and a lock of type {@code SHARED_ACL_WRITE} is present
+     * on a resource, the lock token will be passed on to the repository as part
+     * of the authorization check, in effect making the check only based on ACL
+     * permissions for the user.
+     *
+     * @param ignoreLockTokenForSharedAclWriteLocks whether to ignore lock token
+     * when checking permissions on resources locked with
+     * {@code SHARED_ACL_WRITE} locks, default is {@code true}.
+     */
+    public void setIgnoreLockTokenForSharedAclWriteLocks(boolean ignoreLockTokenForSharedAclWriteLocks) {
+        this.ignoreLockTokenForSharedAclWriteLocks = ignoreLockTokenForSharedAclWriteLocks;
     }
 
     public void setPermission(RepositoryAction permission) {
@@ -164,7 +202,13 @@ public class ResourcePrincipalPermissionAssertion extends AbstractAssertion
     public void setAnonymous(boolean anonymous) {
         this.anonymous = anonymous;
     }
-    
+
+    /**
+     * Set whether this assertion should consider locks present on resources
+     * when asserting permissions.
+     *
+     * @param considerLocks {@code true} to consider locks, default is {@code true}
+     */
     public void setConsiderLocks(boolean considerLocks) {
         this.considerLocks = considerLocks;
     }
@@ -206,9 +250,7 @@ public class ResourcePrincipalPermissionAssertion extends AbstractAssertion
 
     @Override
     public String toString() {
-        StringBuilder sb = new StringBuilder(
-                "principal.permissionsOn(currentResource).includes(" + this.permission + ")");
-        return sb.toString();
+        return "principal.permissionsOn(currentResource).includes(" + this.permission + ")";
     }
 
     @Override
@@ -250,8 +292,8 @@ public class ResourcePrincipalPermissionAssertion extends AbstractAssertion
         
         try {
             if (this.parent) {
-                Path parent = resource.getURI().getParent();
-                Resource resourceParent = this.repository.retrieve(this.trustedToken, parent, false);
+                Path parentPath = resource.getURI().getParent();
+                Resource resourceParent = this.repository.retrieve(this.trustedToken, parentPath, false);
                 if (resourceParent == null) {
                     if (logger.isDebugEnabled()) {
                         logger.debug("Resource parent is null [match = false]");
@@ -259,15 +301,15 @@ public class ResourcePrincipalPermissionAssertion extends AbstractAssertion
                     return false;
                 }
                 if (this.anonymous) {
-                    return this.repository.isAuthorized(resourceParent, action, null, this.considerLocks);
+                    return checkAuthorized(resourceParent, action, null);
                 }
-                return this.repository.isAuthorized(resourceParent, action, principal, this.considerLocks);
+                return checkAuthorized(resourceParent, action, principal);
             }
             else {
                 if (this.anonymous) {
-                    return this.repository.isAuthorized(resource, action, null, this.considerLocks);
+                    return checkAuthorized(resource, action, null);
                 }
-                return this.repository.isAuthorized(resource, action, principal, this.considerLocks);
+                return checkAuthorized(resource, action, principal);
             }
         }
         catch (IOException e) {
@@ -275,5 +317,27 @@ public class ResourcePrincipalPermissionAssertion extends AbstractAssertion
         }
     }
     
-    
+    private boolean checkAuthorized(Resource resource, RepositoryAction action, Principal principal) throws IOException {
+        if (!considerLocks) {
+            return repository.isAuthorized(resource, action, principal, false);
+        }
+
+        String lockToken = null;
+        Lock lock = resource.getLock();
+        if (lock != null && lock.getType() == Lock.Type.SHARED_ACL_WRITE) {
+            if (requireExclusiveLock) {
+                // Assume an exclusive lock is not attainable when a shared lock is present
+                return false;
+            }
+
+            // Exclusive lock not required, check if we should assume lock token
+            // is handled externally and just provide it to repository here for matching
+            if (ignoreLockTokenForSharedAclWriteLocks) {
+                lockToken = lock.getLockToken();
+            }
+        }
+
+        return repository.isAuthorized(resource, action, principal, lockToken);
+    }
+
 }
