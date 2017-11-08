@@ -39,7 +39,6 @@ import org.springframework.beans.factory.annotation.Required;
 import vtk.repository.Path;
 import vtk.repository.Resource;
 import vtk.security.Principal;
-import vtk.web.RequestContext;
 
 
 /**
@@ -49,6 +48,8 @@ import vtk.web.RequestContext;
  * 
  * <ul>
  * <li>{@link #setPath(java.lang.String) path} - the path string to match against.
+ * This path should not be encoded in any way. (Matching takes care of decoding
+ * the request URI.)
  *
  * <li>{@link #setMatchTrailingSlash(boolean) matchTrailingSlash} - set to match request
  * paths that have a trailing slash as well. Default is {@code true}.
