@@ -89,8 +89,7 @@ public class RequestPathAssertion implements WebAssertion {
 
     @Override
     public boolean matches(HttpServletRequest request, Resource resource, Principal principal) {
-        RequestContext rc = RequestContext.getRequestContext(request);
-        URL requestUrl = rc.getRequestURL();
+        URL requestUrl = URL.create(request);
         if (matchDescendants && path.isAncestorOf(requestUrl.getPath())) {
             return true;
         }
