@@ -36,6 +36,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import vtk.text.html.HtmlUtil;
 import vtk.text.tl.Parser.Directive;
 import vtk.text.tl.expr.Expression;
 import vtk.text.tl.expr.Expression.FunctionResolver;
@@ -47,6 +48,7 @@ public class ValHandler implements DirectiveHandler {
 
     private static final Symbol FLAG_SEPARATOR = new Symbol("#");
     private static final Symbol UNESCAPED = new Symbol("unescaped");
+    private static final Symbol FLATTEN = new Symbol("flatten");
 
     public interface ValueFormatHandler {
         public Object handleValue(Object val, String format, Context ctx);
@@ -87,25 +89,33 @@ public class ValHandler implements DirectiveHandler {
         }
 
         boolean escape = true;
-        if (!flags.isEmpty() && flags.get(0).equals(UNESCAPED)) {
-           escape = false;
-           flags.remove(0);
+        boolean flatten = false;
+        if (!flags.isEmpty()) {
+            if(flags.get(0).equals(UNESCAPED)) {
+                escape = false;
+                flags.remove(0);
+            } else if(flags.get(0).equals(FLATTEN)) {
+                flatten = true;
+                flags.remove(0);
+            }
         }
         Token format = null;
         if (!flags.isEmpty()) {
            format = flags.remove(0);
         }
-        context.add(new ValNode(expression, escape, format));
+        context.add(new ValNode(expression, escape, flatten, format));
     }
 
     private class ValNode extends Node {
         private Expression expression;
         boolean escape;
+        boolean flatten;
         private Token format;
 
-        public ValNode(List<Token> expression, boolean escape, Token format) {
+        public ValNode(List<Token> expression, boolean escape, boolean flatten, Token format) {
             this.expression = new Expression(functions, expression);
             this.escape = escape;
+            this.flatten = flatten;
             this.format = format;
         }
 
@@ -125,9 +135,12 @@ public class ValHandler implements DirectiveHandler {
                     val = handler.handleValue(val, format, ctx);
                 }
                 if (val != null) {
-                    if (this.escape)
+                    if (this.flatten)
+                        out.write(HtmlUtil.flatten(val.toString()));
+                    else if (this.escape)
                         out.write(ctx.htmlEscape(val.toString()));
-                    else out.write(val.toString());
+                    else
+                        out.write(val.toString());
                 }
             }
             return true;
