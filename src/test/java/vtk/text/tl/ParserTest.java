@@ -230,6 +230,16 @@ public class ParserTest {
         Context ctx = new Context(Locale.getDefault());
         String result = parseAndRender("[val concat('a', 'b')]", ctx);
         assertEquals("ab", result);
+        
+        String html = "<p>a.</p> <p>b.</p>";
+        result = parseAndRender("[val '" + html + "']", ctx);
+        assertEquals("&lt;p&gt;a.&lt;/p&gt; &lt;p&gt;b.&lt;/p&gt;", result);
+        
+        result = parseAndRender("[val '" + html + "' # unescaped]", ctx);
+        assertEquals(html, result);
+        
+        result = parseAndRender("[val '" + html + "' # flatten]", ctx);
+        assertEquals("a. b.", result);
     }
     
     @Test
