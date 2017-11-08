@@ -39,33 +39,70 @@ import org.springframework.beans.factory.annotation.Required;
 import vtk.repository.Path;
 import vtk.repository.Resource;
 import vtk.security.Principal;
+import vtk.web.RequestContext;
 
 
 /**
- * Assertion that matches when the request URI matches a specified uri
- *
- * FIXME: This assertion cannot match folder URIs != root and ending with slash.
+ * Assertion that matches when the request URI matches a specified URI.
  *
  * <p>Properties:
  * 
- * <ul><li><code>path</code> - the path string to match against
+ * <ul>
+ * <li>{@link #setPath(java.lang.String) path} - the path string to match against.
+ *
+ * <li>{@link #setMatchTrailingSlash(boolean) matchTrailingSlash} - set to match request
+ * paths that have a trailing slash as well. Default is {@code true}.
+ *
+ * <li>{@link #setMatchDescendants(boolean) matchDescendants} - match any
+ * descendant request paths as well. This also implies matching of request
+ * paths with a {@link #setMatchTrailingSlash(boolean) trailing slash}. Default
+ * is {@code false}.
+ * </ul>
  */
 public class RequestPathAssertion implements WebAssertion {
 
     private Path path;
+    private boolean matchDescendants = false;
+    private boolean matchTrailingSlash = true;
     
     @Override
     public boolean conflicts(WebAssertion assertion) {
+        // Certain classes of path conflicts are ordering sensitive wrt. to service matching
+        // so we only detect basic cases here
         if (assertion instanceof RequestPathAssertion) {
-            return ! (this.path.equals(((RequestPathAssertion)assertion).path));
+            RequestPathAssertion other = (RequestPathAssertion)assertion;
+            if (this.path.equals(other.path)) {
+                return false;
+            }
+
+            if (this.matchDescendants || other.matchDescendants) {
+                // One must be descendant of other or vice versa
+                if (this.path.isAncestorOf(other.path) || other.path.isAncestorOf(this.path)) {
+                    return false;
+                }
+            }
+
+            return true;
         }
         return false;
     }
 
     @Override
     public boolean matches(HttpServletRequest request, Resource resource, Principal principal) {
-        URL url = URL.create(request);
-        return url.getPath().equals(this.path);
+        RequestContext rc = RequestContext.getRequestContext(request);
+        URL requestUrl = rc.getRequestURL();
+        if (matchDescendants && path.isAncestorOf(requestUrl.getPath())) {
+            return true;
+        }
+
+        if (path.equals(requestUrl.getPath())) {
+            if (!matchTrailingSlash && !matchDescendants && requestUrl.isCollection()) {
+                return false;
+            }
+            return true;
+        }
+
+        return false;
     }
 
     @Override
@@ -81,12 +118,26 @@ public class RequestPathAssertion implements WebAssertion {
     
     @Required 
     public void setPath(String path) {
-        this.path = Path.fromString(path);
-    }    
+        this.path = Path.fromStringWithTrailingSlash(path);
+    }
+
+    public void setMatchDescendants(boolean matchDescendants) {
+        this.matchDescendants = matchDescendants;
+    }
+
+    public void setMatchTrailingSlash(boolean matchTrailingSlash) {
+        this.matchTrailingSlash = matchTrailingSlash;
+    }
 
     @Override
     public String toString() {
-        return "request.path = " + this.path;
+        StringBuilder b = new StringBuilder("request.path = ").append(path);
+        if (matchDescendants || matchTrailingSlash) {
+            b.append("(/");
+            if (matchDescendants) b.append("*");
+            b.append(")");
+        }
+        return b.toString();
     }
 
 }
