@@ -142,6 +142,16 @@ public class RequestPathAssertionTest {
     }
 
     @Test
+    public void testMatches_withDescendants_commonPrefixNoMatch() {
+        assertion.setPath("/a");
+        assertion.setMatchDescendants(true);
+
+        MockHttpServletRequest req = mockRequest(URL.parse("http://www/ab"));
+
+        assertFalse(assertion.matches(req, null, null));
+    }
+
+    @Test
     public void testUrlConstruct_collection() {
         assertion.setPath("/path");
         URL url = URL.parse("http://www/some/collection/?foo=bar");

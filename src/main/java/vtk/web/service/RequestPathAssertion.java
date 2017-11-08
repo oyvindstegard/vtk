@@ -131,11 +131,13 @@ public class RequestPathAssertion implements WebAssertion {
 
     @Override
     public String toString() {
-        StringBuilder b = new StringBuilder("request.path = ").append(path);
-        if (matchDescendants || matchTrailingSlash) {
-            b.append("(/");
-            if (matchDescendants) b.append("*");
-            b.append(")");
+        StringBuilder b = new StringBuilder("request.path");
+        if (matchDescendants) {
+            b.append(" ~ ").append(path).append("[").append(!path.isRoot() ? "/*" : "*").append("]");
+        } else if (matchTrailingSlash && !path.isRoot()) {
+            b.append(" = ").append(path).append("[/]");
+        } else {
+            b.append(" = ").append(path);
         }
         return b.toString();
     }
