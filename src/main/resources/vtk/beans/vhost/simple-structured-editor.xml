@@ -17,6 +17,11 @@
       </list>
     </property>
     <property name="handler" ref="messageEditorHandler" />
+    <property name="attributes">
+      <map>
+        <entry key="x-prevent-decorating" value="true" />
+      </map>
+    </property>
   </bean>
 
   <bean id="messageEditorHandler" class="vtk.resourcemanagement.edit.SimpleStructuredEditor">
