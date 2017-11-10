@@ -7,5 +7,14 @@
     <gav regex="true">^org\.apache\.lucene:lucene-analyzers-icu:.*$</gav>
     <cpe>cpe:/a:icu_project:international_components_for_unicode</cpe>
   </suppress>
+
+  <suppress>
+    <notes><![CDATA[
+    file name: flexmark-ext-gfm-tasklist-0.28.2.jar
+    ]]></notes>
+    <gav regex="true">^com\.vladsch\.flexmark:flexmark-ext-gfm-tasklist:0.28.2$</gav>
+    <cpe>cpe:/a:style_it_project:style_it:0.28.2</cpe>
+  </suppress>
+
 </suppressions>
 
