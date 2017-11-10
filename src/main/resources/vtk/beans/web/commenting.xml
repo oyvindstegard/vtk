@@ -215,9 +215,8 @@
     </property>
   </bean>
 
-  <bean id="commenting.postProtocol" class="vtk.web.service.RequestProtocolAssertion">
-    <property name="protocol" value="${webProtocolRestricted}" />
-  </bean>
+  <!-- Make commenting POST protocol follow configured restricted protocol. -->
+  <alias name="webProtocolRestrictedAssertion" alias="commenting.postProtocol"/>
 
   <bean id="commenting.commentsEnabled"
         class="vtk.repository.resourcetype.ResourcePropertyAssertion">

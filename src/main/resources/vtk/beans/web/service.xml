@@ -62,6 +62,12 @@
     </property>
   </bean>
 
+  <!-- An assertion that will match requests that use secure/restricted protocol according
+       to static configuration. -->
+  <bean id="webProtocolRestrictedAssertion" class="vtk.web.service.RequestProtocolAssertion">
+    <property name="protocol" value="${webProtocolRestricted}"/>
+  </bean>
+
 
   <!-- ****************************************************************** -->
   <!-- APP SERVICES BRANCH                                                -->

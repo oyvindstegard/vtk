@@ -45,9 +45,13 @@ import vtk.security.Principal;
  *
  * <p>Configurable JavaBean properties:
  * <ul>
- *   <lI><code>protocol</code> - the name of the protocol. Legal
+ *   <li>{@link #setProtocol(java.lang.String) protocol} - the name of the protocol. Legal
  *   values are <code>*</code> (match any), <code>http</code> and
  *   <code>https</code>. A comma separated list of values is accepted.
+ *   <li>{@link #setPreferRequestProtocol(boolean) preferRequestProtocol} -
+ * prefer to follow request protocol in matching and URL construction, if request protocol is {@code "https"}, even
+ * though the configured protocol of this assertion may be {@code "http"}.
+ * Default is {@code false}.
  * </ul>
  */
 public class RequestProtocolAssertion implements WebAssertion {
