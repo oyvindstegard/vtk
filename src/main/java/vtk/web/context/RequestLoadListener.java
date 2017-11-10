@@ -102,7 +102,7 @@ public class RequestLoadListener extends AbstractServletFilter
             service = service.getParent();
         }
         if (enabled) {
-            registry.counter("services." + requestContext.getService().getName()).inc();
+            registry.meter("services." + requestContext.getService().getName()).mark();
         }
     }
 
