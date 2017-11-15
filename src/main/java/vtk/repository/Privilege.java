@@ -46,7 +46,6 @@ public enum Privilege {
     ADD_COMMENT(RepositoryAction.ADD_COMMENT),
     READ(RepositoryAction.READ),
     READ_PROCESSED(RepositoryAction.READ_PROCESSED);
-    /* BIND_TEMPLATE(RepositoryAction.CREATE, "bind-template"); */
     private final RepositoryAction action;
     private final String name;
 
