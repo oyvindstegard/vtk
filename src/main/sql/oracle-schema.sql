@@ -344,7 +344,7 @@ insert into action_type (action_type_id, name) values (1, 'read');
 insert into action_type (action_type_id, name) values (2, 'read-write');
 insert into action_type (action_type_id, name) values (3, 'all');
 insert into action_type (action_type_id, name) values (4, 'read-processed');
---insert into action_type (action_type_id, name) values (5, 'bind-template');
+insert into action_type (action_type_id, name) values (5, 'create-with-acl');
 insert into action_type (action_type_id, name) values (6, 'add-comment');
 insert into action_type (action_type_id, name) values (7, 'read-write-unpublished');
 

@@ -338,7 +338,7 @@ INSERT INTO action_type (action_type_id, name) VALUES (1, 'read');
 INSERT INTO action_type (action_type_id, name) VALUES (2, 'read-write');
 INSERT INTO action_type (action_type_id, name) VALUES (3, 'all');
 INSERT INTO action_type (action_type_id, name) VALUES (4, 'read-processed');
---INSERT INTO action_type (action_type_id, name) VALUES (5, 'bind-template');
+INSERT INTO action_type (action_type_id, name) VALUES (5, 'create-with-acl');
 INSERT INTO action_type (action_type_id, name) VALUES (6, 'add-comment');
 INSERT INTO action_type (action_type_id, name) VALUES (7, 'read-write-unpublished');
 
