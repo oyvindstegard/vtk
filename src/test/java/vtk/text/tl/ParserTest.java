@@ -251,6 +251,12 @@ public class ParserTest {
         result = parseAndRender("[if 4 / 2 = 2]yes[else]no[endif]", ctx);
         assertEquals("yes", result);
         
+        result = parseAndRender("[def imgAR 1920 / 1080][def wideAR 15 / 10][if imgAR > wideAR]yes[else]no[endif]", ctx);
+        assertEquals("yes", result);
+
+        result = parseAndRender("[def imgAR 1080 / 1920][def wideAR 15 / 10][if imgAR > wideAR]yes[else]no[endif]", ctx);
+        assertEquals("no", result);
+        
         ctx.define("var1", true, true);
         result = parseAndRender("[if var1]yes[else]no[endif]", ctx);
         assertEquals("yes", result);

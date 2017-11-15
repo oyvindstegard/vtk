@@ -214,6 +214,13 @@ public class ExpressionTest {
         assertEquals(1.1F, result);
         
         result = eval(
+                new Literal("7"),
+                new Symbol("/"),
+                new Literal("3")
+        );
+        assertEquals(2.333333F, result);
+        
+        result = eval(
                 new Literal("2"),
                 new Symbol("+"),
                 new Literal("'2'"),

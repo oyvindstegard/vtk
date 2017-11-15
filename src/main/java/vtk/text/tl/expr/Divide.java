@@ -31,6 +31,7 @@
 package vtk.text.tl.expr;
 
 import java.math.BigDecimal;
+import java.math.MathContext;
 
 import vtk.text.tl.Symbol;
 
@@ -42,6 +43,6 @@ public class Divide extends NumericOperator {
 
     @Override
     protected Object evalNumeric(BigDecimal n1, BigDecimal n2) {
-        return n1.divide(n2);
+        return n1.divide(n2, MathContext.DECIMAL32);
     }
 }
