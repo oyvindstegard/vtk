@@ -84,8 +84,7 @@ public class AuthorizationManagerTest {
         
         public void run() throws Exception {
             for (TestAssertion assertion: this.assertions) {
-                System.out.println("Test: " + assertion);
-                assertion.test(this.authorizationManager);
+                System.out.println("Running test: " + assertion.name());
             }
         }
         
@@ -102,7 +101,7 @@ public class AuthorizationManagerTest {
             
             JSONObject repo = (JSONObject) toplevel.get("resources");
             
-            List<Path> list = new ArrayList<Path>();
+            List<Path> list = new ArrayList<>();
             for (Object key: repo.keySet()) {
                 list.add(Path.fromString(key.toString()));
             }
@@ -112,13 +111,17 @@ public class AuthorizationManagerTest {
                     
                     if (arg0.isAncestorOf(arg1)) {
                         return -1;
-                    } else if (arg1.isAncestorOf(arg0)) {
+                    }
+                    else if (arg1.isAncestorOf(arg0)) {
                         return 1;
-                    } else if (arg0.getDepth() < arg1.getDepth()) {
+                    }
+                    else if (arg0.getDepth() < arg1.getDepth()) {
                         return -1;
-                    } else if (arg0.equals(arg1)) {
+                    }
+                    else if (arg0.equals(arg1)) {
                         return 0;
-                    } else {
+                    }
+                    else {
                         return 1;
                     }
                 }
@@ -193,12 +196,13 @@ public class AuthorizationManagerTest {
         
         private void initAssertions(String json) throws Exception {
             JSONObject object = (JSONObject) JSONValue.parse(json);
-            List<TestAssertion> assertions = new ArrayList<TestAssertion>();
+            List<TestAssertion> assertions = new ArrayList<>();
             for (Object key: object.keySet()) {
                 JSONObject val = (JSONObject) object.get(key);
                 if (val.containsKey("method")) {
                     assertions.add(createMethodAssertion(key.toString(), val));
-                } else {
+                }
+                else {
                     assertions.add(createActionAssertion(key.toString(), val));
                 }
             }
@@ -207,6 +211,8 @@ public class AuthorizationManagerTest {
         
         private MethodAssertion createMethodAssertion(String id, JSONObject val) {
             requireFields(val, "method", "expected-outcome");
+            
+            Optional<String> description = Optional.ofNullable(val.get("description")).map(Object::toString);
             
             Object o = val.get("method");
             if (!(o instanceof List<?>)) {
@@ -230,7 +236,7 @@ public class AuthorizationManagerTest {
                 throw new IllegalArgumentException("Method '" + name + "' not found");
             }
             int idx = 0;
-            List<Object> actualParams = new ArrayList<Object>();
+            List<Object> actualParams = new ArrayList<>();
             for (Class<?> c: method.getParameterTypes()) {
                 idx++;
                 if (idx > list.size() - 1) {
@@ -243,38 +249,43 @@ public class AuthorizationManagerTest {
                         throw new IllegalArgumentException("Invalid principal: " + principal);
                     }
                     actualParams.add(principal);
-
-                } else if (c == Path.class) {
+                }
+                else if (c == Path.class) {
                     Path uri = Path.fromString(obj.toString());
                     actualParams.add(uri);
-                } else if (c == boolean.class) {
+                }
+                else if (c == boolean.class) {
                     actualParams.add(Boolean.valueOf(obj.toString()));
                     
-                } else {
+                }
+                else {
                     throw new IllegalArgumentException("Unsupported parameter class: " + c);
                 }
             }
             Object[] args = actualParams.toArray(new Object[actualParams.size()]);
             Outcome outcome = Outcome.valueOf(val.get("expected-outcome").toString());
             
-            return new MethodAssertion(id, method, args, outcome);
+            return new MethodAssertion(id, method, args, outcome, description);
         }
 
         private ActionAssertion createActionAssertion(String id, JSONObject val) {
             requireFields(val, "uri", "principal", "repository-action", "expected-outcome");
+            Optional<String> description = Optional.ofNullable(val.get("description")).map(Object::toString);
             Path[] uris = null;
 
             Object o = val.get("uri");
             if (o == null) {
                 throw new IllegalArgumentException("Field 'uri' of " 
                         + val + " is NULL");
-            } else if (o instanceof List<?>) {
-                List<Path> list = new ArrayList<Path>();
+            }
+            else if (o instanceof List<?>) {
+                List<Path> list = new ArrayList<>();
                 for (Object elem: (List<?>) o) {
                     list.add(Path.fromString(elem.toString()));
                 }
                 uris = list.toArray(new Path[list.size()]);
-            } else {
+            }
+            else {
                 uris = new Path[]{ Path.fromString(o.toString())};
             }
             
@@ -283,13 +294,15 @@ public class AuthorizationManagerTest {
             o = val.get("principal");
             if (o == null) {
                 principals = new Principal[] {null};
-            } else if (o instanceof List<?>) {
-                List<Principal> list = new ArrayList<Principal>();
+            }
+            else if (o instanceof List<?>) {
+                List<Principal> list = new ArrayList<>();
                 for (Object elem: (List<?>) o) {
                     list.add(new PrincipalImpl(elem.toString(), Principal.Type.USER));
                 }
                 principals = list.toArray(new Principal[list.size()]);
-            } else {
+            }
+            else {
                 principals = new Principal[] { new PrincipalImpl(o.toString(), Principal.Type.USER) };
             }
             for (Principal principal: principals) {
@@ -304,19 +317,21 @@ public class AuthorizationManagerTest {
             if (o == null) {
                 throw new IllegalArgumentException("Field 'repository-action' of " 
                         + val + " is NULL");
-            } else if (o instanceof List<?>) {
-                List<RepositoryAction> list = new ArrayList<RepositoryAction>();
+            }
+            else if (o instanceof List<?>) {
+                List<RepositoryAction> list = new ArrayList<>();
                 for (Object elem: (List<?>) o) {
                     list.add(RepositoryAction.valueOf(elem.toString()));
                 }
                 actions = list.toArray(new RepositoryAction[list.size()]);
-            } else {
+            }
+            else {
                 actions = new RepositoryAction[]{ RepositoryAction.valueOf(o.toString()) };
             }
             
             Outcome outcome = Outcome.valueOf(val.get("expected-outcome").toString());
             ActionAssertion assertion = new ActionAssertion(
-                    id, uris, principals, actions, outcome);
+                    id, uris, principals, actions, outcome, description);
             return assertion;
             
         }
@@ -327,6 +342,8 @@ public class AuthorizationManagerTest {
         
         
         private static interface TestAssertion {
+            public String name();
+            public Optional<String> description();
             public void test(AuthorizationManager authManager) throws Exception;
         }
         
@@ -335,41 +352,53 @@ public class AuthorizationManagerTest {
             private Method method;
             private Object[] args;
             private Outcome outcome;
+            private Optional<String> description;
             
-            public MethodAssertion(String id, Method method, Object[] args, Outcome outcome) {
+            public String name() { 
+                return id; 
+            }
+            
+            public Optional<String> description() {
+                return description;
+            }
+            
+            public MethodAssertion(String id, Method method, Object[] args, 
+                    Outcome outcome, Optional<String> description) {
                 this.id = id;
                 this.method = method;
                 this.args = args;
                 this.outcome = outcome;
+                this.description = description;
             }
-            
             public void test(AuthorizationManager authManager) throws Exception {
                 switch (outcome) {
                 case SUCCESS:
                     try {
                         invoke(authManager);
                         return;
-                    } catch (Throwable t) {
-                        throw new Exception("Assertion " + this + " had outcome FAILURE", t);
+                    }
+                    catch (Throwable t) {
+                        throw new Exception(failureMessage(Outcome.FAILURE), t);
                     }
                 case FAILURE:
                     try {
                         invoke(authManager);
-                    } catch (AuthenticationException e) {
+                    }
+                    catch (AuthenticationException | AuthorizationException e) {
                         return;
-                    } catch (AuthorizationException e) {
-                        return;
-                    } catch (Throwable t) {
+                    }
+                    catch (Throwable t) {
                         throw new Exception("Unhandled throwable: " + t);
                     }
-                    throw new Exception("Assertion " + this + " had outcome SUCCESS");
+                    throw new Exception(failureMessage(Outcome.SUCCESS));
                 }
             }
             
             private void invoke(AuthorizationManager authManager) throws Throwable {
                 try {
                     method.invoke(authManager, args);
-                } catch (InvocationTargetException e) {
+                }
+                catch (InvocationTargetException e) {
                     throw e.getTargetException();
                 }
             }
@@ -378,22 +407,41 @@ public class AuthorizationManagerTest {
             public String toString() {
                 return this.id;
             }
+            
+            private String failureMessage(Outcome actual) {
+                String message = "Assertion " + this + " had unexpected outcome " + actual;
+                Optional<String> description = description();
+                if (description.isPresent()) {
+                    message = message + ": " + description.get();
+                }
+                return message;
+            }
         }
         
         private static class ActionAssertion implements TestAssertion {
             private String id;
+            private Optional<String> description;
             private Path[] uris;
             private Principal[] principals;
             private RepositoryAction[] actions;
             private Outcome outcome;
             
             public ActionAssertion(String id, Path[] uris, Principal[] principals,
-                    RepositoryAction[] actions, Outcome outcome) {
+                    RepositoryAction[] actions, Outcome outcome, Optional<String> description) {
                 this.id = id;
                 this.uris = uris;
                 this.principals = principals;
                 this.actions = actions;
                 this.outcome = outcome;
+                this.description = description;
+            }
+            
+            public String name() {
+                return id;
+            }
+            
+            public Optional<String> description() {
+                return description;
             }
             
             public void test(AuthorizationManager authManager) throws Exception {
@@ -404,11 +452,14 @@ public class AuthorizationManagerTest {
                             for (RepositoryAction action: actions) {
                                 try {
                                     authManager.authorizeAction(uri, action, principal);
-                                } catch (Throwable t) {
-                                    throw new Exception("Assertion " + this 
+                                }
+                                catch (Throwable t) {
+                                    String message = "Assertion " + this 
                                             + ": combination (" + action + ", " 
                                             + uri + ", " + principal 
-                                            + ") had outcome FAILURE", t);
+                                            + ") had outcome FAILURE"
+                                            + description.map(d -> ": " + d).orElse("");
+                                    throw new Exception(message, t);
                                 }
                             }
                         }
@@ -420,12 +471,14 @@ public class AuthorizationManagerTest {
                             for (RepositoryAction action: actions) {
                                 try {
                                     authManager.authorizeAction(uri, action, principal);
-                                    throw new Exception("Assertion " + this 
-                                            + ": combination(" + action + ", " 
+                                    String message = "Assertion " + this 
+                                            + ": combination (" + action + ", " 
                                             + uri + ", " + principal 
-                                            + ") had outcome SUCCESS");
-                                } catch (AuthenticationException t) { 
-                                } catch (AuthorizationException t) { }
+                                            + ") had outcome SUCCESS"
+                                            + description.map(d -> ": " + d).orElse("");
+                                    throw new Exception(message);
+                                }
+                                catch (AuthenticationException | AuthorizationException e) { }
                             }
                         }
                     }
@@ -442,7 +495,7 @@ public class AuthorizationManagerTest {
     
     private static class TestDataAccessor implements DataAccessor {
 
-        private Map<Path, ResourceImpl> tree = new HashMap<Path, ResourceImpl>();
+        private Map<Path, ResourceImpl> tree = new HashMap<>();
         
         public void put(ResourceImpl resource) {
             if (resource == null) {
@@ -493,7 +546,8 @@ public class AuthorizationManagerTest {
                 ResourceImpl clone = (ResourceImpl) r.clone();
                 clone.setAcl(acl);
                 return clone;
-            } catch (Throwable t) { 
+            }
+            catch (Throwable t) { 
                 return null;
             }
         }
@@ -501,7 +555,7 @@ public class AuthorizationManagerTest {
         @Override
         public ResourceImpl[] loadChildren(ResourceImpl parent)
                 throws DataAccessException {
-            List<ResourceImpl> children = new ArrayList<ResourceImpl>();
+            List<ResourceImpl> children = new ArrayList<>();
             for (Path childURI: parent.getChildURIs()) {
                 ResourceImpl child = load(childURI);
                 if (child == null) {
@@ -598,7 +652,7 @@ public class AuthorizationManagerTest {
 
         @Override
         public Path[] discoverACLs(Path uri) throws DataAccessException {
-            List<Path> result = new ArrayList<Path>();
+            List<Path> result = new ArrayList<>();
             for (Path p: this.tree.keySet()) {
                 if (uri.isAncestorOf(p) || uri.equals(p)) {
                     ResourceImpl r = this.tree.get(p);

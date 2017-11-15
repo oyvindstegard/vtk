@@ -217,8 +217,10 @@
     <property name="trim" value="true" />
   </bean>
 
-  <!-- <bean id="repository.acl.blacklist.bindTemplate" class="vtk.context.CSVListFactoryBean"> <property name="csvList"
-    value="${permissions.blacklist.bind-template}" /> <property name="trim" value="true" /> </bean> -->
+  <bean id="repository.acl.blacklist.createWithAcl" class="vtk.context.CSVListFactoryBean">
+    <property name="csvList" value="${permissions.blacklist.create-with-acl}" />
+    <property name="trim" value="true" />
+  </bean>
 
   <bean id="repository.acl.blacklist.read" class="vtk.context.CSVListFactoryBean">
     <property name="csvList" value="${permissions.blacklist.read}" />

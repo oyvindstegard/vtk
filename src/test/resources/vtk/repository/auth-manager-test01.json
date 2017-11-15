@@ -90,6 +90,14 @@
             }
         },
         
+        "/f" : {
+            "acl" : {
+                "all" : [ "u:admin@localhost" ],
+                "create-with-acl" : [ "u:user4@localhost" ],
+                "read-write" : [ "u:user5@localhost" ] 
+            }
+        },
+        
         "/vrtx" : {
           "type" : "collection"
         },
@@ -275,8 +283,25 @@
             "method" : [ "authorizeDelete", "/e", "user4@localhost" ],
             "expected-outcome" : "SUCCESS",
             "description" : "Should succeed because user4@localhost has privilege ALL on /e"
+        },
+
+        "create-with-acl-1" : {
+            "method" : [ "authorizeCreateWithAcl", "/f", "admin@localhost" ],
+            "expected-outcome" : "SUCCESS",
+            "description" : "Should succeed because admin@localhost has privilege ALL on /f"
+        },
+
+        "create-with-acl-2" : {
+            "method" : [ "authorizeCreateWithAcl", "/f", "user4@localhost" ],
+            "expected-outcome" : "SUCCESS",
+            "description" : "Should succeed because user4@localhost has privilege CREATE_WITH_ACL on /f"
+        },
+
+        "create-with-acl-3" : {
+            "method" : [ "authorizeCreateWithAcl", "/f", "user5@localhost" ],
+            "expected-outcome" : "FAILURE",
+            "description" : "Should fail because user5@localhost does not have privilege CREATE_WITH_ACL on /f"
         }
-        
     }
 
 

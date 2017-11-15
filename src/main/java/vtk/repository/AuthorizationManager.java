@@ -68,9 +68,9 @@ public final class AuthorizationManager implements ClusterAware {
     private List<Path> readOnlyRoots = Collections.EMPTY_LIST;
 
     private Map<Privilege, List<Pattern>> usersBlacklist =
-            new EnumMap<Privilege, List<Pattern>>(Privilege.class);
+            new EnumMap<>(Privilege.class);
     private Map<Privilege, List<Pattern>> groupsBlacklist =
-            new EnumMap<Privilege, List<Pattern>>(Privilege.class);
+            new EnumMap<>(Privilege.class);
 
 
     @Override
@@ -87,7 +87,7 @@ public final class AuthorizationManager implements ClusterAware {
 
     static {
         PRIVILEGE_HIERARCHY =
-                new EnumMap<Privilege, Privilege[]>(Privilege.class);
+                new EnumMap<>(Privilege.class);
 
         PRIVILEGE_HIERARCHY.put(Privilege.READ_PROCESSED, new Privilege[] {
                 Privilege.READ_PROCESSED,
@@ -115,6 +115,10 @@ public final class AuthorizationManager implements ClusterAware {
         });
         PRIVILEGE_HIERARCHY.put(Privilege.READ_WRITE, new Privilege[] {
                 Privilege.READ_WRITE,
+                Privilege.ALL
+        });
+        PRIVILEGE_HIERARCHY.put(Privilege.CREATE_WITH_ACL, new Privilege[] {
+                Privilege.CREATE_WITH_ACL,
                 Privilege.ALL
         });
         PRIVILEGE_HIERARCHY.put(Privilege.ALL, new Privilege[] {
@@ -199,6 +203,9 @@ public final class AuthorizationManager implements ClusterAware {
             break;
         case ADD_COMMENT:
             authorizeAddComment(uri, principal);
+            break;
+        case CREATE_WITH_ACL:
+            authorizeCreateWithAcl(uri, principal);
             break;
         case ALL:
         case WRITE_ACL:
@@ -425,6 +432,26 @@ public final class AuthorizationManager implements ClusterAware {
     }
     
 
+    /**
+     * <ul>
+     *   <li>Privilege ALL or CREATE_WITH_ACL in ACL
+     * </ul>
+     * @throws IOException
+     */
+    public void authorizeCreateWithAcl(Path uri, Principal principal)
+        throws AuthenticationException, AuthorizationException, ReadOnlyException,
+        IOException, ResourceNotFoundException {
+
+        checkReadOnly(principal, uri, false);
+
+        ResourceImpl resource = loadResource(uri);
+        
+        if (this.roleManager.hasRole(principal, RoleManager.Role.ROOT)) {
+            return;
+        }
+        aclAuthorize(resource, principal, PRIVILEGE_HIERARCHY.get(Privilege.CREATE_WITH_ACL));
+    }
+    
     /**
      * <ul>
      *   <li>Privilege ALL in ACL
@@ -989,11 +1016,11 @@ public final class AuthorizationManager implements ClusterAware {
             this.readOnlyRoots = Collections.EMPTY_LIST;
             return;
         }
-        Set<Path> paths = new HashSet<Path>();
+        Set<Path> paths = new HashSet<>();
         for (String pathString: pathStrings) {
             paths.add(Path.fromString(pathString));
         }
-        ArrayList<Path> roots = new ArrayList<Path>();
+        ArrayList<Path> roots = new ArrayList<>();
         roots.addAll(normalizeToRoots(paths));
         this.readOnlyRoots = Collections.unmodifiableList(roots);
     }
@@ -1007,10 +1034,10 @@ public final class AuthorizationManager implements ClusterAware {
      */
     private Set<Path> normalizeToRoots(Set<Path> paths) {
         if (paths.size() < 2) {
-            return new HashSet<Path>(paths);
+            return new HashSet<>(paths);
         }
         
-        Set<Path> normalized = new HashSet<Path>(paths.size());
+        Set<Path> normalized = new HashSet<>(paths.size());
         outer: for (Path p: paths) {
             for (Iterator<Path> it = normalized.iterator(); it.hasNext();) {
                 Path n = it.next();

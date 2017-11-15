@@ -54,7 +54,7 @@ public final class Acl implements Serializable {
     
     private static final long serialVersionUID = -6996873030892397695L;
 
-    public static final Acl EMPTY_ACL = new Acl(Collections.<Privilege, Set<Principal>>emptyMap());
+    public static final Acl EMPTY_ACL = new Acl(Collections.emptyMap());
 
     /**
      * map: [Privilege --> Set(Principal)]
@@ -138,6 +138,7 @@ public final class Acl implements Serializable {
             if (Privilege.ALL == privilege
                     || Privilege.READ_WRITE_UNPUBLISHED == privilege
                     || Privilege.READ_WRITE == privilege
+                    || Privilege.CREATE_WITH_ACL == privilege
                     || Privilege.ADD_COMMENT == privilege) {
                 return false;
             }
@@ -157,7 +158,7 @@ public final class Acl implements Serializable {
         
         Set<Principal> actionEntry = newAcl.get(privilege);
         if (actionEntry == null) {
-            actionEntry = new HashSet<Principal>();
+            actionEntry = new HashSet<>();
             newAcl.put(privilege, actionEntry);
         }
         actionEntry.add(principal);
@@ -176,7 +177,7 @@ public final class Acl implements Serializable {
         
         Set<Principal> actionEntry = newAcl.get(privilege);
         if (actionEntry == null) {
-            actionEntry = new HashSet<Principal>();
+            actionEntry = new HashSet<>();
             newAcl.put(privilege, actionEntry);
         }
         actionEntry.add(principal);
@@ -227,7 +228,7 @@ public final class Acl implements Serializable {
             return new Principal[0];
         }
         
-        List<Principal> userList = new ArrayList<Principal>();
+        List<Principal> userList = new ArrayList<>();
         for (Principal p: principals) {
             if (p.getType() == Principal.Type.USER) {
                 userList.add(p);
@@ -244,7 +245,7 @@ public final class Acl implements Serializable {
             return new Principal[0];
         }
         
-        List<Principal> groupList = new ArrayList<Principal>();
+        List<Principal> groupList = new ArrayList<>();
         for (Principal p: principals) {
             if (p.getType() == Principal.Type.GROUP) {
                 groupList.add(p);
@@ -260,7 +261,7 @@ public final class Acl implements Serializable {
             return new Principal[0];
         }
         
-        List<Principal> principalList = new ArrayList<Principal>();
+        List<Principal> principalList = new ArrayList<>();
         for (Principal p: principals) {
             if (p.getType() == Principal.Type.PSEUDO) {
                 principalList.add(p);
@@ -330,7 +331,7 @@ public final class Acl implements Serializable {
     }
     
     private Map<Privilege, Set<Principal>> copyActionSets(Map<Privilege, Set<Principal>> actionSets) {
-        Map<Privilege, Set<Principal>> copy = new EnumMap<Privilege, Set<Principal>>(Privilege.class);
+        Map<Privilege, Set<Principal>> copy = new EnumMap<>(Privilege.class);
         for (Privilege privilege: actionSets.keySet()) {
             if (privilege == null) {
                 throw new IllegalArgumentException("Privileges cannot be NULL");
@@ -340,7 +341,7 @@ public final class Acl implements Serializable {
                 throw new IllegalArgumentException(
                         "Illegal empty mapping in ACL for privilege " + privilege);
             }
-            Set<Principal> principals = new HashSet<Principal>();
+            Set<Principal> principals = new HashSet<>();
             principals.addAll(value);
             copy.put(privilege, principals);
         }

@@ -44,6 +44,7 @@ public enum RepositoryAction {
     
     READ_PROCESSED("read-processed"),
     CREATE("create"),
+    CREATE_WITH_ACL("create-with-acl"),
     READ("read"),
     READ_WRITE("read-write"),
     WRITE("write"),
