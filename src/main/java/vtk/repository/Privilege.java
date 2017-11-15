@@ -42,6 +42,7 @@ public enum Privilege {
     ALL(RepositoryAction.ALL),
     READ_WRITE(RepositoryAction.READ_WRITE),
     READ_WRITE_UNPUBLISHED(RepositoryAction.READ_WRITE_UNPUBLISHED),
+    CREATE_WITH_ACL(RepositoryAction.CREATE_WITH_ACL),
     ADD_COMMENT(RepositoryAction.ADD_COMMENT),
     READ(RepositoryAction.READ),
     READ_PROCESSED(RepositoryAction.READ_PROCESSED);
