@@ -316,9 +316,7 @@ public class SqlMapDataAccessor extends AbstractSqlMapDataAccessor implements Da
 
         //storeLock(r);
         storeProperties(r, sqlSession);
-
-        updateACL(r, sqlSession);
-        
+    
         // Re-load and return newly written ResourceImpl
         return load(r.getURI());
     }

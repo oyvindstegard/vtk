@@ -505,6 +505,7 @@ public class RepositoryImpl implements Repository, ApplicationContextAware,
         checkLock(parent, principal, lockToken);
         
         if (!aclMode.inherited()) {
+            validateNewAcl(aclMode.acl().get());
             this.authorizationManager.authorizeCreateWithAcl(parent.getURI(), principal);
         }
         else {
@@ -528,22 +529,7 @@ public class RepositoryImpl implements Repository, ApplicationContextAware,
             ResourceImpl newResource = new ResourceImpl(uri);
             newResource.setChildURIs(new ArrayList<>());
             content = getContent(newResource);
-            
-            // Set permissions on new collection resource:
-            if (aclMode.inherited()) {
-                newResource.setAcl(parent.getAcl());
-                newResource.setInheritedAcl(true);
-                int aclIneritedFrom = parent.isInheritedAcl() ? parent.getAclInheritedFrom() : parent.getNumericId();
-                newResource.setAclInheritedFrom(aclIneritedFrom);
-            }
-            else {
-                Acl acl = aclMode.acl().get();
-                validateNewAcl(acl);
-                newResource.setAcl(acl);
-                newResource.setInheritedAcl(false);
-                newResource.setAclInheritedFrom(PropertySetImpl.NULL_RESOURCE_ID);
-            }
-            
+                        
             TypeHandlerHooks hooks = typeHandlerHooksRegistry.getTypeHandlerHooksForCreateCollection();
             if (hooks != null) {
                 try {
@@ -556,8 +542,25 @@ public class RepositoryImpl implements Repository, ApplicationContextAware,
             
             newResource = this.resourceHelper.create(principal, newResource, true, content);
             
+            // Set initial (inherited) permissions on new resource:
+            newResource.setAcl(parent.getAcl());
+            newResource.setInheritedAcl(true);
+            int aclIneritedFrom = parent.isInheritedAcl() ? parent.getAclInheritedFrom() : parent.getNumericId();
+            newResource.setAclInheritedFrom(aclIneritedFrom);
+
             // Store new collection resource
             newResource = this.dao.store(newResource);
+            
+            // Set permissions on new collection if passed by client:
+            if (!aclMode.inherited()) {
+                Acl acl = aclMode.acl().get();
+                validateNewAcl(acl);
+                newResource.setAcl(acl);
+                newResource.setInheritedAcl(false);
+                newResource.setAclInheritedFrom(PropertySetImpl.NULL_RESOURCE_ID);
+                newResource = this.dao.storeACL(newResource);
+            }
+            
             this.contentStore.createResource(newResource.getURI(), true);
 
             this.context.publishEvent(new ResourceCreationEvent(this, principal, (Resource) newResource.clone()));
@@ -566,7 +569,6 @@ public class RepositoryImpl implements Repository, ApplicationContextAware,
         catch (CloneNotSupportedException e) {
             throw new IOException("Failed to clone object", e);
         }
-
     }
 
     @Transactional(readOnly=false)
@@ -1213,6 +1215,7 @@ public class RepositoryImpl implements Repository, ApplicationContextAware,
         checkLock(parent, principal, lockToken);
 
         if (!aclMode.inherited()) {
+            validateNewAcl(aclMode.acl().get());
             this.authorizationManager.authorizeCreateWithAcl(parent.getURI(), principal);
         }
         else {
@@ -1233,21 +1236,13 @@ public class RepositoryImpl implements Repository, ApplicationContextAware,
             // Set up new resource
             ResourceImpl newResource = new ResourceImpl(uri);
             
-            // Set permissions on new resource:
-            if (aclMode.inherited()) {
-                newResource.setAcl(parent.getAcl());
-                newResource.setInheritedAcl(true);
-                int aclIneritedFrom = parent.isInheritedAcl() ? parent.getAclInheritedFrom() : parent.getNumericId();
-                newResource.setAclInheritedFrom(aclIneritedFrom);
-            }
-            else {
-                Acl acl = aclMode.acl().get();
-                validateNewAcl(acl);
-                newResource.setAcl(acl);
-                newResource.setInheritedAcl(false);
-                newResource.setAclInheritedFrom(PropertySetImpl.NULL_RESOURCE_ID);
-            }
-
+            // Set initial (inherited) permissions on new resource:
+            newResource.setAcl(parent.getAcl());
+            newResource.setInheritedAcl(true);
+            int aclIneritedFrom = parent.isInheritedAcl() ? parent.getAclInheritedFrom() : parent.getNumericId();
+            newResource.setAclInheritedFrom(aclIneritedFrom);
+            
+            
             // Check if contentType has interceptor for storage
             String contentType = MimeHelper.map(uri.getName());
             TypeHandlerHooks hooks = typeHandlerHooksRegistry.getTypeHandlerHooks(contentType);
@@ -1278,6 +1273,16 @@ public class RepositoryImpl implements Repository, ApplicationContextAware,
             
             // Store new resource
             newResource = this.dao.store(newResource);
+
+            // Store ACL if passed by client: 
+            if (!aclMode.inherited()) {
+                Acl acl = aclMode.acl().get();
+                newResource.setAcl(acl);
+                newResource.setInheritedAcl(false);
+                newResource.setAclInheritedFrom(PropertySetImpl.NULL_RESOURCE_ID);
+                newResource = this.dao.storeACL(newResource);
+            }
+            
             this.context.publishEvent(new ResourceCreationEvent(this, principal, (Resource) newResource.clone()));
 
             return (Resource) newResource.clone();
