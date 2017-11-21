@@ -32,9 +32,6 @@ package vtk.repository;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
 
 import java.util.List;
 import java.util.Optional;
@@ -727,17 +724,17 @@ public class PermissionsIntegrationTest extends RepositoryFixture {
             
             Resource base = repository.createCollection(rootToken, null, baseURI, 
                     AclMode.withAcl(acl));
-            assertEquals(base.getAcl(), acl);
+            assertThat(base.getAcl()).isEqualTo(acl);
             
             Resource collection1 = repository
                     .createCollection(authorizedToken, null, baseURI.extend("new_collection1"), 
                             AclMode.inherit());
-            assertTrue(collection1.isInheritedAcl());
+            assertThat(collection1.isInheritedAcl()).isTrue();
             
             Resource document1 = repository
                     .createDocument(authorizedToken, null, baseURI.extend("new_document1"), 
                             ContentInputSources.fromString("test-content"), AclMode.inherit());
-            assertTrue(document1.isInheritedAcl());
+            assertThat(document1.isInheritedAcl()).isTrue();
 
             Acl newAcl = Acl.EMPTY_ACL.addEntry(Privilege.ALL, authorizedPrincipal);
             
@@ -749,19 +746,18 @@ public class PermissionsIntegrationTest extends RepositoryFixture {
             Resource document2 = repository
                     .createDocument(authorizedToken, null, baseURI.extend("new_document2"),
                             ContentInputSources.fromString("test-content"), AclMode.withAcl(newAcl));
-            assertFalse(document2.isInheritedAcl());
-            assertEquals(document2.getAcl(), newAcl);
             
-            assertThatThrownBy(() -> repository.createCollection(unauthorizedToken, null, 
+            assertThat(document2.isInheritedAcl()).isFalse();
+            assertThat(document2.getAcl()).isEqualTo(newAcl);
+                        assertThatThrownBy(() -> repository.createCollection(unauthorizedToken, null, 
                     baseURI.extend("new_collection2"), AclMode.withAcl(newAcl)))
                 .isInstanceOf(AuthorizationException.class);
             
             Resource collection2 = repository
                     .createCollection(authorizedToken, null, baseURI.extend("new_collection2"),
                             AclMode.withAcl(newAcl));
-            assertFalse(collection2.isInheritedAcl());
-            assertEquals(collection2.getAcl(), newAcl);
+            assertThat(collection2.isInheritedAcl()).isFalse();
+            assertThat(collection2.getAcl()).isEqualTo(newAcl);
         }
     }
-
 }
