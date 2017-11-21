@@ -40,6 +40,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import vtk.repository.Acl;
+import vtk.repository.AclMode;
 import vtk.repository.AuthorizationException;
 import vtk.repository.Comment;
 import vtk.repository.ContentInputSource;
@@ -221,29 +222,31 @@ public class RequestLocalRepository {
         }
 
         @Override
-        public Resource createDocument(String token, String lockToken, Path uri, ContentInputSource content) throws IOException {
+        public Resource createDocument(String token, String lockToken, Path uri, 
+                ContentInputSource content, AclMode aclMode) throws IOException {
 
             RepositoryContext ctx = RepositoryContext.getRepositoryContext(request);
             if (ctx != null) {
                 ctx.clear();
             }
-            return this.repository.createDocument(token, lockToken, uri, content);
+            return this.repository.createDocument(token, lockToken, uri, content, aclMode);
         }
 
         @Override
-        public Resource createCollection(String token, String lockToken, Path uri) throws IOException {
-            return this.repository.createCollection(token, lockToken, uri);
-        }
-
-        @Override
-        public void copy(String token, String lockToken, Path srcUri, Path destUri, boolean overwrite, boolean preserveACL)
+        public Resource createCollection(String token, String lockToken, Path uri, AclMode aclMode) 
                 throws IOException {
+            return this.repository.createCollection(token, lockToken, uri, aclMode);
+        }
+
+        @Override
+        public void copy(String token, String lockToken, Path srcUri, Path destUri, 
+                boolean overwrite, boolean copyAcls) throws IOException {
 
             RepositoryContext ctx = RepositoryContext.getRepositoryContext(request);
             if (ctx != null) {
                 ctx.clear();
             }
-            this.repository.copy(token, lockToken, srcUri, destUri, overwrite, preserveACL);
+            this.repository.copy(token, lockToken, srcUri, destUri, overwrite, copyAcls);
         }
 
         @Override

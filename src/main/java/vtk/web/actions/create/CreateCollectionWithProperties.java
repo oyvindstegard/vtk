@@ -45,6 +45,7 @@ import org.springframework.validation.Errors;
 import org.springframework.web.bind.ServletRequestDataBinder;
 import org.springframework.web.servlet.ModelAndView;
 
+import vtk.repository.AclMode;
 import vtk.repository.Namespace;
 import vtk.repository.Path;
 import vtk.repository.Property;
@@ -69,7 +70,7 @@ public class CreateCollectionWithProperties extends SimpleFormController<CreateO
     @Override
     protected Map<String, Object> referenceData(HttpServletRequest request,
             CreateOperation command, Errors errors) throws Exception {
-        Map<String, Object> model = new HashMap<String, Object>();
+        Map<String, Object> model = new HashMap<>();
         URL submitURL = RequestContext.getRequestContext(request).getRequestURL();
         model.put("submitURL", submitURL);
         return model;
@@ -83,7 +84,8 @@ public class CreateCollectionWithProperties extends SimpleFormController<CreateO
         Repository repository = requestContext.getRepository();
         String token = requestContext.getSecurityToken();
         
-        Resource collection = repository.createCollection(token, null, operation.getUri());
+        Resource collection = repository
+                .createCollection(token, null, operation.getUri(), AclMode.inherit());
         if (operation.getTypeProperty() != null) {
             TypeInfo typeInfo = repository.getTypeInfo(collection);
             Namespace ns = Namespace.DEFAULT_NAMESPACE;
@@ -134,7 +136,7 @@ public class CreateCollectionWithProperties extends SimpleFormController<CreateO
                 String[] propValues = request.getParameterValues("propertyValue");
                 Assert.hasText(uri, "Input 'uri' must be defined");
 
-                List<PropertyOperation> propertyOps = new ArrayList<PropertyOperation>();
+                List<PropertyOperation> propertyOps = new ArrayList<>();
                 
                 if (namespaces != null && propNames != null && propValues != null) {
                     if (namespaces.length != propNames.length || 
@@ -214,7 +216,7 @@ public class CreateCollectionWithProperties extends SimpleFormController<CreateO
         PropertyOperation(String namespace, String name, String value) {
             this.namespace = namespace;
             this.name = name;
-            this.values = new ArrayList<String>();
+            this.values = new ArrayList<>();
             this.values.add(value);
         }
 

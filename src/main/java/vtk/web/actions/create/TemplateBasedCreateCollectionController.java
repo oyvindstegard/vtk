@@ -43,6 +43,7 @@ import org.springframework.validation.BindException;
 import org.springframework.validation.Errors;
 import org.springframework.web.servlet.ModelAndView;
 
+import vtk.repository.AclMode;
 import vtk.repository.InheritablePropertiesStoreContext;
 import vtk.repository.Namespace;
 import vtk.repository.Path;
@@ -161,6 +162,9 @@ public class TemplateBasedCreateCollectionController
 
         // Setting the destination to the current folder/uri
         Path destinationURI = uri.extend(name);
+        
+        Resource sourceResource = repository.retrieve(token, sourceURI, true);
+        
 
         // Copy folder-template to destination (implicit rename)
         repository.copy(token, null, sourceURI, destinationURI, false, true);
@@ -219,7 +223,7 @@ public class TemplateBasedCreateCollectionController
         Path newURI = uri.extend(name);
         Repository repository = requestContext.getRepository();
         String token = requestContext.getSecurityToken();
-        Resource collection = repository.createCollection(token, null, newURI);
+        Resource collection = repository.createCollection(token, null, newURI, AclMode.inherit());
 
         if (title == null || "".equals(title))
             title = name.substring(0, 1).toUpperCase() + name.substring(1);

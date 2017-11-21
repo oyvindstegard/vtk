@@ -43,8 +43,9 @@ import org.jdom.input.SAXBuilder;
 import org.jdom.output.Format;
 import org.jdom.output.XMLOutputter;
 import org.springframework.http.HttpStatus;
-import vtk.repository.AuthorizationException;
 
+import vtk.repository.AclMode;
+import vtk.repository.AuthorizationException;
 import vtk.repository.ContentInputSources;
 import vtk.repository.FailedDependencyException;
 import vtk.repository.IllegalOperationException;
@@ -151,7 +152,8 @@ public class LockController extends AbstractWebdavController {
                 if (this.logger.isDebugEnabled()) {
                     this.logger.debug("Creating null resource");
                 }
-                repository.createDocument(token, null, uri, ContentInputSources.empty());
+                repository.createDocument(token, null, uri, ContentInputSources.empty(), 
+                        AclMode.inherit());
                 
                 // Should get real lockOwnerInfo, even if resource don't exist when locked
                 if (request.getContentLength() > 0) {

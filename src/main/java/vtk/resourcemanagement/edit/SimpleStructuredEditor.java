@@ -43,6 +43,7 @@ import javax.servlet.http.HttpServletResponse;
 import org.springframework.web.servlet.ModelAndView;
 import org.springframework.web.servlet.mvc.Controller;
 
+import vtk.repository.AclMode;
 import vtk.repository.ContentInputSources;
 import vtk.repository.Lock;
 import vtk.repository.Path;
@@ -185,7 +186,9 @@ public class SimpleStructuredEditor implements Controller {
         String str = JsonStreamer.toJson(document);
         
         Path newUri = generateFilename(request, repository, token, uri);
-        Resource resource = repository.createDocument(token, null, newUri, ContentInputSources.fromBytes(str.getBytes("utf-8")));
+        Resource resource = repository.createDocument(token, null, newUri, 
+                ContentInputSources.fromBytes(str.getBytes("utf-8")), 
+                AclMode.inherit());
         publishResource(resource, token, repository);
         return newUri;
     }

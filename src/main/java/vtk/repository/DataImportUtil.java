@@ -30,9 +30,7 @@
  */
 package vtk.repository;
 
-import java.io.BufferedInputStream;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
 
 import org.slf4j.Logger;
@@ -71,7 +69,7 @@ public class DataImportUtil implements InitializingBean {
                         + uri + "'");
             } else {
                 logger.info("Importing directory '" + file + "' to URI '" + uri + "'");
-                this.repository.createCollection(token, null, uri);
+                this.repository.createCollection(token, null, uri, AclMode.inherit());
             }
 
             // Recursively process children of directory
@@ -80,8 +78,8 @@ public class DataImportUtil implements InitializingBean {
                 Path childURI = uri.extend(children[i].getName());
                 create(children[i], token, childURI);
             }
-            
-        } else {
+        }
+        else {
             if (this.skipExistingResources && this.repository.exists(token, uri)) {
                 logger.info("Skipping import of file '" + file + "', resource already exists at URI '"
                         + uri + "'");
@@ -89,7 +87,8 @@ public class DataImportUtil implements InitializingBean {
             }
             
             logger.info("Importing file '" + file + "' to URI '" + uri + "'");
-            this.repository.createDocument(token, null, uri, ContentInputSources.fromFile(file));
+            this.repository.createDocument(token, null, uri, 
+                    ContentInputSources.fromFile(file), AclMode.inherit());
         }
         
     }

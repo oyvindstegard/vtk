@@ -47,6 +47,7 @@ import javax.servlet.http.HttpServletRequest;
 import org.springframework.web.servlet.support.RequestContextUtils;
 
 import vtk.repository.Acl;
+import vtk.repository.AclMode;
 import vtk.repository.AuthorizationException;
 import vtk.repository.Comment;
 import vtk.repository.ContentInputSource;
@@ -491,15 +492,15 @@ public class RequestContext {
 
         @Override
         public Resource createDocument(String token, String lockToken, Path uri,
-                ContentInputSource content) throws IllegalOperationException,
+                ContentInputSource content, AclMode aclMode) throws IllegalOperationException,
                 AuthorizationException, AuthenticationException,
                 ResourceLockedException, ReadOnlyException, IOException {
             throw new UnsupportedOperationException("Not supported");
         }
 
         @Override
-        public Resource createCollection(String token, String lockToken, Path uri)
-                throws AuthorizationException, AuthenticationException,
+        public Resource createCollection(String token, String lockToken, Path uri, 
+                AclMode aclMode) throws AuthorizationException, AuthenticationException,
                 IllegalOperationException, ResourceLockedException,
                 ReadOnlyException, IOException {
             throw new UnsupportedOperationException("Not supported");
@@ -507,7 +508,7 @@ public class RequestContext {
 
         @Override
         public void copy(String token, String lockToken, Path srcUri, Path destUri,
-                boolean overwrite, boolean preserveACL)
+                boolean overwrite, boolean copyAcls)
                 throws IllegalOperationException, AuthorizationException,
                 AuthenticationException, FailedDependencyException,
                 ResourceOverwriteException, ResourceLockedException,

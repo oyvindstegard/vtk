@@ -30,28 +30,33 @@
  */
 package vtk.repository;
 
-import java.util.*;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
+
+import java.util.List;
+import java.util.Optional;
 
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.runners.Enclosed;
 import org.junit.runner.RunWith;
+
 import vtk.repository.resourcetype.ConstraintViolationException;
 import vtk.repository.resourcetype.PropertyType;
 import vtk.security.AuthenticationException;
 import vtk.security.InvalidPrincipalException;
 import vtk.security.Principal;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
-
 @RunWith(Enclosed.class)
 public class PermissionsIntegrationTest extends RepositoryFixture {
     private static final Repository repository = getRepository(
             new RepositoryArchive("/permissions", "permissions.jar")
     );
-
+    
     public static class PermissionHierarchy {
         @Test
         public void read_and_writes_gives_comment_right_but_not_admin_rights() throws Exception {
@@ -110,7 +115,8 @@ public class PermissionsIntegrationTest extends RepositoryFixture {
                             token,
                             null,
                             onlyReadPath.extend("not_allowed.html"),
-                            ContentInputSources.empty()
+                            ContentInputSources.empty(),
+                            AclMode.inherit()
                     )
             ).isInstanceOf(AuthorizationException.class);
         }
@@ -185,7 +191,8 @@ public class PermissionsIntegrationTest extends RepositoryFixture {
                     rootToken,
                     null,
                     noRightsPath,
-                    ContentInputSources.empty()
+                    ContentInputSources.empty(),
+                    AclMode.inherit()
             );
             repository.storeACL(rootToken, null, noRightsPath, Acl.EMPTY_ACL);
 
@@ -228,7 +235,8 @@ public class PermissionsIntegrationTest extends RepositoryFixture {
                     token,
                     null,
                     testResourcePath,
-                    ContentInputSources.empty()
+                    ContentInputSources.empty(),
+                    AclMode.inherit()
             );
             assertThat(testResource.isInheritedAcl()).isTrue();
 
@@ -260,12 +268,14 @@ public class PermissionsIntegrationTest extends RepositoryFixture {
                     ownerToken,
                     null,
                     testResourcePath,
-                    ContentInputSources.empty()
+                    ContentInputSources.empty(),
+                    AclMode.inherit()
             );
             repository.createCollection(
                     ownerToken,
                     null,
-                    testCollectionPath
+                    testCollectionPath,
+                    AclMode.inherit()
             );
             repository.storeACL(rootToken, null, testResourcePath, Acl.EMPTY_ACL);
             repository.storeACL(rootToken, null, testCollectionPath, Acl.EMPTY_ACL);
@@ -299,7 +309,8 @@ public class PermissionsIntegrationTest extends RepositoryFixture {
                     rootToken,
                     null,
                     testResourcePath,
-                    ContentInputSources.empty()
+                    ContentInputSources.empty(),
+                    AclMode.inherit()
             );
 
             Property ownerProperty = testResource.getProperty(
@@ -695,4 +706,62 @@ public class PermissionsIntegrationTest extends RepositoryFixture {
         }
 
     }
+    
+    public static class CreateWithAcl {
+        
+        @Test
+        public void createWithAcl() throws Exception {
+            String authorizedToken = newUserToken("vortex-test@uio.no");
+            String unauthorizedToken = newUserToken("nobody@localhost");
+            String rootToken = newUserToken("root@localhost");
+            
+            Path baseURI = Path.fromString("/permissions/create_with_acl");
+            Principal authorizedPrincipal = tokenManager.getPrincipal(authorizedToken);
+            Principal unauthorizedPrincipal = tokenManager.getPrincipal(unauthorizedToken);
+            
+            Acl acl = Acl.EMPTY_ACL
+                    .addEntry(Privilege.READ, authorizedPrincipal)
+                    .addEntry(Privilege.READ_WRITE, authorizedPrincipal)
+                    .addEntry(Privilege.CREATE_WITH_ACL, authorizedPrincipal)
+                    .addEntry(Privilege.READ_WRITE, unauthorizedPrincipal);
+            
+            Resource base = repository.createCollection(rootToken, null, baseURI, 
+                    AclMode.withAcl(acl));
+            assertEquals(base.getAcl(), acl);
+            
+            Resource collection1 = repository
+                    .createCollection(authorizedToken, null, baseURI.extend("new_collection1"), 
+                            AclMode.inherit());
+            assertTrue(collection1.isInheritedAcl());
+            
+            Resource document1 = repository
+                    .createDocument(authorizedToken, null, baseURI.extend("new_document1"), 
+                            ContentInputSources.fromString("test-content"), AclMode.inherit());
+            assertTrue(document1.isInheritedAcl());
+
+            Acl newAcl = Acl.EMPTY_ACL.addEntry(Privilege.ALL, authorizedPrincipal);
+            
+            assertThatThrownBy(() -> repository.createDocument(unauthorizedToken, null, 
+                    baseURI.extend("new_document2"), ContentInputSources.fromString("test-content"),
+                    AclMode.withAcl(newAcl)))
+                .isInstanceOf(AuthorizationException.class);
+
+            Resource document2 = repository
+                    .createDocument(authorizedToken, null, baseURI.extend("new_document2"),
+                            ContentInputSources.fromString("test-content"), AclMode.withAcl(newAcl));
+            assertFalse(document2.isInheritedAcl());
+            assertEquals(document2.getAcl(), newAcl);
+            
+            assertThatThrownBy(() -> repository.createCollection(unauthorizedToken, null, 
+                    baseURI.extend("new_collection2"), AclMode.withAcl(newAcl)))
+                .isInstanceOf(AuthorizationException.class);
+            
+            Resource collection2 = repository
+                    .createCollection(authorizedToken, null, baseURI.extend("new_collection2"),
+                            AclMode.withAcl(newAcl));
+            assertFalse(collection2.isInheritedAcl());
+            assertEquals(collection2.getAcl(), newAcl);
+        }
+    }
+
 }

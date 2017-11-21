@@ -33,8 +33,8 @@ package vtk.repository;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.List;
-import vtk.repository.resourcetype.PropertyType;
 
+import vtk.repository.resourcetype.PropertyType;
 import vtk.repository.search.QueryException;
 import vtk.repository.search.ResultSet;
 import vtk.repository.search.Search;
@@ -389,8 +389,7 @@ public interface Repository {
     /**
      * Creates a new document in the repository.
      *
-     * @param token
-     *            identifies the client's authenticated session
+     * @param token identifies the client's authenticated session
      *
      * @param lockToken a lock token, or {@code null} for no particular value. A
      * lock token to be used as part of authorization when writing to a locked
@@ -399,10 +398,11 @@ public interface Repository {
      * may share a resource lock and a provided lock token must be validated for
      * each call to write to the resource.
      *
-     * @param uri
-     *            the resource identifier to be created
-     * @param content
-     *            the resource's content
+     * @param uri the resource identifier to be created
+     * @param content the resource's content
+     * @param aclMode specifies whether the newly created document should have 
+     * its own ACL or inherit from the parent collection
+     *            
      * @return a <code>Resource</code> representing metadata about the newly
      *         created resource
      * @exception IllegalOperationException
@@ -422,8 +422,9 @@ public interface Repository {
      * @exception IOException
      *                if an I/O error occurs
      */
-    public Resource createDocument(String token, String lockToken, Path uri, ContentInputSource content) throws IllegalOperationException,
-            AuthorizationException, AuthenticationException, ResourceLockedException, ReadOnlyException, IOException;
+    public Resource createDocument(String token, String lockToken, Path uri, ContentInputSource content, AclMode aclMode) 
+            throws IllegalOperationException, AuthorizationException, AuthenticationException, 
+            ResourceLockedException, ReadOnlyException, IOException;
     
     /**
      * Creates a new collection resource in the repository.
@@ -438,8 +439,10 @@ public interface Repository {
      * may share a resource lock and a provided lock token must be validated for
      * each call to write to the resource.
      *
-     * @param uri
-     *            the resource identifier to be created
+     * @param uri the resource identifier to be created
+     * @param aclMode specifies whether the newly created collection should have 
+     * its own ACL or inherit from the parent collection
+     * 
      * @return a <code>Resource</code> representing metadata about the newly
      *         created collection
      * @exception IllegalOperationException
@@ -459,7 +462,8 @@ public interface Repository {
      * @exception IOException
      *                if an I/O error occurs
      */
-    public Resource createCollection(String token, String lockToken, Path uri) throws AuthorizationException, AuthenticationException,
+    public Resource createCollection(String token, String lockToken, Path uri, AclMode aclMode) 
+            throws AuthorizationException, AuthenticationException,
             IllegalOperationException, ResourceLockedException, ReadOnlyException, IOException;
 
 
@@ -503,9 +507,9 @@ public interface Repository {
      * @param overwrite
      *            determines if the operation should overwrite existing
      *            resources
-     * @param preserveACL
+     * @param copyACLs
      *            whether destination resource should inherit ACL from its parent resource
-     *            or preserve the existing ACL on the source
+     *            or copy the existing ACLs on the source and its descendants 
      * @exception IllegalOperationException
      *                if the resource identified by the destination URI can not
      *                be created due to namespace inconsistency
@@ -534,7 +538,7 @@ public interface Repository {
      * @exception IOException
      *                if an I/O error occurs
      */
-    public void copy(String token, String lockToken, Path srcUri, Path destUri, boolean overwrite, boolean preserveACL)
+    public void copy(String token, String lockToken, Path srcUri, Path destUri, boolean overwrite, boolean copyACLs)
             throws IllegalOperationException, AuthorizationException, AuthenticationException,
             FailedDependencyException, ResourceOverwriteException, ResourceLockedException, ResourceNotFoundException,
             ReadOnlyException, IOException;

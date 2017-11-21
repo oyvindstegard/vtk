@@ -37,8 +37,10 @@ import java.util.Map;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+
 import org.springframework.http.HttpStatus;
 
+import vtk.repository.AclMode;
 import vtk.repository.ContentInputSources;
 import vtk.repository.IllegalOperationException;
 import vtk.repository.Namespace;
@@ -139,7 +141,8 @@ public class PutController extends AbstractWebdavController {
                     this.logger.debug("Resource does not exist (creating)");
                 }
                 InputStream inStream = request.getInputStream();
-                resource = repository.createDocument(token, null, uri, ContentInputSources.fromStream(inStream));
+                resource = repository.createDocument(token, null, uri, 
+                        ContentInputSources.fromStream(inStream), AclMode.inherit());
             }
 
             resource = repository.retrieve(token, resource.getURI(), false);

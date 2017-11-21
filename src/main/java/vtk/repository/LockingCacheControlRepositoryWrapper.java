@@ -103,7 +103,8 @@ public class LockingCacheControlRepositoryWrapper implements Repository, Cluster
     }
 
     @Override
-    public void copy(String token, String lockToken, Path srcUri, Path destUri, boolean overwrite, boolean preserveACL)
+    public void copy(String token, String lockToken, Path srcUri, Path destUri, 
+            boolean overwrite, boolean copyAcls)
             throws IllegalOperationException, AuthorizationException, AuthenticationException,
             FailedDependencyException, ResourceOverwriteException, ResourceLockedException, 
             ResourceNotFoundException, ReadOnlyException, IOException {
@@ -124,7 +125,7 @@ public class LockingCacheControlRepositoryWrapper implements Repository, Cluster
         final List<Path> locked = this.lockManager.lock(lockUris, true);
 
         try {
-            this.wrappedRepository.copy(token, lockToken, srcUri, destUri, overwrite, preserveACL); // Tx
+            this.wrappedRepository.copy(token, lockToken, srcUri, destUri, overwrite, copyAcls); // Tx
 
             // Purge destination URI and destination parent URI from cache
             flushFromCache(destUri, true, "copy");
@@ -199,7 +200,8 @@ public class LockingCacheControlRepositoryWrapper implements Repository, Cluster
     }
 
     @Override
-    public Resource createCollection(String token, String lockToken, Path uri) throws AuthorizationException, AuthenticationException,
+    public Resource createCollection(String token, String lockToken, Path uri, AclMode aclMode) 
+            throws AuthorizationException, AuthenticationException,
             IllegalOperationException, ResourceLockedException, ReadOnlyException, IOException {
 
         // Synchronize on:
@@ -214,7 +216,8 @@ public class LockingCacheControlRepositoryWrapper implements Repository, Cluster
         final List<Path> locked = this.lockManager.lock(lockUris, true);
 
         try {
-            Resource resource = this.wrappedRepository.createCollection(token, lockToken, uri); // Tx
+            Resource resource = this.wrappedRepository
+                    .createCollection(token, lockToken, uri, aclMode); // Tx
 
             Path parent = resource.getURI().getParent();
             if (parent != null) {
@@ -231,7 +234,8 @@ public class LockingCacheControlRepositoryWrapper implements Repository, Cluster
 
 
     @Override
-    public Resource createDocument(final String token, final String lockToken, final Path uri, ContentInputSource content) throws IllegalOperationException,
+    public Resource createDocument(final String token, final String lockToken, final Path uri, 
+            ContentInputSource content, AclMode aclMode) throws IllegalOperationException,
             AuthorizationException, AuthenticationException, ResourceLockedException, ReadOnlyException, IOException {
 
         IO.TempFile tempFile = null;
@@ -254,7 +258,8 @@ public class LockingCacheControlRepositoryWrapper implements Repository, Cluster
             final List<Path> locked = this.lockManager.lock(lockUris, true);
 
             try {
-                Resource resource = this.wrappedRepository.createDocument(token, lockToken, uri, content); // Tx
+                Resource resource = this.wrappedRepository
+                        .createDocument(token, lockToken, uri, content, aclMode); // Tx
 
                 Path parent = resource.getURI().getParent();
                 if (parent != null) {

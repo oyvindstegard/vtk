@@ -30,17 +30,18 @@
  */
 package vtk.repository;
 
-import org.apache.commons.fileupload.FileItemIterator;
-import org.apache.commons.fileupload.FileItemStream;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import vtk.util.ValidationException;
-import vtk.util.io.IO;
-
 import java.io.File;
 import java.io.IOException;
 import java.util.LinkedHashMap;
 import java.util.Map;
+
+import org.apache.commons.fileupload.FileItemIterator;
+import org.apache.commons.fileupload.FileItemStream;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import vtk.util.ValidationException;
+import vtk.util.io.IO;
 
 public class FileUpload {
     private static final Logger logger = LoggerFactory.getLogger(FileUpload.class);
@@ -81,12 +82,8 @@ public class FileUpload {
         this.tempDir = tmp;
     }
 
-    public void upload(
-            String token,
-            FileItemIterator fileIterator,
-            Path destination,
-            boolean shouldOverwriteExisting
-    ) {
+    public void upload(String token, FileItemIterator fileIterator,
+            Path destination, boolean shouldOverwriteExisting) {
         Map<Path, IO.TempFile> fileMap = new LinkedHashMap<>();
         try {
             while (fileIterator.hasNext()) {
@@ -116,8 +113,8 @@ public class FileUpload {
                     this.repository.delete(token, null, path, false);
                 }
                 this.repository.createDocument(
-                        token, null, path, ContentInputSources.fromFile(tempFile.file(), true)
-                );
+                        token, null, path, ContentInputSources.fromFile(tempFile.file(), true), 
+                                AclMode.inherit());
             }
         }
         catch (ValidationException e) {
@@ -127,7 +124,8 @@ public class FileUpload {
             logger.warn("Caught exception while performing file upload", e);
             throw new ValidationException("manage.upload.error",
                     "An unexpected error occurred while processing file upload");
-        } finally {
+        }
+        finally {
             // Always clean up temp files
             for (IO.TempFile t : fileMap.values()) {
                 t.delete();
