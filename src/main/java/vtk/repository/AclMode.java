@@ -30,7 +30,6 @@
  */
 package vtk.repository;
 
-import java.util.Objects;
 import java.util.Optional;
 
 /**
@@ -39,10 +38,10 @@ import java.util.Optional;
  * explicitly specified).
  */
 public final class AclMode {
-    private Optional<Acl> acl;
+    private Acl acl = null;
     
-    private AclMode(Optional<Acl> acl) {
-        this.acl = Objects.requireNonNull(acl);
+    private AclMode(Acl acl) {
+        this.acl = acl;
     }
  
     /**
@@ -50,7 +49,7 @@ public final class AclMode {
      * inherit the ACL of the parent collection when created.
      */
     public static AclMode inherit() {
-       return new AclMode(Optional.empty());
+       return new AclMode(null);
     }
     
     /**
@@ -59,7 +58,7 @@ public final class AclMode {
      * @param acl the ACL which should be set on newly created resources
      */
     public static AclMode withAcl(Acl acl) {
-       return new AclMode(Optional.of(acl));
+       return new AclMode(acl);
     }
 
     /**
@@ -67,7 +66,7 @@ public final class AclMode {
      * @return an optional with the ACL of this ACL mode
      */
     public Optional<Acl> acl() {
-       return acl;
+       return Optional.ofNullable(acl);
     }
 
     /**
@@ -76,6 +75,6 @@ public final class AclMode {
      * @return {@code true} if this ACL mode specifies inheritance, {@code fales} otherwise
      */
     public boolean inherited() {
-       return !acl.isPresent();
+       return acl == null;
     }
 }
