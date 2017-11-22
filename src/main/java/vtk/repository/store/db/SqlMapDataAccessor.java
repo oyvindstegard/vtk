@@ -316,7 +316,7 @@ public class SqlMapDataAccessor extends AbstractSqlMapDataAccessor implements Da
 
         //storeLock(r);
         storeProperties(r, sqlSession);
-
+    
         // Re-load and return newly written ResourceImpl
         return load(r.getURI());
     }
@@ -796,7 +796,7 @@ public class SqlMapDataAccessor extends AbstractSqlMapDataAccessor implements Da
         final Set<Privilege> actions = newAcl.getActions();
         final String sqlMap = getSqlMap("insertAclEntry");
         
-        Map<String, Object> parameters = new HashMap<String, Object>();
+        Map<String, Object> parameters = new HashMap<>();
         for (Privilege action : actions) {
             String actionName = action.getName();
             for (Principal p : newAcl.getPrincipalSet(action)) {
@@ -900,7 +900,7 @@ public class SqlMapDataAccessor extends AbstractSqlMapDataAccessor implements Da
                 }
             }
             if ((i == resources.length - 1 || i % inheritedPropertiesBatch == 0) && !paths.isEmpty()) {
-                parameterMap.put("uris", new ArrayList<Path>(paths));
+                parameterMap.put("uris", new ArrayList<>(paths));
                 List<Map<String, Object>> rows = sqlSession.selectList(sqlMap, parameterMap);
                 propertyRows.addAll(rows);
                 paths.clear();
@@ -1049,7 +1049,7 @@ public class SqlMapDataAccessor extends AbstractSqlMapDataAccessor implements Da
      * @param resultMap the map to populate with 
      */
     void loadAclBatch(List<Integer> resourceIds, Map<Integer, AclHolder> resultMap, SqlSession sqlSession) {
-        Map<String, Object> parameterMap = new HashMap<String, Object>();
+        Map<String, Object> parameterMap = new HashMap<>();
         parameterMap.put("resourceIds", resourceIds);
 
         String sqlMap = getSqlMap("loadAclEntriesByResourceIds");

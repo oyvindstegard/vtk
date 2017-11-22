@@ -34,6 +34,7 @@ import java.io.IOException;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+
 import org.springframework.http.HttpStatus;
 
 import vtk.repository.FailedDependencyException;
@@ -75,7 +76,7 @@ public class CopyController extends AbstractWebdavController {
         String destHeader = request.getHeader("Destination");
 
         try {
-            repository.retrieve(token, uri, false);
+            Resource src = repository.retrieve(token, uri, false);
 
             Path destURI = mapToResourceURI(destHeader);
             String depthString = request.getHeader("Depth");
@@ -104,7 +105,7 @@ public class CopyController extends AbstractWebdavController {
             boolean existed = repository.exists(token, destURI);
             
             if (existed) {
-                Resource destination = repository.retrieve(token, destURI, false);
+                repository.retrieve(token, destURI, false);
             }
 
             if (this.logger.isDebugEnabled()) {

@@ -8,6 +8,7 @@ import javax.servlet.http.HttpServletResponse;
 import org.springframework.beans.factory.annotation.Required;
 import org.springframework.web.servlet.ModelAndView;
 import org.springframework.web.servlet.mvc.Controller;
+
 import vtk.repository.Path;
 import vtk.repository.Repository;
 import vtk.repository.Resource;
@@ -23,7 +24,7 @@ public class CopyBackupController implements Controller {
     public ModelAndView handleRequest(HttpServletRequest request, HttpServletResponse response) throws Exception {
         Path resourceToCopySrcUri = null;
         try {
-            String uri = URLDecoder.decode((String) request.getParameter("uri"), "UTF-8");
+            String uri = URLDecoder.decode(request.getParameter("uri"), "UTF-8");
             resourceToCopySrcUri = Path.fromStringWithTrailingSlash(uri);
         } catch (Exception e) {
             response.setStatus(HttpServletResponse.SC_FORBIDDEN);
@@ -41,7 +42,7 @@ public class CopyBackupController implements Controller {
         Resource resource = repository.retrieve(token, resourceToCopySrcUri, false);
         
         // If resource is a collection OR parent resource does NOT equals request resource
-        if(resource.isCollection() || !requestContext.getResourceURI().equals(resource.getURI().getParent())) {
+        if (resource.isCollection() || !requestContext.getResourceURI().equals(resource.getURI().getParent())) {
             response.setStatus(HttpServletResponse.SC_FORBIDDEN);
             return null;
         }

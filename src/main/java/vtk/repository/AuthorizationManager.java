@@ -281,9 +281,6 @@ public final class AuthorizationManager implements ClusterAware {
     }
 
     /**
-     * TODO: CREATE is used for old bind ("bare opprett") which is currently disabled
-     *       by not having the privilege in CREATE_AUTH_PRIVILEGES. Needs other changes
-     *       as part of VTK-2135 before it can be used again
      * <ul>
      *   <li>Privilege READ_WRITE or ALL on resource
      *   <li>Role ROOT
@@ -308,9 +305,6 @@ public final class AuthorizationManager implements ClusterAware {
     }
     
     /**
-     * TODO: CREATE is used for old bind ("bare opprett") which is currently disabled
-     *       by not having the privilege in CREATE_AUTH_PRIVILEGES. Needs other changes
-     *       as part of VTK-2135 before it can be used again
      * <ul>
      *   <li>Privilege READ_WRITE, READ_WRITE_UNPUBLISHED or ALL on resource
      *   <li>Role ROOT
@@ -776,14 +770,16 @@ public final class AuthorizationManager implements ClusterAware {
         Acl acl = resource.getAcl();
         try {
             aclAuthorize(acl, principal, privileges);
-        } catch (AuthenticationException e) {
+        }
+        catch (AuthenticationException e) {
             throw new AuthenticationException(
                     "Unauthenticated principal "
                             + " does not have any of privileges(s) "
                             + Arrays.asList(privileges) + " on resource "
                             + resource.getURI());
             
-        } catch (AuthorizationException e) {
+        }
+        catch (AuthorizationException e) {
             throw new AuthorizationException(
                     "Principal " + principal 
                     + " does not have any of privileges(s) "

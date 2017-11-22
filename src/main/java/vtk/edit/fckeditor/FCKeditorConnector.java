@@ -51,6 +51,7 @@ import org.springframework.web.servlet.ModelAndView;
 import org.springframework.web.servlet.mvc.Controller;
 import org.springframework.web.servlet.support.RequestContextUtils;
 
+import vtk.repository.AclMode;
 import vtk.repository.AuthorizationException;
 import vtk.repository.ContentInputSources;
 import vtk.repository.Namespace;
@@ -227,7 +228,7 @@ public class FCKeditorConnector implements Controller {
             if (repository.exists(token, newFolderURI)) {
                 return 101;
             }
-            repository.createCollection(token, null, newFolderURI);
+            repository.createCollection(token, null, newFolderURI, AclMode.inherit());
             return 0;
         } catch (AuthorizationException e) {
             return 103;
@@ -268,7 +269,8 @@ public class FCKeditorConnector implements Controller {
             }
 
             InputStream inStream = uploadItem.getInputStream();
-            repository.createDocument(token, null, uri, ContentInputSources.fromStream(inStream));
+            repository.createDocument(token, null, uri, ContentInputSources.fromStream(inStream),
+                    AclMode.inherit());
 
             Resource newResource = repository.retrieve(token, uri, true);
             TypeInfo typeInfo = repository.getTypeInfo(newResource);

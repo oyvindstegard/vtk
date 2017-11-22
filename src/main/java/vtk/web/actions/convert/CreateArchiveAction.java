@@ -41,6 +41,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Required;
 
+import vtk.repository.AclMode;
 import vtk.repository.ContentInputSources;
 import vtk.repository.Path;
 import vtk.repository.Repository;
@@ -72,7 +73,8 @@ public class CreateArchiveAction implements CopyAction {
         try {
             this.archiver.createArchive(token, resource, bo, properties);
             logger.info("Storing archive contents to '" + copyUri + "'");
-            Resource dest = this.repository.createDocument(token, null, copyUri, ContentInputSources.fromFile(outFile, true));
+            Resource dest = this.repository.createDocument(token, null, copyUri, 
+                    ContentInputSources.fromFile(outFile, true), AclMode.inherit());
             if (!dest.isReadRestricted()) {
                 logger.warn("The destination '" + copyUri + "' is open for access to all!");
             }

@@ -60,6 +60,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Required;
 
 import vtk.repository.Acl;
+import vtk.repository.AclMode;
 import vtk.repository.Comment;
 import vtk.repository.ContentInputSources;
 import vtk.repository.InheritablePropertiesStoreContext;
@@ -95,8 +96,8 @@ public class ResourceArchiver {
     private final String versionAttribute = "X-vrtx-archive-version";
     private final String encodedAttribute = "X-vrtx-archive-encoded";
 
-    private Map<String, String> legacyPrincipalMappings = new HashMap<String, String>();
-    private Map<String, String> legacyActionMappings = new HashMap<String, String>();
+    private Map<String, String> legacyPrincipalMappings = new HashMap<>();
+    private Map<String, String> legacyActionMappings = new HashMap<>();
 
     public interface EventListener {
         public void expanded(Path uri);
@@ -197,14 +198,14 @@ public class ResourceArchiver {
                 && "true".equals(manifest.getMainAttributes().getValue(this.encodedAttribute));
 
         JarEntry entry;
-        Set<Path> dirCache = new HashSet<Path>();
+        Set<Path> dirCache = new HashSet<>();
         List<Path> paths = base.getParent().getPaths();
         for (Path p : paths) {
             dirCache.add(p);
         }
 
         // XXX: dir modification times
-        List<Comment> comments = new ArrayList<Comment>();
+        List<Comment> comments = new ArrayList<>();
         logger.info("Writing jar entries");
         while ((entry = jarIn.getNextJarEntry()) != null) {
             String entryPath = entry.getName();
@@ -266,7 +267,7 @@ public class ResourceArchiver {
         String entryLinePrefix = "X-vrtx-comment-";
         String entryLine = null;
         String entryKey = null;
-        Map<String, StringBuilder> commentContent = new HashMap<String, StringBuilder>();
+        Map<String, StringBuilder> commentContent = new HashMap<>();
         while ((entryLine = reader.readLine()) != null) {
             entryKey = entryLine.startsWith(entryLinePrefix) ? entryLine.substring(0, entryLine.indexOf(":"))
                     : entryKey;
@@ -666,7 +667,7 @@ public class ResourceArchiver {
 
         try {
             if (propDef.isMultiple()) {
-                List<Value> values = new ArrayList<Value>();
+                List<Value> values = new ArrayList<>();
                 String[] splitValues = rawValue.split(",");
                 for (String val : splitValues) {
                     values.add(valueFormatter.stringToValue(val.trim(), format, null));
@@ -813,7 +814,7 @@ public class ResourceArchiver {
                     // Ignore close calls
                 }
             }
-            ));
+            ), AclMode.inherit());
         }
         catch (Exception e) {
             logger.error("Error writing resource '" + uri + "': " + e.getMessage());
@@ -833,7 +834,7 @@ public class ResourceArchiver {
         List<Path> path = dir.getPaths();
         for (Path p : path) {
             if (!dirCache.contains(p)) {
-                this.repository.createCollection(token, null, p);
+                this.repository.createCollection(token, null, p, AclMode.inherit());
                 dirCache.add(p);
             }
         }

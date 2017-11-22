@@ -30,24 +30,36 @@
  */
 package vtk.web.api;
 
+import java.io.InputStream;
+import java.util.List;
+
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.http.HttpStatus;
 import org.springframework.web.servlet.ModelAndView;
 import org.springframework.web.servlet.mvc.Controller;
-import vtk.repository.*;
+
+import vtk.repository.AclMode;
+import vtk.repository.ContentInputSource;
+import vtk.repository.ContentInputSources;
+import vtk.repository.IllegalOperationException;
+import vtk.repository.Path;
+import vtk.repository.ReadOnlyException;
+import vtk.repository.Repository;
+import vtk.repository.Resource;
+import vtk.repository.ResourceLockedException;
+import vtk.repository.ResourceNotFoundException;
+import vtk.repository.Revision;
 import vtk.repository.store.Revisions;
 import vtk.security.Principal;
 import vtk.util.io.IO;
 import vtk.util.io.SizeLimitException;
 import vtk.web.RequestContext;
-import vtk.web.service.WebAssertion;
 import vtk.web.service.URL;
-
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-import java.io.InputStream;
-import java.util.List;
-import org.springframework.http.HttpStatus;
+import vtk.web.service.WebAssertion;
 
 /**
  * Handler for PUT requests.
@@ -119,7 +131,8 @@ public class PutController implements Controller {
                 repository.retrieve(token, parentURI, false);
 
                 InputStream inStream = request.getInputStream();
-                resource = repository.createDocument(token, null, uri, ContentInputSources.fromStream(inStream));
+                resource = repository.createDocument(token, null, uri, 
+                        ContentInputSources.fromStream(inStream), AclMode.inherit());
             }
 
             if (exists) {

@@ -34,8 +34,10 @@ import java.io.IOException;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+
 import org.springframework.http.HttpStatus;
 
+import vtk.repository.AclMode;
 import vtk.repository.IllegalOperationException;
 import vtk.repository.Path;
 import vtk.repository.ReadOnlyException;
@@ -85,7 +87,7 @@ public class MkColController extends AbstractWebdavController {
                     .message("Rejected: " + uri)
                     .writeTo(response);
             }
-            repository.createCollection(token, null, uri);
+            repository.createCollection(token, null, uri, AclMode.inherit());
             
             responseBuilder(HttpServletResponse.SC_CREATED)
                 .header("Content-Type", "text/plain;charset=utf-8")

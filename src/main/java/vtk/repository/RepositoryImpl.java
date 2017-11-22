@@ -43,6 +43,7 @@ import java.util.Collections;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
@@ -485,8 +486,12 @@ public class RepositoryImpl implements Repository, ApplicationContextAware,
     @Transactional(readOnly=false)
     @OpLog(write = true)
     @Override
-    public Resource createCollection(@OpLogParam(name="token") String token, String lockToken, @OpLogParam Path uri) throws IllegalOperationException, AuthorizationException,
+    public Resource createCollection(@OpLogParam(name="token") String token, String lockToken, 
+            @OpLogParam Path uri, AclMode aclMode) 
+            throws IllegalOperationException, AuthorizationException,
             AuthenticationException, ResourceLockedException, ReadOnlyException, IOException {
+        Objects.requireNonNull(uri, "Argument 'uri' is NULL");
+        Objects.requireNonNull(aclMode, "Argument 'aclMode' is NULL");
         Principal principal = getPrincipal(token);
         ResourceImpl resource = this.dao.load(uri);
         if (resource != null) {
@@ -498,8 +503,15 @@ public class RepositoryImpl implements Repository, ApplicationContextAware,
         }
 
         checkLock(parent, principal, lockToken);
-        // Allow if principal has at least CREATE_UNPUBLISHED on parent
-        this.authorizationManager.authorizeCreateUnpublished(parent.getURI(), principal);
+        
+        if (!aclMode.inherited()) {
+            validateNewAcl(aclMode.acl().get());
+            this.authorizationManager.authorizeCreateWithAcl(parent.getURI(), principal);
+        }
+        else {
+            // Allow if principal has at least CREATE_UNPUBLISHED on parent
+            this.authorizationManager.authorizeCreateUnpublished(parent.getURI(), principal);
+        }
         
         checkMaxChildren(parent);
 
@@ -517,42 +529,60 @@ public class RepositoryImpl implements Repository, ApplicationContextAware,
             ResourceImpl newResource = new ResourceImpl(uri);
             newResource.setChildURIs(new ArrayList<>());
             content = getContent(newResource);
-            newResource.setAcl(parent.getAcl());
-            newResource.setInheritedAcl(true);
-            int aclIneritedFrom = parent.isInheritedAcl() ? parent.getAclInheritedFrom() : parent.getNumericId();
-            newResource.setAclInheritedFrom(aclIneritedFrom);
-            
+                        
             TypeHandlerHooks hooks = typeHandlerHooksRegistry.getTypeHandlerHooksForCreateCollection();
             if (hooks != null) {
                 try {
                     hooks.onCreateCollection(newResource);
-                } catch (Exception e) {
+                }
+                catch (Exception e) {
                     throw new TypeHandlerHookException("failed in onCreateCollection hook: " + e.getMessage(), e);
                 }
             }
             
             newResource = this.resourceHelper.create(principal, newResource, true, content);
             
+            // Set initial (inherited) permissions on new resource:
+            newResource.setAcl(parent.getAcl());
+            newResource.setInheritedAcl(true);
+            int aclIneritedFrom = parent.isInheritedAcl() ? parent.getAclInheritedFrom() : parent.getNumericId();
+            newResource.setAclInheritedFrom(aclIneritedFrom);
+
             // Store new collection resource
             newResource = this.dao.store(newResource);
+            
+            // Set permissions on new collection if passed by client:
+            if (!aclMode.inherited()) {
+                Acl acl = aclMode.acl().get();
+                validateNewAcl(acl);
+                newResource.setAcl(acl);
+                newResource.setInheritedAcl(false);
+                newResource.setAclInheritedFrom(PropertySetImpl.NULL_RESOURCE_ID);
+                newResource = this.dao.storeACL(newResource);
+            }
+            
             this.contentStore.createResource(newResource.getURI(), true);
 
             this.context.publishEvent(new ResourceCreationEvent(this, principal, (Resource) newResource.clone()));
             return (Resource) newResource.clone();
-        } catch (CloneNotSupportedException e) {
+        }
+        catch (CloneNotSupportedException e) {
             throw new IOException("Failed to clone object", e);
         }
-
     }
 
     @Transactional(readOnly=false)
     @OpLog(write = true)
     @Override
-    public void copy(@OpLogParam(name = "token") String token, String lockToken, @OpLogParam Path srcUri, @OpLogParam Path destUri, boolean overwrite, boolean copyAcl)
+    public void copy(@OpLogParam(name = "token") String token, String lockToken, @OpLogParam Path srcUri, 
+            @OpLogParam Path destUri, boolean overwrite, boolean copyAcls)
             throws IllegalOperationException, AuthorizationException, AuthenticationException,
             FailedDependencyException, ResourceOverwriteException, ResourceLockedException, ResourceNotFoundException,
             ReadOnlyException, IOException {
-
+        
+        Objects.requireNonNull(srcUri);
+        Objects.requireNonNull(destUri);
+        
         Principal principal = getPrincipal(token);
         validateCopyURIs(srcUri, destUri);
 
@@ -580,6 +610,7 @@ public class RepositoryImpl implements Repository, ApplicationContextAware,
         }
         checkLock(destParent, principal, lockToken);
         this.authorizationManager.authorizeCopy(srcUri, destUri, principal, overwrite);
+
         checkMaxChildren(destParent);
 
         if (dest != null) {
@@ -590,14 +621,15 @@ public class RepositoryImpl implements Repository, ApplicationContextAware,
 
         try {
             PropertySetImpl fixedProps = this.resourceHelper.getFixedCopyProperties(src, principal, destUri);
-            ResourceImpl newResource = src.createCopy(destUri, copyAcl ? src.getAcl() : destParent.getAcl());
+            ResourceImpl newResource = src.createCopy(destUri, copyAcls ? src.getAcl() : destParent.getAcl());
             Content content = getContent(src);
             
             TypeHandlerHooks hooks = typeHandlerHooksRegistry.getTypeHandlerHooks(src);
             if (hooks != null) {
                 try {
                     hooks.onCopy(src, dest);
-                } catch (Exception e) {
+                }
+                catch (Exception e) {
                     throw new TypeHandlerHookException("failed in onCopy hook: " + e.getMessage(), e);
                 }
             }
@@ -629,13 +661,13 @@ public class RepositoryImpl implements Repository, ApplicationContextAware,
                 publishedProp.setBooleanValue(false);
                 fixedProps.addProperty(publishedProp);
             }
-            newResource = this.dao.copy(src, destParent, newResource, copyAcl, fixedProps, uncopyableProperties);
+            newResource = this.dao.copy(src, destParent, newResource, copyAcls, fixedProps, uncopyableProperties);
             this.contentStore.copy(src.getURI(), newResource.getURI());
 
             this.context.publishEvent(new ResourceCreationEvent(this, principal, (Resource) newResource.clone()));
             this.context.publishEvent(new ContentModificationEvent(this, principal, destParent, destParentOriginal));
-
-        } catch (CloneNotSupportedException e) {
+        }
+        catch (CloneNotSupportedException e) {
             throw new IOException("Failed to clone object", e);
         }
     }
@@ -1163,8 +1195,13 @@ public class RepositoryImpl implements Repository, ApplicationContextAware,
     @Transactional(readOnly=false)
     @OpLog(write = true)
     @Override
-    public Resource createDocument(@OpLogParam(name = "token") String token, String lockToken, @OpLogParam Path uri, ContentInputSource inputContent) throws IllegalOperationException,
-            AuthorizationException, AuthenticationException, ResourceLockedException, ReadOnlyException, IOException {
+    public Resource createDocument(@OpLogParam(name = "token") String token, String lockToken, 
+            @OpLogParam Path uri, ContentInputSource inputContent, AclMode aclMode) 
+            throws IllegalOperationException, AuthorizationException, AuthenticationException, 
+            ResourceLockedException, ReadOnlyException, IOException {
+        Objects.requireNonNull(uri, "Argument 'uri' is NULL");
+        Objects.requireNonNull(inputContent, "Argument 'inputContent' is NULL");
+        Objects.requireNonNull(aclMode, "Argument 'aclMode' is NULL");
 
         Principal principal = getPrincipal(token);
         if (this.dao.load(uri) != null) {
@@ -1172,13 +1209,19 @@ public class RepositoryImpl implements Repository, ApplicationContextAware,
         }
         ResourceImpl parent = this.dao.load(uri.getParent());
         if ((parent == null) || !parent.isCollection()) {
-            throw new IllegalOperationException("Either parent doesn't exist " + "or parent is document");
+            throw new IllegalOperationException("Either parent doesn't exist or parent is document");
         }
 
         checkLock(parent, principal, lockToken);
 
-        // Allow if principal has at least privileges to create unpublished resource
-        this.authorizationManager.authorizeCreateUnpublished(parent.getURI(), principal);
+        if (!aclMode.inherited()) {
+            validateNewAcl(aclMode.acl().get());
+            this.authorizationManager.authorizeCreateWithAcl(parent.getURI(), principal);
+        }
+        else {
+            // Allow if principal has at least privileges to create unpublished resource
+            this.authorizationManager.authorizeCreateUnpublished(parent.getURI(), principal);
+        }
         
         checkMaxChildren(parent);
 
@@ -1192,10 +1235,13 @@ public class RepositoryImpl implements Repository, ApplicationContextAware,
 
             // Set up new resource
             ResourceImpl newResource = new ResourceImpl(uri);
+            
+            // Set initial (inherited) permissions on new resource:
             newResource.setAcl(parent.getAcl());
             newResource.setInheritedAcl(true);
             int aclIneritedFrom = parent.isInheritedAcl() ? parent.getAclInheritedFrom() : parent.getNumericId();
             newResource.setAclInheritedFrom(aclIneritedFrom);
+            
             
             // Check if contentType has interceptor for storage
             String contentType = MimeHelper.map(uri.getName());
@@ -1206,29 +1252,42 @@ public class RepositoryImpl implements Repository, ApplicationContextAware,
                                                              p -> getPrincipal(token), TOKEN_REFRESH_PROGRESS_INTERVAL);
                     Content content = hooks.getContentForEvaluation(newResource, getDefaultContent(newResource));
                     newResource = this.resourceHelper.create(principal, newResource, false, content);
-                } catch (UnsupportedContentException uce) {
+                }
+                catch (UnsupportedContentException uce) {
                     // Fallback-process the content, as typehandler did not accept it.
                     this.contentStore.storeContent(uri, uce.getContentInputSource(),
                                                    p -> getPrincipal(token), TOKEN_REFRESH_PROGRESS_INTERVAL);
                     // Run through type evaluation
                     newResource = this.resourceHelper.create(principal, newResource, false, getDefaultContent(newResource));
-                    
-                } catch (Exception e) {
+                }
+                catch (Exception e) {
                     throw new TypeHandlerHookException("failed in onCreateDocument hook: " + e.getMessage(), e);
                 }
-            } else {
+            }
+            else {
                 this.contentStore.storeContent(uri, inputContent,
                                                p -> getPrincipal(token), TOKEN_REFRESH_PROGRESS_INTERVAL);
                 // Run through type evaluation
                 newResource = this.resourceHelper.create(principal, newResource, false, getDefaultContent(newResource));
             }
-                    
+            
             // Store new resource
             newResource = this.dao.store(newResource);
+
+            // Store ACL if passed by client: 
+            if (!aclMode.inherited()) {
+                Acl acl = aclMode.acl().get();
+                newResource.setAcl(acl);
+                newResource.setInheritedAcl(false);
+                newResource.setAclInheritedFrom(PropertySetImpl.NULL_RESOURCE_ID);
+                newResource = this.dao.storeACL(newResource);
+            }
+            
             this.context.publishEvent(new ResourceCreationEvent(this, principal, (Resource) newResource.clone()));
 
             return (Resource) newResource.clone();
-        } catch (CloneNotSupportedException e) {
+        }
+        catch (CloneNotSupportedException e) {
             throw new IOException("Failed to clone object", e);
         }
     }
@@ -1763,7 +1822,6 @@ public class RepositoryImpl implements Repository, ApplicationContextAware,
     @Override
     public Comment addComment(@OpLogParam(name="token") String token, String lockToken, @OpLogParam Resource resource, String title, String text) {
         Principal principal = getPrincipal(token);
-
         if (resource == null) {
             throw new IllegalOperationException("Resource argument cannot be NULL");
         }
@@ -1979,6 +2037,25 @@ public class RepositoryImpl implements Repository, ApplicationContextAware,
         }
     }
 
+    /**
+     * Validates all entries in an ACL
+     */
+    private void validateNewAcl(Acl acl) {
+        Set<Privilege> actions = acl.getActions();
+        for (Privilege action : actions) {
+            Set<Principal> principals = acl.getPrincipalSet(action);
+            for (Principal principal : principals) {
+                if (!this.authorizationManager.isValidAclEntry(action, principal)) {
+                    throw new InvalidPrincipalException(principal);
+                }
+            }
+        }
+    }
+
+    /**
+     * Validates all entries in an ACL, but keeps invalid entries if they
+     * are already present in the original Acl
+     */
     private void validateNewAcl(Acl acl, Acl originalAcl) throws InvalidPrincipalException {
         Set<Privilege> actions = acl.getActions();
         for (Privilege action : actions) {
