@@ -30,6 +30,7 @@
  */
 package vtk.util;
 
+import java.util.Objects;
 import java.util.Optional;
 import java.util.function.Consumer;
 import java.util.function.Function;
@@ -43,16 +44,40 @@ import java.util.function.Supplier;
  * @param <T> the type of the result
  */
 public final class Result<T> {
+    private Throwable failure = null;
+    private T result = null;
+
+    /**
+     * Indicates whether this result is a success
+     * @return {@code true} if this is a success, 
+     * {@code false} otherwise
+     */
+    public boolean isSuccess() {
+        return failure == null;
+    }
+    
+    /**
+     * Indicates whether this result is a failure
+     * @return {@code true} if this is a failure, 
+     * {@code false} otherwise
+     */
+    public boolean isFailure() {
+        return failure != null;
+    }
     
     /**
      * The failure of this result, if present
      */
-    public final Optional<Throwable> failure;
+    public final Optional<Throwable> failure() {
+        return Optional.ofNullable(failure);
+    }
     
     /**
      * The value of this result, if present
      */
-    public final Optional<T> result;
+    public final Optional<T> result() {
+        return Optional.ofNullable(result);
+    }
     
     /**
      * Gets the value of this result if this is a success,
@@ -61,10 +86,10 @@ public final class Result<T> {
      * @throws the value of the {@link #failure} field if this is a failure
      */
     public T get() throws Throwable {
-        if (failure.isPresent()) {
-            throw failure.get();
+        if (failure != null) {
+            throw failure;
         }
-        return result.get();
+        return result;
     }
     
     /**
@@ -73,7 +98,8 @@ public final class Result<T> {
      * @return the newly created instance
      */
     public static <T> Result<T> success(T result) {
-        return new Result<>(Optional.of(result), Optional.empty());
+        Objects.requireNonNull(result);
+        return new Result<>(result, null);
     }
     
     /**
@@ -82,7 +108,8 @@ public final class Result<T> {
      * @return the newly created instance
      */
     public static <T> Result<T> failure(Throwable error) {
-        return new Result<>(Optional.empty(), Optional.of(error));
+        Objects.requireNonNull(error);
+        return new Result<>(null, error);
     }
     
     /**
@@ -93,11 +120,19 @@ public final class Result<T> {
      * @return the newly created instance
      */
     public static <T> Result<T> attempt(Supplier<T> supplier) {
+        Throwable thrown = null;
+        T result = null;
         try {
-            return new Result<>(Optional.of(supplier.get()), Optional.empty());
+            result = supplier.get();
         }
         catch (Throwable t) {
-            return new Result<>(Optional.empty(), Optional.of(t));
+            thrown = t;
+        }
+        if (thrown == null) {
+            return new Result<>(result, null);
+        }
+        else {
+            return new Result<>(null, thrown);
         }
     }
 
@@ -110,14 +145,22 @@ public final class Result<T> {
      * @return a success consisting of the mapped value, or this failure
      */
     public <U> Result<U> flatMap(Function<? super T, ? extends Result<U>> mapper) {
-        if (failure.isPresent()) {
-            return new Result<>(Optional.empty(), Optional.of(failure.get()));
+        if (failure != null) {
+            return new Result<>(null, failure);
         }
+        Result<U> mapped = null;
+        Throwable thrown = null;
         try {
-            return mapper.apply(result.get());
+            mapped = mapper.apply(result);
         }
         catch (Throwable t) {
-            return new Result<>(Optional.empty(), Optional.of(t));
+            thrown = t;
+        }
+        if (thrown == null) {
+            return Objects.requireNonNull(mapped);
+        }
+        else {
+            return new Result<>(null, thrown);
         }
     }
     
@@ -128,15 +171,22 @@ public final class Result<T> {
      * @return a success consisting of the mapped value, or this failure
      */
     public <U> Result<U> map(Function<? super T, ? extends U> mapper) {
-        if (failure.isPresent()) {
-            return new Result<>(Optional.empty(), Optional.of(failure.get()));
+        if (failure != null) {
+            return new Result<>(null, failure);
         }
+        U mapped = null;
+        Throwable thrown = null;
         try {
-            U u = mapper.apply(result.get());
-            return new Result<>(Optional.of(u), Optional.empty());
+            mapped = mapper.apply(result);
         }
         catch (Throwable t) {
-            return new Result<>(Optional.empty(), Optional.of(t));
+            thrown = t;
+        }
+        if (thrown == null) {
+            return new Result<>(mapped, thrown);
+        }
+        else {
+            return new Result<>(null, thrown);
         }
     }
     
@@ -145,8 +195,8 @@ public final class Result<T> {
      * otherwise does nothing.
      */
     public void forEach(Consumer<? super T> consumer) {
-        if (result.isPresent()) {
-            consumer.accept(result.get());
+        if (failure == null) {
+            consumer.accept(result);
         }
     }
     
@@ -158,13 +208,11 @@ public final class Result<T> {
      * with the value as mapped by the recovery function
      */
     public Result<T> recover(Function<? super Throwable, ? extends T> recovery) {
-        if (failure.isPresent()) {
-            T t = recovery.apply(failure.get());
-            return new Result<>(Optional.of(t), Optional.empty());
-        }
-        else {
+        if (failure == null) {
             return this;
         }
+        T mapped = recovery.apply(failure);
+        return new Result<>(Objects.requireNonNull(mapped), null);
     }
 
     /**
@@ -175,33 +223,89 @@ public final class Result<T> {
      * by the recovery function 
      */
     public Result<T> recoverWith(Function<? super Throwable, ? extends Result<T>> recovery) {
-        if (failure.isPresent()) {
-            return recovery.apply(failure.get());
+        if (failure == null) {
+            return this;
+        }
+        Result<T> mapped = null;
+        Throwable thrown = null;
+        try {
+            mapped = recovery.apply(failure);
+        }
+        catch (Throwable t) {
+            thrown = t;
+        }
+        if (thrown != null) {
+            return new Result<>(null, thrown);
         }
         else {
-            return this;
+            return Objects.requireNonNull(mapped);
         }
     }
 
     /**
      * Converts this result to an instance of {@link Optional}. 
-     * @return an optional with the result if this is a success, 
-     * otherwise {@link Optional#empty()}
+     * @return an optional with the result if this is a success,
+     *  otherwise {@link Optional#empty()}
      */
     public Optional<T> toOptional() {
-        return result;
+        if (failure == null) {
+            return Optional.ofNullable(result);
+        }
+        return Optional.empty();
     }
     
-    private Result(Optional<T> result, Optional<Throwable> failure) {
+    private Result(T result, Throwable failure) {
+        if (result != null && failure != null) {
+            throw new IllegalArgumentException("Either result or failure must be NULL");
+        }
+        else if (result == null && failure == null) {
+            throw new IllegalArgumentException("Both result and failure cannot be NULL");
+        }
         this.result = result;
         this.failure = failure;
     }
     
     @Override
     public String toString() {
-        if (failure.isPresent()) {
-            return "Failure(" + failure.get() + ")";
+        if (failure != null) {
+            return "Failure(" + failure + ")";
         }
-        return "Success(" + result.get() + ")";
+        return "Success(" + result + ")";
     }
+
+    @Override
+    public int hashCode() {
+        final int prime = 31;
+        int result = 1;
+        result = prime * result + ((failure == null) ? 0 : failure.hashCode());
+        result = prime * result
+                + ((this.result == null) ? 0 : this.result.hashCode());
+        return result;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj)
+            return true;
+        if (obj == null)
+            return false;
+        if (getClass() != obj.getClass())
+            return false;
+        Result other = (Result) obj;
+        if (failure == null) {
+            if (other.failure != null)
+                return false;
+        }
+        else if (!failure.equals(other.failure))
+            return false;
+        if (result == null) {
+            if (other.result != null)
+                return false;
+        }
+        else if (!result.equals(other.result))
+            return false;
+        return true;
+    }
+    
+    
 }

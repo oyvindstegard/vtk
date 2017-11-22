@@ -310,18 +310,18 @@ public final class QueryHandler implements HttpRequestHandler {
 
     private static ResponseHandler errorHandler(SuccessfulResponseHandler successHandler) {
         return (query, result, requestContext, request, response) -> {
-            if (query.failure.isPresent()) {
+            if (query.failure().isPresent()) {
                 response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
                 response.setContentType("text/plain;charset=utf-8");
                 PrintWriter writer = response.getWriter();
-                writer.write(query.failure.get().getMessage());
+                writer.write(query.failure().get().getMessage());
                 writer.write("\n" + usage + "\n");
                 writer.close();
                 return;
             }
 
-            if (result.failure.isPresent()) {
-                Throwable t = result.failure.get();
+            if (result.failure().isPresent()) {
+                Throwable t = result.failure().get();
                 if (t instanceof QueryBuilderException) {
                     // Some query-related exceptions are not  
                     // thrown until search() is called:
@@ -332,7 +332,7 @@ public final class QueryHandler implements HttpRequestHandler {
                 }
                 response.setContentType("text/plain;charset=utf-8");
                 PrintWriter writer = response.getWriter();
-                writer.write(result.failure.get().getMessage());
+                writer.write(result.failure().get().getMessage());
                 writer.write("\n" + usage + "\n");
                 writer.close();
                 return;

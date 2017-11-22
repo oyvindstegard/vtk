@@ -84,7 +84,7 @@ public final class ClientAddrAuthSpec {
         public Builder validTo(String validTo) {
             ZonedDateTime time = ZonedDateTime.parse(
                     validTo, DateTimeFormatter.ISO_ZONED_DATE_TIME);
-            this.validTo= Optional.of(time.toInstant());
+            this.validTo = Optional.of(time.toInstant());
             return this;
         }
 

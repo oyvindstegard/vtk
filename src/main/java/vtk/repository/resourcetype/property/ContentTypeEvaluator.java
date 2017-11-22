@@ -100,7 +100,7 @@ public class ContentTypeEvaluator implements PropertyEvaluator {
                                     
                                     JsonParseResult json = ctx.getContent()
                                             .getContentRepresentation(JsonParseResult.class);
-                                    if (json.value.result.isPresent()) {
+                                    if (json.value.result().isPresent()) {
                                         property.setStringValue(mapping.get(pattern));
                                         return true;
                                     }
@@ -116,12 +116,12 @@ public class ContentTypeEvaluator implements PropertyEvaluator {
 
     public void setContentPeekRegexps(Map<String, Map<String, String>> contentPeekRegexps) {
         if (contentPeekRegexps != null) {
-            this.contentPeekRegexps = new HashMap<String, Map<Pattern, String>>();
+            this.contentPeekRegexps = new HashMap<>();
             for (String contentType: contentPeekRegexps.keySet()) {
                 Map<String, String> mapping = contentPeekRegexps.get(contentType);
                 Map<Pattern, String> internal = this.contentPeekRegexps.get(contentType);
                 if (internal == null) {
-                    internal = new HashMap<Pattern, String>();
+                    internal = new HashMap<>();
                     this.contentPeekRegexps.put(contentType, internal);
                 }
                 for (String regexp: mapping.keySet()) {

@@ -114,8 +114,8 @@ public class JSContext {
             }
         })
         .thenAcceptAsync(result -> {
-            if (result.failure.isPresent()) {
-                completionHandle.completeExceptionally(result.failure.get());
+            if (result.failure().isPresent()) {
+                completionHandle.completeExceptionally(result.failure().get());
             }
             else {
                 completionHandle.complete(null);
@@ -150,18 +150,18 @@ public class JSContext {
            Result.attempt(() -> {
                // Invoke callback from engine thread
                if (callback != null && callback.isFunction()) {
-                   if (writeAttempt.failure.isPresent()) {
-                       callback.call(null, writeAttempt.failure.get(), null);
+                   if (writeAttempt.failure().isPresent()) {
+                       callback.call(null, writeAttempt.failure().get(), null);
                    }
                    else {
-                       callback.call(null, null, writeAttempt.result.get());
+                       callback.call(null, null, writeAttempt.result().get());
                    }
                }
                return true;
            }))
        .thenAcceptAsync(res -> {
-           if (res.failure.isPresent()) {
-               end(engine.jsError(res.failure.get()));
+           if (res.isFailure()) {
+               end(engine.jsError(res.failure().get()));
            }
        });
    }

@@ -45,12 +45,12 @@ public class ResourceJsonEvents implements Consumer<Result<InputStream>> {
 
     @Override
     public void accept(Result<InputStream> result) {
-        if (result.failure.isPresent()) {
-            next.accept(Result.failure(result.failure.get()));
+        if (result.failure().isPresent()) {
+            next.accept(Result.failure(result.failure().get()));
             return;
         }
         try {
-            Json.Container json = Json.parseToContainer(result.result.get());
+            Json.Container json = Json.parseToContainer(result.result().get());
             next.accept(Result.success(json));
         }
         catch (Throwable t) {

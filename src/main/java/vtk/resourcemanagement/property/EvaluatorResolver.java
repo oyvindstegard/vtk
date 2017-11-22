@@ -143,9 +143,9 @@ public class EvaluatorResolver {
                     throw new PropertyEvaluationException(
                             "Unable to get JSON representation of content", e);
                 }
-                if (json.value.failure.isPresent()) {
+                if (json.value.failure().isPresent()) {
                     throw new PropertyEvaluationException(
-                            "Unable to get JSON representation of content", json.value.failure.get());
+                            "Unable to get JSON representation of content", json.value.failure().get());
                 }
                 Optional<Json.MapContainer> document = json.asObject();
                 if (!document.isPresent()) {
@@ -336,10 +336,10 @@ public class EvaluatorResolver {
                 throw new PropertyEvaluationException(
                         "Unable to get JSON representation of content", e);
             }
-            if (json.value.failure.isPresent()) {
+            if (json.value.failure().isPresent()) {
                 throw new PropertyEvaluationException(
                         "Unable to get JSON representation of content", 
-                        json.value.failure.get());
+                        json.value.failure().get());
             }
             String expression = "properties." + propName;
             Optional<Json.MapContainer> document = json.asObject();

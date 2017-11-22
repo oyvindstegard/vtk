@@ -84,11 +84,11 @@ public class JavascriptEngine {
         
         return scriptFuture.thenComposeAsync(script -> {
             CompletableFuture<ScriptObjectMirror> future = new CompletableFuture<>();
-            if (script.compiled.failure.isPresent()) {
-                future.completeExceptionally(script.compiled.failure.get());
+            if (script.compiled.failure().isPresent()) {
+                future.completeExceptionally(script.compiled.failure().get());
             }
             else {
-                CompiledScript compiledScript = script.compiled.result.get();
+                CompiledScript compiledScript = script.compiled.result().get();
                 Bindings bindings = engine.createBindings();
                 ScriptContext scriptContext = new SimpleScriptContext();
                 scriptContext.setBindings(bindings, ScriptContext.ENGINE_SCOPE);
@@ -122,7 +122,7 @@ public class JavascriptEngine {
             Result<InputSource> source = sourceProvider.apply(identifier);
             if (cached != null) {
                 try {
-                    if (source.result.isPresent() && source.get().getLastModified().isPresent()) {
+                    if (source.result().isPresent() && source.get().getLastModified().isPresent()) {
                         if (cached.timestamp.isAfter(source.get().getLastModified().get())) {
                             return CompletableFuture.completedFuture(cached);
                         }

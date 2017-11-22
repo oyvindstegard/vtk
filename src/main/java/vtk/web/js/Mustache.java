@@ -104,11 +104,11 @@ public class Mustache implements Module {
                     engine.execute(() -> {
                         // Invoke callback from engine thread
                         try {
-                            if (result.failure.isPresent()) {
-                                callback.call(null, result.failure.get(), null);
+                            if (result.failure().isPresent()) {
+                                callback.call(null, result.failure().get(), null);
                             }
                             else {
-                                callback.call(null, null, result.result.get());
+                                callback.call(null, null, result.result().get());
                             }
                         }
                         catch (Throwable t) {

@@ -89,7 +89,7 @@ public class JSONObjectSelectAssertion implements RepositoryContentEvaluationAss
         
         try {
             JsonParseResult result = content.get().getContentRepresentation(JsonParseResult.class);
-            if (result.value.failure.isPresent()) {
+            if (result.value.failure().isPresent()) {
                 return false;
             }
             Optional<Json.MapContainer> document = result.asObject();

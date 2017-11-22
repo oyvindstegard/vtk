@@ -67,7 +67,7 @@ public class ValidDocumentAssertion implements RepositoryContentEvaluationAssert
             JsonParseResult json = content.get()
                     .getContentRepresentation(JsonParseResult.class);
             
-            if (json.value.failure.isPresent()) {
+            if (json.value.failure().isPresent()) {
                 return false;
             }
             Optional<Json.MapContainer> document = json.asObject();

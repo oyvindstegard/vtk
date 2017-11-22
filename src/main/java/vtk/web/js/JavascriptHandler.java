@@ -125,10 +125,10 @@ public class JavascriptHandler implements HttpRequestHandler {
             HttpServletResponse response) throws IOException {
         
         Result<Path> scriptLocation = resolver.resolve(request);
-        if (scriptLocation.failure.isPresent()) {
-            throw new RuntimeException(scriptLocation.failure.get());
+        if (scriptLocation.failure().isPresent()) {
+            throw new RuntimeException(scriptLocation.failure().get());
         }
-        Path scriptURI = scriptLocation.result.get();
+        Path scriptURI = scriptLocation.result().get();
         BufferedResponse bufferedResponse = new BufferedResponse(200);
         
         

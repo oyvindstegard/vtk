@@ -127,11 +127,11 @@ public class Repo implements Module {
                     // Invoke callback from engine thread
                     if (callback != null && callback.isFunction()) {
                         try {
-                            if (result.failure.isPresent()) {
-                                callback.call(null, result.failure.get(), null);
+                            if (result.failure().isPresent()) {
+                                callback.call(null, result.failure().get(), null);
                             }
                             else {
-                                callback.call(null, null, result.result.get());
+                                callback.call(null, null, result.result().get());
                             }
                         }
                         catch (Throwable t) {

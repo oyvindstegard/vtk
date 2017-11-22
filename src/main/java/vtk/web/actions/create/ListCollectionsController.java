@@ -81,8 +81,8 @@ public class ListCollectionsController implements HttpRequestHandler {
                 })
                 .map(str -> Result.attempt(() -> Path.fromString(str)));
 
-        if (uri.isPresent() && uri.get().failure.isPresent()) {
-            badRequest(uri.get().failure.get(), response);
+        if (uri.isPresent() && uri.get().failure().isPresent()) {
+            badRequest(uri.get().failure().get(), response);
         }
         else {
             String token = RequestContext.getRequestContext(request).getSecurityToken();

@@ -62,11 +62,7 @@ public class JsonClientAddrSpec
 
     @Override
     public void accept(Result<Json.Container> json) {
-        if (json.failure.isPresent()) {
-            json.failure.get().printStackTrace();
-            return;
-        }
-        Container container = json.result.get();
+        Container container = json.result().get();
         if (!container.isArray()) {
             return;
         }

@@ -66,7 +66,7 @@ public class JsonExtractEvaluator implements PropertyEvaluator {
             try {
                 JsonParseResult json = ctx.getContent()
                         .getContentRepresentation(JsonParseResult.class);
-                if (json.value.failure.isPresent()) {
+                if (json.value.failure().isPresent()) {
                     return false;
                 }
                 Optional<Json.MapContainer> document = json.asObject();

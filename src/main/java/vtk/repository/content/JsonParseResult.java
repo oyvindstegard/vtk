@@ -44,10 +44,10 @@ public final class JsonParseResult {
     }
     
     public Optional<Json.MapContainer> asObject() {
-        if (value.failure.isPresent()) {
+        if (value.failure().isPresent()) {
             return Optional.empty();
         }
-        Json.Container container = value.result.get();
+        Json.Container container = value.result().get();
         if (container.isArray()) {
             return Optional.empty();
         }
@@ -55,10 +55,10 @@ public final class JsonParseResult {
     }
     
     public Optional<Json.ListContainer> asArray() {
-        if (value.failure.isPresent()) {
+        if (value.failure().isPresent()) {
             return Optional.empty();
         }
-        Json.Container container = value.result.get();
+        Json.Container container = value.result().get();
         if (!container.isArray()) {
             return Optional.empty();
         }

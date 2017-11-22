@@ -72,21 +72,21 @@ public class CopyApiHandler implements HttpRequestHandler {
     private ApiResponseBuilder  handlePost(HttpServletRequest request,
             HttpServletResponse response) {
         Result<CopyRequest> copyRequest = copyRequest(request);
-        if (copyRequest.failure.isPresent()) {
+        if (copyRequest.failure().isPresent()) {
             return new ApiResponseBuilder(HttpServletResponse.SC_BAD_REQUEST)
                 .header("Content-Type", "text/plain;charset=utf-8")
-                .message(copyRequest.failure.get().getMessage());
+                .message(copyRequest.failure().get().getMessage());
         }
         RequestContext requestContext = RequestContext.getRequestContext(request);
         Result<ApiResponseBuilder> result = 
-                doCopy(copyRequest.result.get(), requestContext);
+                doCopy(copyRequest.result().get(), requestContext);
         
-        if (result.failure.isPresent()) {
+        if (result.isFailure()) {
             return new ApiResponseBuilder(HttpServletResponse.SC_INTERNAL_SERVER_ERROR)
                 .header("Content-Type", "text/plain;charset=utf-8")
-                .message(result.failure.get().getMessage());
+                .message(result.failure().get().getMessage());
         }
-        return result.result.get();
+        return result.result().get();
     }
     
     private ApiResponseBuilder unknownMethod(HttpServletRequest request, 

@@ -92,8 +92,8 @@ public class ActionTemplateHandler implements HttpRequestHandler {
         Result<String> templateName = templateName(request);
         Result<NodeList> template = templateName.flatMap(name -> templateProvider.apply(name));
         Result<Boolean> rendered = template.flatMap(nodes -> render(nodes, request, response));
-        if (rendered.failure.isPresent()) {
-            throw new RuntimeException(rendered.failure.get());
+        if (rendered.isFailure()) {
+            throw new RuntimeException(rendered.failure().get());
         }
     }
     
@@ -123,8 +123,8 @@ public class ActionTemplateHandler implements HttpRequestHandler {
             Result<InputSource> source = sourceProvider.apply(name);
             CompiledTemplate cached = cache.get(name);
             
-            if (cached != null && source.result.isPresent()) {
-                Optional<Instant> sourceModified = source.result.get().getLastModified();
+            if (cached != null && source.result().isPresent()) {
+                Optional<Instant> sourceModified = source.result().get().getLastModified();
                 if (sourceModified.isPresent() && !sourceModified.get().isAfter(cached.timestamp)) {
                     return cached.template;
                 }

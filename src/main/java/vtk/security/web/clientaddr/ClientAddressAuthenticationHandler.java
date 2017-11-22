@@ -88,11 +88,11 @@ public class ClientAddressAuthenticationHandler
             throws AuthenticationProcessingException,
             InvalidAuthenticationRequestException {
         Result<Optional<String>> auth = auth(req);
-        if (auth.failure.isPresent()) {
+        if (auth.failure().isPresent()) {
             /// XXX: throw AuthenticationProcessingException()?
             return false;
         }
-        if (!auth.result.get().isPresent()) {
+        if (!auth.result().get().isPresent()) {
             return false;
         }
         return true;
@@ -104,18 +104,18 @@ public class ClientAddressAuthenticationHandler
             InvalidAuthenticationRequestException {
         Result<Optional<String>> auth = auth(req);
 
-        if (auth.failure.isPresent()) {
-            throw new AuthenticationProcessingException(auth.failure.get());
+        if (auth.failure().isPresent()) {
+            throw new AuthenticationProcessingException(auth.failure().get());
         }
-        Optional<String> uid = auth.result.get();
+        Optional<String> uid = auth.result().get();
         if (!uid.isPresent()) {
             throw new AuthenticationException("No match for client: " + req.getRemoteAddr());
         }
         Result<Optional<Principal>> principal = principal(uid.get());
-        if (principal.failure.isPresent()) {
-            throw new AuthenticationProcessingException(principal.failure.get());
+        if (principal.failure().isPresent()) {
+            throw new AuthenticationProcessingException(principal.failure().get());
         }
-        if (!principal.result.get().isPresent()) {
+        if (!principal.result().get().isPresent()) {
             throw new AuthenticationException("Invalid principal: " + uid.get());
         }
         return new AuthResult(uid.get());
@@ -151,8 +151,8 @@ public class ClientAddressAuthenticationHandler
                 resp.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
                 Writer writer = resp.getWriter();
                 Result<Optional<String>> auth = auth(req);
-                if (auth.result.isPresent()) {
-                    Optional<String> uid = auth.result.get();
+                if (auth.result().isPresent()) {
+                    Optional<String> uid = auth.result().get();
                     if (uid.isPresent()) {
                         writer.write("Invalid principal: " + uid.get());
                     }
@@ -208,10 +208,10 @@ public class ClientAddressAuthenticationHandler
         List<Result<ClientAddrAuthSpec>> config = provider.get();
         
         for (Result<ClientAddrAuthSpec> entry: config) {
-            if (entry.failure.isPresent()) {
-                return Result.failure(entry.failure.get());
+            if (entry.failure().isPresent()) {
+                return Result.failure(entry.failure().get());
             }
-            ClientAddrAuthSpec spec = entry.result.get();
+            ClientAddrAuthSpec spec = entry.result().get();
             Matcher m = spec.net.matcher(clientAddr);
             if (!m.matches()) {
                 continue;
