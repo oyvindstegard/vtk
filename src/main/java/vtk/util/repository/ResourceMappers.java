@@ -60,6 +60,8 @@ import vtk.repository.resourcetype.PropertyTypeDefinition;
 import vtk.repository.resourcetype.Value;
 import vtk.security.Principal;
 import vtk.util.text.Json;
+import vtk.util.text.Json.ListContainer;
+import vtk.util.text.Json.MapContainer;
 import vtk.util.text.JsonStreamer;
 import vtk.web.service.URL;
 
@@ -79,6 +81,8 @@ public final class ResourceMappers {
     @FunctionalInterface
     public static interface ValueMapper<T> extends BiFunction<PropertyTypeDefinition, Value, T> {};
     
+    @FunctionalInterface
+    public static interface AclMapper<T> extends Function<Acl, T> {};
     
     @FunctionalInterface
     public static interface MapperFactory<T> {
@@ -451,6 +455,55 @@ public final class ResourceMappers {
         };
     }
 
+    public static AclMapper<Json.MapContainer> jsonObjectAclMapper() {
+        return acl -> {
+            Json.MapContainer container = new Json.MapContainer();
+            writeAcl(acl, jsonObjectAclWriter(container));
+            return container;
+        };
+    }
+    
+    public static Function<Json.MapContainer, Acl> defaultAclJsonMapper(
+            BiFunction<String, Principal.Type, Principal> principalFactory) {
+    return map -> {
+        Acl acl = Acl.EMPTY_ACL;
+
+        for (Privilege action: Privilege.values()) {
+            if (map.containsKey(action.getName())) {
+                MapContainer entry = map.objectValue(action.getName());
+
+                if (entry.containsKey("users")) {
+                    ListContainer list = entry.arrayValue("users");
+                    for (Object user: list) {
+                        acl = acl.addEntry(action, 
+                                principalFactory.apply(
+                                        user.toString(), Principal.Type.USER));
+                    }
+                }
+                if (entry.containsKey("groups")) {
+                    ListContainer list = entry.arrayValue("groups");
+                    for (Object group: list) {
+                        acl = acl.addEntry(action, 
+                                principalFactory.apply(
+                                        group.toString(), Principal.Type.GROUP));
+                    }
+                }
+                if (entry.containsKey("pseudo")) {
+                    ListContainer list = entry.arrayValue("pseudo");
+                    for (Object pseudo: list) {
+                        acl = acl.addEntry(action, 
+                                principalFactory.apply(
+                                        pseudo.toString(), Principal.Type.PSEUDO));
+                    }
+                }
+            }
+        }
+        return acl;
+    };
+}
+
+
+
     private static void writeAcl(Acl acl, BiConsumer<Privilege, Map<String, List<Principal>>> writer) {
         Set<Privilege> actions = acl.getActions();
         
@@ -522,7 +575,7 @@ public final class ResourceMappers {
     }
     
     
-    private static ValueMapper<Object> jsonValueFormatter(Supplier<Locale> locale) {
+    public static ValueMapper<Object> jsonValueFormatter(Supplier<Locale> locale) {
         return (def, value) -> { 
             if (def.getType() == Type.DATE) {
                 return def.getValueFormatter().valueToString(value, "iso-8601-short", locale.get());
@@ -546,7 +599,7 @@ public final class ResourceMappers {
         };
     }
     
-    private static ValueMapper<String> defaultValueFormatter(Locale locale) {
+    public static ValueMapper<String> defaultValueFormatter(Locale locale) {
         return (def, value) -> {
             if (def.getType() == Type.DATE) {
                 return def.getValueFormatter().valueToString(value, "iso-8601-short", locale);
@@ -558,7 +611,7 @@ public final class ResourceMappers {
         };
     }
     
-    
+
     private static BiConsumer<Privilege, Map<String, List<Principal>>> xmlStreamingAclWriter(XMLStreamWriter xml) {
         return (privilege, entry) -> {
             try {
