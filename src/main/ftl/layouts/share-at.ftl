@@ -7,30 +7,19 @@
   - Required model data:
   -   socialWebsiteLinks      (list of TemplateLinksProvider.Link)
   -
-  - Optional model data:
-  -   use-facebook-api        (decorator component param)
-  -
   -->
 <#import "/lib/vtk.ftl" as vrtx />
 <#import "/lib/view-utils.ftl" as viewutils />
-
-<#assign useFacebookAPI = .vars["use-facebook-api"]?? && .vars["use-facebook-api"]?string != "false" />
 
 <#if socialWebsiteLinks?has_content>
 <div class="vrtx-share-at-component">
   <ul>
   <#list socialWebsiteLinks as link>
-     <#if (link.name = "FacebookAPI" && !useFacebookAPI)>
-       <#assign url = false  />
-       <#assign name = link.name />
-     <#else>
-       <#assign url = link.url />
-       <#assign name = link.name />
-     </#if>
+     <#assign url = link.url />
+     <#assign name = link.name />
 
      <#if url?is_string>
-       <li class="vrtx-share-at-${name}-${useFacebookAPI?string}">
-         <#if name = "FacebookAPI"><#assign name = "Facebook" /></#if>
+       <li class="vrtx-share-at-${name}">
          <a href="${url}" target="_blank" class="${name?lower_case}">
            <@vrtx.msg code="decorating.shareAtComponent.title" args=[name] /></a>
        </li>
