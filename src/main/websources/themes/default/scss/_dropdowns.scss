@@ -119,40 +119,8 @@ ul.publishing-document {
 
 .forms-new ul.button-row li,
 .forms-new ul.button-row-small li {
-  float: left;
-
-  a,
-  input[type='submit'] {
-    @include borderRadius(0px);
-  }
   &.dropdown-init {
     float: none;
-  }
-}
-
-ul.button-row,
-ul.button-row-small {
-  li.first {
-    a,
-    input[type='submit'] {
-      -webkit-border-top-left-radius: 5px;
-      -webkit-border-bottom-left-radius: 5px;
-      -moz-border-radius-topleft: 5px;
-      -moz-border-radius-bottomleft: 5px;
-      border-top-left-radius: 5px;
-      border-bottom-left-radius: 5px;
-    }
-  }
-  li.last {
-    a,
-    input[type='submit'] {
-      -webkit-border-top-right-radius: 5px;
-      -webkit-border-bottom-right-radius: 5px;
-      -moz-border-radius-topright: 5px;
-      -moz-border-radius-bottomright: 5px;
-      border-top-right-radius: 5px;
-      border-bottom-right-radius: 5px;
-    }
   }
 }
 
