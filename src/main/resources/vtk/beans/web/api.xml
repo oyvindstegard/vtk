@@ -20,6 +20,36 @@
     </property>
   </bean>
 
+ 
+ <bean id="api.aclTemplateManger" class="vtk.util.repository.ConfigurableAclTemplateManager">
+    <constructor-arg ref="api.retrieveFunction" />
+  </bean>
+
+  <bean id="api.aclTemplateManager.configFile.uri" parent="uri.abstractBean">
+    <property name="arguments" value="${permissions.aclTemplates.config}" />
+  </bean>
+
+  <bean id="api.aclTemplateManager.configFileEvents" class="vtk.util.repository.ResourceContentEvents">
+    <constructor-arg name="uri" ref="api.aclTemplateManager.configFile.uri" />
+    <constructor-arg name="repository" ref="repository" />
+    <constructor-arg name="token" ref="trustedToken" />
+    <constructor-arg name="next" ref="api.aclTemplateManger" />
+  </bean>
+  <bean parent="cluster.componentRegistration">
+    <property name="component" ref="api.aclTemplateManager.configFileEvents" />
+  </bean>
+
+
+  <bean id="api.retrieveFunction" class="org.springframework.beans.factory.config.MethodInvokingFactoryBean">
+   <property name="staticMethod" value="vtk.util.repository.ResourceFunctions.acl" />
+   <property name="arguments">
+     <list>
+       <ref bean="repository" />
+       <ref bean="trustedToken" />
+     </list>
+   </property>
+ </bean>
+
   <bean id="api.copyService" class="vtk.web.service.ServiceImpl">
     <property name="parent" ref="manageService" />
     <property name="order" value="-101" />
