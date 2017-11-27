@@ -40,7 +40,6 @@ import java.io.UncheckedIOException;
 import java.util.Optional;
 import java.util.function.Function;
 
-import org.junit.Before;
 import org.junit.Test;
 
 import vtk.repository.Acl;
@@ -54,50 +53,57 @@ import vtk.util.io.IO;
 
 public class ConfigurableAclTemplateManagerTest {
 
-    @Before
-    public void setUp() throws Exception { }
+    // Sample ACLs (only defined for '/' and '/vrtx'):
+    private Function<Path,Result<Acl>> baseAcls = uri -> {
+        if (Path.ROOT.equals(uri)) {
+            return Result.success(Acl.EMPTY_ACL
+                    .addEntry(Privilege.ALL, 
+                            new PrincipalImpl("admin@localhost", Principal.Type.USER))
+                    .addEntry(Privilege.READ_WRITE, 
+                            new PrincipalImpl("user1@localhost", Principal.Type.USER))
+                    .addEntry(Privilege.READ, 
+                            new PrincipalImpl("all", Principal.Type.PSEUDO)));
+        }
+        else if (Path.fromString("/vrtx").equals(uri)) {
+            return Result.success(Acl.EMPTY_ACL
+                    .addEntry(Privilege.ALL, 
+                            new PrincipalImpl("admin@localhost", Principal.Type.USER))
+                    .addEntry(Privilege.ALL, 
+                            new PrincipalImpl("user1@localhost", Principal.Type.USER))
+                    .addEntry(Privilege.READ_WRITE, 
+                            new PrincipalImpl("user1@localhost", Principal.Type.USER)));
+
+        }
+        return Result.failure(new ResourceNotFoundException(uri));
+    };
+    
+    // Sample config file (additive entry for '/', non-additive entry for '/vrtx'):
+    private String sampleTemplate = "{\n" + 
+            "  \"/\" :\n" + 
+            "     { \"acl\" { \"all\": { \"users\": [ \"${user}\" ] }},\n" + 
+            "       \"type\": \"additive\" }, \n" +
+            "  \"/vrtx\" :\n" + 
+            "     { \"acl\" { \"read\" : { \"groups\" : [ \"some-group\" ] },\n" + 
+            "             \"all\": { \"users\": [ \"${user}\" ] }}}}"
+            ;
+
+    
     
     @Test
-    public void test1() {
-        Function<Path,Result<Acl>> baseAcls = uri -> {
-            if (Path.ROOT.equals(uri)) {
-                return Result.success(Acl.EMPTY_ACL
-                        .addEntry(Privilege.ALL, 
-                                new PrincipalImpl("admin@localhost", Principal.Type.USER))
-                        .addEntry(Privilege.READ_WRITE, 
-                                new PrincipalImpl("user1@localhost", Principal.Type.USER))
-                        .addEntry(Privilege.READ, 
-                                new PrincipalImpl("all", Principal.Type.PSEUDO)));
-            }
-            else if (Path.fromString("/vrtx").equals(uri)) {
-                return Result.success(Acl.EMPTY_ACL
-                        .addEntry(Privilege.ALL, 
-                                new PrincipalImpl("admin@localhost", Principal.Type.USER))
-                        .addEntry(Privilege.ALL, 
-                                new PrincipalImpl("user1@localhost", Principal.Type.USER))
-                        .addEntry(Privilege.READ_WRITE, 
-                                new PrincipalImpl("user1@localhost", Principal.Type.USER)));
-
-            }
-            return Result.failure(new ResourceNotFoundException(uri));
-        };
-        String inputTemplate = "{\n" + 
-                "  \"/\" :\n" + 
-                "     { \"acl\" { \"all\": { \"users\": [ \"${user}\" ] }},\n" + 
-                "       \"type\": \"additive\" }, \n" +
-                "  \"/vrtx\" :\n" + 
-                "     { \"acl\" { \"read\" : { \"groups\" : [ \"some-group\" ] },\n" + 
-                "             \"all\": { \"users\": [ \"${user}\" ] }}}}"
-                ;
-
-        ConfigurableAclTemplateManager mgr = manager(inputTemplate, baseAcls);
-
+    public void testMissingEntry() {
+        ConfigurableAclTemplateManager mgr = manager(sampleTemplate, baseAcls);
         assertFalse(mgr.template(Path.ROOT.extend("not-found")).isPresent());
-        
-        Principal user = new PrincipalImpl("user2@localhost", Principal.Type.USER);
-        
+    }
+
+    
+    @Test
+    public void testAdditiveTemplate() {
+        ConfigurableAclTemplateManager mgr = manager(sampleTemplate, baseAcls);
+
         Optional<AclTemplate> root = mgr.template(Path.ROOT);
         assertTrue(root.isPresent());
+        
+        Principal user = new PrincipalImpl("user2@localhost", Principal.Type.USER);
         Acl acl = root.get().resolve(user);
         Acl expected = Acl.EMPTY_ACL
                 .addEntry(Privilege.READ_WRITE, 
@@ -115,6 +121,21 @@ public class ConfigurableAclTemplateManagerTest {
         assertTrue(vrtx.isPresent());
         acl = vrtx.get().resolve(user);
         expected = Acl.EMPTY_ACL
+                .addEntry(Privilege.READ, new PrincipalImpl("some-group", Principal.Type.GROUP))
+                .addEntry(Privilege.ALL, user);
+        assertEquals(acl, expected);
+    }
+
+    @Test
+    public void testNonAdditiveTemplate() {
+        ConfigurableAclTemplateManager mgr = manager(sampleTemplate, baseAcls);
+
+        Optional<AclTemplate> vrtx = mgr.template(Path.fromString("/vrtx"));
+        assertTrue(vrtx.isPresent());
+        
+        Principal user = new PrincipalImpl("user2@localhost", Principal.Type.USER);
+        Acl acl = vrtx.get().resolve(user);
+        Acl expected = Acl.EMPTY_ACL
                 .addEntry(Privilege.READ, new PrincipalImpl("some-group", Principal.Type.GROUP))
                 .addEntry(Privilege.ALL, user);
         assertEquals(acl, expected);
