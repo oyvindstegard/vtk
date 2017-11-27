@@ -149,7 +149,6 @@
     <property name="manageService" ref="manageService" />
     <property name="editServices">
       <list>
-        <ref bean="simpleMessageEditor" />
         <ref bean="ajaxeditor.service" />
         <ref bean="structuredResources.editService" />
         <ref bean="editor.service" />
