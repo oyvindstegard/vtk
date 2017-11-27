@@ -7,6 +7,7 @@
     <property name="order" value="-9900" />
     <property name="assertions">
       <list>
+        <ref bean="resourceTypeIsMessage" />
         <ref bean="requiresWritePermissionAssertion" />
         <bean class="vtk.web.service.RequestParameterAssertion">
           <property name="parameterName" value="mode" />
@@ -22,6 +23,15 @@
         <entry key="x-prevent-decorating" value="true" />
       </map>
     </property>
+  </bean>
+  
+  <bean id="resourceTypeIsMessage" class="vtk.web.service.RepositoryAssertionWrapper">
+    <constructor-arg name="assertion">
+      <bean class="vtk.repository.resourcetype.ResourceTypeAssertion"
+            parent="repositoryAware">
+        <property name="resourceType" value="structured-message" />
+      </bean>
+    </constructor-arg>
   </bean>
 
   <bean id="messageEditorHandler" class="vtk.resourcemanagement.edit.SimpleStructuredEditor">
