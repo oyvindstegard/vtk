@@ -33,17 +33,13 @@ package vtk.util.repository;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.UncheckedIOException;
-import java.nio.charset.StandardCharsets;
 import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Optional;
 import java.util.function.BiFunction;
 import java.util.function.Consumer;
 import java.util.function.Function;
-
-import org.eclipse.jetty.util.IO;
 
 import vtk.repository.Acl;
 import vtk.repository.Path;
@@ -136,18 +132,16 @@ public class ConfigurableAclTemplateManager
     }
 
     @Override
-    public void accept(Result<InputStream> result) {
-        Result<String> stringResult = result.flatMap(stream -> Result.attempt(() -> {
-            try {
-                return IO.toString(stream, StandardCharsets.UTF_8);
-            }
-            catch (IOException e) {
-                throw new UncheckedIOException(e);
-            }
-        }));
-        
-        Result<MapContainer> mapResult = stringResult.flatMap(str -> 
-            Result.attempt(() -> Json.parseToContainer(str).asObject()));
+    public void accept(Result<InputStream> config) {
+        Result<MapContainer> mapResult = config.flatMap(stream -> 
+            Result.attempt(() -> {
+                try {
+                    return Json.parseToContainer(stream).asObject();
+                }
+                catch (IOException e) {
+                    throw new UncheckedIOException(e);
+                }
+            }));
         
         Result<Map<Path, Result<Template>>> templatesMap = mapResult.flatMap(map -> {
             return Result.attempt(() -> {
@@ -156,13 +150,8 @@ public class ConfigurableAclTemplateManager
             for (String key: map.keySet()) {
                 Path uri = Path.fromString(key);
                 entries.put(uri, Result.attempt(() -> {
-                    MapContainer objectValue = Objects
-                            .requireNonNull(map.objectValue(key), 
-                                    "Entry for key '" + key + "' is NULL");
-                    MapContainer aclObject = Objects
-                            .requireNonNull(objectValue.objectValue("acl"), 
-                                    "Missing 'acl' entry in object: " + objectValue);
-                    
+                    MapContainer objectValue = map.objectValue(key);
+                    MapContainer aclObject = objectValue.objectValue("acl"); 
                     aclObject.keySet().forEach(priv -> {
                         if (!Privilege.exists(priv)) {
                             throw new IllegalArgumentException("Invalid privilege: '" + priv + "'");
