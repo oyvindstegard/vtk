@@ -30,9 +30,15 @@
  */
 package vtk.repository.search.query;
 
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Optional;
+import java.util.Set;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import org.apache.lucene.index.Term;
 import org.apache.lucene.search.BooleanClause;
 import org.apache.lucene.search.BooleanQuery;
@@ -44,14 +50,19 @@ import static org.junit.Assert.*;
 import static org.mockito.Mockito.*;
 import vtk.repository.Namespace;
 import vtk.repository.ResourceTypeTree;
+import vtk.repository.index.mapping.AclFields;
 import vtk.repository.index.mapping.DocumentMapper;
 import vtk.repository.resourcetype.PropertyType;
 import vtk.repository.resourcetype.PropertyTypeDefinition;
 import vtk.repository.resourcetype.ValueFactoryImpl;
 import vtk.repository.search.Search;
-import vtk.repository.search.query.security.AuthorizationFilterQueryFactory;
 import vtk.repository.search.query.security.SimpleAuthorizationFilterQueryFactory;
+import vtk.security.Principal;
 import vtk.security.PrincipalFactory;
+import vtk.security.PrincipalImpl;
+import vtk.security.PrincipalManager;
+import vtk.security.roles.RoleManager;
+import vtk.security.token.TokenManager;
 import vtk.testing.mocktypes.MockPrincipalFactory;
 
 /**
@@ -60,22 +71,52 @@ import vtk.testing.mocktypes.MockPrincipalFactory;
 public class LuceneQueryBuilderTest {
 
     private final DocumentMapper documentMapper;
-    private final AuthorizationFilterQueryFactory authorizationFilterQueryFactory;
+    private final SimpleAuthorizationFilterQueryFactory authorizationFilterQueryFactory;
     private final PropertyTypeDefinition publishedPropDef;
     private final PropertyTypeDefinition unpublishedCollectionPropDef;
     private final ResourceTypeTree resourceTypeTree;
     private final IndexSearcher searcher;
 
+    private final Principal user = new PrincipalImpl("user@uio.no", Principal.Type.USER);
+    private final Principal root = new PrincipalImpl("root@localhost", Principal.Type.USER);
+    private final String userToken = "userToken";
+    private final String rootToken = "zuper";
+    private final Set<Principal> memberGroups =
+            new HashSet<>(Arrays.asList(
+                    new Principal[]{
+                        new PrincipalImpl("bargroup@uio.no", Principal.Type.GROUP),
+                        new PrincipalImpl("gpl-is-the-best@uio.no", Principal.Type.GROUP),
+                        new PrincipalImpl("foogroup@uio.no", Principal.Type.GROUP)}));
+
     private final LuceneQueryBuilder instance;
 
     public LuceneQueryBuilderTest() {
-        authorizationFilterQueryFactory = mock(AuthorizationFilterQueryFactory.class);
+
+        final RoleManager rm = mock(RoleManager.class);
+        final PrincipalManager pm = mock(PrincipalManager.class);
+        final TokenManager tm = mock(TokenManager.class);
+
+        when(rm.hasRole(root, RoleManager.Role.ROOT)).thenReturn(true);
+        when(rm.hasRole(root, RoleManager.Role.READ_EVERYTHING)).thenReturn(true);
+        when(rm.hasRole(user, RoleManager.Role.ROOT)).thenReturn(false);
+        when(rm.hasRole(user, RoleManager.Role.READ_EVERYTHING)).thenReturn(false);
+
+        when(pm.getMemberGroups(root)).thenReturn(Collections.emptySet());
+        when(pm.getMemberGroups(user)).thenReturn(memberGroups);
+
+        when(tm.getPrincipal(userToken)).thenReturn(user);
+        when(tm.getPrincipal(rootToken)).thenReturn(root);
+        when(tm.getPrincipal(null)).thenReturn(null);
+
+        authorizationFilterQueryFactory = new SimpleAuthorizationFilterQueryFactory();
+        authorizationFilterQueryFactory.setRoleManager(rm);
+        authorizationFilterQueryFactory.setPrincipalManager(pm);
+        authorizationFilterQueryFactory.setTokenManager(tm);
         
         publishedPropDef = mock(PropertyTypeDefinition.class);
         when(publishedPropDef.getName()).thenReturn("published");
         when(publishedPropDef.getNamespace()).thenReturn(Namespace.DEFAULT_NAMESPACE);
         when(publishedPropDef.getType()).thenReturn(PropertyType.Type.BOOLEAN);
-
 
         unpublishedCollectionPropDef = mock(PropertyTypeDefinition.class);
         when(unpublishedCollectionPropDef.getName()).thenReturn("unpublishedCollection");
@@ -104,21 +145,15 @@ public class LuceneQueryBuilderTest {
 
     @Test
     public void testBuildSearchFilterQuery_root() {
-
-        when(authorizationFilterQueryFactory.authorizationFilterQuery("pretend-super-token")).thenReturn(Optional.empty());
-
         Search s = new Search().clearAllFilterFlags();
-        Optional<org.apache.lucene.search.Query> filter = instance.buildSearchFilterQuery("pretend-super-token", s);
+        Optional<org.apache.lucene.search.Query> filter = instance.buildSearchFilterQuery(rootToken, s);
         assertFalse(filter.isPresent());
     }
 
     @Test
     public void testBuildSearchFilterQuery_root_published() {
-
-        when(authorizationFilterQueryFactory.authorizationFilterQuery("pretend-super-token")).thenReturn(Optional.empty());
-
         Search s = new Search().clearAllFilterFlags().addFilterFlag(Search.FilterFlag.UNPUBLISHED);
-        Optional<org.apache.lucene.search.Query> filter = instance.buildSearchFilterQuery("pretend-super-token", s);
+        Optional<org.apache.lucene.search.Query> filter = instance.buildSearchFilterQuery(rootToken, s);
         assertTrue(filter.isPresent());
         assertEquals("p_published:true", filter.get().toString());
         
@@ -126,24 +161,17 @@ public class LuceneQueryBuilderTest {
 
     @Test
     public void testBuildSearchFilterQuery_root_unpublishedCollection() {
-
-        when(authorizationFilterQueryFactory.authorizationFilterQuery("pretend-super-token")).thenReturn(Optional.empty());
-
         Search s = new Search().clearAllFilterFlags().addFilterFlag(Search.FilterFlag.UNPUBLISHED_COLLECTIONS);
-        Optional<org.apache.lucene.search.Query> filter = instance.buildSearchFilterQuery("pretend-super-token", s);
+        Optional<org.apache.lucene.search.Query> filter = instance.buildSearchFilterQuery(rootToken, s);
         assertTrue(filter.isPresent());
         assertTrue(filter.get() instanceof BooleanQuery);
         assertEquals("-p_unpublishedCollection:true", filter.get().toString());
-
     }
 
     @Test
     public void testBuildSearchFilterQuery_root_defaultFilterFlags() {
-
-        when(authorizationFilterQueryFactory.authorizationFilterQuery("pretend-super-token")).thenReturn(Optional.empty());
-
         Search s = new Search();
-        Optional<org.apache.lucene.search.Query> filter = instance.buildSearchFilterQuery("pretend-super-token", s);
+        Optional<org.apache.lucene.search.Query> filter = instance.buildSearchFilterQuery(rootToken, s);
         assertTrue(filter.isPresent());
         assertTrue(filter.get() instanceof BooleanQuery);
         assertEquals("#p_published:true -p_unpublishedCollection:true", filter.get().toString());
@@ -151,10 +179,6 @@ public class LuceneQueryBuilderTest {
 
     @Test
     public void testBuildSearchFilterQuery_anyUser_defaultFilterFlags() {
-
-        when(authorizationFilterQueryFactory.authorizationFilterQuery(null))
-                .thenReturn(Optional.of(SimpleAuthorizationFilterQueryFactory.ACL_READ_FOR_ALL_FILTER_QUERY));
-
         Search s = new Search();
         Optional<org.apache.lucene.search.Query> filter = instance.buildSearchFilterQuery(null, s);
         assertTrue(filter.isPresent());
@@ -165,14 +189,45 @@ public class LuceneQueryBuilderTest {
 
     @Test
     public void testBuildSearchFilterQuery_anyUser() {
-
-        when(authorizationFilterQueryFactory.authorizationFilterQuery(null))
-                .thenReturn(Optional.of(SimpleAuthorizationFilterQueryFactory.ACL_READ_FOR_ALL_FILTER_QUERY));
-
         Search s = new Search().clearAllFilterFlags();
         Optional<org.apache.lucene.search.Query> filter = instance.buildSearchFilterQuery(null, s);
         assertTrue(filter.isPresent());
         assertEquals("acl_read_aggregate:pseudo:all", filter.get().toString());
+    }
+
+    private String expectedAuthorizationFilterQueryForUser() {
+        List<String> expectTerms = 
+                Stream.concat(memberGroups.stream().map(g -> g.getQualifiedName()),
+                              Stream.of("pseudo:all", user.getQualifiedName())).collect(Collectors.toList());
+
+        String expectQuery = String.join(" ",
+                expectTerms.stream()
+                           .map(t -> AclFields.AGGREGATED_READ_FIELD_NAME + ":" + t)
+                           .sorted()
+                           .collect(Collectors.toList()));
+        return expectQuery;
+    }
+
+    @Test
+    public void testBuildSearchFilterQuery_user() {
+        Search s = new Search().clearAllFilterFlags();
+        Optional<org.apache.lucene.search.Query> filter = instance.buildSearchFilterQuery(userToken, s);
+        assertTrue(filter.isPresent());
+        assertTrue(filter.get() instanceof TermInSetQuery);
+
+        assertEquals(expectedAuthorizationFilterQueryForUser(), filter.get().toString());
+    }
+
+    @Test
+    public void testBuildSearchFilterQuery_user_defaultFilterFlags() {
+        Search s = new Search();
+        Optional<org.apache.lucene.search.Query> filter = instance.buildSearchFilterQuery(userToken, s);
+        assertTrue(filter.isPresent());
+
+        String expectedQuery = "#" + expectedAuthorizationFilterQueryForUser()
+                + " #p_published:true -p_unpublishedCollection:true";
+
+        assertEquals(expectedQuery, filter.get().toString());
     }
 
     @Test
@@ -248,7 +303,8 @@ public class LuceneQueryBuilderTest {
         assertEquals(2, ((BooleanQuery)userQuery).clauses().size());
         assertTrue(((BooleanQuery)userQuery).clauses().get(0).getQuery() instanceof TermInSetQuery); // OR-ed URI term query optimization
         assertEquals("#uri:/x uri:/y -uri:/z", userQuery.toString());
-                    // ^^^^^^^^^^^^^ actually a single clause, TermInSetQuery with unfortunate toString() impl (should have used parens if more than noe term)
+                    // ^^^^^^^^^^^^^ actually a single clause,
+                    // TermInSetQuery with unfortunate toString() impl (should have used parens if more than noe term)
     }
 
     @Test

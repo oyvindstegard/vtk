@@ -35,7 +35,6 @@ import java.util.Set;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.apache.lucene.search.IndexSearcher;
 import org.apache.lucene.search.Query;
 import org.springframework.beans.factory.annotation.Required;
 import vtk.security.Principal;
