@@ -246,22 +246,22 @@ public class ConfigurableDecorationResolver implements DecorationResolver {
     }
     
     private HttpServletResponse mapStatusCode(HttpServletRequest request, HttpServletResponse response) {
-        // Check for directives: map_status[service:service.name] = <code>
+        // Check for directives: map_status[service:service.name, status:404] = <code>
         Service currentService = RequestContext.getRequestContext(request).getService();
         while (currentService != null) {
             Object attr = currentService.getAttribute("decorating.servicePredicateName");
             if (attr != null && attr instanceof String) {
-                String value = decorationConfiguration.getProperty(
-                        "map_status[service:" + attr + "]");
+                String value = decorationConfiguration.getProperty(String.format(
+                        "map_status[service:%s, status:%d]", attr, response.getStatus()));
                 if (value != null) {
                     try {
-                        int status = Integer.parseInt(value);
+                        int fakeStatus = Integer.parseInt(value);
                         logger.debug("Mapping status code from {} to {} for service {}", 
-                                response.getStatus(), status, currentService.getName());
+                                response.getStatus(), fakeStatus, currentService.getName());
                         return new HttpServletResponseWrapper(response) {
                             @Override
                             public int getStatus() {
-                                return status;
+                                return fakeStatus;
                             }
                         };
                     }
