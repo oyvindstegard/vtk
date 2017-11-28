@@ -166,6 +166,11 @@ public class CommentsProvider implements ReferenceDataProvider {
                         .withResource(resource)
                         .withPrincipal(principal)
                         .constructURL();
+                
+                if ("https".equals(postCommentURL.getProtocol()) && !servletRequest.isSecure()) {
+                    model.put("moreSecureURL", URL.create(servletRequest).setProtocol("https"));
+                }
+                
                 model.put("postCommentURL", ensureProtocolMatch(postCommentURL, servletRequest));
             }
             catch (Exception e) { }

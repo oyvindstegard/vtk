@@ -1,4 +1,4 @@
-<#ftl strip_whitespace=true output_format="HTML" auto_esc=true>
+<#ftl strip_whitespace=true output_format="HTML" auto_esc=true />
 <#--
   - File: comments-component.ftl
   - 
@@ -51,7 +51,7 @@
                    args=[comments?size] />
       </#assign>
   
-      <#if (deleteAllCommentsURL?exists && comments?size > 0)>
+      <#if (deleteAllCommentsURL?exists && comments?size > 0 && !moreSecureURL??)>
         <form class="vrtx-comments-delete-all" action="${deleteAllCommentsURL}" method="post">
           <@vrtx.csrfPreventionToken url=deleteAllCommentsURL />
           <button type="submit" id="vrtx-comments-delete-all" class="button" name="delete-all-comments-button"
@@ -99,7 +99,7 @@
          <span class="comment-author"><@vrtx.breakSpecificChar nchars=21 char='@'>${comment.author.description}</@vrtx.breakSpecificChar></span><span class="comment-author-line"> -</span>
         </#if>
          <span class="comment-date"><@vrtx.date value=comment.time format='long' /></span>
-        <#if deleteCommentURLs[comment.ID]?exists>
+        <#if deleteCommentURLs[comment.ID]?exists && !moreSecureURL??>
           <#assign message><@vrtx.msg code="commenting.delete" default="delete" /></#assign>
           <#assign confirmation>
             <@vrtx.msg code="commenting.delete.confirmation" 
@@ -117,7 +117,12 @@
   </#list>
   
   <div class="add-comment" id="comment-form">
+    <#if moreSecureURL??>
+      <a class="button" href="${moreSecureURL}"><span><@vrtx.msg code="commenting.goto-secure-url" default="Click to comment" /></span></a> 
+    <#else>
     <div class="add-comment-header"><@vrtx.msg code="commenting.form.add-comment" default="Add comment" /></div>
+    </#if>
+
     <#if !commentsEnabled>
        <p><@vrtx.msg code="commenting.disabled"
                   default="Commenting is disabled on this resource." /></p>
@@ -138,7 +143,7 @@
       <p><@vrtx.msg code="commenting.denied"
                     default="You are not allowed to comment on this resource." /></p>
 
-    <#elseif commentsAllowed && postCommentURL?exists>
+    <#elseif commentsAllowed && postCommentURL?exists && !moreSecureURL??>
       <script type="text/javascript"><!--
           // CKEditor CSS
           var cssFileList = [<#if fckEditorAreaCSSURL?exists>
@@ -152,17 +157,18 @@
       <div id="comment-syntax-desc" class="comment-syntax-desc">
         <div class="syntax-head"><@vrtx.msg code="commenting.form.syntax-description" default="Allowed HTML syntax" />:</div>
         <p>
-        <#list config.validHtmlElements as element>
-          &lt;${element.name}<#compress>
-          <#if (element.attributes)?exists>
-            <#list element.attributes as attr>
-              &nbsp;${attr}=".."
-            </#list>
-          </#if>
-          </#compress>&gt;<#if element_has_next>, </#if>
-        </#list>
+          <#list config.validHtmlElements as element>
+            &lt;${element.name}<#compress>
+            <#if (element.attributes)?exists>
+              <#list element.attributes as attr>
+                &nbsp;${attr}=".."
+              </#list>
+            </#if>
+            </#compress>&gt;<#if element_has_next>, </#if>
+          </#list>
         </p>
       </div>
+
       <form class="vrtx-comments-post" action="${postCommentURL?string}#comment-form" method="post">
         <@vrtx.csrfPreventionToken url=postCommentURL />
         <#if config.titlesEnabled>
@@ -197,11 +203,13 @@
           </#compress>
         </#assign>
         <input type="submit" id="submit-comment-button" name="save"
-          value="<@vrtx.msg code='commenting.form.submit' default='Submit' />" />
-          (<@vrtx.msg code="commenting.post.comment-as" default="as ${principal.description}" args=[principalStr?markup_string] escape=false/>)
+               value="<@vrtx.msg code='commenting.form.submit' default='Submit' />" />
+        (<@vrtx.msg code="commenting.post.comment-as" default="as ${principal.description}" args=[principalStr?markup_string] escape=false/>)
         </div> 
       </form>
+
       <@ck.editorInTextarea textarea="comments-text" toolbar="AddComment" runOnLoad=false  />
+
     </#if>
   </div>
 </div>
