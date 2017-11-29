@@ -543,8 +543,8 @@
             <log4j.configurationFile>log4j2.test.xml</log4j.configurationFile>
           </systemPropertyVariables>
           <excludes>
-            <exclude>**/*IntegrationTest.java</exclude>
-            <exclude>**/*IntegrationTests.java</exclude>
+            <exclude>**/*IntegrationTest*.java</exclude>
+            <exclude>**/*IntegrationTests*.java</exclude>
           </excludes>
         </configuration>
       </plugin>
