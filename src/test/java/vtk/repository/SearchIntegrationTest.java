@@ -56,7 +56,6 @@ import vtk.repository.index.consistency.ConsistencyCheck;
 import vtk.repository.index.update.IncrementalUpdater;
 import vtk.repository.search.ResultSet;
 import vtk.repository.search.Search;
-import vtk.repository.search.query.Query;
 import vtk.repository.store.IndexDao;
 import vtk.web.RequestContext;
 import vtk.web.search.SearchParser;
@@ -186,6 +185,116 @@ public class SearchIntegrationTest extends RepositoryFixture {
             ResultSet rs = repository.search(null, search);
             assertEquals("Unexpected number of hits for search", 1, rs.getTotalHits());
             assertEquals(Path.fromString("/index/a/article1.html"), rs.getResult(0).getURI());
+        }
+
+        @Test
+        public void searchFilterFlags_default() {
+            Search search = new Search();
+            search.setQuery(parser.parse("uri = /index/unpublished/* AND type IN file"));
+
+            ResultSet rs = repository.search(null, search);
+            assertEquals(0, rs.getSize());
+        }
+
+        @Test
+        public void searchFilterFlags_unpublished() {
+            Search search = new Search().clearAllFilterFlags().addFilterFlag(Search.FilterFlag.UNPUBLISHED);
+            search.setQuery(parser.parse("uri = /index/unpublished/* AND type IN file"));
+
+            ResultSet rs = repository.search(null, search);
+            assertEquals(1, rs.getSize());
+            assertEquals("/index/unpublished/unpublished-collection/index.html", rs.getResult(0).getURI().toString());
+        }
+
+        @Test
+        public void searchFilterFlags_unpublishedCollection() {
+            Search search = new Search().clearAllFilterFlags().addFilterFlag(Search.FilterFlag.UNPUBLISHED_COLLECTIONS);
+            search.setQuery(parser.parse("uri = /index/unpublished/* AND type IN file"));
+
+            ResultSet rs = repository.search(null, search);
+            assertEquals(1, rs.getSize());
+            assertEquals("/index/unpublished/index.html", rs.getResult(0).getURI().toString());
+        }
+
+        @Test
+        public void searchFilterFlags_none() {
+            Search search = new Search().clearAllFilterFlags();
+            search.setQuery(parser.parse("uri = /index/unpublished/* AND type IN file"));
+
+            ResultSet rs = repository.search(null, search);
+            Set<String> resultPaths = StreamSupport.stream(rs.spliterator(), false).map(p -> p.getURI().toString()).collect(Collectors.toSet());
+            // Keep tests like these independent on sorting order
+            assertEquals(2, resultPaths.size());
+            assertTrue(resultPaths.contains("/index/unpublished/unpublished-collection/index.html"));
+            assertTrue(resultPaths.contains("/index/unpublished/index.html"));
+        }
+
+        @Test
+        public void totalHits() {
+            Search search = new Search().clearAllFilterFlags();
+            search.setQuery(parser.parse("uri = /index*"));
+            search.setLimit(1);
+
+            ResultSet rs = repository.search(newUserToken("root@localhost"), search);
+            assertEquals(1, rs.getSize());
+            assertEquals(25, rs.getTotalHits());
+        }
+        
+        @Test
+        public void limitZero() {
+            Search search = new Search().clearAllFilterFlags();
+            search.setQuery(parser.parse("uri = /index*"));
+            search.setLimit(0); // Only interested in counting total matches
+            ResultSet rs = repository.search(newUserToken("root@localhost"), search);
+            assertEquals(0, rs.getSize());
+            assertEquals(25, rs.getTotalHits());
+        }
+
+        @Test
+        public void propertyTermQuery() {
+            Search search = new Search();
+            search.setQuery(parser.parse("title = Article\\ 1"));
+            ResultSet rs = repository.search(newUserToken("root@localhost"), search);
+            assertEquals(1, rs.getSize());
+            assertEquals("/index/a/article1.html", rs.getResult(0).getURI().toString());
+        }
+
+        @Test
+        public void sortingDefault() {
+            Search search = new Search();
+            search.setQuery(parser.parse("uri = /index/sorting/*"));
+            ResultSet rs = repository.search(null, search);
+            assertEquals(6, rs.getSize());
+            String[] expectOrder = {"1.txt", "a.txt", "A.txt", "ab.txt", "c.txt", "z.txt"};
+            for (int i=0; i<expectOrder.length; i++) {
+                assertEquals("/index/sorting/" + expectOrder[i], rs.getResult(i).getURI().toString());
+            }
+        }
+
+        @Test
+        public void sortingDefault_reversed() {
+            Search search = new Search();
+            search.setQuery(parser.parse("uri = /index/sorting/*"));
+            search.setSorting(parser.parseSortString("uri DESC"));
+            ResultSet rs = repository.search(null, search);
+            assertEquals(6, rs.getSize());
+            String[] expectOrder = {"z.txt", "c.txt", "ab.txt", "A.txt", "a.txt", "1.txt"};
+            for (int i=0; i<expectOrder.length; i++) {
+                assertEquals("/index/sorting/" + expectOrder[i], rs.getResult(i).getURI().toString());
+            }
+        }
+
+        @Test
+        public void sortingContentLength() {
+            Search search = new Search();
+            search.setQuery(parser.parse("uri = /index/sorting/*"));
+            search.setSorting(parser.parseSortString("contentLength DESC"));
+            ResultSet rs = repository.search(null, search);
+            assertEquals(6, rs.getSize());
+            String[] expectOrder = {"z.txt", "c.txt", "ab.txt", "a.txt", "A.txt", "1.txt"};
+            for (int i=0; i<expectOrder.length; i++) {
+                assertEquals("/index/sorting/" + expectOrder[i], rs.getResult(i).getURI().toString());
+            }
         }
 
         @Test
