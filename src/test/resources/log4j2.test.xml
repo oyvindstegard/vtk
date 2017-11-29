@@ -29,8 +29,9 @@
     <Logger name="java.sql" level="info" />
     <Logger name="org.apache.commons.dbcp" level="info" />
     <Logger name="org.hsqldb" level="info" />
-    
+
     <!-- Silence warning noise during test -->
+    <Logger name="org.springframework.aop.framework.CglibAopProxy" level="error" />
     <Logger name="vtk.scheduling.SimpleMethodInvokingTriggerBean" level="fatal" />
     <Logger name="vtk.scheduling.TaskManager" level="fatal" />
         

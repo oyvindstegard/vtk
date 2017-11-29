@@ -1,4 +1,4 @@
-/* Copyright (c) 2012–2015, University of Oslo, Norway
+/* Copyright (c) 2012–2017, University of Oslo, Norway
  * All rights reserved.
  * 
  * Redistribution and use in source and binary forms, with or without
@@ -67,6 +67,9 @@ import vtk.testing.mocktypes.MockPrincipalFactory;
 
 /**
  * Test Lucene query building.
+ *
+ * <p>This test also implicitly tests {@link SimpleAuthorizationFilterQueryFactory}, which
+ * is actually just a special query builder.
  */
 public class LuceneQueryBuilderTest {
 
