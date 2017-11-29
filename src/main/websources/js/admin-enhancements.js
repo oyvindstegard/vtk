@@ -120,6 +120,7 @@ function VrtxAdmin() {
   this.editorSaveButtonName = "";
   this.editorSaveButton = null;
   this.editorSaveIsRedirectPreview = false;
+  this.editorSaveIsCreateSetWorkingCopy = false;
 
   /* Async operations */
   this.asyncEditorSavedDeferred = null;
@@ -1226,7 +1227,7 @@ VrtxAdmin.prototype.addSearch = function addSearch() {
 
       var uri = splitted[1].replace(/\\;/, ";");
       var isCollection = splitted[2] == "true";
-      
+
       if(isCollection) {
         location.pathname = uri + "/";
       } else {

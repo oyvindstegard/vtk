@@ -41,7 +41,11 @@ $.when(vrtxAdmin.domainsIsReady).done(function() {
           vrtxAdm.editorSaveButton = link;
           vrtxAdm.editorSaveIsRedirectPreview = (ref.id === "saveAndViewButton" || ref.id === "saveViewAction")
                                              && (typeof vrtxEditor === "undefined" || !onlySessionId.length);
+          vrtxAdm.editorSaveIsCreateSetWorkingCopy = (ref.id === "makePublicVersionAction" || ref.id === "saveWorkingCopyAction")
+                                             && (typeof vrtxEditor === "undefined" || !onlySessionId.length);
+
           ajaxSave();
+
           _$.when(vrtxAdm.asyncEditorSavedDeferred).done(function () {
             vrtxAdm.removeMsg("error");
 
@@ -54,6 +58,8 @@ $.when(vrtxAdmin.domainsIsReady).done(function() {
               } else {
                 window.location.href = window.location.pathname + "?vrtx=admin";
               }
+            } else if(vrtxAdm.editorSaveIsCreateSetWorkingCopy) {
+              location.href = location.href;
             } else {
               if(typeof vrtxEditor !== "undefined") {
                 storeInitPropValues($("#app-content > form, #contents"));

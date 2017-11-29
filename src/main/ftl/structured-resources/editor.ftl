@@ -50,7 +50,7 @@
       vrtxAdm.mapShortcut("#vrtx-send-to-approval-shortcut", "#vrtx-send-to-approval");
       
       // Cancel action
-      _$("#editor").on("click", "#cancelAction, #saveWorkingCopyAction, #makePublicVersionAction, #deleteWorkingCopyAction", function(e) {
+      _$("#editor").on("click", "#cancelAction, #deleteWorkingCopyAction", function(e) {
         vrtxEditor.needToConfirm = false;
       });
     });
@@ -239,7 +239,7 @@
       <span id="buttons-or-text"><@vrtx.msg code="editor.orText" default="or" /></span>
       &nbsp;
       <#if (form.hasPublishDate && !form.onlyWriteUnpublished) || !form.hasPublishDate>
-        <input class="vrtx-button" type="submit" id="makePublicVersionAction" name="makePublicVersionAction" value="${vrtx.getMsg('editor.makePublicVersion')}" />
+        <input class="vrtx-button vrtx-save-button" type="submit" id="makePublicVersionAction" name="makePublicVersionAction" value="${vrtx.getMsg('editor.makePublicVersion')}" />
       <#else>
         <a class="vrtx-button" title="${vrtx.getMsg('send-to-approval.title')}" id="vrtx-send-to-approval" href="?vrtx=admin&action=email-approval">${vrtx.getMsg('send-to-approval.title')}</a>
       </#if>
@@ -252,9 +252,9 @@
         <input class="vrtx-button" type="submit" id="cancelAction" name="cancelAction" value="${vrtx.getMsg('editor.cancel')}" />
         <span id="buttons-or-text"><@vrtx.msg code="editor.orText" default="or" /></span>
         &nbsp;
-        <input class="vrtx-button" type="submit" id="saveWorkingCopyAction" name="saveWorkingCopyAction" value="${vrtx.getMsg('editor.saveAsWorkingCopy')}" />
+        <input class="vrtx-button vrtx-save-button" type="submit" id="saveWorkingCopyAction" name="saveWorkingCopyAction" value="${vrtx.getMsg('editor.saveAsWorkingCopy')}" />
       <#else>
-        <input class="vrtx-button" type="submit" id="saveWorkingCopyAction" name="saveWorkingCopyAction" value="${vrtx.getMsg('editor.createWorkingCopy')}" />
+        <input class="vrtx-button vrtx-save-button" type="submit" id="saveWorkingCopyAction" name="saveWorkingCopyAction" value="${vrtx.getMsg('editor.createWorkingCopy')}" />
       </#if>
     </#if>
     </div>
