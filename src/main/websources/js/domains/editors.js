@@ -100,7 +100,7 @@ function keepAliveEditors() {
             vrtxAdmin.editorDeadMsgGiven = true;
           },
           onOk: function() {
-            location.reload();
+            location.href = location.href;
           },
           onCancel: function() {
             $("#cancelAction, #cancel").click();
