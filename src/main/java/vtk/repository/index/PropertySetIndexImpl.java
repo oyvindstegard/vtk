@@ -83,7 +83,20 @@ public class PropertySetIndexImpl implements PropertySetIndex, ClusterAware, Ini
     
     @Override
     public void afterPropertiesSet() throws IOException {
-        index.open(false, isClusterSharedReadOnly());
+        try {
+            index.open(false, isClusterSharedReadOnly());
+        } catch (IOException io) {
+            if (!isApplicationLevelCompatible()) {
+                logger.warn("Opening index failed with IOException, likely due to application incompatibility: {}: {}",
+                        io.getClass().getSimpleName(), io.getMessage());
+
+                // OK, a reindexing should be triggered automatically
+                return;
+            }
+
+            // Unknown or non-obvious cause, re-throw to fail init
+            throw io;
+        }
         if (closeAfterInit) {
             index.close();
         }

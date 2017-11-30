@@ -34,6 +34,7 @@ package vtk.repository.index;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.nio.file.FileAlreadyExistsException;
 import java.nio.file.NoSuchFileException;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
@@ -43,6 +44,9 @@ import org.apache.lucene.index.CheckIndex;
 import org.apache.lucene.index.DirectoryReader;
 import org.apache.lucene.index.IndexCommit;
 import org.apache.lucene.index.IndexDeletionPolicy;
+import org.apache.lucene.index.IndexFileNames;
+import org.apache.lucene.index.IndexFormatTooNewException;
+import org.apache.lucene.index.IndexFormatTooOldException;
 import org.apache.lucene.index.IndexWriter;
 import org.apache.lucene.index.IndexWriterConfig;
 import org.apache.lucene.search.IndexSearcher;
@@ -392,7 +396,21 @@ public class IndexManager implements DisposableBean {
         if (!DirectoryReader.indexExists(directory) || createNew) {
             IndexWriterConfig conf = newIndexWriterConfig();
             conf.setOpenMode(IndexWriterConfig.OpenMode.CREATE);
-            new IndexWriter(directory, conf).close();
+            try {
+                new IndexWriter(directory, conf).close();
+            } catch (IndexFormatTooNewException | IndexFormatTooOldException e) {
+                // Likely migration to/from newer older Lucene version in VTK, delete segments and retry
+                for (String filename: directory.listAll()) {
+                    if (filename.contains(IndexFileNames.SEGMENTS)) {
+                        directory.deleteFile(filename);
+                    } else if (filename.startsWith("_")) {
+                        directory.deleteFile(filename);
+                    }
+                }
+                conf = newIndexWriterConfig(); // Cannot share IW config instances across writer instances
+                conf.setOpenMode(IndexWriterConfig.OpenMode.CREATE);
+                new IndexWriter(directory, conf).close();
+            }
             writeApplicationCompatLevel(directory);
             logger.info("Created new index (application level " + APPLICATION_COMPATIBILITY_LEVEL + ") in directory: " + directory);
         }
@@ -401,6 +419,11 @@ public class IndexManager implements DisposableBean {
     private void writeApplicationCompatLevel(Directory directory) throws IOException {
         try (IndexOutput output = directory.createOutput(APPLICATION_META_FILE, IOContext.DEFAULT)) {
             output.writeInt(APPLICATION_COMPATIBILITY_LEVEL);
+        } catch (FileAlreadyExistsException f) {
+            directory.deleteFile(APPLICATION_META_FILE);
+            try (IndexOutput output = directory.createOutput(APPLICATION_META_FILE, IOContext.DEFAULT)) {
+                output.writeInt(APPLICATION_COMPATIBILITY_LEVEL);
+            }
         }
     }
 
