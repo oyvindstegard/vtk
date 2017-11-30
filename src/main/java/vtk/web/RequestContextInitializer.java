@@ -277,8 +277,11 @@ public class RequestContextInitializer implements ContextInitializer, ServiceRes
         }
 
         if (RequestContext.getRequestContext(request) == null) {
+            String requestURL = request.getRequestURL() + 
+                    (request.getQueryString() != null ? request.getQueryString() : "");
+
             throw new UnmappableRequestException("Unable to map request " 
-                    + url + " to a valid service", request);
+                    + requestURL + " to a valid service", request);
         }
     }
 
