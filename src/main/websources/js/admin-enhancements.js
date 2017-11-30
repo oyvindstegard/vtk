@@ -219,8 +219,6 @@ var VrtxAnimation = function(opts) {
     2. DOM is ready
 \*-------------------------------------------------------------------*/
 
-var onlySessionId = gup("sessionid", window.location.href);
-
 vrtxAdmin._$(document).ready(function () {
   var startReadyTime = getNowTime(), vrtxAdm = vrtxAdmin, _$ = vrtxAdm._$;
 

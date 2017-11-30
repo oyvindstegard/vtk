@@ -39,10 +39,9 @@ $.when(vrtxAdmin.domainsIsReady).done(function() {
           var link = _$(ref);
           vrtxAdm.editorSaveButtonName = link.attr("name");
           vrtxAdm.editorSaveButton = link;
-          vrtxAdm.editorSaveIsRedirectPreview = (ref.id === "saveAndViewButton" || ref.id === "saveViewAction")
-                                             && (typeof vrtxEditor === "undefined" || !onlySessionId.length);
+          vrtxAdm.editorSaveIsRedirectPreview = (ref.id === "saveAndViewButton" || ref.id === "saveViewAction");
           vrtxAdm.editorSaveIsCreateSetWorkingCopy = (ref.id === "makePublicVersionAction" || ref.id === "saveWorkingCopyAction")
-                                             && (typeof vrtxEditor === "undefined" || !onlySessionId.length) && !link.hasClass("vrtx-focus-button");
+                                             && !link.hasClass("vrtx-focus-button");
 
           ajaxSave();
 
@@ -278,7 +277,6 @@ function ajaxSave() {
       return false;
     }
   }
-
 
   var loadingDialog = new VrtxLoadingDialog({title: ajaxSaveText});
   loadingDialog.open();
