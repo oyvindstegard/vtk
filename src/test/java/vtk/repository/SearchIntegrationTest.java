@@ -32,11 +32,15 @@
 package vtk.repository;
 
 import java.io.File;
+import java.text.SimpleDateFormat;
 import java.time.Duration;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
+import java.util.Date;
 import java.util.Iterator;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
 import javax.servlet.http.HttpServletRequest;
@@ -56,6 +60,7 @@ import vtk.repository.index.consistency.ConsistencyCheck;
 import vtk.repository.index.update.IncrementalUpdater;
 import vtk.repository.search.ResultSet;
 import vtk.repository.search.Search;
+import vtk.repository.search.Searcher;
 import vtk.repository.store.IndexDao;
 import vtk.web.RequestContext;
 import vtk.web.search.SearchParser;
@@ -81,14 +86,18 @@ public class SearchIntegrationTest extends RepositoryFixture {
 
     // Waits for index to become updated as of the call to this method
     private static void waitForIndexUpdates() {
-        repository.search(null, new Search().setWaitForPendingUpdates(Instant.now().plus(1, ChronoUnit.SECONDS), Duration.ofSeconds(30)));
+        repository.search(null, new Search().setWaitForPendingUpdates(Instant.now().plus(1, ChronoUnit.SECONDS), Duration.ofSeconds(600)));
     }
     
-    private static Set<Path> repositoryPaths() {
-        return jdbcTemplate.queryForList("SELECT uri FROM vortex_resource WHERE uri LIKE '/%'")
+    private static Set<Path> repositoryPaths(Path prefix) {
+        return jdbcTemplate.queryForList("SELECT uri FROM vortex_resource WHERE uri = ? OR uri LIKE ?",
+                                          prefix.toString(), prefix.isRoot() ? "/%" : prefix.toString() + "/%")
                 .stream()
                 .map(m -> Path.fromString(m.get("uri").toString()))
                 .collect(Collectors.toSet());
+    }
+    private static Set<Path> repositoryPaths() {
+        return repositoryPaths(Path.ROOT);
     }
 
     public static class RepositoryIndexTest {
@@ -152,6 +161,7 @@ public class SearchIntegrationTest extends RepositoryFixture {
      */
     public static class RepositorySearchTest {
 
+        private final Searcher searcher = (Searcher)applicationContext.getBean("systemIndexSearcher");
         private final SearchParser parserFactory = (SearchParser)applicationContext.getBean("searchParser");
         private final SearchParser.ContextualParser parser;
         private final RequestContext requestContext;
@@ -184,7 +194,7 @@ public class SearchIntegrationTest extends RepositoryFixture {
 
             ResultSet rs = repository.search(null, search);
             assertEquals("Unexpected number of hits for search", 1, rs.getTotalHits());
-            assertEquals(Path.fromString("/index/a/article1.html"), rs.getResult(0).getURI());
+            assertEquals("/index/a/article1.html", rs.getResult(0).getURI().toString());
         }
 
         @Test
@@ -231,32 +241,113 @@ public class SearchIntegrationTest extends RepositoryFixture {
 
         @Test
         public void totalHits() {
+            Set<Path> repoPaths = repositoryPaths(Path.fromString("/index"));
+
             Search search = new Search().clearAllFilterFlags();
             search.setQuery(parser.parse("uri = /index*"));
             search.setLimit(1);
 
             ResultSet rs = repository.search(newUserToken("root@localhost"), search);
             assertEquals(1, rs.getSize());
-            assertEquals(25, rs.getTotalHits());
+            assertEquals(repoPaths.size(), rs.getTotalHits());
         }
         
         @Test
         public void limitZero() {
+            Set<Path> repoPaths = repositoryPaths(Path.fromString("/index"));
+
             Search search = new Search().clearAllFilterFlags();
             search.setQuery(parser.parse("uri = /index*"));
             search.setLimit(0); // Only interested in counting total matches
             ResultSet rs = repository.search(newUserToken("root@localhost"), search);
             assertEquals(0, rs.getSize());
-            assertEquals(25, rs.getTotalHits());
+            assertEquals(repoPaths.size(), rs.getTotalHits());
+        }
+
+        @Test
+        public void limitAndOffset() {
+            Search search = new Search();
+            search.setQuery(parser.parse("uri = /index/numeric-names/*"));
+            search.setSorting(parser.parseSortString("name ASC"));
+
+            search.setLimit(1);
+
+            search.setCursor(0);
+            ResultSet rs = repository.search(null, search);
+            assertEquals(1, rs.getSize());
+            assertEquals("/index/numeric-names/0000.txt", rs.getResult(0).getURI().toString());
+
+            search.setCursor(1);
+            rs = repository.search(null, search);
+            assertEquals(1, rs.getSize());
+            assertEquals("/index/numeric-names/0001.txt", rs.getResult(0).getURI().toString());
+
+            search.setCursor(2);
+            rs = repository.search(null, search);
+            assertEquals(1, rs.getSize());
+            assertEquals("/index/numeric-names/0002.txt", rs.getResult(0).getURI().toString());
+
+            search.setLimit(2);
+            rs = repository.search(null, search);
+            assertEquals(2, rs.getSize());
+            assertEquals("/index/numeric-names/0002.txt", rs.getResult(0).getURI().toString());
+            assertEquals("/index/numeric-names/0003.txt", rs.getResult(1).getURI().toString());
+
+            search.setLimit(1000);
+            search.setCursor(10000);
+            rs = repository.search(null, search);
+            assertEquals(0, rs.getSize());
         }
 
         @Test
         public void propertyTermQuery() {
             Search search = new Search();
-            search.setQuery(parser.parse("title = Article\\ 1"));
+            search.setQuery(parser.parse("title = Article\\ 1 AND uri = /index*"));
             ResultSet rs = repository.search(newUserToken("root@localhost"), search);
             assertEquals(1, rs.getSize());
             assertEquals("/index/a/article1.html", rs.getResult(0).getURI().toString());
+        }
+
+        @Test
+        public void propertyWildcardQuery() {
+            Search search = new Search();
+            search.setQuery(parser.parse("collectionTitle = *mission* AND uri = /index*"));
+            ResultSet rs = repository.search(null, search);
+            assertEquals(1, rs.getSize());
+            assertEquals("/index/permissions", rs.getResult(0).getURI().toString());
+        }
+
+        @Test
+        public void propertyRangeQuery_lowerBound() {
+            Search search = new Search().clearAllFilterFlags().setSorting(null);
+            search.setQuery(parser.parse("contentLength >= 100"));
+            ResultSet rs = repository.search(newUserToken("root@localhost"), search);
+            assertTrue(rs.getSize() > 0);
+            for (PropertySet ps: rs) {
+                assertTrue(ps.getPropertyByPrefix(null, "contentLength").getLongValue() >= 100);
+            }
+        }
+
+        @Test
+        public void propertyRangeQuery_upperBound() {
+            Search search = new Search().clearAllFilterFlags().setSorting(null);
+            search.setQuery(parser.parse("contentLength < 100"));
+            ResultSet rs = repository.search(newUserToken("root@localhost"), search);
+            assertTrue(rs.getSize() > 0);
+            for (PropertySet ps: rs) {
+                assertTrue(ps.getPropertyByPrefix(null, "contentLength").getLongValue() < 100);
+            }
+        }
+
+        @Test
+        public void nameWildcardQuery() {
+            Search search = new Search().clearAllFilterFlags().setSorting(null);
+            search.setQuery(parser.parse("name = *.txt"));
+            ResultSet rs = repository.search(newUserToken("root@localhost"), search);
+            assertTrue(rs.getSize() > 0);
+            for (PropertySet ps: rs) {
+                assertTrue(ps.getName().endsWith(".txt"));
+            }
         }
 
         @Test
@@ -344,5 +435,68 @@ public class SearchIntegrationTest extends RepositoryFixture {
             assertTrue(resultPaths.contains("/index/permissions/user/README.md"));
         }
 
+        @Test
+        public void iterateAll() {
+            Set<Path> repoPaths = repositoryPaths();
+
+            Search search = new Search().clearAllFilterFlags().setLimit(Integer.MAX_VALUE).setSorting(null);
+            search.setQuery(parser.parse("uri = /* OR uri = /"));
+
+            final AtomicInteger count = new AtomicInteger(0);
+            searcher.iterateMatching(newUserToken("root@localhost"), search, ps -> {
+                count.incrementAndGet();
+                assertTrue(repoPaths.contains(ps.getURI()));
+                return true;
+            });
+            assertEquals(repoPaths.size(), count.get());
+        }
+
+        @Test
+        public void iterateSorted() {
+            Search search = new Search().clearAllFilterFlags().setLimit(Integer.MAX_VALUE);
+            search.setQuery(parser.parse("uri = /index/numeric-names/*"));
+
+            class Ref {
+                Path instance = null;
+            }
+            final Ref previous = new Ref();
+            searcher.iterateMatching(newUserToken("root@localhost"), search, ps -> {
+                if (previous.instance != null) {
+                    assertTrue(previous.instance.compareTo(ps.getURI()) < 0);
+                }
+                previous.instance = ps.getURI();
+                return true;
+            });
+        }
+
+        @Test
+        public void iterateWithDateCriterium_sortedOnNumericField() throws Exception {
+            Search search = new Search().clearAllFilterFlags().setLimit(Integer.MAX_VALUE);
+            search.setQuery(parser.parse("creationTime >= 2017-11-30 AND (uri = /* OR uri = /)"));
+            search.setSorting(parser.parseSortString("creationTime DESC"));
+
+            Date oldest = new SimpleDateFormat("yyyy-MM-dd").parse("2017-11-30");
+
+            class Ref {
+                PropertySet instance = null;
+            }
+            final Ref previousPropSet = new Ref();
+            final AtomicBoolean haveResultsFlag = new AtomicBoolean(false);
+            searcher.iterateMatching(newUserToken("root@localhost"), search, ps -> {
+                Date currentCreationTime = ps.getPropertyByPrefix(null, "creationTime").getDateValue();
+                assertTrue(oldest.before(currentCreationTime) || oldest.equals(currentCreationTime));
+
+                if (previousPropSet.instance != null) {
+                    Date prevCreationTime = previousPropSet.instance.getPropertyByPrefix(null, "creationTime").getDateValue();
+                    assertTrue(prevCreationTime.compareTo(currentCreationTime) >= 0); // Descending sort with most recent dates first
+                }
+                previousPropSet.instance = ps;
+                haveResultsFlag.set(true);
+                return true;
+            });
+
+            assertTrue("No search results with creationTime >= 2017-11-30", haveResultsFlag.get());
+        }
     }
+
 }
