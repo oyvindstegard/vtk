@@ -64,7 +64,6 @@ import vtk.web.RepositoryContextInitializer;
 import vtk.web.RequestContext;
 import vtk.web.RequestContextInitializer;
 import vtk.web.service.Service;
-import vtk.web.service.URL;
 
 
 /**
@@ -382,7 +381,9 @@ public class VTKServlet extends DispatcherServlet {
             return;
         }
         String remoteHost = req.getRemoteHost();
-        URL requestURL = URL.create(req);
+        String requestURL = req.getRequestURL() + 
+                (req.getQueryString() != null ? req.getQueryString() : "");
+
 
         String request = req.getMethod() + " " + requestURL + " "
             + req.getProtocol() + " - status: " + resp.getStatus();
