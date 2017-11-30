@@ -49,9 +49,14 @@ $.when(vrtxAdmin.domainsIsReady).done(function() {
           _$.when(vrtxAdm.asyncEditorSavedDeferred).done(function () {
             vrtxAdm.removeMsg("error");
 
-            // Redirect after save
+            if(vrtxAdm.editorSaveIsRedirectPreview
+            || vrtxAdm.editorSaveIsCreateSetWorkingCopy) {
+              if(typeof vrtxEditor !== "undefined") {
+                vrtxEditor.needToConfirm = false;
+              }
+            }
+
             if(vrtxAdm.editorSaveIsRedirectPreview) {
-              if(typeof vrtxEditor !== "undefined") vrtxEditor.needToConfirm = false;
               var isCollection = _$("#resource-title.true").length;
               if(isCollection) {
                 window.location.href = "./?vrtx=admin&action=preview";
@@ -59,7 +64,6 @@ $.when(vrtxAdmin.domainsIsReady).done(function() {
                 window.location.href = window.location.pathname + "?vrtx=admin";
               }
             } else if(vrtxAdm.editorSaveIsCreateSetWorkingCopy) {
-              if(typeof vrtxEditor !== "undefined") vrtxEditor.needToConfirm = false;
               location.href = location.href;
             } else {
               if(typeof vrtxEditor !== "undefined") {
