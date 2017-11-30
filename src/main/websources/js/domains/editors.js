@@ -338,8 +338,7 @@ function isServerLastModifiedOlderThanClientLastModified(loadingDialog) {
   var future = $.Deferred();
   vrtxAdmin._$.ajax({
     type: "GET",
-    url: window.location.pathname + "?vrtx=admin&mode=about"
-      + (gup("service", window.location.search) === "view" ? "&service=view" : ""),
+    url: window.location.pathname + "?vrtx=admin&mode=about" + (gup("service", window.location.search) === "view" ? "&service=view" : ""),
     cache: false,
     success: function (results, status, resp) {
       var parsedResults = $($.parseHTML(results));
