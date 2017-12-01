@@ -91,7 +91,9 @@ public class LoginManageComponent extends ViewRenderingDecoratorComponent {
                     options.put("principal-desc", null);
                 }
                 this.putAdminURL(options, resource, request);
-                this.putEditURL(options, resource, request, principal, repository);
+                if(!resource.getResourceType().equals("structured-message")) {
+                    this.putEditURL(options, resource, request, principal, repository);
+                }
                 this.putLogoutURL(options, resource, principal, requestContext);
             }
         }
