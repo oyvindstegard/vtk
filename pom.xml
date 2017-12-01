@@ -31,6 +31,7 @@
     <groovy.version>2.4.12</groovy.version>
     <frontend.build.args>default --production</frontend.build.args>
     <hsqldb.version>2.4.0</hsqldb.version>
+    <flyway.version>4.2.0</flyway.version>
     <test.unit.skip>${test.skip}</test.unit.skip>
     <test.integration.skip>${test.skip}</test.integration.skip>
     <test.frontend.skip>${test.skip}</test.frontend.skip>
@@ -156,11 +157,8 @@
         <targetPath>vtk/ftl</targetPath>
       </resource>
       <resource>
-        <directory>src/main/sql/</directory>
-        <includes>
-          <include>*-schema.sql</include>
-        </includes>
-        <targetPath>vtk/sql/</targetPath>
+        <directory>src/main/sql/migrations</directory>
+        <targetPath>vtk/sql</targetPath>
       </resource>
       <resource>
         <directory>src/main/version</directory>
@@ -204,17 +202,17 @@
           </dependencies>
         </plugin>
         <plugin>
-          <groupId>org.codehaus.mojo</groupId>
-          <artifactId>sql-maven-plugin</artifactId>
-          <version>1.5</version>
+          <groupId>org.flywaydb</groupId>
+          <artifactId>flyway-maven-plugin</artifactId>
+          <version>${flyway.version}</version>
           <configuration>
             <driver>org.hsqldb.jdbc.JDBCDriver</driver>
             <url>jdbc:hsqldb:hsql://localhost/vtk-test</url>
-            <username>sa</username>
+            <user>sa</user>
+            <locations>
+              <location>classpath:/vtk/sql/hsqldb</location>
+            </locations>
             <skip>${test.integration.skip}</skip>
-            <srcFiles>
-              <srcFile>src/main/sql/hsqldb-schema.sql</srcFile>
-            </srcFiles>
           </configuration>
           <dependencies>
             <dependency>
@@ -596,14 +594,14 @@
         </executions>
       </plugin>
       <plugin>
-        <groupId>org.codehaus.mojo</groupId>
-        <artifactId>sql-maven-plugin</artifactId>
+        <groupId>org.flywaydb</groupId>
+        <artifactId>flyway-maven-plugin</artifactId>
         <executions>
           <execution>
-            <id>create-schema</id>
+            <id>migrate-schema</id>
             <phase>pre-integration-test</phase>
             <goals>
-              <goal>execute</goal>
+              <goal>migrate</goal>
             </goals>
           </execution>
         </executions>
