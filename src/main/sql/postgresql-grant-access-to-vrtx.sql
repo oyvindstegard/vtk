@@ -7,9 +7,9 @@ dbname=> CREATE USER <jdbcUsername> WITH PASSWORD '<jdbcPassword>';
 
 where jdbcUsername and jdbcUsername are equal to the properties spesified in the build.properties file.
 
-* Create a database using the DDL in the 'src/sql/postgresql-schema.sql'. Example; 
+* Create a database using the DDL in the 'src/main/sql/migrations/postgresql/V001__Initial_version.sql'. Example; 
 
-dbname=> \i /Users/evenh/vtk/trunk/src/sql/postgresql-schema.sql
+dbname=> \i /Users/evenh/vtk/src/main/sql/migrations/postgresql/V001__Initial_version.sql
 
 * Change 'vrtx' to <jdbcUsername> in the following grant statement if they differ.
 */

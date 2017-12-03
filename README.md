@@ -9,8 +9,8 @@ are necessary:
    ( http://maven.apache.org/download.html )
 
 2. Create a database using the DDL in the
-   `src/main/sql/postgresql-schema.sql` (currently only PostgreSQL is
-   supported, but HSQLDB has also been known to work in the past).
+   `src/main/sql/migrations/postgresql/V001__Initial_version.sql` (currently only
+   PostgreSQL is supported, but HSQLDB has also been known to work in the past).
 
     Depending on how you set up the database, you may need to grant the necessary
    privileges to your JDBC user (e.g. `src/main/sql/grant_to_vrtx.sql` for a
