@@ -5,12 +5,7 @@
 -----------------------------------------------------------------------------
 -- resource
 -----------------------------------------------------------------------------
-
-drop sequence vortex_resource_seq_pk;
-
 create sequence vortex_resource_seq_pk increment by 1 start with 1000;
-
-drop table vortex_resource cascade constraints;
 
 create table vortex_resource
 (
@@ -55,10 +50,8 @@ create index vortex_resource_d_u_index on vortex_resource(depth, uri);
 --              IDs
 -- TODO: column 'resource_id' should be renamed to 'generic_id'
 -----------------------------------------------------------------------------
-drop sequence vortex_tmp_session_id_seq;
 create sequence vortex_tmp_session_id_seq increment by 1 start with 1000;
 
-drop table vortex_tmp;
 create table vortex_tmp (
     session_id number,
     resource_id number,
@@ -73,11 +66,7 @@ create index vortex_tmp_index on vortex_tmp(uri);
 -----------------------------------------------------------------------------
 -- vortex_lock
 -----------------------------------------------------------------------------
-drop sequence vortex_lock_seq_pk;
-
 create sequence vortex_lock_seq_pk increment by 1 start with 1000;
-
-drop table vortex_lock cascade constraints;
 
 create table vortex_lock
 (
@@ -106,8 +95,6 @@ create index vortex_lock_index2 on vortex_lock(timeout);
 -----------------------------------------------------------------------------
 -- action_type
 -----------------------------------------------------------------------------
-drop table action_type cascade constraints;
-
 create table action_type
 (
     action_type_id number not null,
@@ -122,11 +109,7 @@ primary key (action_type_id);
 -----------------------------------------------------------------------------
 -- acl_entry
 -----------------------------------------------------------------------------
-drop sequence acl_entry_seq_pk;
-
 create sequence acl_entry_seq_pk increment by 1 start with 1000;
-
-drop table acl_entry cascade constraints;
 
 create table acl_entry
 (
@@ -161,8 +144,6 @@ create index acl_entry_index1 on acl_entry(resource_id);
 -----------------------------------------------------------------------------
 -- prop_type
 -----------------------------------------------------------------------------
-drop table prop_type cascade constraints;
-
 create table prop_type
 (
     prop_type_id number not null,
@@ -176,11 +157,7 @@ alter table prop_type
 -----------------------------------------------------------------------------
 -- extra_prop_entry
 -----------------------------------------------------------------------------
-drop sequence extra_prop_entry_seq_pk;
-
 create sequence extra_prop_entry_seq_pk increment by 1 start with 1000;
-
-drop table extra_prop_entry cascade constraints;
 
 create table extra_prop_entry
 (
@@ -217,12 +194,8 @@ create index extra_prop_entry_index2 on extra_prop_entry(is_inheritable);
 -----------------------------------------------------------------------------
 -- changelog_entry
 -----------------------------------------------------------------------------
-drop sequence changelog_entry_seq_pk;
-
 -- NB, this sequence needs explicit ordering requirement for Oracle RAC:
 create sequence changelog_entry_seq_pk increment by 1 start with 1000 cache 60 order;
-
-drop table changelog_entry cascade constraints;
 
 create table changelog_entry
 (
@@ -240,8 +213,6 @@ alter table changelog_entry
     add constraint changelog_entry_PK
 primary key (changelog_entry_id);
 
-/* DROP INDEX changelog_entry_index1; */
-
 create unique index changelog_entry_index1
     on changelog_entry (uri, changelog_entry_id);
 
@@ -249,12 +220,7 @@ create unique index changelog_entry_index1
 -----------------------------------------------------------------------------
 -- simple_content_revision
 -----------------------------------------------------------------------------
-
-drop sequence simple_content_revision_seq_pk;
-
 create sequence simple_content_revision_seq_pk increment by 1 start with 1000;
-
-drop table simple_content_revision cascade constraints;
 
 create table simple_content_revision (
     id number not null,
@@ -277,11 +243,7 @@ create index simple_content_revision_index1 on simple_content_revision(resource_
 -----------------------------------------------------------------------------
 -- revision_acl_entry
 -----------------------------------------------------------------------------
-drop sequence revision_acl_entry_seq_pk;
-
 create sequence revision_acl_entry_seq_pk increment by 1 start with 1000;
-
-drop table revision_acl_entry cascade constraints;
 
 create table revision_acl_entry
 (
@@ -307,12 +269,7 @@ create index revision_acl_entry_index1 on revision_acl_entry(revision_id);
 -----------------------------------------------------------------------------
 -- vortex_comment
 -----------------------------------------------------------------------------
-
-drop sequence vortex_comment_seq_pk;
-
 create sequence vortex_comment_seq_pk increment by 1 start with 1000;
-
-drop table vortex_comment;
 
 create table vortex_comment
 (
@@ -488,12 +445,7 @@ values (
 -----------------------------------------------------------------------------
 -- deleted_resource (trash can)
 -----------------------------------------------------------------------------
-
-drop sequence deleted_resource_seq_pk;
-
 create sequence deleted_resource_seq_pk increment by 1 start with 1000;
-
-drop table deleted_resource cascade constraints;
 
 create table deleted_resource
 (

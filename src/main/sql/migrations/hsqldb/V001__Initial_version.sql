@@ -5,12 +5,7 @@
 -----------------------------------------------------------------------------
 -- vortex_resource
 -----------------------------------------------------------------------------
-
-DROP SEQUENCE vortex_resource_seq_pk IF EXISTS;
-
 CREATE SEQUENCE vortex_resource_seq_pk AS INTEGER START WITH 1000;
-
-DROP TABLE vortex_resource IF EXISTS CASCADE;
 
 CREATE TABLE vortex_resource
 (
@@ -58,10 +53,8 @@ CREATE INDEX vortex_resource_d_u_index on vortex_resource(depth, uri);
 
 -- TODO: column 'resource_id' should be renamed to 'generic_id'
 -----------------------------------------------------------------------------
-DROP SEQUENCE vortex_tmp_session_id_seq IF EXISTS;
 CREATE SEQUENCE vortex_tmp_session_id_seq AS INTEGER START WITH 1000;
 
-DROP TABLE vortex_tmp IF EXISTS;
 CREATE TABLE vortex_tmp (
     session_id INTEGER,
     resource_id INTEGER,
@@ -73,11 +66,7 @@ CREATE INDEX vortex_tmp_index ON vortex_tmp(uri);
 -----------------------------------------------------------------------------
 -- vortex_lock
 -----------------------------------------------------------------------------
-DROP SEQUENCE vortex_lock_seq_pk IF EXISTS;
-
 CREATE SEQUENCE vortex_lock_seq_pk AS INTEGER START WITH 1000;
-
-DROP TABLE vortex_lock IF EXISTS CASCADE;
 
 CREATE TABLE vortex_lock
 (
@@ -105,8 +94,6 @@ CREATE INDEX vortex_lock_index2 ON vortex_lock(timeout);
 -----------------------------------------------------------------------------
 -- action_type
 -----------------------------------------------------------------------------
-DROP TABLE action_type IF EXISTS CASCADE;
-
 CREATE TABLE action_type
 (
     action_type_id int NOT NULL,
@@ -120,11 +107,7 @@ PRIMARY KEY (action_type_id);
 -----------------------------------------------------------------------------
 -- acl_entry
 -----------------------------------------------------------------------------
-DROP SEQUENCE acl_entry_seq_pk IF EXISTS;
-
 CREATE SEQUENCE acl_entry_seq_pk AS INTEGER START WITH 1000;
-
-DROP TABLE acl_entry IF EXISTS CASCADE;
 
 CREATE TABLE acl_entry
 (
@@ -155,8 +138,6 @@ CREATE INDEX acl_entry_index1 ON acl_entry(resource_id);
 -----------------------------------------------------------------------------
 -- prop_type
 -----------------------------------------------------------------------------
-DROP TABLE prop_type IF EXISTS CASCADE;
-
 CREATE TABLE prop_type
 (
     prop_type_id int NOT NULL,
@@ -169,11 +150,7 @@ ALTER TABLE prop_type
 -----------------------------------------------------------------------------
 -- extra_prop_entry
 -----------------------------------------------------------------------------
-DROP SEQUENCE extra_prop_entry_seq_pk IF EXISTS;
-
 CREATE SEQUENCE extra_prop_entry_seq_pk AS INTEGER START WITH 1000;
-
-DROP TABLE extra_prop_entry IF EXISTS CASCADE;
 
 CREATE TABLE extra_prop_entry
 (
@@ -208,11 +185,7 @@ CREATE INDEX extra_prop_entry_index2 ON extra_prop_entry(is_inheritable);
 ----------------------------------------------------------------------
 -- changelog_entry
 -----------------------------------------------------------------------------
-DROP SEQUENCE changelog_entry_seq_pk IF EXISTS;
-
 CREATE SEQUENCE changelog_entry_seq_pk AS INTEGER START WITH 1000;
-
-DROP TABLE changelog_entry IF EXISTS;
 
 /* The attribute 'uri' can't be longer that 1578 chars (OS-dependent?).     */
 /* If bigger -> "ORA-01450: maximum key length exceeded" (caused by index). */
@@ -234,8 +207,6 @@ ALTER TABLE changelog_entry
    ADD CONSTRAINT changelog_entry_PK
 PRIMARY KEY (changelog_entry_id);
 
-/* DROP INDEX changelog_entry_index1; */
-
 CREATE UNIQUE INDEX changelog_entry_index1
    ON changelog_entry (uri, changelog_entry_id);
 
@@ -243,11 +214,7 @@ CREATE UNIQUE INDEX changelog_entry_index1
 -- simple_content_revision
 -----------------------------------------------------------------------------
 
-DROP sequence simple_content_revision_seq_pk IF EXISTS;
-
 CREATE sequence simple_content_revision_seq_pk AS INTEGER START WITH 1000;
-
-DROP TABLE simple_content_revision IF EXISTS;
 
 CREATE TABLE simple_content_revision
 (
@@ -266,17 +233,12 @@ ALTER TABLE simple_content_revision
       ADD CONSTRAINT content_revision_fk FOREIGN KEY (resource_id)
           REFERENCES vortex_resource (resource_id) ON DELETE CASCADE;
 
-
 CREATE INDEX simple_content_revision_index1 ON simple_content_revision(resource_id);
 
 -----------------------------------------------------------------------------
 -- revision_acl_entry
 -----------------------------------------------------------------------------
-DROP sequence revision_acl_entry_seq_pk IF EXISTS;
-
 CREATE sequence revision_acl_entry_seq_pk AS INTEGER START WITH 1000;
-
-DROP TABLE revision_acl_entry IF EXISTS CASCADE;
 
 CREATE TABLE revision_acl_entry
 (
@@ -302,11 +264,7 @@ CREATE INDEX revision_acl_entry_index1 ON revision_acl_entry(revision_id);
 -----------------------------------------------------------------------------
 -- vortex_comment
 -----------------------------------------------------------------------------
-DROP sequence vortex_comment_seq_pk IF EXISTS;
-
 CREATE sequence vortex_comment_seq_pk AS INTEGER START WITH 1000;
-
-DROP TABLE vortex_comment IF EXISTS;
 
 CREATE TABLE vortex_comment
 (
@@ -482,11 +440,7 @@ values (
 -- deleted_resource (trash can)
 -----------------------------------------------------------------------------
 
-DROP SEQUENCE deleted_resource_seq_pk IF EXISTS;
-
 CREATE SEQUENCE deleted_resource_seq_pk AS INTEGER START WITH 1000;
-
-DROP TABLE deleted_resource IF EXISTS CASCADE;
 
 CREATE TABLE deleted_resource
 (
