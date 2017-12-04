@@ -78,9 +78,10 @@ public class DefaultRevisionStore extends AbstractSqlMapDataAccessor implements 
     public void setTempDir(String tempDir) {
         File f = new File(tempDir);
         if (!f.exists()) {
-            throw new IllegalStateException(
-                    "Directory " + tempDir + " does not exist");
-            
+            if(!f.mkdir()) {
+                throw new IllegalStateException(
+                        "Unable to create tempDir " + tempDir);
+            }
         }
         this.tempDir = f;
     }

@@ -463,23 +463,30 @@ public class IndexManager implements DisposableBean {
     private File initStorage(File storageRootPath, String storageId)
         throws IOException {
 
-        File storageDirectory = new File(storageRootPath, storageId);
-
-        if (storageDirectory.isDirectory()) {
-            if (! storageDirectory.canWrite()) {
-                throw new IOException("Resolved storage directory '"
-                        + storageDirectory.getAbsolutePath() 
+        if (storageRootPath.isDirectory()) {
+            if (!storageRootPath.canWrite()) {
+                throw new IOException("Resolved storage root directory '"
+                        + storageRootPath.getAbsolutePath()
                         + "' is not writable");
             }
-        } else if (storageDirectory.isFile()) {
-            throw new IOException("Resolved storage directory '" 
-                    + storageDirectory.getAbsolutePath()
+        } else if (storageRootPath.isFile()) {
+            throw new IOException("Resolved storage root directory '"
+                    + storageRootPath.getAbsolutePath()
                     + "' is a file");
         } else {
             // Directory does not exist, we need to create it.
+            if (!storageRootPath.mkdir()) {
+                throw new IOException("Failed to create resolved storage root directory '"
+                        + storageRootPath.getAbsolutePath()
+                        + "'");
+            }
+        }
+
+        File storageDirectory = new File(storageRootPath, storageId);
+        if (!storageDirectory.exists()) {
             if (!storageDirectory.mkdir()) {
                 throw new IOException("Failed to create resolved storage directory '"
-                        + storageDirectory.getAbsolutePath() 
+                        + storageDirectory.getAbsolutePath()
                         + "'");
             }
         }

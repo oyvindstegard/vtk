@@ -276,6 +276,14 @@
               <name>javax.xml.transform.TransformerFactory</name>
               <value>org.apache.xalan.processor.TransformerFactoryImpl</value>
             </systemProperty>
+            <systemProperty>
+              <name>projectDirectory</name>
+              <value>${project.basedir}</value>
+            </systemProperty>
+            <systemProperty>
+              <name>java.io.tmpdir</name>
+              <value>${project.basedir}/var/tmp</value>
+            </systemProperty>
           </systemProperties>
         </configuration>
       </plugin>
@@ -397,11 +405,6 @@
                 <script><![CDATA[
                 def testFolder = "${project.build.directory}/vtk-test"
                 new File(testFolder).mkdir()
-                new File("${testFolder}/tmp").mkdir()
-                new File("${testFolder}/index").mkdir()
-                new File("${testFolder}/data").mkdir()
-                new File("${testFolder}/trash").mkdir()
-                new File("${testFolder}/revisions").mkdir()
                 ]]></script>
               </scripts>
             </configuration>
@@ -819,12 +822,6 @@
       <!--version>2.7.13</version-->
       <scope>test</scope>
     </dependency>
-    <dependency>
-      <groupId>org.hsqldb</groupId>
-      <artifactId>hsqldb</artifactId>
-      <version>${hsqldb.version}</version>
-      <scope>test</scope>
-    </dependency>
 
     <dependency>
       <groupId>javax.servlet</groupId>
@@ -1106,6 +1103,11 @@
     </dependency>
 
     <!-- JDBC drivers and databases -->
+    <dependency>
+      <groupId>org.hsqldb</groupId>
+      <artifactId>hsqldb</artifactId>
+      <version>${hsqldb.version}</version>
+    </dependency>
     <dependency>
       <groupId>org.postgresql</groupId>
       <artifactId>postgresql</artifactId>

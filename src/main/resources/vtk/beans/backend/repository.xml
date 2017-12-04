@@ -15,9 +15,19 @@
     <property name="baselineOnMigrate" value="true" />
   </bean>
 
+  <!-- Create file system root directory -->
+  <bean id="fsRoot" class="org.springframework.beans.factory.config.MethodInvokingFactoryBean">
+    <property name="targetObject">
+      <bean class="java.io.File">
+        <constructor-arg value="${vtkFileSystemRoot}" />
+      </bean>
+    </property>
+    <property name="targetMethod" value="mkdir" />
+  </bean>
+
   <!-- Main repository instance. -->
   <bean id="repository.internal" class="vtk.repository.RepositoryImpl" destroy-method="destroy"
-        depends-on="flyway">
+        depends-on="flyway fsRoot">
     <property name="id" value="${repositoryID}" />
     <property name="tokenManager" ref="tokenManager" />
     <property name="authorizationManager" ref="authorizationManager" />

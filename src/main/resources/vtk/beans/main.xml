@@ -12,8 +12,8 @@
   </description>
 
   <import resource="common.xml" />
-  <import resource="content/init.xml" />
   <import resource="backend/init.xml" />
+  <import resource="content/init.xml" />
   <import resource="web/init.xml" />
 
 </beans>
