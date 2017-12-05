@@ -540,14 +540,14 @@ public class RepositoryImpl implements Repository, ApplicationContextAware,
                 }
             }
             
-            newResource = this.resourceHelper.create(principal, newResource, true, content);
-            
             // Set initial (inherited) permissions on new resource:
             newResource.setAcl(parent.getAcl());
             newResource.setInheritedAcl(true);
             int aclIneritedFrom = parent.isInheritedAcl() ? parent.getAclInheritedFrom() : parent.getNumericId();
             newResource.setAclInheritedFrom(aclIneritedFrom);
 
+            newResource = this.resourceHelper.create(principal, newResource, true, content);
+            
             // Store new collection resource
             newResource = this.dao.store(newResource);
             
