@@ -8,25 +8,23 @@ are necessary:
 1. Download and install Maven 3
    ( http://maven.apache.org/download.html )
 
-2. Create a database using the DDL in the
-   `src/main/sql/postgresql-schema.sql` (currently only PostgreSQL is
-   supported, but HSQLDB has also been known to work in the past).
+2. [OPTIONAL] Create a database using PostgreSQL. The default is to use an embedded
+   hsqldb database.
 
-    Depending on how you set up the database, you may need to grant the necessary
-   privileges to your JDBC user (e.g. `src/main/sql/grant_to_vrtx.sql` for a
-   jdbc user vrtx).
+        sudo -u postgres createuser -P vortex
+        sudo -u postgres createdb -O vortex vortex
 
-3. Set up the configuration. Configuration should be placed in the
-   files `~/.vtk.properties` and `~/.vrtx.properties` 
-   (also work as regular non-hidden files).
+3. [OPTIONAL] Set up the configuration. Configuration should be placed in the
+   files `~/.vtk.properties` and/or `~/.vrtx.properties`.
+   (also work as regular non-hidden files). The default is to use hsqldb and
+   files under the `var` directory
 
-        indexStorageRootPath = [an empty directory for storing indices]
+        databaseDriver = [your JDBC driver, e.g. org.postgresql.Driver] 
+        sqlDialect = {postgresql, hsqldb or oracle}
+        databaseURL = [your JDBC URL, e.g. jdbc:postgresql:vortex]
         jdbcUsername = [your JDBC user]
         jdbcPassword = [your JDBC password]
-        repositoryDataDirectory = [an empty directory for storing files]
-        repositoryTrashCanDirectory = [an empty directory for storing "deleted" files]
-        repositoryRevisionDirectory = [an empty directory for storing file revisions]
-        databaseURL = [your JDBC URL, e.g. jdbc:postgresql:my-user>]
+        vtkFileSystemRoot = [an empty directory to place files]
 
 4. Run the command `mvn jetty:run` (standing in the project
    directory). 

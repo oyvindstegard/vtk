@@ -3,8 +3,31 @@
        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
        xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-3.1.xsd">
 
+  <!-- Migrate the database schema -->
+  <bean id="flyway" class="org.flywaydb.core.Flyway" init-method="migrate">
+    <property name="dataSource" ref="repository.dataSource"/>
+    <property name="locations">
+      <array>
+        <value>classpath:/vtk/sql/${sqlDialect}</value>
+      </array>
+    </property>
+    <!-- Remove when all databases has been baselined -->
+    <property name="baselineOnMigrate" value="true" />
+  </bean>
+
+  <!-- Create file system root directory -->
+  <bean id="fsRoot" class="org.springframework.beans.factory.config.MethodInvokingFactoryBean">
+    <property name="targetObject">
+      <bean class="java.io.File">
+        <constructor-arg value="${vtkFileSystemRoot}" />
+      </bean>
+    </property>
+    <property name="targetMethod" value="mkdir" />
+  </bean>
+
   <!-- Main repository instance. -->
-  <bean id="repository.internal" class="vtk.repository.RepositoryImpl" destroy-method="destroy">
+  <bean id="repository.internal" class="vtk.repository.RepositoryImpl" destroy-method="destroy"
+        depends-on="flyway fsRoot">
     <property name="id" value="${repositoryID}" />
     <property name="tokenManager" ref="tokenManager" />
     <property name="authorizationManager" ref="authorizationManager" />
